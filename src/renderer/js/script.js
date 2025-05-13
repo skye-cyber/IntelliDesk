@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
      function scrollToBottom(element) {
          // Use setTimeout to ensure the scroll happens after the DOM has updated
          setTimeout(() => {
-             element.scrollTop = element.scrollHeight;
+             element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
          }, 0);
      }
 

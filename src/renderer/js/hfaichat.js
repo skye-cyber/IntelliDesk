@@ -21,7 +21,6 @@ window.check = check;
 async function routeToHf(text) {
 	console.log("Reached Target: hfRoute")
 
-	const isImageRequest = text.startsWith("/image");
 	const escapedText = window.InputPurify(text);
 	const Currentmodel = modelSelect.value;
 
@@ -66,17 +65,13 @@ async function routeToHf(text) {
 		window.implementUserCopy();
 		chatArea.scrollTop = chatArea.scrollHeight;
 
-		if (isImageRequest) {
-			const imageGen = new ImageGenerator(chatArea);
-			imageGen.createImage(text)
-		} else {
-			// Add Timestamp
-			text = `${text} [${window.electron.getDateTime()} UTC]`
-			// Add timestamped  user prompt to history
-			window.electron.addToChat({ role: "user", content: text });
+		// Add Timestamp
+		text = `${text} [${window.electron.getDateTime()} UTC]`
+		// Add timestamped  user prompt to history
+		window.electron.addToChat({ role: "user", content: text });
 
-			const aiMessage = document.createElement("div");
-			aiMessage.innerHTML = `
+		const aiMessage = document.createElement("div");
+		aiMessage.innerHTML = `
 				<div id="loader-parent">
 				<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" class="transform scale-75">
 				<circle cx="12" cy="24" r="4" class="fill-green-500">
@@ -95,75 +90,75 @@ async function routeToHf(text) {
 				</div>
 				`;
 
-			const aiMessageUId = `msg_${Math.random().toString(30).substring(3, 9)}`;
-			aiMessage.classList.add("flex", "justify-start", "mb-12", "overflow-wrap");
-			chatArea.appendChild(aiMessage);
-			AutoScroll.checked ? scrollToBottom(chatArea) : null;
-			const foldId = `think-content-${Math.random().toString(33).substring(3, 9)}`;
-			const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
+		const aiMessageUId = `msg_${Math.random().toString(30).substring(3, 9)}`;
+		aiMessage.classList.add("flex", "justify-start", "mb-12", "overflow-wrap");
+		chatArea.appendChild(aiMessage);
+		AutoScroll.checked ? scrollToBottom(chatArea) : null;
+		const foldId = `think-content-${Math.random().toString(33).substring(3, 9)}`;
+		const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
 
-			//console.log(JSON.stringify(window.electron.getChat()), null, 4);
+		//console.log(JSON.stringify(window.electron.getChat()), null, 4);
 
-			const _Timer = new window.Timer;
-			try {
-				//console.log(typeof(window.electron.getChat()))
-				const options = {
-					model: Currentmodel,
-					messages: window.electron.getChat(), // Add conversation in JSON format to avoid size limitation
-					max_tokens: 3000
-				};
+		const _Timer = new window.Timer;
+		try {
+			//console.log(typeof(window.electron.getChat()))
+			const options = {
+				model: Currentmodel,
+				messages: window.electron.getChat(), // Add conversation in JSON format to avoid size limitation
+				max_tokens: 3000
+			};
 
-				if (provider[Currentmodel]) {
-					options.provider = provider[Currentmodel];
+			if (provider[Currentmodel]) {
+				options.provider = provider[Currentmodel];
+			}
+
+			const stream = client.chatCompletionStream(options);
+			//const stream = window.generateTextChunks(null, true);
+			console.log("Stream set")
+			let output = "";
+
+			// change send button appearance to processing status
+			window.HandleProcessingEventChanges('show')
+
+			//start timer
+			_Timer.trackTime("start");
+			let thinkContent = "";
+			let actualResponse = "";
+			let isThinking = false;
+			let fullResponse = "";
+			let hasfinishedThinking = false;
+
+			for await (const chunk of stream) {
+				const choice = chunk?.choices?.[0];
+				if (!choice?.delta?.content) continue;
+
+				const deltaContent = choice.delta.content;
+				output += deltaContent;
+				fullResponse += deltaContent;
+
+				const hasThinkTag = output.includes("<think>");
+				const isDeepSeek = Currentmodel === "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B";
+				const shouldStartThinking = !isThinking && (hasThinkTag || isDeepSeek);
+				const shouldStopThinking = isThinking && output.includes("</think>");
+
+				if (shouldStartThinking && !hasfinishedThinking) {
+					isThinking = true;
+					hasfinishedThinking = false;
+					output = output.replace("<think>", "");
+					thinkContent = output;
+				} else if (shouldStopThinking) {
+					isThinking = false;
+					hasfinishedThinking = true;
+					thinkContent += deltaContent.replace("</think>", "");
+					output = output.replace("</think>", "");
+				} else if (isThinking) {
+					thinkContent += deltaContent;
+				} else {
+					actualResponse += deltaContent;
 				}
 
-				const stream = client.chatCompletionStream(options);
-				//const stream = window.generateTextChunks(null, true);
-				console.log("Stream set")
-				let output = "";
-
-				// change send button appearance to processing status
-				window.HandleProcessingEventChanges('show')
-
-				//start timer
-				_Timer.trackTime("start");
-				let thinkContent = "";
-				let actualResponse = "";
-				let isThinking = false;
-				let fullResponse = "";
-				let hasfinishedThinking = false;
-
-				for await (const chunk of stream) {
-					const choice = chunk?.choices?.[0];
-					if (!choice?.delta?.content) continue;
-
-					const deltaContent = choice.delta.content;
-					output += deltaContent;
-					fullResponse += deltaContent;
-
-					const hasThinkTag = output.includes("<think>");
-					const isDeepSeek = Currentmodel === "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B";
-					const shouldStartThinking = !isThinking && (hasThinkTag || isDeepSeek);
-					const shouldStopThinking = isThinking && output.includes("</think>");
-
-					if (shouldStartThinking && !hasfinishedThinking) {
-						isThinking = true;
-						hasfinishedThinking = false;
-						output = output.replace("<think>", "");
-						thinkContent = output;
-					} else if (shouldStopThinking) {
-						isThinking = false;
-						hasfinishedThinking = true;
-						thinkContent += deltaContent.replace("</think>", "");
-						output = output.replace("</think>", "");
-					} else if (isThinking) {
-						thinkContent += deltaContent;
-					} else {
-						actualResponse += deltaContent;
-					}
-
-					// Update innerHTML with marked output
-					aiMessage.innerHTML = `
+				// Update innerHTML with marked output
+				aiMessage.innerHTML = `
 							<section class="relative w-fit max-w-full lg:max-w-6xl mb-8 p-2">
 							${isThinking || thinkContent ? `
 								<div class="think-section bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg px-4 pt-2 lg:max-w-6xl transition-colors duration-1000">
@@ -268,10 +263,10 @@ async function routeToHf(text) {
 									</section>`: ""}
 									`;
 
-					AutoScroll.checked ? scrollToBottom(chatArea) : null;
-					// Debounce katex rendering to avoid freezing
-					window.debounceRenderKaTeX(`.${aiMessageUId}`, 3000, false);
-				}
+				AutoScroll.checked ? scrollToBottom(chatArea) : null;
+				// Debounce katex rendering to avoid freezing
+				window.debounceRenderKaTeX(`.${aiMessageUId}`, 3000, false);
+			}
 
 			//stop timer
 			_Timer.trackTime("stop");
@@ -305,7 +300,7 @@ async function routeToHf(text) {
 	}
 }
 
-}
+
 
 
 async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, provider = null) {
@@ -580,7 +575,28 @@ function addUserMessage(text, fileType, fileDataUrl, fileContainerId) {
 
 class ImageGenerator {
 	constructor(chatArea) {
-		this.chatArea = chatArea;
+		this.chatArea = chatArea || document.getElementById("chatArea");
+	}
+
+	createUserMessage(text) {
+		// Display user message
+		const userMessageId = `msg_${Math.random().toString(34).substring(3, 9)}`;
+		const copyButtonId = `copy-button-${Math.random().toString(36).substring(5, 9)}`;
+		const userMessage = document.createElement("div");
+
+		userMessage.innerHTML = `
+		<div data-id="${userMessageId}" class="${userMessageId} relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl">
+		<p class="whitespace-pre-wrap break-words max-w-xl md:max-w-2xl lg:max-w-3xl">${text}</p>
+		<button id="${copyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80 " onclick="CopyAll('.${userMessageId}', this)">
+		Copy
+		</button>
+		</div>
+		`;
+
+		userMessage.classList.add("flex", "justify-end", "mb-4", "overflow-wrap");
+		chatArea.appendChild(userMessage);
+		window.implementUserCopy();
+		chatArea.scrollTop = chatArea.scrollHeight;
 	}
 
 	async errorHandler(text, error) {
@@ -625,8 +641,8 @@ class ImageGenerator {
 			}, 200);
 
 			let errorMsg = error.message === "Failed to fetch"
-			? "Connection Error: Check your Internet!"
-			: error.message;
+				? "Connection Error: Check your Internet!"
+				: error.message;
 			if (error.message === "[object Object]") {
 				errorMsg = "This model is unreachable: It might be overloaded!";
 			}
@@ -659,8 +675,8 @@ class ImageGenerator {
 
 	async generateImage(data, useFlux = false) {
 		const url = useFlux
-		? "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev"
-		: "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-3.5-large";
+			? "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev"
+			: "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-3.5-large";
 		try {
 			const response = await fetch(url, {
 				headers: {
@@ -671,14 +687,14 @@ class ImageGenerator {
 				body: JSON.stringify(data),
 			});
 
-			if (response.ok===true){
+			if (response.ok === true) {
 				const blob = await response.blob();
 				if (blob) {
-					console.log(blob)
+					//console.log(blob)
 					return URL.createObjectURL(blob);
 				}
 				return null
-			}else{
+			} else {
 				this.errorHandler(data.inputs, new Error(`Failed with status:${response.status}`));
 			}
 		} catch (error) {
@@ -722,6 +738,8 @@ class ImageGenerator {
 			this._Timer.trackTime("start");
 			console.log("Timer started");
 
+			this.createUserMessage(text)
+
 			const imageData = { inputs: text.replace("/image", "").trim() };
 			const imageId = `image_${Math.random().toString(36).substring(2, 7)}`;
 			const loadingMessage = this.createLoadingMessage(imageId);
@@ -737,18 +755,9 @@ class ImageGenerator {
 			clearInterval(timerInterval);
 
 			if (imageUrl) {
-				// Validate that the URL points to an image
-				if (/^https?:\/\//.test(imageUrl)) {
-					fetch(imageUrl, { method: "HEAD" })
-					.then(response => {
-						if (!response.headers.get("Content-Type")?.startsWith("image/")) {
-							throw new Error("Invalid image type");
-						}
-						loadingMessage.innerHTML = "";
-						loadingMessage.appendChild(this.createImageElement(imageUrl));
-					})
-					.catch(console.error);
-				}
+				// Clear loading message and append the image
+				loadingMessage.textContent = ""; // Clear previous content
+				loadingMessage.appendChild(this.createImageElement(imageUrl));
 			} else {
 				loadingMessage.innerHTML = `
 				<div id="${imageId}" class="w-fit bg-red-400 text-gray-950 dark:bg-rose-500 rounded-lg p-2 font-normal shadow-lg dark:shadow-red-500 max-w-3xl mb-[5%]">
@@ -774,7 +783,7 @@ class ImageGenerator {
 
 		const button = document.createElement("button");
 		button.className =
-		"absolute flex items-center text-white rounded-bl-md bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 font-semibold py-2 px-4 focus:outline-none shadow-md w-fit h-fit bottom-0 left-0 opacity-60 hover:opacity-100";
+			"absolute flex items-center text-white rounded-bl-md bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 font-semibold py-2 px-4 focus:outline-none shadow-md w-fit h-fit bottom-0 left-0 opacity-60 hover:opacity-100";
 
 		const anchor = document.createElement("a");
 		anchor.href = imageUrl;
@@ -814,3 +823,4 @@ class ImageGenerator {
 
 window.VisionChat = VisionChat;
 window.routeToHf = routeToHf;
+window.ImageGenerator = ImageGenerator

@@ -962,13 +962,13 @@
                     </div>
                 </div>
 
-                <div class="flex">
+                <div class="flex space-x-2">
                     <div style="view-transition-name: var(--vt-composer-reason-action);">
                         <div>
                         <!-- Toggle button with aria-pressed to indicate state -->
                         <button id="previewBtn"
                                 class="flex h-9 min-w-8 items-center justify-center rounded-full border p-2 text-[13px] font-medium
-                                        border-sky-900 bg-blue-300 hover:bg-blue-400 dark:border-red-400 dark:bg-red-700 dark:hover:bg-red-600
+                                        border-sky-900 bg-blue-100 hover:bg-sky-300 dark:border-[#aa55ff] dark:bg-[#171717] dark:hover:bg-[#225]
                                         text-gray-900 dark:text-white transition-colors duration-1000"
                                 aria-pressed="false"
                                 aria-label="Preview">
@@ -1004,7 +1004,13 @@
                             <path d="M7 12h4M13 5v2M13 19v-2M17 12h-4" stroke-width="2" stroke-linecap="round" />
                         </svg>
                     </button>
-
+                    <!--Image Generation Toggle tool-->
+                    <button id="image-gen" class="flex items-center justify-center text-sm font-medium ring-offset-background transition-colors duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 shadow-none hover:bg-blue-300 hover:text-white dark:hover:bg-zinc-900 dark:hover:text-slate-200 h-8 rounded-lg gap-2 text-black dark:text-white px-2 py-3 focus:ring-none" type="button" aria-pressed="false" aria-label="Image Gen">
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-black dark:text-white">
+                        <path d="M2.5 1H12.5C13.3284 1 14 1.67157 14 2.5V12.5C14 13.3284 13.3284 14 12.5 14H2.5C1.67157 14 1 13.3284 1 12.5V2.5C1 1.67157 1.67157 1 2.5 1ZM2.5 2C2.22386 2 2 2.22386 2 2.5V8.3636L3.6818 6.6818C3.76809 6.59551 3.88572 6.54797 4.00774 6.55007C4.12975 6.55216 4.24568 6.60372 4.32895 6.69293L7.87355 10.4901L10.6818 7.6818C10.8575 7.50607 11.1425 7.50607 11.3182 7.6818L13 9.3636V2.5C13 2.22386 12.7761 2 12.5 2H2.5ZM2 12.5V9.6364L3.98887 7.64753L7.5311 11.4421L8.94113 13H2.5C2.22386 13 2 12.7761 2 12.5ZM12.5 13H10.155L8.48336 11.153L11 8.6364L13 10.6364V12.5C13 12.7761 12.7761 13 12.5 13ZM6.64922 5.5C6.64922 5.03013 7.03013 4.64922 7.5 4.64922C7.96987 4.64922 8.35078 5.03013 8.35078 5.5C8.35078 5.96987 7.96987 6.35078 7.5 6.35078C7.03013 6.35078 6.64922 5.96987 6.64922 5.5ZM7.5 3.74922C6.53307 3.74922 5.74922 4.53307 5.74922 5.5C5.74922 6.46693 6.53307 7.25078 7.5 7.25078C8.46693 7.25078 9.25078 6.46693 9.25078 5.5C9.25078 4.53307 8.46693 3.74922 7.5 3.74922Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-xs text-black dark:text-white">Image Gen</span>
+                    </button>
                     <!-- Triple Ripple with Gradient Border -->
                     <button id="sendBtn" class="absolute right-2 h-14 w-14 bottom-4 rounded-full transition-all ease-in-out duration-1000 z-32 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden" aria-label="Send message" title="Send message">
                     <div id="normalSend" class=" flex items-center justify-center h-full w-full">
@@ -1570,5 +1576,4 @@
 <script src="js/ai_model_router.js"></script>
 <script src="js/packed_MistralChatsAdmin.js"></script>
 <script src="js/apiUtils.js"></script>
-<script src="js/animations/DotSphereAnim.js"></script>
 </html>

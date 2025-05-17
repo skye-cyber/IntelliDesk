@@ -577,12 +577,36 @@ previewBtn.addEventListener('click', function() {
 
 	if (isActive !== "true") {
 		// When activated: switch to vibrant green theme
-		this.classList.remove('border-sky-900', 'bg-blue-300', 'hover:bg-blue-400', 'dark:border-red-400', 'dark:bg-red-700', 'dark:hover:bg-red-600');
-		this.classList.add('border-green-500', 'bg-green-300', 'hover:bg-green-400', 'dark:border-green-400', 'dark:bg-green-700', 'dark:hover:bg-green-600');
+		this.classList.remove('border-sky-900', 'bg-blue-100', 'hover:bg-sky-300', 'dark:bg-[#171717]', 'dark:border-[#aa55ff]');
+		this.classList.add('border-green-500', 'bg-green-300', 'hover:bg-green-400', 'dark:border-green-950', 'dark:bg-green-800');
 	} else {
 		// When deactivated: revert to vibrant red theme
-		this.classList.remove('border-green-500', 'bg-green-300', 'hover:bg-green-400', 'dark:border-green-400', 'dark:bg-green-700', 'dark:hover:bg-green-600');
-		this.classList.add('border-sky-900', 'bg-blue-300', 'hover:bg-blue-400', 'dark:border-red-400', 'dark:bg-red-700', 'dark:hover:bg-red-600');
+		this.classList.remove('border-green-500', 'bg-green-300', 'hover:bg-green-400', 'dark:border-green-950', 'dark:bg-green-800', 'dark:hover:bg-green-600');
+		this.classList.add('border-sky-900', 'bg-blue-100', 'hover:bg-sky-300', 'dark:bg-[#171717]', 'dark:border-[#aa55ff]');
+	}
+});
+
+window.imageGen = false;
+
+const imageGen = document.getElementById("image-gen");
+imageGen.addEventListener('click', function() {
+	// Determine current state from the aria-pressed attribute
+	const isActive = this.getAttribute('aria-pressed');
+
+	// Toggle the state
+	this.setAttribute('aria-pressed', (isActive === 'false') ? "true" : "false");
+	//console.log(this.getAttribute('aria-pressed'))
+
+	if (isActive !== "true") {
+		// When activated: switch to vibrant green theme
+		this.classList.add('bg-[#169595]', 'dark:bg-[#624ea1]');
+
+		window.imageGen = true
+	} else {
+		// When deactivated: revert to vibrant red theme
+		this.classList.remove('bg-[#169595]', 'dark:bg-[#624ea1]');
+
+		window.imageGen = false;
 	}
 });
 

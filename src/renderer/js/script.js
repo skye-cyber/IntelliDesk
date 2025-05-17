@@ -240,18 +240,18 @@ window.selectModel = selectModel;
 const animationToggle = document.getElementById('animation-toggle');
 
 //Set animation on innitially
-animationToggle.checked=true;
+animationToggle.checked=false;
 
 const animationTogglePeer = document.getElementById('animation-toggle-peer');
 const bodyCanvas = document.getElementById('body-canvas');
 animationTogglePeer.addEventListener('click', ()=>{
     if (animationToggle.checked !== true){
         bodyCanvas.classList.remove('hidden');
-        window.electron.addScript('DotSphereAnim.js');
+        window.electron.addScript('/animations/DotSphereAnim.js');
         //window.electron.AnimationReadyDispatch();
     }else{
         bodyCanvas.classList.add('hidden');
-        window.electron.removeScript('DotSphereAnim.js');
+        window.electron.removeScript('/animations/DotSphereAnim.js');
     }
 })
 });

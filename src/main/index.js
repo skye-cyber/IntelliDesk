@@ -207,7 +207,7 @@ app.on('ready', async () => {
     //mainWindow.webContents.send('storagePath', storagePath);
 
     // Create the tray icon
-    const tray = new Tray(path.join(process.resourcesPath, 'assets/QuickAi.png')); // Path to your tray icon
+    const tray = new Tray(path.join(iconPath)); // Path to your tray icon
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show',
@@ -285,7 +285,7 @@ ipcMain.handle('save-dg-As-PNG', async (event, buffer, path) => {
             return false;
         }
 
-        await fs.writeFileSync(filePath, buffer);
+        fs.writeFileSync(filePath, buffer);
         console.log('File saved successfully at', filePath);
         return true;
     } catch (err) {

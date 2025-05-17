@@ -101,8 +101,15 @@ function requestRouter(text) {
     // Get the data-class attribute from the selected option
     const dataClass = selectedOption.getAttribute('data-class');
 
+    //Intercept image generation
+    if (window.imageGen){
+        console.log('Image GEN')
+
+        const imageGen = new window.ImageGenerator(chatArea);
+        imageGen.createImage(text)
+    }
     //console.log("DataClass:", dataClass); // This will log the value of the data-avalue attribute
-    if (dataClass === "hf") {
+    else if (dataClass === "hf") {
         window.routeToHf(text);
     } else if (dataClass === "mistral") {
         window.routeToMistral(text, modelName);

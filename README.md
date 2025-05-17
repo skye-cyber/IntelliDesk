@@ -3,9 +3,8 @@
 [![Node.js](https://img.shields.io/badge/Node.js-16%2B-green.svg)](https://nodejs.org/)
 [![Electron](https://img.shields.io/badge/Electron-27%2B-blue.svg)](https://www.electronjs.org/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/skye-cyber/UBookDesktop/build.yml?branch=main)](https://github.com/skye-cyber/UBookDesktop/actions)
-
-<!-- Optional: If Python is a significant part of the app -->
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+<!-- Optional: If Python is a significant part of the app 
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)-->
 
 # QuickAi
 

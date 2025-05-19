@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+import os
+import sys
+
+
+class ElectronProject:
+    def __init__(self, project_name):
+        self.project_name = project_name
+        self.main_dirs = ['src', 'public', 'node_modules']
+        self.src_dirs = ['main', 'renderer', 'assets', 'components', 'common']
+        self.main_files = ['package.json', 'README.md']
+        self.main_sub_files = ['index.js', 'preload.js']
+        self.renderer_dirs = ['js', 'css', 'images']
+        self.js_files = ['script.js']
+        self.css_files = ['config.css', 'styles.css']
+        self.renderer_files = ['index.html']
+        self.asset_files = ['documentation.html']
+        self.public_files = []
+
+    def create_project(self):
+        self.create_directory(self.project_name)
+        os.chdir(self.project_name)
+        self.create_main_directories()
+        os.chdir('src')
+        self.create_subdirectories(self.src_dirs)
+        os.chdir('..')
+        self.create_main_files()
+        os.chdir('src/main')
+        self.create_subfiles(self.main_sub_files)
+        os.chdir('../renderer')
+        self.create_subdirectories(self.renderer_dirs)
+        os.chdir('js')
+        self.create_subfiles(self.js_files)
+        os.chdir('../css')
+        self.create_subfiles(self.css_files)
+        os.chdir('../')
+        self.create_subfiles(self.renderer_files)
+        os.chdir('../assets')
+        self.create_subfiles(self.asset_files)
+        os.chdir('../../public')
+        self.create_subfiles(self.public_files)
+
+        print(
+            f"\033[1;30mElectron project structure created for \033[1;32m{self.project_name}\033[0m")
+
+    def create_directory(self, dir_name):
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+            print(f"Created project directory: \033[34m{dir_name}\033[0m")
+
+    def create_main_directories(self):
+        for dir in self.main_dirs:
+            self.create_directory(dir)
+
+    def create_subdirectories(self, dirs):
+        for dir in dirs:
+            self.create_directory(dir)
+
+    def create_main_files(self):
+        for file in self.main_files:
+            self.create_file(file)
+
+    def create_subfiles(self, files):
+        for file in files:
+            self.create_file(file)
+
+    def create_file(self, file_name):
+        if not os.path.exists(file_name):
+            open(file_name, 'w').close()
+            print(f"Created file: \033[34m{file_name}\033[0m")
+
+
+# Example usage
+if __name__ == "__main__":
+    project_name = sys.argv[1:][0]
+    electron_project = ElectronProject(project_name)
+    electron_project.create_project()

@@ -60,17 +60,51 @@ renderer.code = function(code) {
 		return dgLang ? mapper[dgLang] : validLanguage === 'dot' ? mapper[validLanguage] : ''
 	}
 
-	//increament code buffer
-	codeBuffer = {lang:validLanguage, code:`<code id="${validLanguage}" data-value=${renderButtonId} class="p-2 hljs ${validLanguage} block whitespace-pre-wrap w-full rounded-md bg-none font-mono transition-colors duration-700 pb-20">${highlighted}</code>`}
+	if (isCanvasActive) {
+		//increament code buffer
+		codeBuffer = { lang: validLanguage, code: `<code id="${validLanguage}" data-value=${renderButtonId} class="hljs ${validLanguage} block whitespace-pre-wrap w-full rounded-md bg-none font-mono transition-colors duration-500 mb-[20vh]">${highlighted}</code>` }
 
-	return `
+		return `
+		<section class="flex justify-between top-1 p-1 w-full bg-sky-300 rounded-t-md dark:bg-[#001922] box-border transition-colors duration-700">
+			<!-- Language -->
+			<p class="code-language p-1 justify-start rounded-md text-slate-950 dark:text-white rounded-lg font-normal text-sm cursor-pointer opacity-80 hover:opacity-50">${validLanguage}</p>
+			<div class="flex justify-between space-x-3">
+				<!-- Copy button -->
+				<button id="${copyButtonId}" onclick="window.handleCodeCopy(this, '${renderButtonId}');" class="copy-button flex items-center rounded-md p-1 bg-gradient-to-r from-sky-800 to-purple-600 hover:to-green-400 dark:from-[#00a5ce] dark:to-[#5500ff] dark:hover:from-[#00557f] dark:hover:to-[#006ea1] text-sm text-white cursor-pointer transform transition-all duration-700">
+				<svg class="mt-1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy mr-1">
+				<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+				<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+				</svg>
+				<p id="BtText">copy</p>
+				</button>
+			</div>
+			</section>
+			<article class="relative">
+				<div class="h-full max-h-60 p-2 border border-[#00aaff] dark:border-[#00a5ce] w-full bg-cyan-100 dark:bg-[#001c24] rounded-md rounded-t-none overflow-auto scrollbar-hide transition-colors duration-700">
+				<div class="absolute flex justify-center items-center left-0 top-0 bg-gray-800/70 flex flex-grow rounded-md rounded-t-none overflow-hidden h-full w-full lg:max-w-[100vw] z-[30] hover:scale-[101%] hover:border hover:border-blue-300 transform transition-all duration-700 ease-in-out">
+				<button
+				onclick="setCanvasUpdate(this)"
+				class="flex items-center gap-2 px-4 py-2 rounded-full text-white font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:text-blue-200 transition-all duration-300 shadow-lg"
+				>
+				<span class="text-sm font-normal text-white hover:text-green-400 transition-colors duration-300">
+				&lt;/&gt;
+				</span>
+				Click to open canvas
+				</button>
+				</div>
+				<code id="${validLanguage}" data-value=${renderButtonId} class="p-2 hljs ${validLanguage} block whitespace-pre rounded-md bg-cyan-100 dark:bg-[#001c24] font-mono overflow-x-auto">${highlighted}</code>
+				</div>
+			</article>
+			`
+	} else {
+		return `
 		<div class="my-2 block bg-blue-300 dark:bg-[#004c6a]  rounded-md transition-colors duration-100">
 		<section class="flex justify-between top-1 p-1 w-full bg-sky-300 rounded-t-md dark:bg-[#001922] box-border transition-colors duration-700">
 		<!-- Language -->
 		<p class="code-language p-1 justify-start rounded-md text-slate-950 dark:text-white rounded-lg font-normal text-sm cursor-pointer opacity-80 hover:opacity-50">
 		${validLanguage}
 		</p>
-		<div class="flex justify-between space-x-3"
+		<div class="flex justify-between space-x-3">
 		${(dgCodeBlock || validLanguage === 'dot') ? `
 			<!-- Render Button -->
 			<button
@@ -125,6 +159,7 @@ renderer.code = function(code) {
 		</div>
 		</div>
 		`
+	}
 };
 
 // Configure marked.js white
@@ -175,6 +210,8 @@ async function handleCodeCopy(element, id = null) {
 
 function handleRequestError(error, userMessage, aiMessage, VS_url = null) {
 	try {
+		processing = false;
+
 		//start timer
 		const _Timer = new Timer();
 		_Timer.trackTime("interrupt");
@@ -399,13 +436,13 @@ function showCopyModal(_color = null, text = "Text copied") {
 	// Slide modal to the left and fade out after 5 seconds
 	setTimeout(() => {
 		modal.classList.remove('top-1/5', 'left-1/2', '-translate-x-1/2');
-		modal.classList.add('left-0', '-translate-x-full', 'opacity-0', 'pointer-events-none');
+		modal.classList.add('left-0', '-translate-x-[100vw]', 'opacity-0', 'pointer-events-none');
 
 	}, 4000); // 5 seconds for staying in the middle plus 1 second delay
 
 	// Reset transform after fully fading out and moving off-screen
 	setTimeout(() => {
-		modal.classList.remove('left-0', '-translate-x-full', 'opacity-0', 'pointer-events-none');
+		modal.classList.remove('left-0', '-translate-x-[100vw]', 'opacity-0', 'pointer-events-none');
 		modal.classList.add('top-0', 'left-1/2', '-translate-x-1/2', 'pointer-events-none');
 	}, 1000); // 0.5s for fade out
 	addRmColor("rm")

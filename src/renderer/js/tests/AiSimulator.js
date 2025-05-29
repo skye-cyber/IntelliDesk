@@ -12,55 +12,72 @@ Authentication Check: The function first checks if the user is authenticated. If
 Farms Filtering: It filters the FarmInformation objects for the current user.
 No Farms Found: If no farms are found, it returns None.
 Location or Name Selection: Depending on the locations and names parameters, it extracts either farm_location or farm_name from the farms queryset or list.
-\`\`\`html
+\`\`\`python
+import os
 
-<div aria-label="AI code canvas container" class="ai-canvas-container w-full max-w-5xl bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex flex-col h-[93vh] overflow-hidden ring-1 ring-purple-200 dark:ring-purple-700">
-<!-- Header with title and theme toggle -->
-<header class="flex items-center justify-between px-3 py-1 border-b border-purple-200 dark:border-purple-700 select-none">
-<h2 class="text-xl font-semibold text-purple-900 dark:text-purple-200">Canvas</h2>
-<button id="canvas-theme-toggle" aria-label="Toggle dark mode" class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-purple-200 dark:hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400" title="Toggle theme">
-<svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-purple-700 dark:text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
-<svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-purple-600 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-</button>
-</header>
+class LinkFetcher:
+def __init__(self, base_url):
+	self.base_url = base_url
 
-<!-- Main AI canvas content -->
-<container class="flex-1 overflow-y-auto w-full p-2 space-y-8 scroll-smooth ai-canvas-scrollbar">
-<!-- Code & Preview block -->
-<article class="bg-purple-50 dark:bg-purple-900 rounded-2xl shadow-inner ring-1 ring-purple-300 dark:ring-purple-600 p-6 flex flex-col max-h-full">
+def fetch_links(self, url):
+	# Simulated function to fetch links from a given URL
+	# Replace this with your actual implementation
+	return [
+		"/cgit/qt/qtdeclarative.git/plain/src/qmlls/file1.txt",
+	"/cgit/qt/qtdeclarative.git/plain/src/qmlls/file2.txt",
+	"/cgit/qt/qtdeclarative.git/plain/src/another_dir/",
+	]
 
-<!-- Buttons row -->
-<div class="flex justify-end gap-4 mb-4 select-none">
-<button id="btn-code" class="flex items-center gap-1 px-4 py-2 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 font-normal text-md" title="Show Code">
-&lt;/&gt; Code
-</button>
+def get_all_links(self, base):
+	links_list = []
 
-<button id="btn-preview" class="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-700 shadow-sm transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400" title="Show Preview">
-<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4h12v12H4z"/></svg>
-Preview
-</button>
-<button id="btn-copy" class="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500 text-white hover:bg-green-600 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-green-400" title="Copy Code">
-<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2v2"/><rect x="8" y="8" width="8" height="8" rx="2"/></svg>
-Copy
-</button>
-</div>
+def add_links(links, base_url):
+for link in links:
+	if link.startswith("/cgit/qt/qtdeclarative.git/plain/src/qmlls/"):
+		full_link = os.path.join(base_url, link.split("qmlls/")[-1])
+		links_list.append(full_link)
 
-<!-- Code block with line numbers and code content side by side -->
-<div id="code-block-container" class="flex flex-row max-h-full overflow-hidden rounded-lg ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner bg-white dark:bg-purple-700 select-text font-mono text-sm text-purple-900 dark:text-purple-200">
-<!-- Line numbers gutter -->
-<pre id="line-numbers" class="line-numbers bg-purple-100 dark:bg-purple-900 p-4 border-r border-purple-200 dark:border-purple-700 overflow-hidden"></pre>
+		def recurse_dirs(links, base_url):
+			for link in links:  # Iterate over a copy of the list to avoid modification issues
+				if link.endswith("/"):
+					full_link = os.path.join(base_url, link)
+					sub_links = self.fetch_links(full_link)
+					add_links(sub_links, base_url)
+					recurse_dirs(sub_links, base_url)
 
-<!-- Code content area -->
-<pre id="code-view" tabindex="0" aria-label="Code editor view" class="flex-1 p-4 overflow-y-auto h-full whitespace-pre-wrap scrollbar-thin scrollbar-thumb-purple-400 scrollbar-track-purple-100 dark:scrollbar-track-purple-900" contenteditable="true" spellcheck="false"></pre>
-</div>
+					initial_links = self.fetch_links(base)
+					add_links(initial_links, self.base_url)
+					recurse_dirs(initial_links, self.base_url)
 
-<!-- Preview block -->
-<div id="preview-view" tabindex="0" aria-label="Preview output" class="hidden bg-white dark:bg-purple-800 rounded-lg p-6 ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner max-h-full overflow-auto text-purple-900 dark:text-purple-200 font-sans text-base whitespace-pre-wrap">
-Hello, QuickAI Canvas!
-</div>
-</article>
-</container>
-\`\`\``
+					return links_list
+
+					# Example usage
+					base_url = "https://example.com"
+					fetcher = LinkFetcher(base_url)
+					all_links = fetcher.get_all_links(base_url + "/cgit/qt/qtdeclarative.git/plain/src/")
+					print(all_links)
+					def recurse_dirs(links, base_url):
+					for link in links:  # Iterate over a copy of the list to avoid modification issues
+						if link.endswith("/"):
+							full_link = os.path.join(base_url, link)
+							sub_links = self.fetch_links(full_link)
+							add_links(sub_links, base_url)
+							recurse_dirs(sub_links, base_url)
+
+							initial_links = self.fetch_links(base)
+							add_links(initial_links, self.base_url)
+							recurse_dirs(initial_links, self.base_url)
+
+							return links_list
+
+							# Example usage
+							base_url = "https://example.com"
+							fetcher = LinkFetcher(base_url)
+							all_links = fetcher.get_all_links(base_url + "/cgit/qt/qtdeclarative.git/plain/src/")
+							print(all_links)
+\`\`\`
+Name Selection: Depending on the locations and names parameters, it extracts either farm_location or farm_name from the farms queryset or list.
+`
 
 const custom2 = `\`\`\`html
 <!DOCTYPE html>

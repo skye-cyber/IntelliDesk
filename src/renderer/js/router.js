@@ -96,6 +96,9 @@ document.addEventListener('imageLoaded', async (event) => {await chooseRoute(eve
  * then route to the appropriate function.
  */
 function requestRouter(text) {
+    // clear buffer initialy
+    codeBuffer = null;
+
     if (processing===true) return;
     const modelName = modelSelection.value;
 
@@ -109,11 +112,11 @@ function requestRouter(text) {
     //Intercept image generation
     if (window.imageGen){
         //const imageGen = new window.ImageGenerator(chatArea);
-        //imageGen.createImage(text)
+        imageGen.createImage(text)
     }
     //console.log("DataClass:", dataClass); // This will log the value of the data-avalue attribute
     else if (dataClass === "hf") {
-        //window.routeToHf(text);
+        window.routeToHf(text);
     } else if (dataClass === "mistral") {
         window.routeToMistral(text, modelName);
     } else {

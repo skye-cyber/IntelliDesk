@@ -46,12 +46,13 @@ function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = false) {
     }
 }
 
-async function NormalizeCode(element){
-   const targetList = element ? element.querySelectorAll('code') : document.querySelectorAll('code');
-   for (const x in targetList){
-       x
-       .replace(`$`, `\[`)
-       .replace(`$`, `\]`)
-}
+function NormalizeCode(element) {
+    const targetList = element ? element.querySelectorAll('code') : document.querySelectorAll('code');
+    for (const x in targetList) {
+        x
+            .replace(`$`, `\[`)
+            .replace(`$`, `\]`)
+    }
 }
 window.debounceRenderKaTeX = debounceRenderKaTeX
+window.NormalizeCode = NormalizeCode

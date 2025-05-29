@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const CopyPlugin = require("copy-webpack-plugin");
 
 const entries = {
-    //HF_Chat: './src/renderer/js/managers/HF_Chat.js',
+    HF_Chat: './src/renderer/js/managers/HF_Chat.js',
     //XPutility: './src/renderer/js/Utils/XPutility.js',
     chatUtils: './src/renderer/js/Utils/chatUtils.js',
     MistralChatsAdmin: './src/renderer/js/managers/MistralChatsAdmin.js',
@@ -12,7 +12,7 @@ const entries = {
     //V_DG: './src/renderer/js/diagraming/V_DG.js',
     //V_Charts: './src/renderer/js/diagraming/V_Charts.js',
     //fileHandler: './src/renderer/js/Utils/fileHandler.js',
-    //mathHandler: './src/renderer/js/MathBase/mathHandler.js'
+    mathHandler: './src/renderer/js/MathBase/mathHandler.js'
 };
 
 module.exports = Object.entries(entries).map(([name, entryPath]) => {

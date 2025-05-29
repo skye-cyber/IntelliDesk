@@ -202,7 +202,7 @@ class ConversationManager {
             userText = content.slice(-1) === ']' ? content.substring(0, content.length - 22) : content
         }
         const messageHtml = `
-            <div data-id="${userMessageId}" class="${userMessageId} flex-grow relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl transition-colors duration-1000">
+            <div data-id="${userMessageId}" class="${userMessageId} relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl transition-colors duration-1000">
                 <p class="whitespace-pre-wrap break-words max-w-xl md:max-w-2xl lg:max-w-3xl">${window.InputPurify(userText)}</p>
                 <button id="${copyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80" onclick="CopyAll('.${userMessageId}', this, true)">
                 Copy
@@ -256,7 +256,7 @@ class ConversationManager {
         }
 
         aiMessage.innerHTML = `
-                <section class="relative w-fit flex-grow max-w-full lg:max-w-4xl mb-8 p-2">
+                <section class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
 					${hasThinkTag || thinkContent ? `
 						<div class="think-section bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-t-lg px-4 pt-2 lg:max-w-6xl transition-colors duration-1000">
 						<div class="flex items-center justify-between">
@@ -277,7 +277,7 @@ class ConversationManager {
 						` : ''}
 						${thinkContent && actualResponse ? `<p class="rounded-lg border-2 border-blue-400 dark:border-orange-400"></p>` : ""}
 						${actualResponse ? `
-							<div class="${aiMessageId} bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
+							<div  id="AIRes" class="${aiMessageId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
 							${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
 							<p class="text-white">${window.marked(window.normalizeMathDelimiters(actualResponse))}</p>
 							<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
@@ -379,8 +379,8 @@ class ConversationManager {
         //const fileType = this.getFileType(content);
         //const fileDataUrl = this.getFileUrl(content);
         visionMessage.innerHTML = `
-                <section class="relative w-fit max-w-full lg:max-w-6xl mb-8">
-					<div class="${visionMessageId} bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg px-4 mb-6 pt-2 pb-4 w-fit max-w-full lg:max-w-6xl transition-colors duration-1000">${window.marked(window.normalizeMathDelimiters(textContent))}
+                <section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
+					<div id="AIRes" class="${visionMessageId} w-fit max-w-full lg:max-w-6xl bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg px-4 mb-6 pt-2 pb-4 w-fit max-w-full lg:max-w-6xl transition-colors duration-1000">${window.marked(window.normalizeMathDelimiters(textContent))}
 					</div>
 					<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
 						<div class="group relative max-w-fit transition-all duration-500 hover:z-50">

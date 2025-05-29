@@ -86,14 +86,14 @@ async function MistraChat(text, modelName) {
 		window.HandleProcessingEventChanges('show')
 		processing = true
 
-		/*const stream = await Mistarlclient.chat.stream({
+		const stream = await Mistarlclient.chat.stream({
 			model: modelName,
 			messages: window.electron.getChat(),
 			max_tokens: 3000
-		});*/
+		});
 
 		let output = ""
-		const stream = window.generateTextChunks();
+		//const stream = window.generateTextChunks(); //for tests
 
 		let thinkContent = "";
 		let actualResponse = "";
@@ -130,16 +130,16 @@ async function MistraChat(text, modelName) {
 				actualResponse += deltaContent;
 			}
 
-			if (codeBuffer.code) {
+			if (codeBuffer && codeBuffer.code) {
 				codeView.innerHTML = codeBuffer.code;
-				updateLineNumbers();
+				canvasUpdate();
 
-				if (!isCanvasOpen) DSP();
+				if (!isCanvasOpen) showCanvas();
 			}
 
 			// Update innerHTML with marked output
 			aiMessage.innerHTML = `
-			<section class="relative w-fit max-w-full lg:max-w-6xl mb-8 p-2">
+			<section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
 			${isThinking || thinkContent ? `
 				<div class="think-section bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-t-lg px-4 pt-2 lg:max-w-6xl transition-colors duration-1000">
 				<div class="flex items-center justify-between">
@@ -160,7 +160,7 @@ async function MistraChat(text, modelName) {
 				` : ''}
 				${thinkContent && actualResponse ? `<p class="rounded-lg border-2 border-blue-400 dark:border-orange-400"></p>` : ""}
 				${actualResponse ? `
-					<div class="${aiMessageUId} bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
+					<div id="AIRes" class="${aiMessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
 					${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
 					<p style="color: #333;">${window.marked(window.normalizeMathDelimiters(actualResponse))}</p>
 					<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
@@ -243,18 +243,18 @@ async function MistraChat(text, modelName) {
 			</section>`: ""}
 						`;
 
-
 			AutoScroll.checked ? scrollToBottom(chatArea) : null;
 			// Render mathjax immediately
 			window.debounceRenderKaTeX(`.${aiMessageUId}`, 3000, false);
 		}
+
+		processing = false;
+
 		//stop timer
 		_Timer.trackTime("stop");
 
 		// Reset send button appearance
 		window.HandleProcessingEventChanges("hide")
-
-		//window.addCopyListeners();
 
 		// Sending a message to the main process if script does not exist already
 		window.setutilityScriptisSet();
@@ -263,8 +263,11 @@ async function MistraChat(text, modelName) {
 		window.debounceRenderKaTeX(`.${aiMessageUId}`, null, true);
 		normaliZeMathDisplay(`.${aiMessageUId}`)
 
+		// normalize canvas
+		NormalizeCanvasCode();
+
 		// Store conversation history
-		// window.electron.addToChat({ role: "assistant", content: output });
+		 window.electron.addToChat({ role: "assistant", content: output });
 
 		//console.log(actualResponse, fullResponse, output)
 		// render diagrams fromthis response
@@ -280,6 +283,8 @@ async function MistraChat(text, modelName) {
 
 async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 	const _Timer = new window.Timer;
+
+	processing = true;
 
 	console.log("Reached Mistral vision")
 
@@ -429,9 +434,16 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 			} else {
 				actualResponse += deltaContent;
 			}
-			//console.log(actualResponse)
+
+			if (codeBuffer && codeBuffer.code) {
+				codeView.innerHTML = codeBuffer.code;
+				canvasUpdate();
+
+				if (!isCanvasOpen) showCanvas();
+			}
+
 			VisionMessage.innerHTML = `
-				<section class="relative w-fit max-w-full lg:max-w-6xl mb-8">
+				<section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
 					${isThinking || thinkContent ? `
 					<div class="think-section bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-t-lg px-4 pt-2 lg:max-w-6xl transition-colors duration-1000">
 						<div class="flex items-center justify-between">
@@ -451,7 +463,8 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 					</div>
 					` : ''}
 						${thinkContent && actualResponse ? `<p class="rounded-lg border-2 border-blue-400 dark:border-orange-400"></p>` : ""}
-						${actualResponse ? `<div class="${VisionMessageUId} bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-100">${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
+						${actualResponse ?
+						`<div  id="AIRes" class="${VisionMessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-100">${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
 							<p style="color: #333;">${window.marked(window.normalizeMathDelimiters(actualResponse))}</p>
 					<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
 						<div class="group relative max-w-fit transition-all duration-500 hover:z-50">
@@ -538,6 +551,8 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 			window.debounceRenderKaTeX(`.${VisionMessageUId}`, 3000, true);
 		}
 
+		processing = false;
+
 		//stop timer
 		_Timer.trackTime("stop");
 
@@ -545,6 +560,9 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 		window.HandleProcessingEventChanges('hide')
 
 		window.setutilityScriptisSet()
+
+		// normalize canvas
+		NormalizeCanvasCode();
 
 		// Render katex immediately
 		window.debounceRenderKaTeX(`.${VisionMessageUId}`, null, true);
@@ -600,7 +618,7 @@ function addUserMessage(text, fileType, fileDataUrl, fileContainerId) {
 
 	// Add Timestamp to user prompt
 	text = `${text} [${window.electron.getDateTime()} UTC]`
-	//window.electron.addToChat({ role: "user", content: text });
+	window.electron.addToChat({ role: "user", content: text });
 }
 
 function addLoadingAnimation(aiMessageDiv) {

@@ -9,10 +9,13 @@ const codeView = document.getElementById('code-view');
 const previewView = document.getElementById('preview-view');
 const lineNumbers = document.getElementById('line-numbers');
 const codeBlockContainer = document.getElementById('code-block-container');
+const CanvasOpen = document.getElementById('CanvasOpen');
+const plusIcon = document.getElementById('plusIcon');
+const closeIcon = document.getElementById('closeIcon');
 
 let isCanvasOpen = false;
-
-let codeBuffer = ""
+let isCanvasActive = CanvasOpen.getAttribute('aria-pressed') === 'true';
+let codeBuffer = null;
 
 CanvasthemeToggle.addEventListener('click', () => {
     themeSwitch.click()
@@ -61,7 +64,6 @@ new ResizeClassToggler('userInput', 'image-gen', 400, 'sm:flex');
 
 // Function to update line numbers based on codeView content
 function updateLineNumbers() {
-    console.log('updating...')
     const lines = codeView.textContent.split('\n').length;
     let numbers = '';
     for (let i = 1; i <= lines; i++) {
@@ -95,6 +97,7 @@ btnPreview.addEventListener('click', () => {
     codeBlockContainer.classList.add('hidden');
     previewView.classList.remove('hidden');
     setActiveButton(btnPreview);
+    updatePreview();
 });
 
 btnCopy.addEventListener('click', () => {
@@ -119,101 +122,142 @@ btnCopy.addEventListener('click', () => {
 function updatePreview() {
     // A very simple preview: if the code contains a console.log with string, extract and show that string.
     // This is a naive demo just for preview purposes
-    let previewText = '';
     try {
         // Simple regex to extract string inside console.log
         //const match = codeView.textContent.match(/console\.log\((["'`])(.+?)\1\)/);
         const code = codeView.querySelector('code') || null;
-        console.log(code)
+
         const lang = code.id
         if (['html', 'svg', 'xml'].includes(lang)) {
             previewView.innerHTML = code.textContent;
         } else {
-            previewText = 'Preview unavailable';
+            previewView.textContent = 'Preview unavailable for this language';
         }
     } catch {
-        previewText = 'Preview error';
+        previewView.textContent = 'Preview error';
     }
-    previewView.textContent = previewText;
 }
 
 // Update line numbers initially and whenever content changes
-updateLineNumbers();
-updatePreview();
+canvasUpdate();
 
 // Listen to input events on codeView contenteditable div
 codeView.addEventListener('input', () => {
-    updateLineNumbers();
-    updatePreview();
+    canvasUpdate();
 });
 
+function canvasUpdate() {
+    updateLineNumbers();
+    updatePreview();
+}
 // Sync scroll
 codeView.addEventListener('scroll', syncScroll);
 lineNumbers.addEventListener('scroll', syncScroll);
 
-//update line numbering on input
-codeView.addEventListener('input', updateLineNumbers);
-
 function showCanvas() {
-    //hide canvas
+    wfit('remove');
+
+    //show canvas
     canvas.classList.remove('hidden');
     setTimeout(() => {
         canvas.classList.remove('translate-x-[100vw]');
-
+        isCanvasOpen = true;
     }, 400)
 }
 
 function hideCanvas() {
-    plusIcon.classList.remove('hidden');
+    wfit('add');
+
+    //hide canvas
     canvas.classList.add('translate-x-[100vw]');
     setTimeout(() => {
         canvas.classList.add('hidden');
+        isCanvasOpen = false;
     }, 400)
 }
 
-const CanvasOpen = document.getElementById('CanvasOpen');
-const plusIcon = document.getElementById('plusIcon');
-const closeIcon = document.getElementById('closeIcon');
 
+function canvasDSP(op = null) {
+     isCanvasActive = CanvasOpen.getAttribute('aria-pressed') === 'true';
 
-function DSP() {
-    const isActive =  CanvasOpen.getAttribute('aria-pressed') === 'true' ? true : false;
-    console.log(isActive)
-    if (isActive!==true) {
-        // show plus icon
+    if (!isCanvasActive) {
+        // Activate state
+
+        // Hide plus icon, show close icon
         plusIcon.classList.add('hidden');
-        //hide x icon
         closeIcon.classList.remove('hidden');
 
-        CanvasOpen.classList.remove('bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-teal-300', 'border-blue-300', 'shadow-md', 'dark:border-gray-500');
+        // Remove inactive styles
+        CanvasOpen.classList.remove(
+            'bg-white',
+            'dark:bg-slate-700',
+            'text-blue-600',
+            'dark:text-teal-300',
+            'border-blue-300',
+            'shadow-md',
+            'dark:border-gray-500'
+        );
 
-        CanvasOpen.classList.add('bg-[#00ca62]', 'text-teal-100', 'border-blue-600', 'shadow-xl', 'dark:border-teal-500');
+        // Add active styles
+        CanvasOpen.classList.add(
+            'bg-[#00ca62]',
+            'text-black',
+            'border-blue-600',
+            'shadow-xl',
+            'dark:border-teal-500'
+        );
 
-        showCanvas();
+        isCanvasActive = true;
+
+        if (op === 'open') showCanvas();
         CanvasOpen.setAttribute('aria-pressed', 'true');
-        isCanvasOpen = true;
 
     } else {
-        //show x icon
-        closeIcon.classList.add('hidden');
+        // Deactivate state
 
-        // hide plus icon
+        // Show plus icon, hide close icon
+        closeIcon.classList.add('hidden');
         plusIcon.classList.remove('hidden');
 
-        CanvasOpen.classList.remove('bg-[#00ca62]', 'border-blue-600', 'shadow-xl', 'text-teal-100', 'dark:border-teal-500');
+        // Remove active styles
+        CanvasOpen.classList.remove(
+            'bg-[#00ca62]',
+            'text-black',
+            'border-blue-600',
+            'shadow-xl',
+            'dark:border-teal-500'
+        );
 
-        CanvasOpen.classList.add('bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-teal-300', 'border-blue-300', 'shadow-md', 'dark:border-gray-500');
+        // Add inactive styles
+        CanvasOpen.classList.add(
+            'bg-white',
+            'dark:bg-slate-700',
+            'text-blue-600',
+            'dark:text-teal-300',
+            'border-blue-300',
+            'shadow-md',
+            'dark:border-gray-500'
+        );
 
-        hideCanvas();
+        isCanvasActive = false;
+
+        if (op === 'close') hideCanvas();
         CanvasOpen.setAttribute('aria-pressed', 'false');
-        isCanvasOpen = false
     }
 }
 
 CanvasOpen.addEventListener('click', () => {
-    DSP();
+    canvasDSP();
 });
 
+function setCanvasUpdate(e){
+    showCanvas();
+    const codeBlock = e.parentElement.parentElement.querySelector('code');
+    const html = codeBlock.innerHTML;
+    const validLanguage = codeBlock.id
+    codeView.innerHTML = `<code id="${validLanguage}" class="hljs ${validLanguage} block whitespace-pre-wrap w-full rounded-md bg-none font-mono transition-colors duration-700 mb-[20vh]">${html}</code>`;
+    canvasUpdate()
+}
 
 class ResizeClassToggler {
     constructor(targetId, toggleTarget, breakpoint = 640, className = 'sm:flex') {
@@ -250,6 +294,18 @@ class ResizeClassToggler {
 new ResizeClassToggler('userInput', 'CanvasOpen', 430, 'sm:flex');
 new ResizeClassToggler('userInput', 'image-gen', 400, 'sm:flex');
 
+function NormalizeCanvasCode() {
+    setTimeout(() => {
+        const codeNode = codeView.querySelector('code');
+        if (!codeNode || !codeNode.innerHTML) return;
+        codeNode.innerHTML = codeNode.innerHTML
+            .replace(
+                /\$\$([\s\S]*?)\$\$/g,
+                (_, expr) => `[${expr.trim()}]`
+            );
+
+    }, 0)
+}
 
 function isCode(actualResponse) {
     // Normalize math first (your existing step)
@@ -257,7 +313,6 @@ function isCode(actualResponse) {
 
     // Use a temporary element to parse the marked output
     const html = window.marked(normalized);
-    console.log(html)
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
@@ -277,3 +332,14 @@ function isCode(actualResponse) {
         };
     }
 }
+
+function wfit(task = 'add') {
+    const Rlist = chatArea.querySelectorAll('#AIRes');
+    if (!Rlist.length) return;
+
+    const method = task === 'add' ? 'add' : 'remove';
+    for (const element of Rlist) {
+        element.classList[method]('w-fit');
+    }
+}
+

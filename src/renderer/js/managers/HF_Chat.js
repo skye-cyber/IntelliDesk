@@ -101,6 +101,8 @@ async function routeToHf(text) {
 
 		const _Timer = new window.Timer;
 		try {
+			processing = true;
+
 			//console.log(typeof(window.electron.getChat()))
 			const options = {
 				model: Currentmodel,
@@ -157,9 +159,16 @@ async function routeToHf(text) {
 					actualResponse += deltaContent;
 				}
 
+				if (codeBuffer && codeBuffer.code) {
+					codeView.innerHTML = codeBuffer.code;
+					canvasUpdate();
+
+					if (!isCanvasOpen) showCanvas();
+				}
+
 				// Update innerHTML with marked output
 				aiMessage.innerHTML = `
-							<section class="relative w-fit max-w-full lg:max-w-6xl mb-8 p-2">
+							<section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
 							${isThinking || thinkContent ? `
 								<div class="think-section bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg px-4 pt-2 lg:max-w-6xl transition-colors duration-1000">
 								<div class="flex items-center justify-between">
@@ -180,7 +189,7 @@ async function routeToHf(text) {
 								` : ''}
 								${thinkContent && actualResponse ? `<p class="rounded-lg border-2 border-blue-400 dark:border-orange-400"></p>` : ""}
 								${actualResponse ? `
-									<div class="${aiMessageUId} bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
+									<div id="AIRes" class="${aiMessageUId} max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
 									${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
 									<p class="text-[#333]">${window.marked(actualResponse)}</p>
 									<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
@@ -268,6 +277,8 @@ async function routeToHf(text) {
 				window.debounceRenderKaTeX(`.${aiMessageUId}`, 3000, false);
 			}
 
+			processing = false;
+
 			//stop timer
 			_Timer.trackTime("stop");
 
@@ -305,6 +316,8 @@ async function routeToHf(text) {
 
 async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, provider = null) {
 	const _Timer = new window.Timer;
+
+	processing = true;
 
 	//switch to vision model
 	modelSelect.value = Vmodel ? Vmodel.split('/').slice(-1)[0] : "meta-llama/Llama-3.2-11B-Vision-Instruct";
@@ -420,9 +433,17 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 			const choice = chunk?.choices?.[0];
 			if (choice?.delta?.content) {
 				visionMs += choice.delta.content;
+
+				if (codeBuffer && codeBuffer.code) {
+					codeView.innerHTML = codeBuffer.code;
+					canvasUpdate();
+
+					if (!isCanvasOpen) showCanvas();
+				}
+
 				VisionMessage.innerHTML = `
-					<section class="relative w-fit max-w-full lg:max-w-6xl mb-8">
-					<div class="${VisionMessageUId} bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pt-2 pb-4 w-fit max-w-full lg:max-w-6xl transition-colors duration-1000">${window.marked(window.normalizeMathDelimiters(visionMs))}
+					<section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh]">
+					<div id="AIRes" class="${VisionMessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pt-2 pb-4 w-fit max-w-full lg:max-w-6xl transition-colors duration-1000">${window.marked(window.normalizeMathDelimiters(visionMs))}
 						<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
 							<div class="group relative max-w-fit transition-all duration-500 hover:z-50">
 								<div
@@ -510,6 +531,8 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 			}
 		}
 
+		processing = true;
+
 		//stop timer
 		_Timer.trackTime("stop");
 
@@ -517,6 +540,9 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 		window.HandleProcessingEventChanges('hide')
 
 		window.setutilityScriptisSet();
+
+		// normalize canvas
+		NormalizeCanvasCode();
 
 		// Render mathjax immediately
 		window.debounceRenderKaTeX(null, null, true);

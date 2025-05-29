@@ -20,7 +20,7 @@
 <main class="flex flex-row transition-all duration-500 transform transition-transform transition-all duration-500">
     <section class="relative flex-grow w-[calc(100vw-60vw)] transform transition-transform transition-all duration-500 py-2">
         <!-- Header -->
-        <header class="space-b-2 mb-2 z-15 transform transition-transform transition-all duration-500">
+        <header class="space-b-2 mb-2 z-[60] transform transition-transform transition-all duration-500">
             <div class="flex justify-between">
                 <section class="flex justify-start">
                     <!-- Toggle Button -->
@@ -85,716 +85,6 @@
                             <svg class="mt-1" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </div>
                         </button>
-                        <div id="modelDropdown" class="fixed z-50 mt-1 hidden w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border-2 border-gray-300 dark:border-none dark:bg-neutral-700 text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-ellipsis ::-webkit-scrollbar-track:rounded-lg ::-webkit-scrollbar-color-[#0055ff] animation transition-colors duration-1000">
-                            <div role="menu" aria-orientation="vertical">
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff] transition-colors duration-1000" tabindex="-1" data-value="Qwen/Qwen2.5-72B-Instruct">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-black dark:text-gray-200">
-                                                <path d="M15.11 14.285a.41.41 0 0 1 .78 0c.51 2.865.96 3.315 3.825 3.826.38.12.38.658 0 .778-2.865.511-3.315.961-3.826 3.826a.408.408 0 0 1-.778 0c-.511-2.865-.961-3.315-3.826-3.826a.408.408 0 0 1 0-.778c2.865-.511 3.315-.961 3.826-3.826Zm2.457-12.968a.454.454 0 0 1 .866 0C19 4.5 19.5 5 22.683 5.567a.454.454 0 0 1 0 .866C19.5 7 19 7.5 18.433 10.683a.454.454 0 0 1-.866 0C17 7.5 16.5 7 13.317 6.433a.454.454 0 0 1 0-.866C16.5 5 17 4.5 17.567 1.317Z" fill="currentColor"></path>
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.001 4a1 1 0 0 1 .993.887c.192 1.7.701 2.877 1.476 3.665.768.783 1.913 1.3 3.618 1.452a1 1 0 0 1-.002 1.992c-1.675.145-2.849.662-3.638 1.452-.79.79-1.307 1.963-1.452 3.638a1 1 0 0 1-1.992.003c-.152-1.706-.67-2.851-1.452-3.62-.788-.774-1.965-1.283-3.665-1.475a1 1 0 0 1-.002-1.987c1.73-.2 2.878-.709 3.646-1.476.767-.768 1.276-1.916 1.476-3.646A1 1 0 0 1 7 4Zm-2.472 6.998a6.11 6.11 0 0 1 2.468 2.412 6.232 6.232 0 0 1 1.037-1.376 6.232 6.232 0 0 1 1.376-1.036 6.114 6.114 0 0 1-2.412-2.469 6.163 6.163 0 0 1-1.053 1.416 6.163 6.163 0 0 1-1.416 1.053Z" fill="currentColor"></path>
-                                            </svg>
-                                            </div>
-                                            <div>
-                                            Basic mode <sub><span class="text-yellow-500 text-xl">{</span>
-                                        <span class="text-transparent bg-clip-text bg-gradient-to-tr from-blue-700 to-orange-400 text-sm"> <span class="font-mono">Qwen2.5-72B-Instruct<span class="text-orange-500 text-xl">}</span></sub>
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Default conversation model</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/Qwen2.5-Coder-32B-Instruct">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-black dark:text-gray-200">
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 7.42a22.323 22.323 0 0 0-2.453 2.127A22.323 22.323 0 0 0 7.42 12a22.32 22.32 0 0 0 2.127 2.453c.807.808 1.636 1.52 2.453 2.128a22.335 22.335 0 0 0 2.453-2.128A22.322 22.322 0 0 0 16.58 12a22.326 22.326 0 0 0-2.127-2.453A22.32 22.32 0 0 0 12 7.42Zm1.751-1.154a24.715 24.715 0 0 1 2.104 1.88 24.722 24.722 0 0 1 1.88 2.103c.316-.55.576-1.085.779-1.59.35-.878.507-1.625.503-2.206-.003-.574-.16-.913-.358-1.111-.199-.199-.537-.356-1.112-.36-.58-.003-1.328.153-2.205.504-.506.203-1.04.464-1.59.78Zm3.983 7.485a24.706 24.706 0 0 1-1.88 2.104 24.727 24.727 0 0 1-2.103 1.88 12.7 12.7 0 0 0 1.59.779c.878.35 1.625.507 2.206.503.574-.003.913-.16 1.111-.358.199-.199.356-.538.36-1.112.003-.58-.154-1.328-.504-2.205a12.688 12.688 0 0 0-.78-1.59ZM12 18.99c.89.57 1.768 1.03 2.605 1.364 1.026.41 2.036.652 2.955.646.925-.006 1.828-.267 2.5-.94.673-.672.934-1.575.94-2.5.006-.919-.236-1.929-.646-2.954A15.688 15.688 0 0 0 18.99 12a15.6 15.6 0 0 0 1.364-2.606c.41-1.025.652-2.035.646-2.954-.006-.925-.267-1.828-.94-2.5-.672-.673-1.575-.934-2.5-.94-.919-.006-1.929.235-2.954.646-.838.335-1.716.795-2.606 1.364a15.69 15.69 0 0 0-2.606-1.364C8.37 3.236 7.36 2.994 6.44 3c-.925.006-1.828.267-2.5.94-.673.672-.934 1.575-.94 2.5-.006.919.235 1.929.646 2.955A15.69 15.69 0 0 0 5.01 12c-.57.89-1.03 1.768-1.364 2.605-.41 1.026-.652 2.036-.646 2.955.006.925.267 1.828.94 2.5.672.673 1.575.934 2.5.94.92.006 1.93-.235 2.955-.646A15.697 15.697 0 0 0 12 18.99Zm-1.751-1.255a24.714 24.714 0 0 1-2.104-1.88 24.713 24.713 0 0 1-1.88-2.104c-.315.55-.576 1.085-.779 1.59-.35.878-.507 1.625-.503 2.206.003.574.16.913.359 1.111.198.199.537.356 1.111.36.58.003 1.328-.153 2.205-.504.506-.203 1.04-.463 1.59-.78Zm-3.983-7.486a24.727 24.727 0 0 1 1.88-2.104 24.724 24.724 0 0 1 2.103-1.88 12.696 12.696 0 0 0-1.59-.779c-.878-.35-1.625-.507-2.206-.503-.574.003-.913.16-1.111.359-.199.198-.356.537-.36 1.111-.003.58.153 1.328.504 2.205.203.506.464 1.04.78 1.59Z" fill="currentColor"></path>
-                                        </svg>
-                                        </div>
-                                        <div>
-                                        Coding mode <sub><span class="text-yellow-500 text-xl">{</span>
-                                        <span class="text-transparent bg-clip-text bg-gradient-to-tr from-blue-700 to-orange-400 text-sm"> <span class="font-mono">Qwen2.5-Coder-32B-Instruct<span class="text-orange-500 text-xl">}</span></sub>
-                                        <div class="text-gray-500 dark:text-gray-400 text-xs">Supports advanced coding tasks</div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="deepseek-ai/DeepSeek-R1">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sky-300 dark:bg-zinc-700">
-                                                <img class="rounded-full overflown aspect-square size-6 rounded border dark:border-gray-700" src="../assets/deepseek-logo.webp" alt="/deepseek-logo logo">
-                                            </div>
-                                            <div>
-                                            DeepSeek-R1
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">The first reasoning model from DeepSeek.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sky-300 dark:bg-zinc-700">
-                                                <img class="rounded-full overflown aspect-square size-6 rounded border dark:border-gray-700" src="../assets/deepseek-logo.webp" alt="/deepseek-logo logo">
-                                            </div>
-                                            <div>
-                                            DeepSeek-R1-Distill-Qwen-32B
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">The first reasoning model from DeepSeek, distilled into a 32B dense model. Outperforms o1-mini on multiple benchmarks.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 h-px bg-gray-700 dark:bg-sky-400"></div>
-
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="microsoft/Phi-3.5-mini-instruct">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                            <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/microsoft-logo.png" alt="Phi-3.5-mini-instruct logo">
-                                            </div>
-                                            <div>
-                                            Phi-3.5-mini-instruct
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">One of the best small models (3.8B parameters), super fast for simple tasks.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/QwQ-32B-Preview">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/qwen-logo.png" alt="Qwen/QwQ-32B-Preview logo">
-                                            </div>
-                                            <div>
-                                            Qwen/QwQ-32B-Preview
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">QwQ is an experiment model from the Qwen Team with advanced reasoning capabilities.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistralai/Mistral-Nemo-Instruct-2407">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="Mistral-Nemo-Instruct-2407 logo">
-                                            </div>
-                                            <div>
-                                            Mistral-Nemo-Instruct-2407
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A small model with good capabilities in language understanding and commonsense reasoning.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistralai/Mistral-7B-Instruct-v0.3">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="Mistral-7B-Instruct-v0.3 logo">
-                                            </div>
-                                            <div>
-                                            Mistral-7B-Instruct-v0.3
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">An instruct fine-tuned version of the Mistral-7B-v0.3.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="NousResearch/Hermes-3-Llama-3.1-8B">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                            <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/nous-logo.png" alt="Hermes-3-Llama-3.1-8B logo">
-                                            </div>
-                                            <div>
-                                            Hermes-3-Llama-3.1-8B
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Nous Research's latest Hermes 3 release in 8B size. Follows instruction closely.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/Qwen2.5-Coder-7B-Instruct">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/qwen-logo.png" alt="Qwen/QwQ-32B-Preview logo">
-                                            </div>
-                                            <div>
-                                            Qwen2.5-Coder-7B-Instruct
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">latest series of Code-Specific Qwen large language models (formerly known as CodeQwen).</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Math Seperator-->
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
-                                    <div class="px-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#55ff7f] to-[#0055ff]"></div>
-                                </div>
-                                <div class="mx-5 my-2 text-sm text-center font-mono text-[#55aaff] font-semibold">
-                                    <p>Math models</p>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/Qwen2.5-Math-1.5B">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/qwen-logo.png" alt="Qwen/QwQ-32B-Preview logo">
-                                            </div>
-                                            <div>
-                                            Qwen2.5-Math-1.5B
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Mathematical Model by qwen Team.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Multimodal Seperator-->
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
-                                    <div class="flex-1 h-px bg-gradient-to-r from-purple-500 to-[#ffaa00]"></div>
-                                    <div class="px-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#55ff7f] to-pink-500"></div>
-                                </div>
-                                <div class="mx-5 my-2 text-sm text-center font-mono text-[#55aaff] font-semibold">
-                                    <p>Multi-modal models</p>
-                                </div>
-
-                                <!--Multimodal models -->
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="meta-llama/Llama-3.2-11B-Vision-Instruct">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-[#00aaff]">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-black dark:text-gray-200">
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM16.0755 7.93219C16.5272 8.25003 16.6356 8.87383 16.3178 9.32549L11.5678 16.0755C11.3931 16.3237 11.1152 16.4792 10.8123 16.4981C10.5093 16.517 10.2142 16.3973 10.0101 16.1727L7.51006 13.4227C7.13855 13.014 7.16867 12.3816 7.57733 12.0101C7.98598 11.6386 8.61843 11.6687 8.98994 12.0773L10.6504 13.9039L14.6822 8.17451C15 7.72284 15.6238 7.61436 16.0755 7.93219Z" fill="currentColor"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                        Vision <sub><span class="text-yellow-500 text-xl">{</span>
-                                        <span class="text-transparent bg-clip-text bg-gradient-to-tr from-blue-700 to-orange-400 text-sm"> <span class="font-mono">Llama-3.2-11B-Vision-Instruct<span class="text-orange-500 text-xl">}</span></sub>
-                                        <div class="text-gray-500 dark:text-gray-400 text-xs">The latest multimodal model from Meta! Supports image inputs natively.</div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/Qwen2-VL-7B-Instruct">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img width="24" height="24" class="overflown aspect-square size-6 rounded border dark:border-gray-700" src="../assets/qwen-logo.png" alt="Qwen/QwQ-32B-Preview logo">
-                                            </div>
-                                            <div>
-                                            Qwen2-VL-7B-Instruct
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Latest iteration of Qwen-VL model.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Pro Seperator-->
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
-                                    <div class="flex-1 h-px bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                                    <div class="px-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 h-px bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                                </div>
-                                <div class="mx-5 my-2 text-center text-purple-500 font-bold">
-                                    <p class="text-sm">Pro Models</p>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="meta-llama/Llama-3.3-70B-Instruct">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/meta-logo.png" alt="Llama-3.3-70B-Instruct logo">
-                                            </div>
-                                            <div>
-                                            Llama-3.3-70B-Instruct
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A fast and extremely capable model matching closed sourced models' capabilities</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="nvidia/Llama-3.1-Nemotron-70B-Instruct-HF">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/nvidia-logo.png" alt="Llama-3.1-Nemotron-70B-Instruct-HF logo">
-                                            </div>
-                                            <div>
-                                            Llama-3.1-Nemotron-70B-Instruct-HF
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Nvidia's latest Llama fine-tune, topping alignment benchmarks and optimized for instruction following.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="CohereForAI/c4ai-command-r-plus-08-2024">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                            <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/cohere-logo.png" alt="c4ai-command-r-plus-08-2024 logo">
-                                            </div>
-                                            <div>
-                                            c4ai-command-r-plus-08-2024
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Cohere's largest language model, optimized for conversational interaction and tool use. Now with the 2024 update!</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Mistral Models Seperator-->
-                                <div role="separator" aria-orientation="horizontal" class="mx-4 p-2 my-1 flex justify-center">
-                                    <div class="flex-1 rounded-md p-1 h-px bg-gradient-to-r from-[#00fab7] via-[#0080bc] to-[#00fe00]"></div>
-                                </div>
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
-                                    <div class="px-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#55ff7f] to-[#0055ff]"></div>
-                                </div>
-
-                                <div class="mx-5 my-2 text-sm text-center font-mono text-[#5e01ff] dark:text-[#aaaaff] font-semibold">
-                                    <p>Mistral models</p>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-large-latest">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-large-latest logo">
-                                            </div>
-                                            <div>
-                                            mistral-large-latest <sup class="text-green-400 font-mono">Recommended</sup>
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">The latest iteration of the large LLM.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-2402">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-2402 logo">
-                                            </div>
-                                            <div>
-                                            mistral-small-2402
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A compact language model tailored for efficient processing with a focus on smaller datasets and applications requiring lower resource consumption.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="open-mixtral-8x22b">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="open-mixtral-8x22b logo">
-                                            </div>
-                                            <div>
-                                            open-mixtral-8x22b
-                                                <div class="text-gray-500 dark:text-gray-400 text-xs">A powerful ensemble model optimized for complex language tasks and high accuracy.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="open-mixtral-8x7b">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="Qopen-mixtral-8x7b logo">
-                                            </div>
-                                            <div>
-                                            open-mixtral-8x7b
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">For enhanced performance in diverse NLP applications.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="open-mistral-7b">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="open-mistral-7b logo">
-                                            </div>
-                                            <div>
-                                            open-mistral-7b
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">General-purpose natural language understanding and generation tasks</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-large-2407">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-large-2407 logo">
-                                            </div>
-                                            <div>
-                                            mistral-large-2407
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">An enhanced version of the large model, featuring improvements in training data and techniques for superior language comprehension and generation.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-large-2402">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-large-2402 logo">
-                                            </div>
-                                            <div>
-                                            mistral-large-2402
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A large language model optimized for high-performance tasks, offering advanced capabilities in understanding and generating human-like text.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-medium">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-medium logo">
-                                            </div>
-                                            <div>
-                                            mistral-medium
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A medium-sized model that strikes a balance between performance and resource efficiency, suitable for a wide range of NLP tasks.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-2501">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-2501 logo">
-                                            </div>
-                                            <div>
-                                            mistral-small-2501
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A further refined small model designed for rapid inference and deployment in resource-constrained environments while maintaining robust language capabilities.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-2409">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-2409 logo">
-                                            </div>
-                                            <div>
-                                            mistral-small-2409
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">An updated small model variant that improves upon its predecessor with enhanced training techniques for better performance in lightweight applications.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="ministral-8b-2410">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="ministral-8b-2410 logo">
-                                            </div>
-                                            <div>
-                                            ministral-8b-2410
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">provides enhanced capabilities for various NLP tasks while maintaining efficiency in resource usage.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="ministral-3b-2410">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="ministral-3b-2410 logo">
-                                            </div>
-                                            <div>
-                                            ministral-3b-2410
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Variant designed for efficient processing in specific applications, offering a balance between performance and resource usage.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="open-mistral-nemo">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="open-mistral-nemo logo">
-                                            </div>
-                                            <div>
-                                            open-mistral-nemo
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Variant tailored for conversational AI applications, focusing on generating human-like dialogue and understanding context.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-saba-2502">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-saba-2502 logo">
-                                            </div>
-                                            <div>
-                                            mistral-saba-2502
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A specialized model focused on specific language tasks, leveraging advanced techniques for improved contextual understanding and response generation.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-large-2411">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-large-2411 logo">
-                                            </div>
-                                            <div>
-                                            mistral-large-2411
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">An iteration of the large model, designed to deliver state-of-the-art performance across various natural language processing benchmarks.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-2409">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-2409 logo">
-                                            </div>
-                                            <div>
-                                            mistral-small-2409
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">An updated small model variant that improves upon its predecessor with enhanced training techniques for better performance in lightweight applications.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Mistarl Coding models Seperator-->
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
-                                    <div class="px-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#6aff59] to-[#a7ff19]"></div>
-                                </div>
-
-                                <div class="mx-5 my-2 text-sm text-center font-mono text-[#0094d9] font-semibold">
-                                    <p>Mistral Coding models</p>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="codestral-latest">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="codestral-2501 logo">
-                                            </div>
-                                            <div>
-                                            codestral-latest <sup class="text-green-400 font-bold"><i class="text-sky-500 font-mono">@</i>Recommended</sup>
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Latest coding-focused model.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="codestral-mamba-2407">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="codestral-mamba-2407 logo">
-                                            </div>
-                                            <div>
-                                            codestral-mamba-2407
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A high-performance coding model designed for rapid code generation and debugging, optimized for software development environments.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="codestral-2501">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="codestral-2501 logo">
-                                            </div>
-                                            <div>
-                                            codestral-2501
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">An advanced coding-focused model that builds on previous iterations, offering improved performance in programming-related tasks and queries.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="codestral-2502">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="codestral-2505 logo">
-                                            </div>
-                                            <div>
-                                            codestral-2505
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">An advanced coding-focused model that builds on previous iterations, offering improved performance in programming-related tasks and queries.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Mistarl Vision Seperator-->
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
-                                    <div class="px-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#6aff59] to-[#a7ff19]"></div>
-                                </div>
-
-                                <div class="mx-5 my-2 text-sm text-center font-mono text-[#0094d9] font-semibold">
-                                    <p>Mistral Vision models</p>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-latest">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-latest logo">
-                                            </div>
-                                            <div>
-                                            mistral-small-latest
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">The latest iteration of the small model, designed to deliver state-of-the-art performance across various natural language processing benchmarks.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Mistarl Vision-->
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="pixtral-large-2411">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="pixtral-large-2411 logo">
-                                            </div>
-                                            <div>
-                                            pixtral-large-2411
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A variant in the MistraVision series, optimized for high-quality image and text processing, suitable for complex visual understanding tasks.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="pixtral-12b-2409">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="pixtral-12b-2409 logo">
-                                            </div>
-                                            <div>
-                                            pixtral-12b-2409
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">A variant in the MistraVision family designed for advanced image and text integration tasks, enhancing multimodal applications.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Mistarl Moderation Seperator-->
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
-                                    <div class="px-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#00ff26] to-[#0011ff]"></div>
-                                </div>
-
-                                <div class="mx-5 my-2 text-sm text-center font-mono text-[#00aa7f] dark:text-[#00fdba] font-semibold">
-                                    <p>Mistral Moderation models</p>
-                                </div>
-                                <!-- Mistral Moderation-->
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-moderation-2411">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-moderation-2411 logo">
-                                            </div>
-                                            <div>
-                                            mistral-moderation-2411
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Focused on content moderation, designed to identify and filter inappropriate or harmful content in text data.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!--Mistarl Moderation Seperator-->
-                                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#ff5500] to-[#00d100]"></div>
-                                    <div class="px-8">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 h-px bg-gradient-to-r from-[#5454ff] dark:from-[#aaaaff] to-[#0011ff] dark:to-[#0055ff]"></div>
-                                </div>
-
-                                <div class="mx-5 my-2 text-sm text-center font-mono text-[#aa20ff] dark:text-[#ffaaff] font-semibold">
-                                    <p>Mistral embedding models</p>
-                                </div>
-                                <!--Mistral embed -->
-                                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-embed">
-                                    <div class="flex grow items-center justify-between gap-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
-                                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-embed logo">
-                                            </div>
-                                            <div>
-                                            mistral-embed
-                                            <div class="text-gray-500 dark:text-gray-400 text-xs">Designed for embedding generation, facilitating the transformation of text into vector representations for downstream machine learning tasks.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </section>
                 <section class="absolute right-0 z-5">
@@ -806,6 +96,717 @@
                 </section>
             </div>
         </header>
+
+        <div id="modelDropdown" class="fixed z-[60] mt-1 hidden w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border-2 border-gray-300 dark:border-none dark:bg-neutral-700 text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-ellipsis ::-webkit-scrollbar-track:rounded-lg ::-webkit-scrollbar-color-[#0055ff] animation transition-colors duration-1000">
+            <div role="menu" aria-orientation="vertical">
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff] transition-colors duration-1000" tabindex="-1" data-value="Qwen/Qwen2.5-72B-Instruct">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-black dark:text-gray-200">
+                                <path d="M15.11 14.285a.41.41 0 0 1 .78 0c.51 2.865.96 3.315 3.825 3.826.38.12.38.658 0 .778-2.865.511-3.315.961-3.826 3.826a.408.408 0 0 1-.778 0c-.511-2.865-.961-3.315-3.826-3.826a.408.408 0 0 1 0-.778c2.865-.511 3.315-.961 3.826-3.826Zm2.457-12.968a.454.454 0 0 1 .866 0C19 4.5 19.5 5 22.683 5.567a.454.454 0 0 1 0 .866C19.5 7 19 7.5 18.433 10.683a.454.454 0 0 1-.866 0C17 7.5 16.5 7 13.317 6.433a.454.454 0 0 1 0-.866C16.5 5 17 4.5 17.567 1.317Z" fill="currentColor"></path>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.001 4a1 1 0 0 1 .993.887c.192 1.7.701 2.877 1.476 3.665.768.783 1.913 1.3 3.618 1.452a1 1 0 0 1-.002 1.992c-1.675.145-2.849.662-3.638 1.452-.79.79-1.307 1.963-1.452 3.638a1 1 0 0 1-1.992.003c-.152-1.706-.67-2.851-1.452-3.62-.788-.774-1.965-1.283-3.665-1.475a1 1 0 0 1-.002-1.987c1.73-.2 2.878-.709 3.646-1.476.767-.768 1.276-1.916 1.476-3.646A1 1 0 0 1 7 4Zm-2.472 6.998a6.11 6.11 0 0 1 2.468 2.412 6.232 6.232 0 0 1 1.037-1.376 6.232 6.232 0 0 1 1.376-1.036 6.114 6.114 0 0 1-2.412-2.469 6.163 6.163 0 0 1-1.053 1.416 6.163 6.163 0 0 1-1.416 1.053Z" fill="currentColor"></path>
+                            </svg>
+                            </div>
+                            <div>
+                            Basic mode <sub><span class="text-yellow-500 text-xl">{</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-tr from-blue-700 to-orange-400 text-sm"> <span class="font-mono">Qwen2.5-72B-Instruct<span class="text-orange-500 text-xl">}</span></sub>
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Default conversation model</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/Qwen2.5-Coder-32B-Instruct">
+                    <div class="flex grow items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-black dark:text-gray-200">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 7.42a22.323 22.323 0 0 0-2.453 2.127A22.323 22.323 0 0 0 7.42 12a22.32 22.32 0 0 0 2.127 2.453c.807.808 1.636 1.52 2.453 2.128a22.335 22.335 0 0 0 2.453-2.128A22.322 22.322 0 0 0 16.58 12a22.326 22.326 0 0 0-2.127-2.453A22.32 22.32 0 0 0 12 7.42Zm1.751-1.154a24.715 24.715 0 0 1 2.104 1.88 24.722 24.722 0 0 1 1.88 2.103c.316-.55.576-1.085.779-1.59.35-.878.507-1.625.503-2.206-.003-.574-.16-.913-.358-1.111-.199-.199-.537-.356-1.112-.36-.58-.003-1.328.153-2.205.504-.506.203-1.04.464-1.59.78Zm3.983 7.485a24.706 24.706 0 0 1-1.88 2.104 24.727 24.727 0 0 1-2.103 1.88 12.7 12.7 0 0 0 1.59.779c.878.35 1.625.507 2.206.503.574-.003.913-.16 1.111-.358.199-.199.356-.538.36-1.112.003-.58-.154-1.328-.504-2.205a12.688 12.688 0 0 0-.78-1.59ZM12 18.99c.89.57 1.768 1.03 2.605 1.364 1.026.41 2.036.652 2.955.646.925-.006 1.828-.267 2.5-.94.673-.672.934-1.575.94-2.5.006-.919-.236-1.929-.646-2.954A15.688 15.688 0 0 0 18.99 12a15.6 15.6 0 0 0 1.364-2.606c.41-1.025.652-2.035.646-2.954-.006-.925-.267-1.828-.94-2.5-.672-.673-1.575-.934-2.5-.94-.919-.006-1.929.235-2.954.646-.838.335-1.716.795-2.606 1.364a15.69 15.69 0 0 0-2.606-1.364C8.37 3.236 7.36 2.994 6.44 3c-.925.006-1.828.267-2.5.94-.673.672-.934 1.575-.94 2.5-.006.919.235 1.929.646 2.955A15.69 15.69 0 0 0 5.01 12c-.57.89-1.03 1.768-1.364 2.605-.41 1.026-.652 2.036-.646 2.955.006.925.267 1.828.94 2.5.672.673 1.575.934 2.5.94.92.006 1.93-.235 2.955-.646A15.697 15.697 0 0 0 12 18.99Zm-1.751-1.255a24.714 24.714 0 0 1-2.104-1.88 24.713 24.713 0 0 1-1.88-2.104c-.315.55-.576 1.085-.779 1.59-.35.878-.507 1.625-.503 2.206.003.574.16.913.359 1.111.198.199.537.356 1.111.36.58.003 1.328-.153 2.205-.504.506-.203 1.04-.463 1.59-.78Zm-3.983-7.486a24.727 24.727 0 0 1 1.88-2.104 24.724 24.724 0 0 1 2.103-1.88 12.696 12.696 0 0 0-1.59-.779c-.878-.35-1.625-.507-2.206-.503-.574.003-.913.16-1.111.359-.199.198-.356.537-.36 1.111-.003.58.153 1.328.504 2.205.203.506.464 1.04.78 1.59Z" fill="currentColor"></path>
+                        </svg>
+                        </div>
+                        <div>
+                        Coding mode <sub><span class="text-yellow-500 text-xl">{</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-tr from-blue-700 to-orange-400 text-sm"> <span class="font-mono">Qwen2.5-Coder-32B-Instruct<span class="text-orange-500 text-xl">}</span></sub>
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">Supports advanced coding tasks</div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="deepseek-ai/DeepSeek-R1">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sky-300 dark:bg-zinc-700">
+                                <img class="rounded-full overflown aspect-square size-6 rounded border dark:border-gray-700" src="../assets/deepseek-logo.webp" alt="/deepseek-logo logo">
+                            </div>
+                            <div>
+                            DeepSeek-R1
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">The first reasoning model from DeepSeek.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sky-300 dark:bg-zinc-700">
+                                <img class="rounded-full overflown aspect-square size-6 rounded border dark:border-gray-700" src="../assets/deepseek-logo.webp" alt="/deepseek-logo logo">
+                            </div>
+                            <div>
+                            DeepSeek-R1-Distill-Qwen-32B
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">The first reasoning model from DeepSeek, distilled into a 32B dense model. Outperforms o1-mini on multiple benchmarks.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 h-px bg-gray-700 dark:bg-sky-400"></div>
+
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="microsoft/Phi-3.5-mini-instruct">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                            <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/microsoft-logo.png" alt="Phi-3.5-mini-instruct logo">
+                            </div>
+                            <div>
+                            Phi-3.5-mini-instruct
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">One of the best small models (3.8B parameters), super fast for simple tasks.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/QwQ-32B-Preview">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/qwen-logo.png" alt="Qwen/QwQ-32B-Preview logo">
+                            </div>
+                            <div>
+                            Qwen/QwQ-32B-Preview
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">QwQ is an experiment model from the Qwen Team with advanced reasoning capabilities.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistralai/Mistral-Nemo-Instruct-2407">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="Mistral-Nemo-Instruct-2407 logo">
+                            </div>
+                            <div>
+                            Mistral-Nemo-Instruct-2407
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A small model with good capabilities in language understanding and commonsense reasoning.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistralai/Mistral-7B-Instruct-v0.3">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="Mistral-7B-Instruct-v0.3 logo">
+                            </div>
+                            <div>
+                            Mistral-7B-Instruct-v0.3
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">An instruct fine-tuned version of the Mistral-7B-v0.3.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="NousResearch/Hermes-3-Llama-3.1-8B">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                            <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/nous-logo.png" alt="Hermes-3-Llama-3.1-8B logo">
+                            </div>
+                            <div>
+                            Hermes-3-Llama-3.1-8B
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Nous Research's latest Hermes 3 release in 8B size. Follows instruction closely.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/Qwen2.5-Coder-7B-Instruct">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/qwen-logo.png" alt="Qwen/QwQ-32B-Preview logo">
+                            </div>
+                            <div>
+                            Qwen2.5-Coder-7B-Instruct
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">latest series of Code-Specific Qwen large language models (formerly known as CodeQwen).</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Math Seperator-->
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
+                    <div class="px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#55ff7f] to-[#0055ff]"></div>
+                </div>
+                <div class="mx-5 my-2 text-sm text-center font-mono text-[#55aaff] font-semibold">
+                    <p>Math models</p>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/Qwen2.5-Math-1.5B">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/qwen-logo.png" alt="Qwen/QwQ-32B-Preview logo">
+                            </div>
+                            <div>
+                            Qwen2.5-Math-1.5B
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Mathematical Model by qwen Team.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Multimodal Seperator-->
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
+                    <div class="flex-1 h-px bg-gradient-to-r from-purple-500 to-[#ffaa00]"></div>
+                    <div class="px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#55ff7f] to-pink-500"></div>
+                </div>
+                <div class="mx-5 my-2 text-sm text-center font-mono text-[#55aaff] font-semibold">
+                    <p>Multi-modal models</p>
+                </div>
+
+                <!--Multimodal models -->
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="meta-llama/Llama-3.2-11B-Vision-Instruct">
+                    <div class="flex grow items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-[#00aaff]">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-black dark:text-gray-200">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM16.0755 7.93219C16.5272 8.25003 16.6356 8.87383 16.3178 9.32549L11.5678 16.0755C11.3931 16.3237 11.1152 16.4792 10.8123 16.4981C10.5093 16.517 10.2142 16.3973 10.0101 16.1727L7.51006 13.4227C7.13855 13.014 7.16867 12.3816 7.57733 12.0101C7.98598 11.6386 8.61843 11.6687 8.98994 12.0773L10.6504 13.9039L14.6822 8.17451C15 7.72284 15.6238 7.61436 16.0755 7.93219Z" fill="currentColor"></path>
+                            </svg>
+                        </div>
+                        <div>
+                        Vision <sub><span class="text-yellow-500 text-xl">{</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-tr from-blue-700 to-orange-400 text-sm"> <span class="font-mono">Llama-3.2-11B-Vision-Instruct<span class="text-orange-500 text-xl">}</span></sub>
+                        <div class="text-gray-500 dark:text-gray-400 text-xs">The latest multimodal model from Meta! Supports image inputs natively.</div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="Qwen/Qwen2-VL-7B-Instruct">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img width="24" height="24" class="overflown aspect-square size-6 rounded border dark:border-gray-700" src="../assets/qwen-logo.png" alt="Qwen/QwQ-32B-Preview logo">
+                            </div>
+                            <div>
+                            Qwen2-VL-7B-Instruct
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Latest iteration of Qwen-VL model.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Pro Seperator-->
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
+                    <div class="flex-1 h-px bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                    <div class="px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                </div>
+                <div class="mx-5 my-2 text-center text-purple-500 font-bold">
+                    <p class="text-sm">Pro Models</p>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="meta-llama/Llama-3.3-70B-Instruct">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/meta-logo.png" alt="Llama-3.3-70B-Instruct logo">
+                            </div>
+                            <div>
+                            Llama-3.3-70B-Instruct
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A fast and extremely capable model matching closed sourced models' capabilities</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="nvidia/Llama-3.1-Nemotron-70B-Instruct-HF">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/nvidia-logo.png" alt="Llama-3.1-Nemotron-70B-Instruct-HF logo">
+                            </div>
+                            <div>
+                            Llama-3.1-Nemotron-70B-Instruct-HF
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Nvidia's latest Llama fine-tune, topping alignment benchmarks and optimized for instruction following.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="CohereForAI/c4ai-command-r-plus-08-2024">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                            <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/cohere-logo.png" alt="c4ai-command-r-plus-08-2024 logo">
+                            </div>
+                            <div>
+                            c4ai-command-r-plus-08-2024
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Cohere's largest language model, optimized for conversational interaction and tool use. Now with the 2024 update!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Mistral Models Seperator-->
+                <div role="separator" aria-orientation="horizontal" class="mx-4 p-2 my-1 flex justify-center">
+                    <div class="flex-1 rounded-md p-1 h-px bg-gradient-to-r from-[#00fab7] via-[#0080bc] to-[#00fe00]"></div>
+                </div>
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
+                    <div class="px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#55ff7f] to-[#0055ff]"></div>
+                </div>
+
+                <div class="mx-5 my-2 text-sm text-center font-mono text-[#5e01ff] dark:text-[#aaaaff] font-semibold">
+                    <p>Mistral models</p>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-large-latest">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-large-latest logo">
+                            </div>
+                            <div>
+                            mistral-large-latest <sup class="text-green-400 font-mono">Recommended</sup>
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">The latest iteration of the large LLM.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-2402">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-2402 logo">
+                            </div>
+                            <div>
+                            mistral-small-2402
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A compact language model tailored for efficient processing with a focus on smaller datasets and applications requiring lower resource consumption.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="open-mixtral-8x22b">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="open-mixtral-8x22b logo">
+                            </div>
+                            <div>
+                            open-mixtral-8x22b
+                                <div class="text-gray-500 dark:text-gray-400 text-xs">A powerful ensemble model optimized for complex language tasks and high accuracy.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="open-mixtral-8x7b">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="Qopen-mixtral-8x7b logo">
+                            </div>
+                            <div>
+                            open-mixtral-8x7b
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">For enhanced performance in diverse NLP applications.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="open-mistral-7b">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="open-mistral-7b logo">
+                            </div>
+                            <div>
+                            open-mistral-7b
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">General-purpose natural language understanding and generation tasks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-large-2407">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-large-2407 logo">
+                            </div>
+                            <div>
+                            mistral-large-2407
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">An enhanced version of the large model, featuring improvements in training data and techniques for superior language comprehension and generation.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-large-2402">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-large-2402 logo">
+                            </div>
+                            <div>
+                            mistral-large-2402
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A large language model optimized for high-performance tasks, offering advanced capabilities in understanding and generating human-like text.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-medium">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-medium logo">
+                            </div>
+                            <div>
+                            mistral-medium
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A medium-sized model that strikes a balance between performance and resource efficiency, suitable for a wide range of NLP tasks.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-2501">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-2501 logo">
+                            </div>
+                            <div>
+                            mistral-small-2501
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A further refined small model designed for rapid inference and deployment in resource-constrained environments while maintaining robust language capabilities.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-2409">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-2409 logo">
+                            </div>
+                            <div>
+                            mistral-small-2409
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">An updated small model variant that improves upon its predecessor with enhanced training techniques for better performance in lightweight applications.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="ministral-8b-2410">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="ministral-8b-2410 logo">
+                            </div>
+                            <div>
+                            ministral-8b-2410
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">provides enhanced capabilities for various NLP tasks while maintaining efficiency in resource usage.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="ministral-3b-2410">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="ministral-3b-2410 logo">
+                            </div>
+                            <div>
+                            ministral-3b-2410
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Variant designed for efficient processing in specific applications, offering a balance between performance and resource usage.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="open-mistral-nemo">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="open-mistral-nemo logo">
+                            </div>
+                            <div>
+                            open-mistral-nemo
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Variant tailored for conversational AI applications, focusing on generating human-like dialogue and understanding context.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-saba-2502">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-saba-2502 logo">
+                            </div>
+                            <div>
+                            mistral-saba-2502
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A specialized model focused on specific language tasks, leveraging advanced techniques for improved contextual understanding and response generation.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-large-2411">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-large-2411 logo">
+                            </div>
+                            <div>
+                            mistral-large-2411
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">An iteration of the large model, designed to deliver state-of-the-art performance across various natural language processing benchmarks.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-2409">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-2409 logo">
+                            </div>
+                            <div>
+                            mistral-small-2409
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">An updated small model variant that improves upon its predecessor with enhanced training techniques for better performance in lightweight applications.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Mistarl Coding models Seperator-->
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
+                    <div class="px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#6aff59] to-[#a7ff19]"></div>
+                </div>
+
+                <div class="mx-5 my-2 text-sm text-center font-mono text-[#0094d9] font-semibold">
+                    <p>Mistral Coding models</p>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="codestral-latest">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="codestral-2501 logo">
+                            </div>
+                            <div>
+                            codestral-latest <sup class="text-green-400 font-bold"><i class="text-sky-500 font-mono">@</i>Recommended</sup>
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Latest coding-focused model.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="codestral-mamba-2407">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="codestral-mamba-2407 logo">
+                            </div>
+                            <div>
+                            codestral-mamba-2407
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A high-performance coding model designed for rapid code generation and debugging, optimized for software development environments.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="codestral-2501">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="codestral-2501 logo">
+                            </div>
+                            <div>
+                            codestral-2501
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">An advanced coding-focused model that builds on previous iterations, offering improved performance in programming-related tasks and queries.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="codestral-2502">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="codestral-2505 logo">
+                            </div>
+                            <div>
+                            codestral-2505
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">An advanced coding-focused model that builds on previous iterations, offering improved performance in programming-related tasks and queries.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Mistarl Vision Seperator-->
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
+                    <div class="px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#6aff59] to-[#a7ff19]"></div>
+                </div>
+
+                <div class="mx-5 my-2 text-sm text-center font-mono text-[#0094d9] font-semibold">
+                    <p>Mistral Vision models</p>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-small-latest">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-small-latest logo">
+                            </div>
+                            <div>
+                            mistral-small-latest
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">The latest iteration of the small model, designed to deliver state-of-the-art performance across various natural language processing benchmarks.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Mistarl Vision-->
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="pixtral-large-2411">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="pixtral-large-2411 logo">
+                            </div>
+                            <div>
+                            pixtral-large-2411
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A variant in the MistraVision series, optimized for high-quality image and text processing, suitable for complex visual understanding tasks.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="pixtral-12b-2409">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="pixtral-12b-2409 logo">
+                            </div>
+                            <div>
+                            pixtral-12b-2409
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">A variant in the MistraVision family designed for advanced image and text integration tasks, enhancing multimodal applications.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Mistarl Moderation Seperator-->
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
+                    <div class="px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#00ff26] to-[#0011ff]"></div>
+                </div>
+
+                <div class="mx-5 my-2 text-sm text-center font-mono text-[#00aa7f] dark:text-[#00fdba] font-semibold">
+                    <p>Mistral Moderation models</p>
+                </div>
+                <!-- Mistral Moderation-->
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-moderation-2411">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-moderation-2411 logo">
+                            </div>
+                            <div>
+                            mistral-moderation-2411
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Focused on content moderation, designed to identify and filter inappropriate or harmful content in text data.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Mistarl Moderation Seperator-->
+                <div role="separator" aria-orientation="horizontal" class="mx-5 my-1 flex items-center justify-center">
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#ff5500] to-[#00d100]"></div>
+                    <div class="px-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" class="w-12 h-12 text-purple-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#5454ff] dark:from-[#aaaaff] to-[#0011ff] dark:to-[#0055ff]"></div>
+                </div>
+
+                <div class="mx-5 my-2 text-sm text-center font-mono text-[#aa20ff] dark:text-[#ffaaff] font-semibold">
+                    <p>Mistral embedding models</p>
+                </div>
+                <!--Mistral embed -->
+                <div role="menuitem" class="flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-50 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff]" tabindex="-1" data-value="mistral-embed">
+                    <div class="flex grow items-center justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-zinc-700">
+                                <img class="overflown aspect-square size-6 rounded-full border dark:border-gray-700" src="../assets/mistral-logo.png" alt="mistral-embed logo">
+                            </div>
+                            <div>
+                            mistral-embed
+                            <div class="text-gray-500 dark:text-gray-400 text-xs">Designed for embedding generation, facilitating the transformation of text into vector representations for downstream machine learning tasks.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!--Notification Modal Background -->
         <div id="quickaiNotify" class="fixed top-0 left-1/2 transform -translate-x-1/2 z-50 opacity-0 pointer-events-none transition-all duration-500 ease-in-out">
@@ -888,9 +889,8 @@
         </div>
 
         <!-- Chat Area -->
-        <section id="chatArea" class="bg-gray-50 dark:bg-stone-900 h-[90vh] p-2 shadow-inner shadow-gray-400 dark:shadow-none md:p-4 rounded-lg  dark:shadow-gray-950 overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 w-[calc(100vw-62vw]">
-
-            <!-- Quick query options -->
+        <section id="chatArea" class="bg-gray-50 dark:bg-stone-900 h-[75vh] p-2 shadow-inner shadow-gray-400 dark:shadow-none md:p-4 rounded-lg  dark:shadow-gray-950 overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 w-[calc(100vw-62vw] mb-[15vh]">
+        <!-- Quick query options -->
             <section id='suggestions' class="mx-auto">
                 <div class="justify-center mt-[var(--screen-optical-compact-offset-amount)] flex h-full flex-shrink flex-col items-center overflow-hidden text-token-text-primary" style="opacity: 1; will-change: auto;">
                     <div class="relative inline-flex justify-center text-center text-2xl font-semibold leading-9 dark:text-white transition-colors duration-1000">
@@ -925,6 +925,7 @@
                                 </li>
                             </ul>
                         </div>
+                    </div>
                 </div>
             </section>
         </section>
@@ -1046,17 +1047,17 @@
         <section id="modals-container"></section>
     </section>
 
-    <section id="canvas-wrapper" class="relative hidden -right-3 translate-x-[100vw] w-[60vw] max-w-[65vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-pink-900 min-h-screen flex items-center justify-center p-2 font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-500">
+    <section id="canvas-wrapper" class="relative hidden flex-shrink -right-3 translate-x-[100vw] w-[65vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-pink-900 min-h-screen flex items-center justify-center p-2 font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-500">
 
-        <button onclick="DSP();" class="flex justify-center items-center absolute top-2 left-0 text-xl hover:rotate-45 transform transition-transform transition-all duration-500 ease-in-out hover:bg-purple-300 rounded-full py-[0px] px-[6px]">
+        <button onclick="hideCanvas();" class="flex justify-center items-center absolute top-2 left-0 text-xl hover:rotate-45 transform transition-transform transition-all duration-500 ease-in-out hover:bg-purple-300 rounded-full py-[0px] px-[6px]">
             <span>&Cross;</span>
         </button>
 
         <div aria-label="AI code canvas container" class="ai-canvas-container w-full max-w-5xl bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex flex-col h-[93vh] overflow-hidden ring-1 ring-purple-200 dark:ring-purple-700">
             <!-- Header with title and theme toggle -->
-            <header class="flex items-center justify-between px-3 py-1 border-b border-purple-200 dark:border-purple-700 select-none">
+            <header class="flex items-center justify-between px-3 py-1 border-b border-purple-200 dark:border-purple-700 select-none transition-colors duration-500">
                 <h2 class="text-xl font-semibold text-purple-900 dark:text-purple-200">Canvas</h2>
-                <button id="canvas-theme-toggle" aria-label="Toggle dark mode" class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-purple-200 dark:hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400" title="Toggle theme">
+                <button id="canvas-theme-toggle" aria-label="Toggle dark mode" class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-purple-200 dark:hover:bg-purple-700 transition-colors duration-500 focus:outline-none focus:ring-2 focus:ring-purple-400" title="Toggle theme">
                     <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-purple-700 dark:text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
                     <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-purple-600 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 </button>
@@ -1065,35 +1066,35 @@
             <!-- Main AI canvas content -->
             <container class="flex-1 overflow-y-auto w-full p-2 space-y-8 scroll-smooth ai-canvas-scrollbar">
                 <!-- Code & Preview block -->
-                <article class="bg-purple-50 dark:bg-purple-900 rounded-2xl shadow-inner ring-1 ring-purple-300 dark:ring-purple-600 p-6 flex flex-col max-h-full">
+                <article class="bg-purple-50 dark:bg-purple-900 rounded-2xl shadow-inner ring-1 ring-purple-300 dark:ring-purple-600 px-0 py-2 flex flex-col max-h-full">
 
                     <!-- Buttons row -->
-                    <div class="flex justify-end gap-4 mb-4 select-none">
-                        <button id="btn-code" class="flex items-center gap-1 px-4 py-2 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 font-normal text-md" title="Show Code">
-                        &lt;/&gt; Code
-                    </button>
+                    <div class="flex justify-end gap-4 mb-2 mr-1 select-none transform transition-transform transition-all duration-500 ease-in-out transition-colors duration-500">
+                        <button id="btn-code" class="flex items-center gap-1 px-3 py-1 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 font-normal text-md" title="Show Code">
+                            &lt;/&gt; Code
+                        </button>
 
-                    <button id="btn-preview" class="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-700 shadow-sm transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400" title="Show Preview">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4h12v12H4z"/></svg>
-                        Preview
-                    </button>
-                    <button id="btn-copy" class="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500 text-white hover:bg-green-600 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-green-400" title="Copy Code">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2v2"/><rect x="8" y="8" width="8" height="8" rx="2"/></svg>
-                        Copy
-                    </button>
+                        <button id="btn-preview" class="flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-700 shadow-sm transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400" title="Show Preview">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4h12v12H4z"/></svg>
+                            Preview
+                        </button>
+                        <button id="btn-copy" class="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500 text-white hover:bg-green-600 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-green-400 transform transition-transform transition-all duration-500 ease-in-out" title="Copy Code">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2v2"/><rect x="8" y="8" width="8" height="8" rx="2"/></svg>
+                            Copy
+                        </button>
                     </div>
 
                     <!-- Code block with line numbers and code content side by side -->
-                    <div id="code-block-container" class="flex flex-row max-h-full overflow-hidden rounded-lg ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner bg-white dark:bg-purple-700 select-text font-mono text-sm text-purple-900 dark:text-purple-200">
+                    <div id="code-block-container" class="flex flex-row max-h-full overflow-hidden rounded-lg rounded-t-none ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner bg-white dark:bg-zinc-950 select-text font-mono text-sm">
                         <!-- Line numbers gutter -->
-                        <pre id="line-numbers" class="line-numbers bg-purple-100 dark:bg-purple-900 p-4 border-r border-purple-200 dark:border-purple-700 overflow-hidden"></pre>
+                        <pre id="line-numbers" class="line-numbers bg-purple-100 dark:bg-slate-950 p-4 border-r border-purple-200 dark:border-purple-700 overflow-hidden transition-colors duration-500"></pre>
 
                         <!-- Code content area -->
                         <pre id="code-view" tabindex="0" aria-label="Code editor view" class="flex-1 p-4 overflow-y-auto h-[93vh] whitespace-pre-wrap scrollbar-thin scrollbar-thumb-purple-400 scrollbar-track-purple-100 dark:scrollbar-track-purple-900" contenteditable="true" spellcheck="false"></pre>
                     </div>
 
                     <!-- Preview block -->
-                    <div id="preview-view" tabindex="0" aria-label="Preview output" class="hidden bg-white dark:bg-purple-800 rounded-lg p-6 ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner max-h-full overflow-auto text-purple-900 dark:text-purple-200 font-sans text-base whitespace-pre-wrap">
+                    <div id="preview-view" tabindex="0" aria-label="Preview output" class="hidden bg-white dark:bg-purple-800 rounded-lg p-6 ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner max-h-full overflow-auto text-purple-900 dark:text-purple-200 font-sans text-base whitespace-pre-wrap transition-colors duration-500">
             Hello, QuickAI Canvas!
                     </div>
                 </article>

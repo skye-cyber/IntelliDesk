@@ -7,8 +7,8 @@ let mainWindow;
 
 const isDev = !app.isPackaged;
 const iconPath = isDev
-    ? path.join(__dirname, '../assets/QuickAi.png') // for dev
-    : path.join(process.resourcesPath, 'assets/QuickAi.png'); // for prod;
+    ? path.join(__dirname, '../assets/quickai.png') // for dev
+    : path.join(process.resourcesPath, 'assets/quickai.png'); // for prod;
 
 // Fallback to a generic icon or skip setting it
 if (!fs.existsSync(iconPath)) {
@@ -158,7 +158,7 @@ function createWindow() {
         }
     });
 
-    loadingWindow.loadFile(path.join(__dirname, '../renderer/loading.html'));
+    loadingWindow.loadFile(path.join(__dirname, '../assets/loading.html'));
     loadingWindow.show(); // Show the loading window immediately
 
     // Create the main window

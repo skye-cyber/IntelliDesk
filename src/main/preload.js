@@ -521,7 +521,7 @@ contextBridge.exposeInMainWorld('electron', {
     },
     addUtilityScript: () => {
         //console.log("Executing")
-        scripts = ['js/packed_utility.js']
+        scripts = ['js/Utils/packed_XPutility.js']
         scripts.forEach(script => {
             const scriptElement = document.createElement('script');
             scriptElement.src = script;
@@ -532,6 +532,7 @@ contextBridge.exposeInMainWorld('electron', {
     addScript: (script_name, animation = false) => {
         //console.log("Executing")
         const script = document.createElement('script');
+        script.type = "text/javascript"
         script.src = `js/${script_name}`;
         script.async = true; // Optional: load the script asynchronously
         animation ? console.log(`Toggle Animation: ON`) : console.log(`${script_name} ADDED.`);

@@ -19,6 +19,22 @@ module.exports = {
     },
 
     extend: {
+      boxShadow: {
+        glow: '0 0 20px #00d8ff',
+        thumb: '0 0 10px #00d8ff',
+        thumbHover: '0 0 15px #00ffe7',
+        'green-super': '0 0 18px rgba(0, 255, 0, 255)',
+        'green-deep': '0 0 20px rgba(34, 197, 94, 0.7)',
+        'green-medium': '0 0 12px rgba(34, 197, 94, 0.5)',
+        'green-light': '0 0 6px rgba(34, 197, 94, 0.3)',
+        'blue-deep': '0 0 20px rgba(59, 130, 246, 0.7)',
+        'blue-medium': '0 0 12px rgba(59, 130, 246, 0.5)',
+        'custom': '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
+        'blue-light': '0 0 6px rgba(59, 130, 246, 0.3)',
+        'pink-deep': '0 0 20px rgba(236, 72, 153, 0.7)',
+        'pink-medium': '0 0 12px rgba(236, 72, 153, 0.5)',
+        'pink-light': '0 0 6px rgba(236, 72, 153, 0.3)',
+      },
       fontSize: {
         'h1': '36', // Adjust as needed
         'h2': '2rem',   // Adjust as needed

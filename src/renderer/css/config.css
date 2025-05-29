@@ -240,3 +240,38 @@ height: 2.4em; /* Adjust this value to match the height of an empty row */
     --edge-color: #00557f;
     --text-color: #ffffff;
 }
+
+/* Scoped CSS inside canvas container */
+.ai-canvas-container {
+    /* Scrollbar Styling scoped */
+}
+.ai-canvas-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.ai-canvas-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.ai-canvas-container::-webkit-scrollbar-thumb {
+    background-color: rgba(168, 147, 208, 0.6);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: background-color 0.3s;
+}
+.ai-canvas-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(168, 147, 208, 0.9);
+}
+/* line numbers container styles */
+.line-numbers {
+    user-select: none;
+    color: #a07add; /* warm purple line numbers */
+    font-size: 0.8rem;
+    font-family: monospace;
+    text-align: right;
+    padding-right: 0.75rem;
+    line-height: 1.5rem;
+}
+.dark .ai-canvas-container .line-numbers {
+    color: #b8a0f7;
+}

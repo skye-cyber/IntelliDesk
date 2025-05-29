@@ -3,16 +3,15 @@ const webpack = require('webpack');
 const CopyPlugin = require("copy-webpack-plugin");
 
 const entries = {
-    hfaichat: './src/renderer/js/hfaichat.js',
-    //utility: './src/renderer/js/exportUtilities.js',
-    MistralChatsAdmin: './src/renderer/js/MistralChatsAdmin.js',
-    chatUtils: './src/renderer/js/chatUtils.js',
-    //hfaudio: './src/renderer/js/hfaudio.js',
-    //visualDGRenderer: './src/renderer/js/diagraming/visualDGRenderer.js',
-    //visualChartsRenderer: './src/renderer/js/diagraming/visualChartsRenderer.js',
-    //preference: './src/renderer/js/preference.js',
-    //keyshortcuts: './src/renderer/js/keyshortcuts.js',
-    //fileHandler: './src/renderer/js/fileHandler.js',
+    //HF_Chat: './src/renderer/js/managers/HF_Chat.js',
+    //XPutility: './src/renderer/js/Utils/XPutility.js',
+    chatUtils: './src/renderer/js/Utils/chatUtils.js',
+    MistralChatsAdmin: './src/renderer/js/managers/MistralChatsAdmin.js',
+    //V_Utils: './src/renderer/js/diagraming/V_Utils.js',
+    //HF_Audio: './src/renderer/js/managers/HF_Audio.js',
+    //V_DG: './src/renderer/js/diagraming/V_DG.js',
+    //V_Charts: './src/renderer/js/diagraming/V_Charts.js',
+    //fileHandler: './src/renderer/js/Utils/fileHandler.js',
     //mathHandler: './src/renderer/js/MathBase/mathHandler.js'
 };
 
@@ -29,7 +28,7 @@ module.exports = Object.entries(entries).map(([name, entryPath]) => {
         },
         plugins: [
             new webpack.ProvidePlugin({
-                process: 'process/browser',
+                process: 'process/',
                 Buffer: ['buffer', 'Buffer'],
                 crypto: ['crypto-browserify'],
             }),

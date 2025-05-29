@@ -122,7 +122,7 @@
       }
     ],
     "mac": {
-      "icon": "src/assets/QuickAi.icns",
+      "icon": "src/assets/quickai.icns",
       "category": "public.app-category.productivity",
       "target": [
         {
@@ -143,7 +143,7 @@
       "artifactName": "${productName}-${version}-${arch}.dmg"
     },
     "win": {
-      "icon": "src/assets/QuickAi.ico",
+      "icon": "src/assets/quickai.ico",
       "target": [
         {
           "target": "nsis",
@@ -196,7 +196,7 @@
         }
       ],
       "category": "Utility",
-      "icon": "src/assets/QuickAi.png",
+      "icon": "src/icons",
       "maintainer": "Skye <swskye17@gmail.com>",
       "synopsis": "QuickAi Desktop",
       "description": "Your AI assistant on all platforms"

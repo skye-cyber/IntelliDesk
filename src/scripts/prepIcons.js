@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 //const pngToIco = require('png-to-ico');
+//npm install @fiahfy/icns --seve-dev
 
 const baseImageName = 'quickai';
 const baseImagePath = `../assets/${baseImageName}.png`;
@@ -137,5 +138,6 @@ async function init(what = 'all') {
 }
 
 const what = process.argv[2] || 'all';
-init(what);
+//init(what);
 //extractImages()
+generateIcons()

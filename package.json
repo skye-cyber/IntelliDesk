@@ -88,7 +88,7 @@
     "jszip": "^3.10.1",
     "keytar": "^7.9.0",
     "map-schema": "^0.3.0",
-    "minimatch": "^10.0.1",
+    "minimatch": "^10.0.2",
     "set-value": "^4.1.0",
     "shelljs": "^0.8.5",
     "update": "^0.7.4",

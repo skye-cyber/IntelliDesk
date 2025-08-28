@@ -79,7 +79,7 @@
   "dependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "base": "^3.0.0",
-    "bl": "^6.0.16",
+    "bl": "^6.1.1",
     "braces": "^3.0.3",
     "dotenv": "^16.4.7",
     "engine-base": "^1.0.0",

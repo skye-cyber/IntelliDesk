@@ -144,7 +144,7 @@ jobs:
       if: runner.os == 'Linux' && runner.arch == 'x64'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-Linux-amd64
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-amd64
         path: dist/*amd64.deb
         if-no-files-found: error
 
@@ -152,7 +152,7 @@ jobs:
       if: runner.os == 'Linux' && runner.arch == 'arm64'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-Linux-arm64
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-arm64
         path: dist/*arm64.deb
         if-no-files-found: error
 
@@ -161,7 +161,7 @@ jobs:
       if: runner.os == 'Linux' && runner.arch == 'x64'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-Linux-AppImage-x64
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-AppImage-x64
         path: dist/*x86_64.AppImage
         if-no-files-found: error
 
@@ -169,7 +169,7 @@ jobs:
       if: runner.os == 'Linux' && runner.arch == 'arm64'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-Linux-AppImage-arm64
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-AppImage-arm64
         path: dist/*arm64.AppImage
         if-no-files-found: error
 
@@ -178,7 +178,7 @@ jobs:
       if: runner.os == 'Linux'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-Linux-Snap
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-Snap
         path: dist/*.snap
         if-no-files-found: error
 
@@ -187,7 +187,7 @@ jobs:
       if: runner.os == 'macOS' && runner.arch == 'x64'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-macOS-x64
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-macOS-x64
         path: dist/*x64.dmg
         if-no-files-found: error
 
@@ -195,7 +195,7 @@ jobs:
       if: runner.os == 'macOS' && runner.arch == 'arm64'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-macOS-arm64
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-macOS-arm64
         path: dist/*arm64.dmg
         if-no-files-found: error
 
@@ -204,7 +204,7 @@ jobs:
       if: runner.os == 'Windows' && runner.arch == 'x64'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-Windows-NSIS-x64
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Windows-NSIS-x64
         path: dist/*Setup*.exe
         if-no-files-found: error
 
@@ -212,7 +212,7 @@ jobs:
       if: runner.os == 'Windows' && runner.arch == 'x64'
       uses: actions/upload-artifact@v4
       with:
-        name: QuickAi-${{ env.CURRENT_VERSION }}-Windows-Portable-x64
+        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Windows-Portable-x64
         path: dist/*portable*x64.exe
         if-no-files-found: error
 

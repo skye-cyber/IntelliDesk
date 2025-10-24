@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedModelText.innerText = model.options[model.selectedIndex].innerText;
         modelDropdown.classList.add('hidden');
 
-        document.title = `QuickAI - ${model.value}`;
+        document.title = `IntelliDesk - ${model.value}`;
 
     }
 
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to show the modal
 function Notify(_color = null, time = null, text = "") {
-    const modal = document.getElementById('quickaiNotify');
+    const modal = document.getElementById('IntelliDeskNotify');
     const message = document.getElementById('messageContent');
     const timeTaken = document.getElementById('timeTaken');
     if (text) {

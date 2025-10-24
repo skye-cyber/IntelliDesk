@@ -11,7 +11,7 @@ let VId = '';
 let CId = '';
 
 try {
-    const _fpath = path.join(os.homedir(), '.quickai/.quickai.config/.pref.config')
+    const _fpath = path.join(os.homedir(), '.intellidesk/.intellidesk.config/.pref.config')
     if (fs.statfsSync(_fpath)) {
         var profile = fs.readFileSync(_fpath, 'utf-8')
     }
@@ -24,7 +24,7 @@ VconversationHistory = []
 
 function VSystem_init(previewOn = 'false', verbosity = 'medium') {
     const VSystem_init = `
-    Your name is QuickAi. You are a scoped, concise and helpful assistant. You are deployed in a cross-platform application built on Electron by Wambua. ${previewOn === "true" ? `He is an undergraduate software developer at Kirinyaga University in Kenya. He has mastered many digital technologies, including but not limited to: HTML5, CSS3, JavaScript, TailwindCSS, Node.js, Python, Django, Electron, Git, MySQL/MariaDB, Markdown, GIMP (GNU Image Manipulation Program), scikit-learn, and OpenCV. You can find him on his [GitHub Profile](https://github.com/skye-cyber) or [Huggingface Profile](https://huggingface.co/skye-waves).` : ""}
+    Your name is IntelliDesk. You are a scoped, concise and helpful assistant. You are deployed in a cross-platform application built on Electron by Wambua. ${previewOn === "true" ? `He is an undergraduate software developer at Kirinyaga University in Kenya. He has mastered many digital technologies, including but not limited to: HTML5, CSS3, JavaScript, TailwindCSS, Node.js, Python, Django, Electron, Git, MySQL/MariaDB, Markdown, GIMP (GNU Image Manipulation Program), scikit-learn, and OpenCV. You can find him on his [GitHub Profile](https://github.com/skye-cyber) or [Huggingface Profile](https://huggingface.co/skye-waves).` : ""}
 
     ---
     Only respond with what the user currently asks for.
@@ -148,7 +148,7 @@ function VSystem_init(previewOn = 'false', verbosity = 'medium') {
 
 function CSystem_init(previewOn = 'false', verbosity = 'medium') {
     const CSystem_init = `
-    Your name is **QuickAi**. You are a scoped, concise and helpful assistant. You are deployed in a cross-platform application built on Electron by **Wambua**.${previewOn === "true" ? `He is an undergraduate software developer at Kirinyaga University in Kenya. He has mastered many digital technologies, including but not limited to: HTML5, CSS3, JavaScript, TailwindCSS, Node.js, Python, Django, Electron, Git, MySQL/MariaDB, Markdown, GIMP (GNU Image Manipulation Program), scikit-learn, and OpenCV. You can find him on his [GitHub Profile](https://github.com/skye-cyber) or [Huggingface Profile](https://huggingface.co/skye-waves).` : ""}
+    Your name is **IntelliDesk**. You are a scoped, concise and helpful assistant. You are deployed in a cross-platform application built on Electron by **Wambua**.${previewOn === "true" ? `He is an undergraduate software developer at Kirinyaga University in Kenya. He has mastered many digital technologies, including but not limited to: HTML5, CSS3, JavaScript, TailwindCSS, Node.js, Python, Django, Electron, Git, MySQL/MariaDB, Markdown, GIMP (GNU Image Manipulation Program), scikit-learn, and OpenCV. You can find him on his [GitHub Profile](https://github.com/skye-cyber) or [Huggingface Profile](https://huggingface.co/skye-waves).` : ""}
 
     ---
     Only respond with what the user currently asks for.
@@ -585,7 +585,7 @@ contextBridge.exposeInMainWorld('electron', {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     const buffer = Buffer.from(reader.result);
-                    const outputPath = path.join(downloadsPath, 'QuickAi-output.jpg');
+                    const outputPath = path.join(downloadsPath, 'IntelliDesk-output.jpg');
 
                     fs.writeFile(outputPath, buffer, (err) => {
                         if (err) {
@@ -628,7 +628,7 @@ contextBridge.exposeInMainWorld('electron', {
     savePreference: async (data) => {
         try {
             const prefFile = ".pref.config"
-            const prefPath = path.join(os.homedir(), '.quickai/.quickai.config');
+            const prefPath = path.join(os.homedir(), '.IntelliDesk/.IntelliDesk.config');
             try {
                 if (!fs.mkdirSync(prefPath)) {
                     fs.mkdirSync(prefPath);
@@ -646,7 +646,7 @@ contextBridge.exposeInMainWorld('electron', {
     },
     deletePreference: async (data) => {
         try {
-            const prefPath = path.join(os.homedir(), '.quickai/.quickai.config/.pref.config');
+            const prefPath = path.join(os.homedir(), '.IntelliDesk/.IntelliDesk.config/.pref.config');
             fs.rmSync(prefPath, data);
             return true
         } catch (err) {
@@ -656,7 +656,7 @@ contextBridge.exposeInMainWorld('electron', {
     },
     getPreferences: async () => {
         try {
-            const _fpath = path.join(os.homedir(), '.quickai/.quickai.config/.pref.config')
+            const _fpath = path.join(os.homedir(), '.IntelliDesk/.IntelliDesk.config/.pref.config')
             if (fs.statfsSync(_fpath)) {
                 const prefData = fs.readFileSync(_fpath, 'utf-8')
                 return prefData
@@ -679,7 +679,7 @@ contextBridge.exposeInMainWorld('electron', {
     saveRecording: async (blob) => {
         try {
             const randomFname = `hfaudio_${Math.random().toString(36).substring(1, 12)}`;
-            const savePath = path.join(os.homedir(), `.quickai/.quickai.cache/${randomFname}.wav`)
+            const savePath = path.join(os.homedir(), `.IntelliDesk/.IntelliDesk.cache/${randomFname}.wav`)
             // Extract the directory path from the file path
             const dirPath = path.dirname(savePath);
 

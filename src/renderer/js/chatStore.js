@@ -1,4 +1,4 @@
-const storagePath = window.electron.joinPath(window.electron.home_dir(), '.IntelliDesk/.IntelliDesk.store');
+const storagePath = window.electron.joinPath(window.electron.home_dir(), '.quickai/.quickai.store');
 const chatArea = document.getElementById('chatArea');
 const conversationsPanel = document.getElementById('conversations');
 InputPurify = window.InputPurify;
@@ -230,6 +230,7 @@ class ConversationManager {
         // Append the user text to the page
         userMessage.innerHTML = messageHtml;
         chatArea.appendChild(userMessage);
+        User_wfit(isCanvasOpen? 'add':'remove')
     }
 
     // Render text-based assistant message
@@ -271,7 +272,7 @@ class ConversationManager {
 						</button>
 						</div>
 						<div id="${foldId}" class="">
-						<p style="color: #333;">${window.marked(window.normalizeMath(thinkContent))}</p>
+						<p style="color: #333;">${window.marked(window.normalizeMathDelimiters(thinkContent))}</p>
 						</div>
 						</div>
 						` : ''}

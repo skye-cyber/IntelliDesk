@@ -19,7 +19,7 @@ let check = false;
 window.check = check;
 
 async function routeToHf(text) {
-	console.log("Reached Target: hfRoute")
+	//console.log("Reached Target: hfRoute")
 
 	const escapedText = window.InputPurify(text);
 	const Currentmodel = modelSelect.value;
@@ -38,8 +38,8 @@ async function routeToHf(text) {
 	const provider = {
 		"Qwen/Qwen2.5-Math-1.5B": "hf-inference",
 		"Qwen/Qwen2-VL-7B-Instruct": "hyperbolic",
-		"Qwen/Qwen2.5-Coder-7B-Instruct": "nebius",
-		"Qwen/QVQ-72B-Preview": "nebius",
+		"Qwen/Qwen2.5-Coder-7B-Instruct": "hf-inference",
+		"Qwen/QVQ-72B-Preview": "hf-inference",
 		"deepseek-ai/DeepSeek-R1-Distill-Qwen-32B": "together",
 		"deepseek-ai/DeepSeek-R1": "together",
 		"meta-llama/Llama-3.2-11B-Vision-Instruct": "hf-inference"
@@ -107,7 +107,7 @@ async function routeToHf(text) {
 			const options = {
 				model: Currentmodel,
 				messages: window.electron.getChat(), // Add conversation in JSON format to avoid size limitation
-				max_tokens: 3000
+				//max_tokens: 3000
 			};
 
 			if (provider[Currentmodel]) {
@@ -278,6 +278,8 @@ async function routeToHf(text) {
 			}
 
 			processing = false;
+			// solves aiMessage w-full issue
+			if (isCanvasActive) showCanvas();
 
 			//stop timer
 			_Timer.trackTime("stop");
@@ -305,6 +307,7 @@ async function routeToHf(text) {
 			window.LoopRenderCharts(actualResponse)
 
 		} catch (error) {
+			console.log(error)
 			window.handleRequestError(error, userMessage, aiMessage);
 
 		}
@@ -532,6 +535,8 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 		}
 
 		processing = true;
+		// solves aiMessage w-full issue
+		if (isCanvasActive) showCanvas();
 
 		//stop timer
 		_Timer.trackTime("stop");

@@ -21,10 +21,11 @@ sendBtn.addEventListener("click", () => {
         userInput.innerHTML = "";
         // Adjust input field height
         userInput.style.height = 'auto';
-        userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
+        userInput.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight/100) + 'px';
         userInput.scrollTop = userInput.scrollHeight;
         requestRouter(inputText);
         document.getElementById('suggestions').classList.add('hidden');
+        //updateInputHeight(this)
     }
 });
 
@@ -37,11 +38,12 @@ userInput.addEventListener("keydown", (e) => {
         if (inputText) {
             userInput.innerHTML = "";
             userInput.style.height = 'auto';
-            userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
+            userInput.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight/100) + 'px';
             userInput.scrollTop = userInput.scrollHeight;
             requestRouter(inputText);
             const suggestionsEl = document.getElementById('suggestions');
             if (suggestionsEl) suggestionsEl.classList.add('hidden');
+            //updateInputHeight(this)
         }
     }
 });

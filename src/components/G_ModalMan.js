@@ -1,200 +1,5 @@
 class GHandler{
     constructor(){
-        this.modals = [
-        {
-            name: "recording",
-            html:`
-            <!--Recording modal-->
-            <div id="recordingModal" class="hidden fixed inset-0 z-50 bg-blue-400/20 overflow-y-auto">
-                <div class="relative flex items-center justify-center min-h-screen">
-                    <canvas class="absolute md:max-w-md lg:max-w-lg xl:max-w-xl md:max-h-md lg:max-h-lg xl:max-h-xl z-1 bg-white dark:bg-slate-950 rounded-lg shadow-lg transition-colors duration-1000" id="canvas"></canvas>
-                    <section class="absolute z-10">
-                        <div class="relative px-4 w-full max-w-md">
-                        <div class="bg-opacity-0">
-                            <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-300 dark:border-sky-400 pb-2 italic transition-colors duration-1000">Recorder</h2>
-                            <div class="p-6">
-                            <div class="flex items-center justify-center">
-                                <span id="recordingTime" class="text-3xl text-blue-500 dark:text-white font-bold transition-colors duration-1000">00:00:00</span>
-                            </div>
-
-                            <div class="flex justify-center mt-6 space-x-4">
-                                <button id="pauseButton" class="hidden bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
-                                    <!--pause svg disabled when not recording-->
-                                    <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
-                                    </svg>
-                                </button>
-                                <button id="startButton" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
-                                    <!--start svg -->
-                                    <svg class="" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
-                                    </svg>
-                                </button>
-
-                                <button id="finishButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full size-14 cursor-not-allowed transition-colors duration-1000">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                </button>
-
-                                <button id="cancelButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                </button>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-                    </section>
-                </div>
-            </div>
-            `
-        },
-        {
-            name: "dropzone",
-            html:`
-            <div id="dropZoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-40 hidden z-40 transition-colors duration-1000">
-                <section id="dropZoneContent" title="Attach files" class="relative p-3 bg-white dark:bg-stone-800 rounded-xl shadow-lg w-full h-full md:mx-auto max-w-[70vw] max-h-[70vh] md:max-h-[80vh] lg:md:max-w-[50vw] mb-16 transition-colors duration-1000" >
-                    <button id="closeFileEModal" title="Close" class="absolute top-3 right-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:rotate-90 transition-colors duration-1000">
-                        <svg class="fill-current h-5 w-5" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                            <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.65-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"></path>
-                        </svg>
-                    </button>
-                    <h2 class="text-2xl font-semibold text-blue-700 dark:text-sky-300 mb-6">Upload File</h2>
-                    <div id="dropZone" class="p-4 rounded-xl border-2 border-dashed border-blue-400 dark:border-cyan-400 w-full h-full md:mx-auto max-w-[calc(70vw-30px)] max-h-[calc(70vh-20vh)] md:max-h-[calc(80vh-20vh] cursor-pointer transition-colors duration-1000" onclick="event.stopPropagation()">
-                        <div class="flex flex-col items-center justify-center h-full">
-                            <div id="dropZoneSVG" class="flex items-center justify-center">
-                                <svg class="fill-current h-12 w-12 text-blue-400 dark:text-blue-300 transition-colors duration-1000" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
-                                    <path d="M14 2H6a2 2 0 00-2 2v6a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2z"></path>
-                                </svg>
-                            </div>
-                            <p id="dropZoneText" class="text-gray-600 dark:text-gray-300 text-lg mb-4 transition-colors duration-1000">Drag & drop files here or <span class="text-cyan-400 dark:text-blue-400">click to select</span></p>
-                            <!-- Modal Trigger Button -->
-                            <button id="modalTrigger" onclick="document.getElementById('previewModal').classList.remove('hidden')" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-purple-600 hover:to-blue-500 text-white font-semibold py-2.5 px-6 rounded-full shadow-md transition-colors duration-1000 focus:outline-none focus:ring-2 focus:ring-purple-400">
-                                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                                Preview Files
-                            </button>
-                        </div>
-                    </div>
-                    <section class="w-[calc(70vw-30px)] lg:max-w-[calc(50vw-30px)] absolute bg-gradient-to-r from-purple-200 via-pink-200 to-indigo-200 dark:bg-gradient-to-r dark:from-purple-800 dark:via-pink-800 dark:to-indigo-800 flex space-x-2 bottom-3 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2 transition-colors duration-1000">
-                        <textarea type="text" aria-label="prompt input field" title="prompt field" id="imagePrompt" class="w-full pt-2 scrollbar-hide resize-none text-black dark:text-white max-h-[10vh] overflow-wrap rows-2 bg-transparent focus:outline-none" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';" placeholder="Enter your prompt here"></textarea>
-                        <div class="flex items-center justify-end">
-                            <button id="submitImage" aria-label="submit button" title="submit" class="p-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg focus:outline-none hover:from-blue-600 hover:to-purple-700 w-fit">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </div>
-                    </section>
-                </section>
-            </div>
-            `
-        },
-        {
-            name: "previewModal",
-            html:`
-            <div id="previewModal" class="hidden fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 flex items-center justify-center transition-opacity duration-300 ease-in-out">
-                <div class="relative p-3 bg-white dark:bg-slate-800 rounded-xl shadow-2xl md:mx-auto min-w-[30vw] max-w-[calc(70vw-30px)] max-h-[calc(70vh-20vh)] md:max-h-[calc(80vh-20vh)] overflow-hidden transform transition-transform duration-300 ease-out scale-95 transition-colors duration-1000" id="modalContent">
-                    <h2 class="text-2xl font-semibold text-blue-600 dark:text-sky-400 mb-1 transition-colors duration-1000">Preview Files</h2>
-                    <div class="overflow-hidden">
-                        <div id="uploadedFiles" class="pb-4 mb-2 rounde-lg dark:bg-[#002a3d] p-2 space-y-3 max-h-[calc(60vh-100px)] overflow-y-auto scrollbar-hide transition-colors duration-1000">
-                            <p class="font-bold mb-12 px-12 text-cyan-600 dark:text-teal-400 transition-colors duration-1000">No files uploaded yet.</p>
-                        </div>
-                    </div>
-                    <div class="absolute bottom-0 right-0.5 z-60 w-24 p-2 border-t border-gray-200 dark:border-[#4d7339] flex justify-end v">
-                        <button id="closeModal" onclick="document.getElementById('previewModal').classList.add('hidden')" class="bg-gradient-to-r from-red-500 to-pink-600 hover:from-pink-600 hover:to-red-500 text-white font-semibold py-2 px-5 rounded-full shadow-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors duration-1000">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-            `
-        },
-        {
-            name: "fileInput",
-            html:`
-            <input multiple class="absolute opacity-0" accept=".txt, .doc, .docx, .rtf, .md, .markdown, .epub, .mobi, .pdf, .png, .jpg, .jpeg, .svg, .gif, .bmp" type="file" id="fileInput" onclick="handleFileInputClick();"/>
-            `
-        },
-        {
-            name: "chatOptions",
-            html:`
-            <!-- Conversation options -->
-            <!-- Background Overlay -->
-            <div id="chatOptions-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden w-full h-full">
-
-            <!-- Main Modal -->
-            <div id="chatOptions" class="fixed flex inset-0 items-center justify-center rounded-lg shadow-xl z-50 animate-exit">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full bg-gradient-to-r from-blue-400 to-sky-400">
-            <div class="text-center">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Options</h2>
-            <section class="grid grid-rows-2 space-y-4">
-            <div class="flex flex-row justify-center space-x-4">
-            <button id="renameOption" class="bg-blue-800 text-white p-1 rounded-lg w-full shadow-sm transition duration-300 ease-in-out transform hover:scale-105">
-            Rename
-            </button>
-            <button id="DeleteOption" class="bg-red-500 text-white p-2 rounded-lg w-full shadow-sm transition duration-300 ease-in-out transform hover:scale-105">
-            Delete
-            </button>
-            </div>
-            <div class="items-center">
-            <button id="renameOptionsBt" class="bg-gray-300 text-gray-700 mt-4 p-3 rounded-lg w-fit shadow-sm transition duration-300 ease-in-out transform hover:scale-105">
-            Cancel
-            </button>
-            </div>
-            </section>
-            </div>
-            </div>
-            </div>
-
-            <div id="confirm-delete-modal" class="fixed inset-0 w-full h-full bg-black/30 flex items-center justify-center overflow-y-auto z-50 -translate-x-full transition-transform duration-700 ease-in-out transform">
-            <div id="confirm-delete-box" class="bg-white text-center p-4 rounded-lg shadow-xl max-w-md">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Confirm Deletion</h2>
-            <p class="text-gray-700 mb-4">Are you sure you want to delete this item?</p>
-            <div class="flex justify-between space-x-4">
-            <button id="CancelDeleteBt" class="bg-blue-500 text-white p-3 rounded-lg w-1/2 shadow-sm transition duration-300 ease-in-out transform hover:scale-105">
-            Cancel
-            </button>
-            <button id="ConfirmDelete" class="bg-red-500 text-white p-3 rounded-lg w-1/2 shadow-sm transition duration-300 ease-in-out transform hover:scale-105">
-            Delete
-            </button>
-            </div>
-            </div>
-            </div>
-            </div>
-            `
-        },
-        {
-            name: "",
-            html:``
-        },
-        {
-            name: "",
-            html:``
-        },
-        {
-            name: "",
-            html:``
-        },
-        {
-            name: "",
-            html:``
-        },
-        {
-            name: "",
-            html:``
-        },
-        {
-            name: "",
-            html:``
-        },
-        {
-            name: "",
-            html:``
-        },
-        ]
         this.modalSectionContent = `
         <!--Recording modal-->
         <div id="recordingModal" class="hidden fixed inset-0 z-50 bg-blue-400/20 overflow-y-auto">
@@ -280,7 +85,7 @@ class GHandler{
         </div>
 
         <!-- Modal Structure -->
-        <div id="previewModal" class="hidden fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 flex items-center justify-center transition-opacity duration-300 ease-in-out">
+        <div id="previewModal" class="hidden scrollbar-thin fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-50 flex items-center justify-center transition-opacity duration-300 ease-in-out">
             <div class="relative p-3 bg-white dark:bg-slate-800 rounded-xl shadow-2xl md:mx-auto min-w-[30vw] max-w-[calc(70vw-30px)] max-h-[calc(70vh-20vh)] md:max-h-[calc(80vh-20vh)] overflow-hidden transform transition-transform duration-300 ease-out scale-95 transition-colors duration-1000" id="modalContent">
                 <h2 class="text-2xl font-semibold text-blue-600 dark:text-sky-400 mb-1 transition-colors duration-1000">Preview Files</h2>
                 <div class="overflow-hidden">
@@ -373,7 +178,7 @@ class GHandler{
                 <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Settings</h2>
 
                 <!--Scrollable content container-->
-                <section class="bg-[#fdfdfd]  dark:bg-zinc-800 overflow-auto max-h-[80vh] shadow-inner-md border-2 border-[#8f45ff] dark:border-[#2b3a59] rounded-md p-2 transition-colors transform duration-600">
+                <section class="bg-[#fdfdfd]  dark:bg-zinc-800 overflow-auto max-h-[80vh] shadow-inner-md border-2 border-[#8f45ff] dark:border-[#2b3a59] rounded-md p-2 transition-colors transform duration-600 scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-cyan-600 dark:scrollbar-track-gray-950 dark:scrollbar-thumb-cyan-600 scroll-smooth">
 
                     <section class="mb-4 space-y-1" arial-label="Control Stection" title="Control Section">
                         <section class="grid grid-cols-2 grid-rows-2 md:grid-cols-3 mb-4 space-y-3">
@@ -423,8 +228,8 @@ class GHandler{
                             </svg>
                             Enter Your &nbsp;<i> <span class="text-orange-500">wish</span></i> /<span class="text-pink-500"> infor</span>/<span class="text-purple-500"> preference</span>:
                         </label>
-                        <section title="What would you like IntelliDesk to know about you? Tell me what you would want me to do for you and in what manner?" class="w-full rounded-lg border-2 border-blue-500 dark:border-blue-300 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-50 dark:bg-gray-700 transition-colors duration-1000">
-                            <textarea id="pref-input" class="scrollbar-hide resize-none overflow-wrap w-full text-rose-950 dark:text-white pt-3 px-4 rounded-lg bg-gray-50 dark:bg-gray-700 ring-none outline-none transition-colors duration-1000" placeholder="What would you like IntelliDesk to do or know about you?..." oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 28 * window.innerHeight / 100) + 'px'; this.scrollTop = this.scrollHeight;"></textarea>
+                        <section title="What would you like quickai to know about you? Tell me what you would want me to do for you and in what manner?" class="w-full rounded-lg border-2 border-blue-500 dark:border-blue-300 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-50 dark:bg-gray-700 transition-colors duration-1000">
+                            <textarea id="pref-input" class="scrollbar-hide resize-none overflow-wrap w-full text-rose-950 dark:text-white pt-3 px-4 rounded-lg bg-gray-50 dark:bg-gray-700 ring-none outline-none transition-colors duration-1000" placeholder="What would you like quickai to do or know about you?..." oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 28 * window.innerHeight / 100) + 'px'; this.scrollTop = this.scrollHeight;"></textarea>
                             <div class="flex justify-end">
                                 <!-- Checkmark Circle Icon Button -->
                                 <button id="pref-submit" class="bg-green-500 hover:bg-yellow-500 text-white p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-green-300 transition-colors duration-1000">
@@ -527,7 +332,7 @@ class GHandler{
         </div>
 
         <!--Key management modal-->
-        <div id="apiKeyManPage" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 translate-y-full transition-all duration-700">
+        <div id="apiKeyManPage" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 translate-y-[100vh] hidden transition-all duration-700">
             <div class="relative w-fit max-w-3xl mx-auto bg-white dark:bg-stone-800 p-6 rounded-lg shadow-lg aimate-fadeIn overflow-hidden">
                 <!-- Close Button -->
                 <button id="closeModalManPage" class="absolute top-2 right-2 text-black dark:text-blue-400 hover:text-gray-900 hover:rotate-45 duration-300 dark:hover:text-gray-400 transition-colors duration-1000">
@@ -674,7 +479,7 @@ class GHandler{
                     onclick="closediagViewModal();"
                     class="absolute top-1 right-3 text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded z-30 transition-all duration-1000"
                 >Close</button>
-                <div class="w-full h-[96%] my-4 overflow-auto">
+                <div class="w-full h-[96%] my-4 overflow-auto scrollbar-thin scrollbar-thumb-gray-900 scrollbar-track-cyan-600 dark:scrollbar-track-gray-950 dark:scrollbar-thumb-cyan-600 scroll-smooth">
                     <div id="modal-content" class="p-4 flex flex-col"></div>
                 </div>
             </section>
@@ -716,7 +521,7 @@ class GHandler{
         <div id="errorModal-GN" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-41">
             <div id="errorBox-GN" class="bg-white p-6 rounded-lg shadow-lg min-w-80 max-w-[90vw] md:max-w-[70vw] animate-exit transition-all duration-1000">
                 <h2 class="text-lg font-semibold text-red-600">Error!</h2>
-                <p id="error-message-GN" class="mt-2 text-gray-600" id="errorMessage">Something went wrong.</p></p>
+                <p id="error-message-GN" class="mt-2 text-gray-600" id="errorMessage">Something went wrong.</p>
                 <section class="flex justify-center">
                     <button onclick="window.hideStatus('error')" class="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
                         Close

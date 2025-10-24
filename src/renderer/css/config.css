@@ -92,47 +92,78 @@
 .pulse-hover:hover {
     animation: pulse 1s infinite;
 }
+
+
 /* Reset default scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+.scrollbar-custom-v1::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
 }
 
 /* Light theme scrollbar */
-::-webkit-scrollbar-track {
+.scrollbar-custom-v1::-webkit-scrollbar-track {
     background:#2c2c2c;
     border-radius: 4px;
     opacity:0.5;
 }
 
-.dark ::-webkit-scrollbar-track {
+.scrollbar-custom-v1.dark ::-webkit-scrollbar-track {
     background:#24486b;
     border-radius: 4px;
     opacity:0.5;
 }
 
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(145deg, #00aa7f, #aaffff, #00aaff);
+.scrollbar-custom-v1::-webkit-scrollbar-thumb {
+    background: linear-gradient(145deg, #00aa7f, #5500ff, #00aaff);
     border-radius: 4px;
     transition: background-color 0.3s ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.scrollbar-custom-v1::-webkit-scrollbar-thumb:hover {
     background: #555500;
 }
 
-.dark ::-webkit-scrollbar-thumb {
+.scrollbar-custom-v1.dark ::-webkit-scrollbar-thumb {
     background: #ffffff;
 }
 
-::-webkit-scrollbar-thumb:active {
+.scrollbar-custom-v1::-webkit-scrollbar-thumb:active {
     background: linear-gradient(135deg, #aa55ff, #aaaaff, #ff55ff);
 }
 
 /* Optional: Add transitions for more natural feel */
-ython.assistant-unused
-.note:-webkit-scrollbar {
+.scroll-smooth:-webkit-scrollbar {
     scroll-behavior: smooth;
+}
+
+.scrollbar-rounded::-webkit-scrollbar-thumb {
+    border-radius: 9999px; /* fully rounded */
+}
+
+/*Custom scrollbar*/
+.scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+    border-radius: 4px;
+}
+.scrollbar-custom::-webkit-scrollbar-track {
+    background: #0b0b0b;
+}
+.scrollbar-custom.dark::-webkit-scrollbar-track {
+    background: #181818;
+}
+.scrollbar-custom::-webkit-scrollbar-thumb {
+    background: linear-gradient(145deg, #00aa7f, #aaffff, #00aaff);
+}
+
+.scrollbar-custom.dark::-webkit-scrollbar-thumb {
+    background: linear-gradient(145deg, #00557f, #aaffff, #0089ce);
+}
+
+/* Exclude elements with .scrollbar-default */
+.scrollbar-default::-webkit-scrollbar {
+    all: unset;
 }
 
 /* Simulate a placeholder on the contenteditable div */
@@ -143,7 +174,6 @@ color: #9CA3AF;
 /* Always ensure an extra empty row at the bottom */
 #userInput::after {
 content: "\A"; /* Inserts a newline */
-white-space: pre;
 display: block;
 visibility: hidden;
 height: 2.4em; /* Adjust this value to match the height of an empty row */
@@ -274,4 +304,10 @@ height: 2.4em; /* Adjust this value to match the height of an empty row */
 }
 .dark .ai-canvas-container .line-numbers {
     color: #b8a0f7;
+}
+
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
 }

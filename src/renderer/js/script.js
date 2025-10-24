@@ -1,7 +1,7 @@
 const modelChange = new CustomEvent('ModelChange');
 document.addEventListener('DOMContentLoaded', function() {
-    for (const item of ['chatStore', 'Utils/keyshortcuts', 'pref/preference', 'Utils/fileHandler', 'diagraming/V_Utils', 'diagraming/packed_V_DG', 'diagraming/packed_V_Charts', '../../components/OP_Modal_Handler', 'setup/setup', 'MathBase/packed_mathHandler', 'MathBase/MathNormalize', 'tests/AiSimulator', '../../components/canvasMan', '../../components/theme', 'Utils/inputXscroll']) {
-        addScripts(item);
+    for (const item of ['chatStore', 'Utils/keyshortcuts', 'pref/preference', 'Utils/fileHandler', 'diagraming/V_Utils', 'diagraming/packed_V_DG', 'diagraming/packed_V_Charts', '../../components/OP_Modal_Handler', 'setup/setup', 'MathBase/packed_mathHandler', 'MathBase/MathNormalize', 'tests/AiSimulator', '../../components/canvasMan', '../../components/theme', 'Utils/inputXscroll', 'Utils/CaretUtil']) {
+        //addScripts(item);
     }
 
     const modal = document.getElementById("settingsModal");
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedModelText.innerText = model.options[model.selectedIndex].innerText;
         modelDropdown.classList.add('hidden');
 
-        document.title = `IntelliDesk - ${model.value}`;
+        document.title = `QuickAI - ${model.value}`;
 
     }
 
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to show the modal
 function Notify(_color = null, time = null, text = "") {
-    const modal = document.getElementById('IntelliDeskNotify');
+    const modal = document.getElementById('quickaiNotify');
     const message = document.getElementById('messageContent');
     const timeTaken = document.getElementById('timeTaken');
     if (text) {

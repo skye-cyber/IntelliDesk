@@ -36,7 +36,7 @@ for link in links:
 	if link.startswith("/cgit/qt/qtdeclarative.git/plain/src/qmlls/"):
 		full_link = os.path.join(base_url, link.split("qmlls/")[-1])
 		links_list.append(full_link)
-
+		# Name Selection: Depending on the locations and names parameters, it extracts either farm_location or farm_name from the farms queryset or list.
 		def recurse_dirs(links, base_url):
 			for link in links:  # Iterate over a copy of the list to avoid modification issues
 				if link.endswith("/"):
@@ -87,7 +87,7 @@ const custom2 = `\`\`\`html
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <!--<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">-->
-<title>IntelliDesk - Chat</title>
+<title>QuickAi - Chat</title>
 <link rel="stylesheet" href="css/styles.css">
 <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/default.min.css" />-->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous"/>
@@ -889,7 +889,7 @@ Basic mode <sub><span class="text-yellow-500 text-xl">{</span>
 			<canvas class="absolute z-0 bg-white bg-opacity-0" id="body-canvas"></canvas>
 
 			<!--Notification Modal Background -->
-			<div id="IntelliDeskNotify" class="fixed top-0 left-1/2 transform -translate-x-1/2 z-50 opacity-0 pointer-events-none transition-all duration-500 ease-in-out">
+			<div id="quickaiNotify" class="fixed top-0 left-1/2 transform -translate-x-1/2 z-50 opacity-0 pointer-events-none transition-all duration-500 ease-in-out">
 			<!-- Modal Content -->
 			<div class="items-center justify-center bg-white dark:bg-gray-950 p-6 rounded-lg shadow-lg w-full max-w-md">
 			<!-- Close Button -->
@@ -1027,7 +1027,7 @@ Basic mode <sub><span class="text-yellow-500 text-xl">{</span>
 			role="textbox"
 			aria-label="Message input"
 			autofocus
-			data-placeholder="Message IntelliDesk 💫 To generate an image, start with \`/image\`"
+			data-placeholder="Message QuickAi 💫 To generate an image, start with \`/image\`"
 			oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 28 * window.innerHeight / 100) + 'px'; this.scrollTop = this.scrollHeight;"
 			value="this.textContent()"
 			class="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 dark:text-white max-h-[28vh] pb-2 transition-all duration-1000"></div>
@@ -1347,8 +1347,8 @@ Basic mode <sub><span class="text-yellow-500 text-xl">{</span>
 			</svg>
 			Enter Your &nbsp;<i> <span class="text-orange-500">wish</span></i> /<span class="text-pink-500"> infor</span>/<span class="text-purple-500"> preference</span>:
 			</label>
-			<section title="What would you like IntelliDesk to know about you? Tell me what you would want me to do for you and in what manner?" class="w-full rounded-lg border-2 border-blue-500 dark:border-blue-300 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-50 dark:bg-gray-700 transition-colors duration-1000">
-			<textarea id="pref-input" class="scrollbar-hide resize-none overflow-wrap w-full text-rose-950 dark:text-white pt-3 px-4 rounded-lg bg-gray-50 dark:bg-gray-700 ring-none outline-none transition-colors duration-1000" placeholder="What would you like IntelliDesk to do or know about you?..." oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 28 * window.innerHeight / 100) + 'px'; this.scrollTop = this.scrollHeight;"></textarea>
+			<section title="What would you like quickai to know about you? Tell me what you would want me to do for you and in what manner?" class="w-full rounded-lg border-2 border-blue-500 dark:border-blue-300 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-50 dark:bg-gray-700 transition-colors duration-1000">
+			<textarea id="pref-input" class="scrollbar-hide resize-none overflow-wrap w-full text-rose-950 dark:text-white pt-3 px-4 rounded-lg bg-gray-50 dark:bg-gray-700 ring-none outline-none transition-colors duration-1000" placeholder="What would you like quickai to do or know about you?..." oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 28 * window.innerHeight / 100) + 'px'; this.scrollTop = this.scrollHeight;"></textarea>
 			<div class="flex justify-end">
 			<!-- Checkmark Circle Icon Button -->
 			<button id="pref-submit" class="bg-green-500 hover:bg-yellow-500 text-white p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-green-300 transition-colors duration-1000">

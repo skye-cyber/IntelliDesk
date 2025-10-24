@@ -12,70 +12,108 @@ const codeBlockContainer = document.getElementById('code-block-container');
 const CanvasOpen = document.getElementById('CanvasOpen');
 const plusIcon = document.getElementById('plusIcon');
 const closeIcon = document.getElementById('closeIcon');
+const lineCounter = document.getElementById('line-counter');
+const UserInput = document.getElementById('userInput');
+const codeScrollWrapper = document.getElementById("code-scroll-wrapper");
+const codeViewCode = codeView.querySelector('code');
 
 let isCanvasOpen = false;
 let isCanvasActive = CanvasOpen.getAttribute('aria-pressed') === 'true';
 let codeBuffer = null;
+let lineCount = null;
 
 CanvasthemeToggle.addEventListener('click', () => {
     themeSwitch.click()
 });
 
-// Initialize code content with sample code
-const sampleCode = `class ResizeClassToggler {
-  constructor(targetId, toggleTarget, breakpoint = 640, className = 'sm:flex') {
-    this.target = document.getElementById(targetId);
-    this.toggleTarget = document.getElementById(toggleTarget);
-    this.breakpoint = breakpoint;
-    this.className = className;
 
-    if (!this.target || !this.toggleTarget) return;
-
-    this.checkSize = this.checkSize.bind(this);
-
-    if ('ResizeObserver' in window) {
-      this.resizeObserver = new ResizeObserver(this.checkSize);
-      this.resizeObserver.observe(this.target);
-    } else {
-      window.addEventListener('resize', this.checkSize);
-    }
-
-    // Initial check
-    this.checkSize();
-  }
-
-  checkSize() {
-    const width = this.target.offsetWidth;
-    console.log(width)
-    if (width <= this.breakpoint) {
-      this.toggleTarget.classList.remove(this.className);
-    } else {
-      this.toggleTarget.classList.add(this.className);
-    }
-  }
-}
-
-new ResizeClassToggler('userInput', 'CanvasOpen', 430, 'sm:flex');
-new ResizeClassToggler('userInput', 'image-gen', 400, 'sm:flex');
-`;
-
-// Set code content editable initially to sample code
-//codeView.textContent = sampleCode;
-
-// Function to update line numbers based on codeView content
 function updateLineNumbers() {
-    const lines = codeView.textContent.split('\n').length;
+    const code = codeView.textContent //.replace(/\n+/g, '\n') || '';
+    const visualLines = code.split('\n').length;
+
     let numbers = '';
-    for (let i = 1; i <= lines; i++) {
+    for (let i = 1; i <= visualLines; i++) {
         numbers += i + '\n';
     }
+
     lineNumbers.textContent = numbers;
+    if (lineCounter) lineCounter.textContent = visualLines;
+    try {
+        wrapFoldableBlocks();
+    } catch (e) { }
 }
 
 // Sync vertical scroll of line numbers and code content
 function syncScroll() {
-    lineNumbers.scrollTop = codeView.scrollTop;
+    requestAnimationFrame(() => {
+        lineNumbers.scrollTop = codeView.scrollTop;
+    });
 }
+
+let currentScroll = 0;
+let targetScroll = 0;
+let isScrolling = false;
+
+// Clamp with optional bounce
+function clampBounce(value, min, max, bounce = 20) {
+    if (value < min) return min - Math.min(bounce, Math.abs(value - min));
+    if (value > max) return max + Math.min(bounce, Math.abs(value - max));
+    return value;
+}
+
+// Smooth scrolling loop
+function animateScroll() {
+    if (!isScrolling) return;
+
+    currentScroll += (targetScroll - currentScroll) * 0.15;
+
+    // Stop animation when close enough
+    if (Math.abs(targetScroll - currentScroll) < 0.5) {
+        currentScroll = targetScroll;
+        isScrolling = false;
+    }
+
+    // Apply smooth scroll transform
+    codeView.style.transform = `translateX(${-currentScroll}px)`;
+
+    // If bouncing, snap back to valid range
+    const maxScroll = codeView.scrollWidth + 50 - codeScrollWrapper.clientWidth;
+    if (targetScroll < 0 || targetScroll > maxScroll) {
+        targetScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+        isScrolling = true;
+    }
+
+    requestAnimationFrame(animateScroll);
+}
+
+// Handle wheel scroll
+codeView.addEventListener("wheel", (e) => {
+    const isVertical = Math.abs(e.deltaY) > Math.abs(e.deltaX);
+    const maxScroll = (codeView.scrollWidth + 50) - codeScrollWrapper.clientWidth;
+
+    if (isVertical) {
+        // Delegate vertical scroll to wrapper
+        e.preventDefault();
+        codeScrollWrapper.scrollTop += e.deltaY;
+
+    } else {
+        // Handle horizontal scroll
+        e.preventDefault();
+        targetScroll = clampBounce(targetScroll + e.deltaX, 0, maxScroll);
+        isScrolling = true;
+        animateScroll()
+    }
+    // Update typing indicator position
+    updateHandPosition();
+}, { passive: false });
+
+
+
+const resizeObserver = new ResizeObserver(() => {
+    lineNumbers.style.height = codeView.scrollHeight + 5 + 'px';
+});
+
+resizeObserver.observe(codeView);
 
 // Initialize UI state
 function setActiveButton(activeBtn) {
@@ -155,30 +193,32 @@ codeView.addEventListener('scroll', syncScroll);
 lineNumbers.addEventListener('scroll', syncScroll);
 
 function showCanvas() {
-    wfit('remove');
-
     //show canvas
     canvas.classList.remove('hidden');
     setTimeout(() => {
         canvas.classList.remove('translate-x-[100vw]');
         isCanvasOpen = true;
+        wfit('remove');
+        User_wfit("remove")
+        inputWAdjust('add')
     }, 400)
 }
 
 function hideCanvas() {
-    wfit('add');
-
     //hide canvas
     canvas.classList.add('translate-x-[100vw]');
     setTimeout(() => {
         canvas.classList.add('hidden');
         isCanvasOpen = false;
+        wfit('add');
+        User_wfit("remove")
+        inputWAdjust('remove')
     }, 400)
 }
 
 
 function canvasDSP(op = null) {
-     isCanvasActive = CanvasOpen.getAttribute('aria-pressed') === 'true';
+    isCanvasActive = CanvasOpen.getAttribute('aria-pressed') === 'true';
 
     if (!isCanvasActive) {
         // Activate state
@@ -250,12 +290,12 @@ CanvasOpen.addEventListener('click', () => {
     canvasDSP();
 });
 
-function setCanvasUpdate(e){
+function setCanvasUpdate(e) {
     showCanvas();
     const codeBlock = e.parentElement.parentElement.querySelector('code');
     const html = codeBlock.innerHTML;
     const validLanguage = codeBlock.id
-    codeView.innerHTML = `<code id="${validLanguage}" class="hljs ${validLanguage} block whitespace-pre-wrap w-full rounded-md bg-none font-mono transition-colors duration-700 mb-[20vh]">${html}</code>`;
+    codeView.innerHTML = `<code id="${validLanguage}" class="hljs ${validLanguage} block whitespace-pre w-full rounded-md bg-none font-mono transition-colors duration-500">${html}</code>`;
     canvasUpdate()
 }
 
@@ -334,6 +374,8 @@ function isCode(actualResponse) {
 }
 
 function wfit(task = 'add') {
+    //if (!isCanvasOpen) return;
+
     const Rlist = chatArea.querySelectorAll('#AIRes');
     if (!Rlist.length) return;
 
@@ -343,3 +385,28 @@ function wfit(task = 'add') {
     }
 }
 
+function User_wfit(task = 'add') {
+    //if (!isCanvasOpen) return;
+
+    const Rlist = chatArea.querySelectorAll('#URes');
+    if (!Rlist.length) return;
+
+    const method = task === 'add' ? 'add' : 'remove';
+    for (const element of Rlist) {
+        element.classList[method]('w-fit');
+    }
+}
+
+function inputWAdjust(task = 'add') {
+    //if (!isCanvasOpen) return;
+
+    if (!UserInput) return;
+
+    if (task === "add") {
+        UserInput.classList.remove('w-full');
+        UserInput.classList.add('w-[40vw]');
+    }else{
+        UserInput.classList.remove('w-[40vw]');
+        UserInput.classList.add('w-full');
+    }
+}

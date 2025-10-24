@@ -1,5 +1,4 @@
-
-
+// Initial API keys setup after install
 function toggleVisibility(id) {
     const input = document.getElementById(id);
     input.type = input.type === 'password' ? 'text' : 'password';
@@ -32,21 +31,21 @@ function closeApiQueryModal() {
 const manPagemodal = document.getElementById('apiKeyManPage')
 
 function showApiManModal(){
-    manPagemodal.classList.remove('translate-y-full');
+    manPagemodal.classList.remove('translate-y-[100vh]', 'hidden');
     manPagemodal.classList.add('translate-y-1');
 }
 
 
 function hideApiManModal(){
-    manPagemodal.classList.add('translate-y-full');
+    manPagemodal.classList.add('translate-y-[100vh]');
     manPagemodal.classList.remove('translate-y-1');
+    setTimeout(()=>{
+        manPagemodal.classList.add('hidden')
+    })
 }
 
 const manPageCloseBt = document.getElementById('closeModalManPage');
-manPageCloseBt.addEventListener('click', ()=>{
-    manPagemodal.classList.remove('translate-y-1');
-    manPagemodal.classList.add('translate-y-full')
-})
+manPageCloseBt.addEventListener('click', hideApiManModal)
 
 // Save keys using keytar via the preload API
 async function saveKeys(task="save") {
@@ -130,12 +129,6 @@ function openApiModal() {
     document.getElementById('apiKeyModal').classList.remove('hidden');
 }
 
-
-function resetKeys() {
-    document.getElementById('mistralKey').value = " ";
-    document.getElementById('huggingfaceKey').value = " ";
-    document.getElementById('saveKeysBt').click;
-}
 
 function showWarningModal() {
     // Logic to show the warning modal

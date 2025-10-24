@@ -62,7 +62,7 @@ renderer.code = function(code) {
 
 	if (isCanvasActive) {
 		//increament code buffer
-		codeBuffer = { lang: validLanguage, code: `<code id="${validLanguage}" data-value=${renderButtonId} class="hljs ${validLanguage} block whitespace-pre-wrap w-full rounded-md bg-none font-mono transition-colors duration-500 mb-[20vh]">${highlighted}</code>` }
+		codeBuffer = { lang: validLanguage, code: `<code id="${validLanguage}" data-value=${renderButtonId} class="hljs ${validLanguage} block whitespace-pre w-full rounded-md bg-none font-mono transition-colors duration-500">${highlighted}</code>` }
 
 		return `
 		<section class="flex justify-between top-1 p-1 w-full bg-sky-300 rounded-t-md dark:bg-[#001922] box-border transition-colors duration-700">

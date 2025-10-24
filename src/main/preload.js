@@ -748,6 +748,61 @@ contextBridge.exposeInMainWorld('api', {
     getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),
 });
 
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
+contextBridge.exposeInMainWorld('electronAPI', {
+    // App info
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+
+    // Chat functionality
+    sendChatMessage: (message, model, options) =>
+        ipcRenderer.invoke('send-chat-message', { message, model, options }),
+
+    // File dialogs
+    showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
+    showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
+    attachFiles: () => ipcRenderer.invoke('attach-files'),
+
+    // Model management
+    getAvailableModels: () => ipcRenderer.invoke('get-available-models'),
+
+    // Settings
+    getSettings: () => ipcRenderer.invoke('get-settings'),
+    saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+
+    // Theme
+    getTheme: () => ipcRenderer.invoke('get-theme'),
+    setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
+
+    // Voice recording
+    startRecording: () => ipcRenderer.invoke('start-recording'),
+    stopRecording: () => ipcRenderer.invoke('stop-recording'),
+
+    // Code/Canvas
+    saveCodeToFile: (code, filePath) => ipcRenderer.invoke('save-code-to-file', { code, filePath }),
+    loadCodeFromFile: (filePath) => ipcRenderer.invoke('load-code-from-file', { filePath }),
+
+    // Conversations
+    getConversations: () => ipcRenderer.invoke('get-conversations'),
+    saveConversation: (conversation) => ipcRenderer.invoke('save-conversation', conversation),
+    deleteConversation: (conversationId) => ipcRenderer.invoke('delete-conversation', conversationId),
+
+    // Event listeners for real-time updates
+    onChatResponse: (callback) => {
+        ipcRenderer.on('chat-response', (event, response) => callback(response));
+        return () => ipcRenderer.removeAllListeners('chat-response');
+    },
+
+    onError: (callback) => {
+        ipcRenderer.on('chat-error', (event, error) => callback(error));
+        return () => ipcRenderer.removeAllListeners('chat-error');
+    },
+
+    onThemeChange: (callback) => {
+        ipcRenderer.on('theme-changed', (event, theme) => callback(theme));
+        return () => ipcRenderer.removeAllListeners('theme-changed');
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     //initialize conversation histories when is ready/loaded

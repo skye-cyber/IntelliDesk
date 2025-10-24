@@ -86,6 +86,8 @@ async function MistraChat(text, modelName) {
 		window.HandleProcessingEventChanges('show')
 		processing = true
 
+		// const stream = window.generateTextChunks(); //for tests
+
 		const stream = await Mistarlclient.chat.stream({
 			model: modelName,
 			messages: window.electron.getChat(),
@@ -93,7 +95,6 @@ async function MistraChat(text, modelName) {
 		});
 
 		let output = ""
-		//const stream = window.generateTextChunks(); //for tests
 
 		let thinkContent = "";
 		let actualResponse = "";
@@ -249,6 +250,8 @@ async function MistraChat(text, modelName) {
 		}
 
 		processing = false;
+		// solves aiMessage w-full issue
+		if (isCanvasActive) showCanvas();
 
 		//stop timer
 		_Timer.trackTime("stop");
@@ -267,10 +270,10 @@ async function MistraChat(text, modelName) {
 		NormalizeCanvasCode();
 
 		// Store conversation history
-		 window.electron.addToChat({ role: "assistant", content: output });
+		window.electron.addToChat({ role: "assistant", content: output });
 
 		//console.log(actualResponse, fullResponse, output)
-		// render diagrams fromthis response
+		// render diagrams from this response
 		window.handleDiagrams(output, 'both');
 		window.LoopRenderCharts(output)
 
@@ -464,7 +467,7 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 					` : ''}
 						${thinkContent && actualResponse ? `<p class="rounded-lg border-2 border-blue-400 dark:border-orange-400"></p>` : ""}
 						${actualResponse ?
-						`<div  id="AIRes" class="${VisionMessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-100">${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
+					`<div  id="AIRes" class="${VisionMessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-100">${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
 							<p style="color: #333;">${window.marked(window.normalizeMathDelimiters(actualResponse))}</p>
 					<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
 						<div class="group relative max-w-fit transition-all duration-500 hover:z-50">
@@ -553,6 +556,9 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 
 		processing = false;
 
+		// solves aiMessage w-full issue
+		if (isCanvasActive) showCanvas();
+
 		//stop timer
 		_Timer.trackTime("stop");
 
@@ -619,6 +625,7 @@ function addUserMessage(text, fileType, fileDataUrl, fileContainerId) {
 	// Add Timestamp to user prompt
 	text = `${text} [${window.electron.getDateTime()} UTC]`
 	window.electron.addToChat({ role: "user", content: text });
+	User_wfit(isCanvasOpen? 'add':'remove')
 }
 
 function addLoadingAnimation(aiMessageDiv) {

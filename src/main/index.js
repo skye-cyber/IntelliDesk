@@ -6,9 +6,9 @@ const keytar = require('keytar');
 let mainWindow;
 
 const isDev = !app.isPackaged;
-const iconPath = isDev
-    ? path.join(__dirname, '../assets/IntelliDesk.png') // for dev
-    : path.join(process.resourcesPath, 'assets/IntelliDesk.png'); // for prod;
+let iconPath = isDev
+    ? path.join(__dirname, '../assets/intellidesk.png') // for dev
+    : path.join(process.resourcesPath, 'assets/intellidesk.png'); // for prod;
 
 // Fallback to a generic icon or skip setting it
 if (!fs.existsSync(iconPath)) {
@@ -113,7 +113,8 @@ const template = [
         submenu: [
             { label: 'Minimize', accelerator: 'CmdOrCtrl+M', role: 'minimize' },
             { label: 'Close', accelerator: 'CmdOrCtrl+W', role: 'close' },
-            {   label: 'Toggle Full Screen',
+            {
+                label: 'Toggle Full Screen',
                 role: 'togglefullscreen',       // built-in behavior
                 accelerator: 'F11'              // explicit on all platforms
             }
@@ -174,9 +175,14 @@ function createWindow() {
             sandbox: false, // Disable sandboxing
         }
     });
-
-    // Load the main application when it is ready
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html')); // Load your HTML file
+    if (isDev) {
+        mainWindow.loadURL('http://localhost:40099/')
+        // Open DevTools in development
+        //mainWindow.webContents.openDevTools()
+    } else {
+        // Load the main application when it is ready
+        mainWindow.loadFile(path.join(__dirname, '../../build/index.html')); // Load your HTML file
+    }
 
     // Show the main window and close the loading window when the main window is ready to show**
     mainWindow.once('ready-to-show', () => {

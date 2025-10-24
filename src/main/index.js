@@ -7,8 +7,8 @@ let mainWindow;
 
 const isDev = !app.isPackaged;
 const iconPath = isDev
-    ? path.join(__dirname, '../assets/quickai.png') // for dev
-    : path.join(process.resourcesPath, 'assets/quickai.png'); // for prod;
+    ? path.join(__dirname, '../assets/IntelliDesk.png') // for dev
+    : path.join(process.resourcesPath, 'assets/IntelliDesk.png'); // for prod;
 
 // Fallback to a generic icon or skip setting it
 if (!fs.existsSync(iconPath)) {
@@ -28,7 +28,7 @@ ipcMain.on('Notify', (event, data) => {
 
         // Create and send a system notification
         new Notification({
-            title: 'QuickAi',
+            title: 'IntelliDesk',
             body: `Request completed in ${seconds} seconds and ${milliseconds} milliseconds`
         }).show();
     }
@@ -189,7 +189,7 @@ function createWindow() {
 }
 
 // Set the app user model ID
-app.setAppUserModelId('com.quickai.app');
+app.setAppUserModelId('com.IntelliDesk.app');
 
 app.on('ready', async () => {
     try {
@@ -203,7 +203,7 @@ app.on('ready', async () => {
     Menu.setApplicationMenu(menu);
     // Create the main window
     const mainWindow = createWindow();
-    //const storagePath = path.join(app.getPath('home'), '.quickai.store');
+    //const storagePath = path.join(app.getPath('home'), '.IntelliDesk.store');
     //mainWindow.webContents.send('storagePath', storagePath);
 
     // Create the tray icon
@@ -227,7 +227,7 @@ app.on('ready', async () => {
         }
     ]);
 
-    tray.setToolTip('QuickAI');
+    tray.setToolTip('IntelliDesk');
     tray.setContextMenu(contextMenu);
 });
 
@@ -244,7 +244,7 @@ app.on('activate', () => {
 });
 
 
-const SERVICE_NAME = 'com.quickai.app'
+const SERVICE_NAME = 'com.IntelliDesk.app'
 
 // IPC handler to save keys
 ipcMain.handle('save-keys', async (event, keys) => {
@@ -296,14 +296,14 @@ ipcMain.handle('save-dg-As-PNG', async (event, buffer, path) => {
 
 async function prepDirectories() {
     try {
-        const baseDir = path.join(app.getPath('home'), '.quickai');
+        const baseDir = path.join(app.getPath('home'), '.IntelliDesk');
 
-        // Create the base .quickai directory if it doesn't exist
+        // Create the base .IntelliDesk directory if it doesn't exist
         fs.mkdirSync(baseDir, { recursive: true });
         console.log(`Ensured base directory: ${baseDir}`);
 
-        // Define subdirectories to be created inside .quickai
-        const subdirs = ['.quickai.config', '.quickai.store', '.quickai.cache'];
+        // Define subdirectories to be created inside .IntelliDesk
+        const subdirs = ['.IntelliDesk.config', '.IntelliDesk.store', '.IntelliDesk.cache'];
 
         subdirs.forEach(sub => {
             const fullPath = path.join(baseDir, sub);

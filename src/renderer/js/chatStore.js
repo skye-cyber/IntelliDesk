@@ -1,4 +1,4 @@
-const storagePath = window.electron.joinPath(window.electron.home_dir(), '.quickai/.quickai.store');
+const storagePath = window.electron.joinPath(window.electron.home_dir(), '.IntelliDesk/.IntelliDesk.store');
 const chatArea = document.getElementById('chatArea');
 const conversationsPanel = document.getElementById('conversations');
 InputPurify = window.InputPurify;

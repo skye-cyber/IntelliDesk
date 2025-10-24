@@ -1,5 +1,5 @@
 {
-  "name": "QuickAi",
+  "name": "intellidesk",
   "version": "1.2.5",
   "description": "An application to interact with AI assistants for free.",
   "main": "src/main/index.js",
@@ -103,8 +103,8 @@
     "!node_modules/"
   ],
   "build": {
-    "appId": "com.quickai.app",
-    "productName": "QuickAi",
+    "appId": "com.intellidesk.app",
+    "productName": "IntelliDesk",
     "electronDownload": {
       "cache": true
     },
@@ -124,7 +124,7 @@
       }
     ],
     "mac": {
-      "icon": "src/assets/quickai.icns",
+      "icon": "src/assets/intellidesk.icns",
       "category": "public.app-category.productivity",
       "target": [
         {
@@ -145,7 +145,7 @@
       "artifactName": "${productName}-${version}-${arch}.dmg"
     },
     "win": {
-      "icon": "src/assets/quickai.ico",
+      "icon": "src/assets/intellidesk.ico",
       "target": [
         {
           "target": "nsis",
@@ -200,7 +200,7 @@
       "category": "Utility",
       "icon": "src/icons",
       "maintainer": "Skye <swskye17@gmail.com>",
-      "synopsis": "QuickAi Desktop",
+      "synopsis": "IntelliDesk Desktop",
       "description": "Your AI assistant on all platforms"
     },
     "appImage": {
@@ -216,7 +216,7 @@
       "artifactName": "${productName}_${version}_${arch}.deb"
     },
     "snap": {
-      "summary": "QuickAi Snap Package",
+      "summary": "IntelliDesk Snap Package",
       "grade": "stable",
       "confinement": "classic",
       "plugs": [

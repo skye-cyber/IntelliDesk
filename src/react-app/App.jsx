@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MainLayout } from '@components/Layout/MainLayout';
 import { Header } from '@components/Header/Header';
 import { ChatInterface } from '@components/Chat/ChatInterface';
-import { InputSection } from '@components/Input/InputSection';
+import { InputSection } from '@components/InputSection/InputSection';
 import { Sidebar } from '@components/Sidebar/Sidebar';
 import { Canvas } from '@components/Canvas/Canvas';
 import { ModelSelector } from '@components/ModelSelector/ModelSelector';
@@ -15,6 +15,7 @@ import '@js/katex/contrib/auto-render.min.js';
 //import '@js/managers/packed_HF_Audio.js';
 //import '@js/script.js';
 //import '@js/Utils/packed_chatUtils.js';
+import '@js/managers/Canvas/canvasMan.js'
 import '@js/managers/packed_HF_Chat.js';
 //import '@js/router.js';
 import '@js/managers/packed_MistralChatsAdmin.js';

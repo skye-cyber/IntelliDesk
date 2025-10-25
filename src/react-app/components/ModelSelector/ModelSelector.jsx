@@ -14,7 +14,7 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
                     value: "deepseek-ai/DeepSeek-R1", name: "DeepSeek-R1", description: "The first reasoning model from DeepSeek.", icon: "deepseek"
                 },
                 {
-                    value: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B", name: "DeepSeek-R1-Distill-Qwen-32B", description: "The first reasoning model from DeepSeek, distilled into a 32B dense model."
+                    value: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B", name: "DeepSeek-R1-Distill-Qwen-32B", icon: 'deepseek', description: "The first reasoning model from DeepSeek, distilled into a 32B dense model."
                 }
             ]
         },
@@ -35,20 +35,20 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
         {
             title: "Math Models",
             models: [
-                { value: "Qwen/Qwen2.5-Math-1.5B", name: "Qwen2.5-Math-1.5B", icon:"math", description: "Math model" },
+                { value: "Qwen/Qwen2.5-Math-1.5B", name: "Qwen2.5-Math-1.5B", icon:"default", description: "Math model" },
             ]
         },
         {
             title: "Coding Models",
             models: [
-                { value: "Qwen/Qwen2.5-Coder-32B-Instruct", name: "Qwen2.5-Coder-32B-Instruct", description: "Supports advanced coding tasks", icon: "coding", platform: "hf" },
+                { value: "Qwen/Qwen2.5-Coder-32B-Instruct", name: "Qwen2.5-Coder-32B-Instruct", description: "Supports advanced coding tasks", icon: "code", platform: "hf" },
             ]
         },
         {
             title: "Vision Models",
             models: [
                 {
-                    value: "Qwen/wen2.5-Math-1.5B", name: "wen2.5-Math-1.5B", description: "Mathematical Model by qwen Team.", icon: "qwen", platform: "hf"
+                    value: "Qwen/wen2.5-Math-1.5B", name: "Qwen2.5-Math-1.5B", description: "Mathematical Model by qwen Team.", icon: "qwen", platform: "hf"
                 },
             ]
         },
@@ -114,7 +114,7 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
                     value: "codestral-2501", name: "codestral-2501", description: "Advanced coding-focused model offering improved performance in programming-related tasks and queries.", icon: "mistral", platform: "mitsral"
                 },
                 {
-                    value: "codestral-2505", name: "", description: "Advanced coding-focused model iteration", icon: "mistral", platform: "mitsral"
+                    value: "codestral-2505", name: "codestral-2505", description: "Advanced coding-focused model iteration", icon: "mistral", platform: "mitsral"
                 }
             ]
         },
@@ -161,9 +161,6 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
                     value: "ministral-8b-2410", name: "ministral-8b-2410", description: "Provides enhanced capabilities and efficient resource usage", icon: "mistral", platform: "mitsral"
                 },
                 {
-                    value: "mistral-large-latest", name: "mistral-large-latest", description: "", icon: "", platform: "The latest iteration of the large LLM."
-                },
-                {
                     value: "open-mistral-nemo", name: "open-mistral-nemo", description: "Tailored for conversational AI applications, focusing on generating human-like dialogue and understanding context.", icon: "mistral", platform: "mitsral"
                 },
                 {
@@ -171,9 +168,6 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
                 },
                 {
                     value: "mistral-large-2411", name: "mistral-large-2411", description: "Designed to deliver state-of-the-art performance", icon: "mistral", platform: "mitsral"
-                },
-                {
-                    value: "mistral-small-2409", name: "mistral-small-2409", description: "Employs enhanced training techniques for better performance in lightweight applications.", icon: "mistral", platform: "mitsral"
                 }
             ]
         },
@@ -182,14 +176,11 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
                 {
                     value: "mistral-embed", name: "mistral-embed", description: "Designed for embedding generation, facilitating the transformation of text into vector representations for downstream machine learning tasks.", icon: "mistral", platform: "mitsral"
                 },
-                {
-                    value: "", name: "", description: "", icon: "mistral", platform: "mitsral"
-                },
             ]
         }
     ];
     return (
-        <div className="fixed z-[60] mt-1 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border-2 border-gray-300 dark:border-none dark:bg-neutral-700 text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-ellipsis animation transition-colors duration-1000">
+        <div className="fixed z-[60] mt-1 -ml-14 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border-2 border-gray-300 dark:border-none dark:bg-neutral-700 text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-ellipsis animation transition-colors duration-1000">
             <div role="menu" aria-orientation="vertical">
                 {hfmodelCategories.map((category, index) => (
                     <ModelCategory
@@ -200,13 +191,10 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
                     />
                 ))}
                 {/*--Mistral Models Seperator*/}
-                <div role="separator" aria-orientation="horizontal" className="mx-4 p-2 my-1 flex justify-center">
-                    <div className="flex-1 rounded-md p-1 h-px bg-gradient-to-r from-[#00fab7] via-[#0080bc] to-[#00fe00]"></div>
-                </div>
                 <div role="separator" aria-orientation="horizontal" className="mx-5 my-1 flex items-center justify-center">
                     <div className="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>
                     <div className="px-8">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="stroke-[#00aaff]" fill="b" viewBox="0 0 24 24" className="w-12 h-12 text-purple-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-purple-500 stroke-[#00aaff]" fill="b" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm12-8v2a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" />
                         </svg>
                     </div>

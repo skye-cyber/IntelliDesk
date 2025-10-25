@@ -5,11 +5,11 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
 
     return (
-        <header className="space-b-2 mb-2 z-[60] transform transition-transform transition-all duration-500">
+        <header className="space-b-2 my-2 z-[60] transform transition-transform transition-all duration-500">
             <div className="flex justify-between">
                 <section className="flex justify-start">
                     {/* Toggle Button */}
-                    <section className="relative mr-14">
+                    <section className="flex items-center relative mr-14">
                         <button
                             id="togglePane"
                             title="View Chats"
@@ -30,7 +30,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                             onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
                         >
                             <div className="flex">
-                                <span id="selectedModelText" data-class="hf" className="text-lg">
+                                <span id="selectedModelText" data-class="hf" className="text-md max-w-36 truncate">
                                     {getModelDisplayName(selectedModel)}
                                 </span>
                                 <svg className="mt-1" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -72,5 +72,5 @@ const getModelDisplayName = (modelValue) => {
         'Qwen/Qwen2.5-Coder-32B-Instruct': 'Coding mode',
         'deepseek-ai/DeepSeek-R1': 'DeepSeek-R1',
     };
-    return modelMap[modelValue] || modelValue.split('/')[-1] || modelValue;
+    return modelMap[modelValue] || modelValue.split('/')[1] || modelValue;
 };

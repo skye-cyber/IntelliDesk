@@ -35,7 +35,7 @@ class ErrorBoundary extends React.Component {
           borderRadius: '8px',
           backgroundColor: '#ffeaea',
           margin: '10px',
-        }} className='max-h-[90vh] overflow-y-auto'>
+        }} className='fixed z-30 inset-10 max-h-[90vh] overflow-y-auto'>
           <h2 style={{ color: '#d63031', margin: '0 0 10px 0' }}>Something went wrong.</h2>
           <details style={{ whiteSpace: 'pre-wrap', fontSize: '14px' }}>
             {this.state.error && this.state.error.toString()}

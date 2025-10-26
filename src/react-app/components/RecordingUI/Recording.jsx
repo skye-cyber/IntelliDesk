@@ -1,46 +1,82 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { HfInference } from "@huggingface/inference";
+import { RecordingAnimator } from '@js/animations/WaveForm.js'
+import '@js/Utils/chatUtils.js'
 
-export const Recording = ({ isOpen, onToggleRecording }) => {
-    const { isPaused, setIsPaused } = useState(true);
-    const { startTime, setStartTime } = useState(true);
-    const { timer, setTimer } = useState(null);
-    const { currentLoader, setCurrentLoader } = useState(0);
-    const { elapsedTime, setElapsedTime } = useState(null);
-    const { currentAudioElement, setCurrentAudioElement } = useState(null);
-    const { LoaderEvent, setLoaderEvent } = useState(null);
-    const { hf_API_KEY, setHf_API_KEY } = useState(null);
-    const { client, setClient } = useState(null);
-    const { mediaRecorder, setMediaRecorder } = useState(null);
-    const { audioChunks, setAudioChunks } = useState([]);
-    const { isRecording, setIsRecording } = useState(false);
-    const { timerInterval, setTimerInterval } = useState(null);
-    const { canSave, setCanSave } = useState(true);
-    const { stream, setStream } = useState(null);
+export const Recording = ({ isOpen, onToggle }) => {
+    const [isPaused, setIsPaused] = useState(false);
+    const [startTime, setStartTime] = useState(null);
+    //const [Timerimer, setTimer] = useState(null);
+    //const [currentLoader, setCurrentLoader] = useState(0);
+    const [elapsedTime, setElapsedTime] = useState(null);
+    const [currentAudioElement, setCurrentAudioElement] = useState(null);
+    //const [LoaderEvent, setLoaderEvent] = useState(null);
+    const [hf_API_KEY, setHf_API_KEY] = useState(null);
+    const [client, setClient] = useState(null);
+    //const [mediaRecorder, setMediaRecorder] = useState(null);
+    const [audioChunks, setAudioChunks] = useState([]);
+    const [isRecording, setIsRecording] = useState(false);
+    const [TimerimerInterval, setTimerInterval] = useState(null);
+    //const [stream, setStream] = useState(null);
+
+    const [isVisible, setIsVisible] = useState(false);
+    const [shouldRender, setShouldRender] = useState(false);
+    const isControlledCloseRef = useRef(false); // Track if WE initiated the close
 
     const refs = useRef({
         recordingModal: null,
         startButton: null,
         finishButton: null,
         cancelButton: null,
-        recordingTime: null,
+        recordingTimeEl: null,
         chatArea: null,
         AutoScroll: null,
         errorContainer: null,
-        closeModal: null,
         retry: null,
         closeModal: null,
         errorArea: null,
         microphone: null,
         microphoneSVG: null,
-        recordingModal: null,
-        recordingTime: null,
         pauseButton: null,
-        startButton: null,
-        finishButton: null,
         cancelRecButton: null,
-        microphoneSVG: null
+        canvas: null,
+        RecAnimator: null,
+        stream: null,
+        mediaRecorder: null,
+        canSave: true,
+        currentLoader: null,
+        Timer: null
     })
+
+    // Handle opening
+    useEffect(() => {
+        if (isOpen) {
+            //setShouldRender(true);
+            // Wait for render then show with animation
+            setTimeout(() => setIsVisible(true), 10);
+        }
+    }, [isOpen]);
+
+    // Handle close animation then notify parent
+    const handleClose = useCallback((notifyParent = true) => {
+        closeRecording()
+        setIsVisible(false);
+        // Wait for animation to complete before unmounting
+        setTimeout(() => {
+            //setShouldRender(false);
+            if (notifyParent) {
+                onToggle(); // Only notify parent if this was user-initiated
+            }
+        }, 1000);
+    }, [onToggle]);
+
+    // Close when isOpen becomes false (only if WE didn't initiate it)
+    useEffect(() => {
+        if (!isOpen && isVisible && !isControlledCloseRef.current) {
+            // This close was initiated by parent prop change
+            handleClose(false); // Don't notify parent to avoid loop
+        }
+    }, [isOpen, isVisible, handleClose]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -50,7 +86,7 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
         currentRefs.cancelButton = document.getElementById('cancelButton');
         currentRefs.finishButton = document.getElementById('finishButton');
         currentRefs.startButton = document.getElementById('startButton');
-        currentRefs.recordingTime = document.getElementById('recordingTime');
+        currentRefs.recordingTimeEl = document.getElementById('recordingTimeEl');
         currentRefs.AutoScroll = document.getElementById("AutoScroll");
         currentRefs.chatArea = document.getElementById("chatArea");
         currentRefs.errorContainer = document.getElementById('errorContainer')
@@ -60,15 +96,30 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
         currentRefs.microphone = document.getElementById('microphone');
         currentRefs.microphoneSVG = document.getElementById('microphoneSVG');
         currentRefs.recordingModal = document.getElementById('recordingModal')
-        currentRefs.recordingTime = document.getElementById('recordingTime');
+        currentRefs.recordingTimeEl = document.getElementById('recordingTimeEl');
         currentRefs.pauseButton = document.getElementById('pauseButton');
         currentRefs.startButton = document.getElementById('startButton');
         currentRefs.finishButton = document.getElementById('finishButton');
         currentRefs.cancelRecButton = document.getElementById('cancelButton');
         currentRefs.microphoneSVG = document.getElementById('microphoneSVG')
+        currentRefs.canvas = document.getElementById("canvas")
+        currentRefs.RecAnimator = new RecordingAnimator(canvas);
 
-        setLoaderEvent(new CustomEvent('LoaderHandler', {detail: {message: 'Loader did its purpose!'}}))
-        //setTimer(new window.Timer)
+        async function getMedia() {
+            currentRefs.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            currentRefs.mediaRecorder = new MediaRecorder(currentRefs.stream)
+        }
+
+        getMedia()
+        currentRefs.Timer = new window.Timer;
+        initialize()
+    }, [isOpen])
+
+    const initialize = useCallback(() => {
+        const { RecAnimator } = refs.current
+
+        // Initialize waveform animation
+        RecAnimator.initAnimation()
 
         async function fetchApiKey() {
             await loadApiKey()
@@ -77,8 +128,18 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
         fetchApiKey()
 
         setClient(new HfInference(hf_API_KEY));
-    }, [isOpen, setTimer, setLoaderEvent])
 
+        openRecording()
+
+    }, [hf_API_KEY])
+
+    const openRecording = useCallback(() => {
+        showModal()
+    }, [])
+
+    const closeRecording = useCallback(() => {
+        hideModal()
+    }, [])
 
     async function loadApiKey() {
         const key = await window.api.getKeys('huggingfacex');
@@ -146,6 +207,20 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
         window.debounceRenderMathJax(aiMessageUId);
     }, [])
 
+    const useEventDispatcher = () => {
+        const dispatchCustomEvent = (eventName, detail = {}, target = null) => {
+            const event = new CustomEvent(eventName, {
+                detail,
+                bubbles: true,
+                cancelable: true
+            });
+            target ? target.dispatchEvent(event) : document.dispatchEvent(event);
+        };
+
+        return dispatchCustomEvent;
+    };
+
+
     const displayUserAudio = useCallback((path) => {
         const { chatArea, AutoScroll } = refs.current
         const container = document.createElement('section');
@@ -179,28 +254,26 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
         AutoScroll.checked ? scrollToBottom(chatArea) : null;
         loaderElement.addEventListener('LoaderHandler', removeLoader)
         // update current loader
-        setCurrentLoader(loaderElement);
+        refs.current.currentLoader = loaderElement;
         setCurrentAudioElement(container);
-    }, [setCurrentLoader, setCurrentAudioElement])
+    }, [setCurrentAudioElement])
 
     function removeLoader(event) {
         event.target.remove();
     }
 
-    async function main(fpath) {
+    const main = useCallback(async (fpath) => {
         try {
-            const { timer } = refs.current;
-
             document.getElementById('suggestions') ? document.getElementById('suggestions').classList.add('hidden') : "";
 
-            //start timer
-            timer.trackTime("start");
+            //start Timerimer
+            refs.current.Timer.trackTime("start");
 
             window.HandleProcessingEventChanges('show')
             // Add audio to user interface
             displayUserAudio(fpath)
             //Read data from file
-            const data = await window.electron.readFileData(fpath)
+            //const data = await window.electron.readFileData(fpath)
 
             // call automaticSpeechRecognition
             const response = await autoSpeech(data)
@@ -209,26 +282,39 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
             displayResponse(response)
 
             window.HandleProcessingEventChanges('hide')
-            //stop timer
-            timer.trackTime("stop");
+            //stop Timerimer
+            refs.current.Timer.trackTime("stop");
 
-            currentLoader.dispatchEvent(LoaderEvent);
+            const dispatchEvent = useEventDispatcher();
+
+            dispatchEvent('LoaderHandler', {
+                action: 'show',
+                message: 'Processing recording...'
+            },refs.current.currentLoader);
 
             utilityScriptExists()
 
             return true;
         } catch (error) {
-            handleRequestError(error, fpath)
             console.log(error)
+
+            handleRequestError(error, fpath)
         }
-    }
+    }, [])
 
     const handleRequestError = useCallback((error, fpath) => {
-        const { errorContainer, currentAudioElement, retry, errorArea, closeModal, timer } = refs.current
-        currentLoader.dispatchEvent(LoaderEvent);
+        const { errorContainer, currentAudioElement, retry, errorArea, closeModal } = refs.current
+        const dispatchEvent = useEventDispatcher();
+
+        dispatchEvent('LoaderHandler', {
+            action: 'show',
+            message: 'Processing recording...'
+        },refs.current.currentLoader);
+
         window.HandleProcessingEventChanges('hide')
-        //interrupt timer
-        timer.trackTime("interrupt");
+
+        //interrupt Timerimer
+        refs.current.Timer.trackTime("interrupt");
 
         closeModal.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -281,12 +367,12 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
             currentAudioElement.remove()
             main(fpath)
         }
-    }, [currentLoader, currentAudioElement, LoaderEvent])
+    }, [currentAudioElement])
 
 
     // Function to start recording
     const startRecording = useCallback(async (task = null) => {
-        const { microphoneSVG, finishButton } = refs.current;
+        const { microphoneSVG, finishButton, RecAnimator, stream, mediaRecorder } = refs.current;
         try {
             if (task === "release") {
 
@@ -295,26 +381,21 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
 
             finishButton.classList.remove('cursor-not-allowed')
 
-            setStream(await navigator.mediaDevices.getUserMedia({ audio: true }));
-
             //Start Animation
-            SetAudioAnim(stream);
-
-            mediaRecorder = new MediaRecorder(stream);
+            RecAnimator.SetAudioAnimation(stream);
 
             mediaRecorder.ondataavailable = event => {
                 audioChunks.push(event.data);
             };
 
             mediaRecorder.onstop = async (event) => {
-                if (canSave) {
+                if (refs.current.canSave) {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 
                     microphoneSVG.classList.remove('animate-pulse')
 
                     // Save the audioBlob to a temporary file
                     const savePath = await window.electron.saveRecording(audioBlob);
-                    console.log(savePath)
 
                     // Release microphone
                     ReleaseMediaDevice();
@@ -334,10 +415,10 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
         } catch (err) {
             console.error('Error accessing microphone:', err);
         }
-    }, [mediaRecorder, stream, audioChunks, setStream, canSave, setCanSave, setIsRecording])
+    }, [audioChunks, setIsRecording])
 
     const ReleaseMediaDevice = useCallback(() => {
-        const { finishButton } = refs.current
+        const { finishButton, stream } = refs.current
         finishButton.classList.add('cursor-not-allowed')
         try {
             if (!stream) {
@@ -350,28 +431,28 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
         } catch (error) {
             console.log(error);
         }
-    }, [stream])
+    }, [])
 
 
     // Function to pause/resume recording
     const pauseRecording = useCallback(() => {
-        const { microphoneSVG } = refs.current
+        const { microphoneSVG, mediaRecorder } = refs.current
 
         if (isRecording) {
             mediaRecorder.pause();
             pauseButton.classList.add('hidden');
             startButton.classList.remove('hidden');
-            clearInterval(timerInterval);
+            clearInterval(TimerimerInterval);
             setIsRecording(false);
             setIsPaused(true);
             microphoneSVG.classList.remove('animate-pulse')
             console.log("paused", isPaused)
         }
-    }, [mediaRecorder, timerInterval, isPaused, setIsPaused, setIsRecording])
+    }, [TimerimerInterval, isPaused, setIsPaused, setIsRecording])
 
     //Resume Recording
     const ResumeRecording = useCallback(() => {
-        const { microphoneSVG } = refs.current
+        const { microphoneSVG, mediaRecorder } = refs.current
         microphoneSVG.classList.add('animate-pulse')
         mediaRecorder.resume();
         pauseButton.classList.remove('hidden');
@@ -380,58 +461,71 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
         setIsRecording(true);
         setIsPaused(false);
         console.log("Resumed", isPaused)
-    }, [mediaRecorder, timerInterval, setIsPaused, setIsPaused, setIsRecording])
+    }, [TimerimerInterval, setIsPaused, setIsPaused, setIsRecording])
 
     // Function to stop recording
     const finishRecording = useCallback(async () => {
-        const { microphoneSVG, recordingTime } = refs.current
+        const { microphoneSVG, recordingTimeEl, mediaRecorder } = refs.current
         mediaRecorder.stop();
-        clearInterval(timerInterval);
-        recordingTime.textContent = '00:00:00';
+        clearInterval(TimerimerInterval);
+        recordingTimeEl.textContent = '00:00:00';
         pauseButton.classList.add('hidden');
         startButton.classList.remove('hidden');
         setIsRecording(false);
-        setCanSave(true);
+        refs.current.canSave = true;
         console.log("Finished Recording")
         hideModal();
-        await ReleaseMediaDevice()
+        ReleaseMediaDevice()
+
+        // Close Recorder
+        onToggle()
         microphoneSVG.classList.remove('animate-pulse')
-    }, [mediaRecorder, timerInterval, setCanSave, setIsRecording])
+    }, [TimerimerInterval, setIsRecording])
 
     // Function to cancel recording
     const cancelRecording = useCallback(async () => {
-        const { microphoneSVG, recordingTime } = refs.current
+        const { microphoneSVG, recordingTimeEl, mediaRecorder } = refs.current
         try {
             mediaRecorder.stop();
         } catch (err) {
             console.log(err)
         }
 
-        clearInterval(timerInterval);
-        recordingTime.textContent = '00:00:00';
+        clearInterval(TimerimerInterval);
+        recordingTimeEl.textContent = '00:00:00';
         pauseButton.classList.add('hidden');
         startButton.classList.remove('hidden');
         setIsRecording(false);
         setIsPaused(false);
-        setCanSave(false);
+        refs.current.canSave = false;
         console.log("Recording Cancelled")
         hideModal();
-        await ReleaseMediaDevice()
+        ReleaseMediaDevice()
         microphoneSVG.classList.remove('animate-pulse')
-    }, [mediaRecorder, timerInterval, setCanSave, setIsPaused, setIsRecording])
+
+        // Close Recorder
+        onToggle()
+    }, [TimerimerInterval, setIsPaused, setIsRecording])
 
     // Function to update the recording time
     const startTimer = useCallback((resume = false) => {
-        // Store the current time minus any previously elapsed time
-        const { recordingTime, startTime, elapsedTime } = refs.current
-        startTime = resume === true ? (Date.now() - elapsedTime) : startTime;
-        // Start the interval
-        timerInterval = setInterval(() => {
-            elapsedTime = Date.now() - startTime;
-            const formattedTime = formatTime(elapsedTime);
-            recordingTime.textContent = formattedTime;
+        const { recordingTimeEl } = refs.current;
+        const _startTime = resume ? (Date.now() - elapsedTime) : Date.now();
+        setStartTime(_startTime);
+
+        const interval = setInterval(() => {
+            const newElapsed = Date.now() - _startTime; // Calculate elapsed here, using latest timestamp
+            setElapsedTime(newElapsed);
+
+            const formattedTime = formatTime(newElapsed);
+            if (recordingTimeEl) {
+                recordingTimeEl.textContent = formattedTime;
+            }
+            console.log("Update Timer", newElapsed, formattedTime, recordingTimeEl?.textContent);
         }, 1000);
-    }, [])
+
+        setTimerInterval(interval);
+    }, [elapsedTime, setElapsedTime, setStartTime, setTimerInterval, refs]);
 
     // Helper function to pad numbers with leading zeros
     function pad(number) {
@@ -461,6 +555,7 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
 
     // Handle start/Pause
     const StartPause = useCallback(() => {
+        console.log("Start:", isPaused)
         if (isPaused) {
             ResumeRecording()
         } else {
@@ -469,58 +564,66 @@ export const Recording = ({ isOpen, onToggleRecording }) => {
     }, [isPaused])
 
     // Event Listeners
-    useEffect(() => {
-        const { pauseButton, finishButton, cancelButton, startButton} = refs.current
-        pauseButton?.addEventListener('click', pauseRecording);
-        finishButton?.removeEventListener('click', finishRecording);
-        cancelButton?.removeEventListener('click', cancelRecording);
-        startButton?.addEventListener('click', StartPause);
+    /*useEffect(() => {
+        //const { pauseButton, finishButton, cancelButton, startButton } = refs.current
+        //pauseButton?.addEventListener('click', pauseRecording);
+        //finishButton?.removeEventListener('click', finishRecording);
+        //cancelButton?.removeEventListener('click', cancelRecording);
+        //startButton?.addEventListener('click', StartPause);
 
         // Clear event Listeners
         return () => {
             pauseButton?.removeEventListener('click', pauseRecording);
             finishButton?.removeEventListener('click', finishRecording);
             cancelButton?.removeEventListener('click', cancelRecording);
-            startButton?.removeEventListener('click', StartPause);
+            //startButton?.removeEventListener('click', StartPause);
         }
     }, [pauseRecording, finishRecording, cancelRecording]);
+    */
 
+    const closeOnclick = useCallback((e) => {
+        const { canvas } = refs.current
+        const recContent = document.getElementById('recorder-content')
+
+        if ((canvas?.contains(e.target)) || (recContent?.contains(e.target))) return;
+        onToggle()
+    })
     if (!isOpen) return null;
 
     return (
-        < div id="recordingModal" className="hidden fixed inset-0 z-50 bg-blue-400/20 overflow-y-auto" >
-            <div className="relative flex items-center justify-center min-h-screen">
+        < div onClick={closeOnclick} id="recordingModal" className="hidden fixed inset-0 z-50 bg-blue-400/20 overflow-y-auto" >
+            <div className="relative flex items-center justify-center min-h-screen backdrop-blur-sm">
                 <canvas className="absolute md:max-w-md lg:max-w-lg xl:max-w-xl md:max-h-md lg:max-h-lg xl:max-h-xl z-1 bg-white dark:bg-slate-950 rounded-lg shadow-lg transition-colors duration-1000" id="canvas"></canvas>
-                <section className="absolute z-10">
+                <section id="recorder-content" className="absolute z-10">
                     <div className="relative px-4 w-full max-w-md">
                         <div className="bg-opacity-0">
                             <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-300 dark:border-sky-400 pb-2 italic transition-colors duration-1000">Recorder</h2>
                             <div className="p-6">
                                 <div className="flex items-center justify-center">
-                                    <span id="recordingTime" className="text-3xl text-blue-500 dark:text-white font-bold transition-colors duration-1000">00:00:00</span>
+                                    <span id="recordingTimeEl" className="text-3xl text-blue-500 dark:text-white font-bold transition-colors duration-1000">00:00:00</span>
                                 </div>
 
                                 <div className="flex justify-center mt-6 space-x-4">
-                                    <button id="pauseButton" className="hidden bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
+                                    <button onClick={pauseRecording} id="pauseButton" className="hidden bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
                                         {/*--pause svg disabled when not recording--*/}
                                         <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
                                         </svg>
                                     </button>
-                                    <button id="startButton" className="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
+                                    <button onClick={StartPause} id="startButton" className="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
                                         {/*--start svg --*/}
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
                                         </svg>
                                     </button>
 
-                                    <button id="finishButton" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full size-14 cursor-not-allowed transition-colors duration-1000">
+                                    <button onClick={finishRecording} id="finishButton" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full size-14 cursor-not-allowed transition-colors duration-1000">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                     </button>
 
-                                    <button id="cancelButton" className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
+                                    <button onClick={cancelRecording} id="cancelButton" className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full size-14 transition-colors duration-1000">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="white" className="w-6 h-6">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                         </svg>

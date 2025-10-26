@@ -21,6 +21,7 @@ import '@js/managers/packed_MistralChatsAdmin.js';
 //import '@js/Utils/apiUtils.js';
 import '@css/styles.css';
 import  { Recording } from '@components/RecordingUI/Recording';
+import '@js/Timer/timer.js'
 
 const App = () => {
     //const { electron } = useElectron();

@@ -20,6 +20,7 @@ import { Settings } from '@components/Settings/Settings.jsx';
 import { StatusUI } from '@components/StatusUI/StatusUI.jsx';
 import '@js/StatusUIManager/SuccessModal.js'
 import '@js/StatusUIManager/Manager.js'
+import { APIKeysManager } from '@components/ApiManager/api.jsx';
 
 const App = () => {
     //const { electron } = useElectron();
@@ -79,6 +80,9 @@ const App = () => {
                     </ErrorBoundary>
                     <ErrorBoundary>
                         <StatusUI isOpen={true} onToggle={null} />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
+                        <APIKeysManager isOpen={true} onToggle={null} />
                     </ErrorBoundary>
                 </div>
                 <ErrorBoundary>

@@ -119,8 +119,15 @@ export const Settings = ({ isOpen, onToggle }) => {
         }
     })
 
+    const showApiManModal = useCallback(()=>{
+        const manPagemodal = document.getElementById('apiKeyManPage')
+
+        manPagemodal.classList.remove('translate-y-[100vh]', 'hidden');
+        manPagemodal.classList.add('translate-y-1');
+    })
+
     const handleApiManagement = useCallback(() => {
-        //
+        showApiManModal()
     })
 
     const handleResetSettings = useCallback(() => {

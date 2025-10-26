@@ -14,7 +14,7 @@ let VId = '';
 let CId = '';
 
 try {
-    const _fpath = path.join(os.homedir(), '.intellidesk/.intellidesk.config/.pref.config')
+    const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json')
     if (fs.statfsSync(_fpath)) {
         var profile = fs.readFileSync(_fpath, 'utf-8')
     }
@@ -630,39 +630,42 @@ contextBridge.exposeInMainWorld('electron', {
     },
     savePreference: async (data) => {
         try {
-            const prefFile = ".pref.config"
-            const prefPath = path.join(os.homedir(), '.IntelliDesk/.IntelliDesk.config');
+            const skeleton ={
+                data: data
+            }
+            const prefFile = ".preference.json"
+            const prefPath = path.join(os.homedir(), '.IntelliDesk/.config');
             try {
-                if (!fs.mkdirSync(prefPath)) {
-                    fs.mkdirSync(prefPath);
-                }
+                fs.mkdirSync(prefPath, { recursive: true });
+                console.log(`Directory created: ${prefPath}`);
             } catch (error) {
-                //
+                console.error(`Error creating directory: ${error.message}`);
             }
             const prefFpath = path.join(prefPath, prefFile);
-            fs.writeFileSync(prefFpath, data);
+            fs.writeFileSync(prefFpath, JSON.stringify(skeleton));
             return true
         } catch (err) {
             //console.log(err);
             return false
         }
     },
-    deletePreference: async (data) => {
+    deletePreference: async (data=null) => {
         try {
-            const prefPath = path.join(os.homedir(), '.IntelliDesk/.IntelliDesk.config/.pref.config');
+            const prefPath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
             fs.rmSync(prefPath, data);
             return true
         } catch (err) {
-            console.log(err);
+            //console.log(err);
             return false
         }
     },
     getPreferences: async () => {
         try {
-            const _fpath = path.join(os.homedir(), '.IntelliDesk/.IntelliDesk.config/.pref.config')
+            const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json')
             if (fs.statfsSync(_fpath)) {
                 const prefData = fs.readFileSync(_fpath, 'utf-8')
-                return prefData
+                //console.log(JSON.parse(prefData))
+                return JSON.parse(prefData)
             }
         } catch (err) {
             //console.log(err)
@@ -682,7 +685,7 @@ contextBridge.exposeInMainWorld('electron', {
     saveRecording: async (blob) => {
         try {
             const randomFname = `hfaudio_${Math.random().toString(36).substring(1, 12)}`;
-            const savePath = path.join(os.homedir(), `.IntelliDesk/.IntelliDesk.cache/${randomFname}.wav`)
+            const savePath = path.join(os.homedir(), `.IntelliDesk/.cache/${randomFname}.wav`)
             // Extract the directory path from the file path
             const dirPath = path.dirname(savePath);
 

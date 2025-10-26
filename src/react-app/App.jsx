@@ -5,23 +5,21 @@ import { ChatInterface } from '@components/Chat/ChatInterface';
 import { InputSection } from '@components/InputSection/InputSection';
 import { Sidebar } from '@components/Sidebar/Sidebar';
 import { Canvas } from '@components/Canvas/Canvas';
-import { ModelSelector } from '@components/ModelSelector/ModelSelector';
+//import { ModelSelector } from '@components/ModelSelector/ModelSelector';
 import { useElectron } from '@hooks/useElectron';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import '@js/katex/katex.min.js';
 import '@js/katex/contrib/auto-render.min.js';
-//import '@components/theme.js';
-//import '@components/G_ModalMan.js';
-//import '@js/managers/packed_HF_Audio.js';
-//import '@js/script.js';
-//import '@js/Utils/packed_chatUtils.js';
 import '@js/managers/packed_HF_Chat.js';
-//import '@js/router.js';
 import '@js/managers/packed_MistralChatsAdmin.js';
-//import '@js/Utils/apiUtils.js';
 import '@css/styles.css';
-import  { Recording } from '@components/RecordingUI/Recording';
+import { Recording } from '@components/RecordingUI/Recording';
 import '@js/Timer/timer.js'
+import { DropZone } from '@components/DiagramUI/diagram.jsx'
+import { Settings } from '@components/Settings/Settings.jsx';
+import { StatusUI } from '@components/StatusUI/StatusUI.jsx';
+import '@js/StatusUIManager/SuccessModal.js'
+import '@js/StatusUIManager/Manager.js'
 
 const App = () => {
     //const { electron } = useElectron();
@@ -72,9 +70,19 @@ const App = () => {
                     <ErrorBoundary>
                         <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
                     </ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <DropZone isOpen={true} onToggle={null} />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
+                        <Settings isOpen={true} onToggle={null} />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
+                        <StatusUI isOpen={true} onToggle={null} />
+                    </ErrorBoundary>
                 </div>
                 <ErrorBoundary>
-                    <Recording  isOpen={isRecordingOn} onToggle={toggleRecording}/>
+                    <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
                 </ErrorBoundary>
             </MainLayout>
         </ErrorBoundary>

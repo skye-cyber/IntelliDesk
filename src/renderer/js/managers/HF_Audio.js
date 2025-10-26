@@ -296,7 +296,6 @@ async function startRecording(task=null) {
 
 			// Save the audioBlob to a temporary file
 			const savePath = await window.electron.saveRecording(audioBlob);
-			console.log(savePath)
 
 			// Release microphone
 			await ReleaseMediaDevice();

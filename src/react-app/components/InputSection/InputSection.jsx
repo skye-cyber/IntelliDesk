@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { opendiagViewModal, closediagViewModal } from '@js/diagraming/Utils.js';
 
 export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording }) => {
     useEffect(() => {
@@ -62,6 +63,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                         {/* Toolbar button with SVG icon */}
                         <button
                         id='diagToggle'
+                        onClick={opendiagViewModal}
                         className="px-1 rounded hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-300 bg-blue-200 dark:bg-teal-700 rounded-md"
                         aria-label="Open Diagram modal"
                         title="Open Diagram modal">

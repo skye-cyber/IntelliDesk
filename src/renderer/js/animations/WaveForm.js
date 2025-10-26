@@ -32,10 +32,10 @@ export class RecordingAnimator {
         // We'll assume our analyser provides about 128 frequency bins
         const numFreqBins = 80;
 
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < this.count; i++) {
             const theta = Math.acos(2 * Math.random() - 1);
             const phi = 2 * Math.PI * Math.random();
-            dots.push({
+            this.dots.push({
                 x: this.radius * Math.sin(theta) * Math.cos(phi),
                 y: this.radius * Math.sin(theta) * Math.sin(phi),
                 z: this.radius * Math.cos(theta),
@@ -64,18 +64,20 @@ export class RecordingAnimator {
             const bufferLength = analyser.frequencyBinCount; // ~128 bins
             const dataArray = new Uint8Array(bufferLength);
 
-            function animate() {
+            // Define animate as an arrow function to preserve 'this' context
+            const animate = () => {
+                // Clear canvas
                 this.ctx.clearRect(0, 0, this.width, this.height);
 
                 // Get current audio frequency data
                 analyser.getByteFrequencyData(dataArray);
                 const avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-                audioLevel = avg / 256; // Normalize between 0 and 1
+                this.audioLevel = avg / 256; // Normalize between 0 and 1
 
                 // Adjust rotation speed based on overall audio level
-                this.angle += 0.01 + audioLevel * 0.05;
+                this.angle += 0.01 + this.audioLevel * 0.05;
 
-                for (let dot of dots) {
+                for (let dot of this.dots) {
                     // Rotate dot around Y axis
                     const x = dot.x * Math.cos(this.angle) - dot.z * Math.sin(this.angle);
                     const z = dot.x * Math.sin(this.angle) + dot.z * Math.cos(this.angle);
@@ -86,26 +88,26 @@ export class RecordingAnimator {
                     let x2d = x * scale + this.cx;
                     let y2d = y * scale + this.cy;
 
-                    // AI-ish dynamic clustering:
-                    // Get amplitude for this dot's frequency bin
+                    // Dynamic clustering with audio
                     const amplitudeForDot = dataArray[dot.freqBin] / 256;
-                    // Map the frequency bin to a factor (lower bins get positive, higher negative)
                     const freqFactor = dot.freqBin / bufferLength;
-                    // Calculate vertical offset (tweak the multiplier for stronger effect)
                     const yOffset = (0.5 - freqFactor) * amplitudeForDot * 50;
 
                     y2d += yOffset;
 
                     this.ctx.beginPath();
-                    // Dot size can also pulse with the audio level
-                    this.ctx.arc(x2d, y2d, dot.size * (1 + audioLevel), 0, Math.PI * 2);
+                    this.ctx.arc(x2d, y2d, dot.size * (1 + this.audioLevel), 0, Math.PI * 2);
                     this.ctx.fillStyle = dot.color;
                     this.ctx.fill();
                 }
 
+                // Queue next animation frame with preserved context
                 requestAnimationFrame(animate);
-            }
+            };
+
+            // Start the animation loop
             animate();
+
         } catch (err) {
             console.error("Microphone access denied.", err);
         }

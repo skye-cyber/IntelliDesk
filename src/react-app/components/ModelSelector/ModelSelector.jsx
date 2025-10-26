@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+//import { createPortal } from 'react-dom';
 import { ModelCategory } from '@components/ModelCategory/ModelCategory';
 
 export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
@@ -179,8 +180,9 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
             ]
         }
     ];
+
     return (
-        <div className="fixed z-[60] mt-1 -ml-14 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border-2 border-gray-300 dark:border-none dark:bg-neutral-700 text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-ellipsis animation transition-colors duration-1000">
+        <div className="fixed z-[999] mt-1 -ml-14 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border border-blue-300 dark:border-none dark:bg-neutral-700 text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-truncate animation transition-colors duration-1000 transform-gpu">
             <div role="menu" aria-orientation="vertical">
                 {hfmodelCategories.map((category, index) => (
                     <ModelCategory

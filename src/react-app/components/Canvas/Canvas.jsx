@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { updateHandPosition } from '@js/Utils/CaretUtil.js'
+import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 
 export const Canvas = ({ isOpen, onToggle }) => {
     const [isCanvasActive, setIsCanvasActive] = useState(false);
@@ -7,6 +9,9 @@ export const Canvas = ({ isOpen, onToggle }) => {
     const [isScrolling, setisScrolling] = useState(false);
     const [currentScroll, setcurrentScroll] = useState(0);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+    const [shouldRender, setShouldRender] = useState(false);
+    const isControlledCloseRef = useRef(false); // Track if WE initiated the close
 
     // Single ref object for all DOM elements
     const refs = useRef({
@@ -20,13 +25,48 @@ export const Canvas = ({ isOpen, onToggle }) => {
         previewView: null,
         lineNumbers: null,
         codeBlockContainer: null,
-        canvasOpen: null,
+        ToggleCanvasBt: null,
         plusIcon: null,
         closeIcon: null,
         lineCounter: null,
         userInput: null,
-        codeScrollWrapper: null
+        userInputwrapper: null,
+        codeScrollWrapper: null,
+        handIndicator: null,
+        imageGen: null,
+        mainLayoutA: null
     });
+
+    // Handle opening
+    useEffect(() => {
+        if (isOpen) {
+            setShouldRender(true);
+            // Wait for render then show with animation
+            setTimeout(() => setIsVisible(true), 10);
+        }
+    }, [isOpen]);
+
+    // Handle close animation then notify parent
+    const handleClose = useCallback((notifyParent = true) => {
+        hideCanvas()
+        setIsVisible(false);
+        // Wait for animation to complete before unmounting
+        setTimeout(() => {
+            setShouldRender(false);
+            if (notifyParent) {
+                onToggle(); // Only notify parent if this was user-initiated
+            }
+        }, 1000); // Match your animation duration
+    }, [onToggle]);
+
+    // Close when isOpen becomes false (only if WE didn't initiate it)
+    useEffect(() => {
+        if (!isOpen && isVisible && !isControlledCloseRef.current) {
+            // This close was initiated by parent prop change
+            handleClose(false); // Don't notify parent to avoid loop
+        }
+    }, [isOpen, isVisible, handleClose]);
+
 
     // Initialize refs once
     useEffect(() => {
@@ -43,28 +83,37 @@ export const Canvas = ({ isOpen, onToggle }) => {
         currentRefs.previewView = document.getElementById('preview-view');
         currentRefs.lineNumbers = document.getElementById('line-numbers');
         currentRefs.codeBlockContainer = document.getElementById('code-block-container');
-        currentRefs.canvasOpen = document.getElementById('CanvasOpen');
+        currentRefs.ToggleCanvasBt = document.getElementById('ToggleCanvasBt');
         currentRefs.plusIcon = document.getElementById('plusIcon');
         currentRefs.closeIcon = document.getElementById('closeIcon');
         currentRefs.lineCounter = document.getElementById('line-counter');
         currentRefs.userInput = document.getElementById('userInput');
+        currentRefs.userInputwrapper = document.getElementById('userInput-wrapper');
         currentRefs.codeScrollWrapper = document.getElementById("code-scroll-wrapper");
-
+        currentRefs.handIndicator = document.getElementById('hand-indicator');
+        currentRefs.imageGen = document.getElementById('image-gen');
+        currentRefs.mainLayoutA = document.getElementById('mainLayoutA');
+        //console.log('DOM refs initialized:', currentRefs.previewView);
+        console.log(currentRefs.codeView)
         // Set initial active state
-        setIsCanvasActive(currentRefs.canvasOpen?.getAttribute('aria-pressed') === 'true');
-
-        console.log('DOM refs initialized:', currentRefs);
+        setIsCanvasActive(currentRefs.ToggleCanvasBt?.getAttribute('aria-pressed') === 'true');
+        initialize()
     }, [isOpen]);
 
-    useEffect(() => {
-        const { codeView } = refs.current;
+    const initialize = useCallback(() => {
+        const { userInput, imageGen, ToggleCanvasBt, lineNumbers, codeView, handIndicator, codeScrollWrapper } = refs.current;
         const resizeObserver = new ResizeObserver(() => {
             lineNumbers.style.height = codeView.scrollHeight + 5 + 'px';
         });
-
         resizeObserver.observe(codeView);
         // Update line numbers initially and whenever content changes
         canvasUpdate();
+        updateHandPosition(codeView, handIndicator, codeScrollWrapper)
+
+        openCanvas()
+        new ResizeClassToggler(userInput, ToggleCanvasBt, 430, 'sm:flex');
+        new ResizeClassToggler(userInput, imageGen, 400, 'sm:flex');
+
     }, []);
 
     function canvasUpdate() {
@@ -145,9 +194,10 @@ export const Canvas = ({ isOpen, onToggle }) => {
     // Update preview content with latest code output
     const updatePreview = useCallback(() => {
         // A very simple preview: if the code contains a console.log with string, extract and show that string.
+        const { codeView, previewView } = refs.current;
+
         // This is a naive demo
         try {
-            const { codeView, previewView } = refs.current;
             // Simple regex to extract string inside console.log
             //const match = codeView.textContent.match(/console\.log\((["'`])(.+?)\1\)/);
             const code = codeView.querySelector('code') || null;
@@ -186,6 +236,33 @@ export const Canvas = ({ isOpen, onToggle }) => {
         }
     }, []);
 
+    // Smooth scrolling loop
+    const animateScroll = useCallback(() => {
+        const { codeView } = refs.current
+
+        if (!isScrolling) return;
+
+        setcurrentScroll(currentScroll + (targetScroll - currentScroll) * 0.15);
+
+        // Stop animation when close enough
+        if (Math.abs(targetScroll - currentScroll) < 0.5) {
+            setcurrentScroll(targetScroll);
+            setisScrolling(false);
+        }
+
+        // Apply smooth scroll transform
+        codeView.style.transform = `translateX(${-currentScroll}px)`;
+
+        // If bouncing, snap back to valid range
+        const maxScroll = codeView.scrollWidth + 50 - codeScrollWrapper.clientWidth;
+        if (targetScroll < 0 || targetScroll > maxScroll) {
+            settargetScroll(Math.max(0, Math.min(targetScroll, maxScroll)));
+            setisScrolling(true);
+        }
+
+        requestAnimationFrame(animateScroll);
+    }, [isScrolling, targetScroll, currentScroll])
+
     // handle whenDependentTypesAreResolved
     const handleWheelScroll = useCallback(async (e) => {
         const { codeScrollWrapper } = refs.current
@@ -215,35 +292,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
         return value;
     }
 
-    // Smooth scrolling loop
-    const animateScroll = useCallback(() => {
-        const { codeView } = refs.current
-
-        if (!isScrolling) return;
-
-        setcurrentScroll(currentScroll + (targetScroll - currentScroll) * 0.15);
-
-        // Stop animation when close enough
-        if (Math.abs(targetScroll - currentScroll) < 0.5) {
-            setcurrentScroll(targetScroll);
-            setisScrolling(false);
-        }
-
-        // Apply smooth scroll transform
-        codeView.style.transform = `translateX(${-currentScroll}px)`;
-
-        // If bouncing, snap back to valid range
-        const maxScroll = codeView.scrollWidth + 50 - codeScrollWrapper.clientWidth;
-        if (targetScroll < 0 || targetScroll > maxScroll) {
-            settargetScroll(Math.max(0, Math.min(targetScroll, maxScroll)));
-            setisScrolling(true);
-        }
-
-        requestAnimationFrame(animateScroll);
-    }, [isScrolling, targetScroll, currentScroll])
-
-
-    const wfit = useCallback((task = 'add') => {
+    const UserMessagesWfitAdjust = useCallback((task = 'add') => {
         //if (!isCanvasOpen) return;
         const { chatArea } = refs.current;
         const Rlist = chatArea.querySelectorAll('#AIRes');
@@ -255,7 +304,19 @@ export const Canvas = ({ isOpen, onToggle }) => {
         }
     }, [])
 
-    const User_wfit = useCallback((task = 'add') => {
+    const mainLayoutAWfitAdjust = useCallback((task = 'scale') => {
+        const { mainLayoutA } = refs.current
+
+        if (task === "scale") {
+            mainLayoutA.classList.remove('w-[40vw]');
+            mainLayoutA.classList.add('w-full');
+        } else {
+            mainLayoutA.classList.remove('w-full');
+            mainLayoutA.classList.add('w-[40vw]');
+        }
+    }, [])
+
+    const AiMessagesWfitAdjust = useCallback((task = 'add') => {
         //if (!isCanvasOpen) return;
         const { chatArea } = refs.current;
         const Rlist = chatArea.querySelectorAll('#URes');
@@ -267,122 +328,136 @@ export const Canvas = ({ isOpen, onToggle }) => {
         }
     }, [])
 
-    const inputWAdjust = useCallback((task = 'add') => {
+    const InputSectionWfitAdjust = useCallback((task = 'add') => {
         //if (!isCanvasOpen) return;
-        const { userInput } = refs.current
+        const { userInput, userInputwrapper } = refs.current
         if (!userInput) return;
 
         if (task === "add") {
             userInput.classList.remove('w-full');
-            userInput.classList.add('w-[40vw]');
+            userInput.classList.add('w-[40vw]', 'placeholder-sm');
+            userInputwrapper.classList.remove('w-full')
+            userInputwrapper.classList.add('w-[40vw]')
         } else {
             userInput.classList.remove('w-[40vw]');
             userInput.classList.add('w-full');
+            userInputwrapper.classList.remove('w-[40vw]')
+            userInputwrapper.classList.add('w-full')
         }
+    }, [])
+
+    // Activate Canvas
+    const ActivateCanvas = useCallback(() => {
+        const { ToggleCanvasBt, closeIcon, plusIcon } = refs.current;
+
+        // Hide plus icon, show close icon
+        plusIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+
+        // Remove inactive styles
+        ToggleCanvasBt.classList.remove(
+            'bg-white',
+            'dark:bg-slate-700',
+            'text-blue-600',
+            'dark:text-teal-300',
+            'border-blue-300',
+            'shadow-md',
+            'dark:border-gray-500'
+        );
+
+        // Add active styles
+        ToggleCanvasBt.classList.add(
+            'bg-[#00ca62]',
+            'text-black',
+            'border-blue-600',
+            'shadow-xl',
+            'dark:border-teal-500'
+        );
+
+        setIsCanvasActive(true);
+        ToggleCanvasBt?.setAttribute('aria-pressed', 'true');
+    }, [])
+
+    //Deactivate canvas
+    const DeactivateCanvas = useCallback(() => {
+        const { ToggleCanvasBt, closeIcon, plusIcon } = refs.current;
+
+        // Show plus icon, hide close icon
+        closeIcon?.classList.add('hidden');
+        plusIcon?.classList.remove('hidden');
+
+        // Remove active styles
+        ToggleCanvasBt?.classList.remove(
+            'bg-[#00ca62]',
+            'text-black',
+            'border-blue-600',
+            'shadow-xl',
+            'dark:border-teal-500'
+        );
+
+        // Add inactive styles
+        ToggleCanvasBt?.classList.add(
+            'bg-white',
+            'dark:bg-slate-700',
+            'text-blue-600',
+            'dark:text-teal-300',
+            'border-blue-300',
+            'shadow-md',
+            'dark:border-gray-500'
+        );
+        setIsCanvasActive(false);
+        ToggleCanvasBt?.setAttribute('aria-pressed', 'true');
     }, [])
 
     // Open canvas
     const openCanvas = useCallback(() => {
         const { canvas } = refs.current
+        ActivateCanvas()
 
         canvas.classList.remove('hidden');
         setTimeout(() => {
             canvas.classList.remove('translate-x-[100vw]');
             setIsCanvasOpen(true);
-            wfit('remove');
-            User_wfit("remove")
-            inputWAdjust('add')
+            AiMessagesWfitAdjust('remove');
+            UserMessagesWfitAdjust("remove")
+            InputSectionWfitAdjust('add')
+            mainLayoutAWfitAdjust('retract')
         }, 400)
-    }, [setIsCanvasOpen])
+    }, [setIsCanvasOpen, ActivateCanvas])
 
     // Hide canvas
     const hideCanvas = useCallback(() => {
         const { canvas } = refs.current;
+        DeactivateCanvas()
+
+        console.log('Closing')
         canvas.classList.add('translate-x-[100vw]');
+
         setTimeout(() => {
             canvas.classList.add('hidden');
             setIsCanvasOpen(false);
-            wfit('add');
-            User_wfit("remove")
-            inputWAdjust('remove')
+            AiMessagesWfitAdjust('add');
+            UserMessagesWfitAdjust("remove")
+            InputSectionWfitAdjust('remove')
+            mainLayoutAWfitAdjust('scale')
         }, 400)
-    }, [setIsCanvasOpen])
+    }, [setIsCanvasOpen, DeactivateCanvas])
 
-    // Handle canvas Toggle
-    const handleCanvasToggle = useCallback(() => {
-        setIsCanvasActive(canvasOpen.getAttribute('aria-pressed') === 'true');
-        const { canvasOpen, closeIcon, plusIcon } = refs.current;
 
-        if (!isCanvasActive) {
-            // Activate state
+    //updatehandl
+    const updateHandIndicator = useCallback((e) => {
+        const { codeView, handIndicator, codeScrollWrapper } = refs.current;
 
-            // Hide plus icon, show close icon
-            plusIcon.classList.add('hidden');
-            closeIcon.classList.remove('hidden');
-
-            // Remove inactive styles
-            canvasOpen.classList.remove(
-                'bg-white',
-                'dark:bg-slate-700',
-                'text-blue-600',
-                'dark:text-teal-300',
-                'border-blue-300',
-                'shadow-md',
-                'dark:border-gray-500'
-            );
-
-            // Add active styles
-            canvasOpen.classList.add(
-                'bg-[#00ca62]',
-                'text-black',
-                'border-blue-600',
-                'shadow-xl',
-                'dark:border-teal-500'
-            );
-
-            isCanvasActive = true;
-
-            // Open canvas if not open
-            if (!isCanvasOpen) openCanvas();
-            canvasOpen?.setAttribute('aria-pressed', 'true');
-
+        if (!codeView.contains(e.target)) {
+            handIndicator.style.opacity = '0';
         } else {
-            // Deactivate state
-
-            // Show plus icon, hide close icon
-            closeIcon?.classList.add('hidden');
-            plusIcon?.classList.remove('hidden');
-
-            // Remove active styles
-            canvasOpen?.classList.remove(
-                'bg-[#00ca62]',
-                'text-black',
-                'border-blue-600',
-                'shadow-xl',
-                'dark:border-teal-500'
-            );
-
-            // Add inactive styles
-            canvasOpen?.classList.add(
-                'bg-white',
-                'dark:bg-slate-700',
-                'text-blue-600',
-                'dark:text-teal-300',
-                'border-blue-300',
-                'shadow-md',
-                'dark:border-gray-500'
-            );
-
-            setIsCanvasActive(false);
-
-            // Close canvas if open
-            if (isCanvasOpen) hideCanvas();
-            canvasOpen?.setAttribute('aria-pressed', 'false');
+            updateHandPosition(codeView, handIndicator, codeScrollWrapper);
         }
-    }, [isCanvasActive])
+    }, [updateHandPosition])
+
     // Add event listeners
     useEffect(() => {
-        const { themeToggle, btnCode, btnPreview, btnCopy, codeView, lineNumbers, canvasOpen } = refs.current;
+        const { themeToggle, btnCode, btnPreview, btnCopy, codeView, lineNumbers, handIndicator, codeScrollWrapper } = refs.current;
 
         // Theme toggle
         themeToggle?.addEventListener('click', () => {
@@ -402,11 +477,19 @@ export const Canvas = ({ isOpen, onToggle }) => {
         codeView?.addEventListener('input', updateLineNumbers);
 
         // Canvas open/close
-        canvasOpen?.addEventListener('click', handleCanvasToggle);
+        //ToggleCanvasBt?.addEventListener('click', handleCanvasToggle);
 
-        codeView.addEventListener("wheel", (e) => {
-            handleWheelScroll(e)
-        }, { passive: false });
+        codeView?.addEventListener("wheel", handleWheelScroll, { passive: false });
+
+        // Update handIndicator position
+        //document.addEventListener('click', updateHandIndicator);
+
+        // Update hand position
+        ['input', 'keyup', 'click', 'keydown'].forEach(evt =>
+            codeView?.addEventListener(evt, () => {
+                updateHandPosition(codeView, handIndicator, codeScrollWrapper)
+            })
+        )
 
         // Cleanup
         return () => {
@@ -416,18 +499,21 @@ export const Canvas = ({ isOpen, onToggle }) => {
             codeView?.removeEventListener('scroll', syncScroll);
             lineNumbers?.removeEventListener('scroll', syncScroll);
             codeView?.removeEventListener('input', updateLineNumbers);
-            canvasOpen?.removeEventListener('click', handleCanvasToggle);
+            //ToggleCanvasBt?.removeEventListener('click', handleCanvasToggle);
             codeView?.removeEventListener('wheel', handleWheelScroll)
+            //document.removeEventListener('click', updateHandVisibility)
+            ['input', 'keyup', 'click', 'keydown'].forEach(evt =>
+                codeView.removeEventListener(evt, updateHandPosition))
         };
     }, [handleCodeView, handlePreviewView, handleCopy, syncScroll, updateLineNumbers]);
 
     if (!isOpen) return null;
 
     return (
-        <section id="canvas-wrapper" className="relative hidden flex-shrink -right-3 translate-x-[100vw] w-[65vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-pink-900 min-h-screen flex items-center justify-center p-2 font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-500">
+        <section id="canvas-wrapper" className="relative hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-pink-900 min-h-[80vh] flex items-center justify-center p-2 font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-500">
 
-            <button onClick={onToggle} className="flex justify-center items-center absolute top-2 left-0 text-xl hover:rotate-45 transform transition-transform transition-all duration-500 ease-in-out hover:bg-purple-300 rounded-full py-[0px] px-[6px]">
-                <span>&Cross;</span>
+            <button onClick={hideCanvas} className="flex justify-center items-center absolute top-2 left-0 text-xl hover:rotate-45 transform transition-transform transition-all duration-500 ease-in-out hover:bg-purple-300 rounded-full py-[0px] px-[6px]">
+                <span>{'\u00D7'}</span>
             </button>
 
             <div aria-label="AI code canvas container" className="ai-canvas-container w-full max-w-5xl bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex flex-col h-[93vh] overflow-hidden ring-1 ring-purple-200 dark:ring-purple-700">

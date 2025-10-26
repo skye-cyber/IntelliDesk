@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-export const InputSection = ({ onSendMessage, onToggleCanvas }) => {
+export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording }) => {
     useEffect(() => {
         //const element = document.getElementById('userInput');
         //element.a
@@ -8,19 +8,19 @@ export const InputSection = ({ onSendMessage, onToggleCanvas }) => {
     }, []);
 
     return (
-        <div id="userInput-wrapper" className="absolute flex left-0 lg:left-auto w-full lg:items-center lg:justify-center z-30 bottom-[2%] transition-all duration-1000">
-            <section className="relative w-full lg:w-[70vw] flex space-x-4  transition-all duration-700">
+        <div id="userInput-wrapper" className="absolute flex justify-center left-0 lg:left-auto w-full lg:items-center lg:justify-center z-30 bottom-[2%] transition-all duration-1000">
+            <section className="relative w-full sm:w-[70vw] space-x-4 transition-all duration-700">
                 {/* Custom input field */}
                 <div id="userInput"
                     contentEditable="true"
                     role="textbox"
                     aria-label="Message input"
                     autoFocus
-                    data-placeholder="Message IntelliDesk 💫 To generate an image, start with `/image`"
+                    data-placeholder="Message IntelliDesk 💫"
                     value="this.textContent()"
                     className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 dark:text-white max-h-[28vh] pb-2 transition-all duration-1000"></div>
 
-                <section className="absolute right-[0.5px] bottom-0 p-1 flex w-full rounded-b-md dark:border-teal-600 shadow-xl">
+                <section id="userInputSection" className="absolute right-[0.5px] bottom-0 p-1 flex w-full rounded-b-md dark:border-teal-600 shadow-xl">
                     {/* Tools section (Attach Files and Preview) */}
                     <div className="flex px-3">
                         <div id="AttachFiles" className="flex rounded-lg" title="Attach files">
@@ -53,7 +53,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas }) => {
                             </button>
                             </div>
                         </div>
-                        <button id="microphone" className="mx-2">
+                        <button id="microphone" onClick={onToggleRecording} className="mx-2">
                             <svg id="microphoneSVG" xmlns="http:/*www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="stroke-blue-600 dark:stroke-cyan-400 hover:stroke-sky-800 dark:hover:stroke-sky-200 w-6 h-6 transition-colors duration-1000">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                             </svg>
@@ -84,7 +84,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas }) => {
                         </button>
 
                         {/* Open Canvas */}
-                        <button id="CanvasOpen" onClick={onToggleCanvas} className="group hidden sm:flex items-center gap-3 px-2 py-1 rounded-full bg-white dark:bg-slate-700 text-blue-600 dark:text-teal-300 border border-blue-300 dark:border-gray-500 shadow-md hover:shadow-lg transition-all duration-500" aria-pressed="false">
+                        <button id="ToggleCanvasBt" onClick={onToggleCanvas} className="group hidden sm:flex items-center gap-3 px-2 py-1 rounded-full bg-white dark:bg-slate-700 text-blue-600 dark:text-teal-300 border border-blue-300 dark:border-gray-500 shadow-md hover:shadow-lg transition-all duration-500" aria-pressed="false">
                             <span id="iconContainer" className="transition-transform duration-300">
                                 <svg id="plusIcon" className="w-6 h-6 transition-transform duration-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

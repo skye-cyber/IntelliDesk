@@ -15,54 +15,66 @@ import '@js/katex/contrib/auto-render.min.js';
 //import '@js/managers/packed_HF_Audio.js';
 //import '@js/script.js';
 //import '@js/Utils/packed_chatUtils.js';
-import '@js/managers/Canvas/canvasMan.js'
 import '@js/managers/packed_HF_Chat.js';
 //import '@js/router.js';
 import '@js/managers/packed_MistralChatsAdmin.js';
 //import '@js/Utils/apiUtils.js';
 import '@css/styles.css';
+import  { Recording } from '@components/RecordingUI/Recording';
 
 const App = () => {
-    const { electron }  = useElectron();
+    //const { electron } = useElectron();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState('Qwen/Qwen2.5-72B-Instruct');
     const { sendMessage } = useElectron();
+    const [isRecordingOn, setIsRecordingOn] = useState(false);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
 
+    const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
+
+
     return (
         <ErrorBoundary>
             <MainLayout>
-                <ErrorBoundary>
-                    <Header
-                        onToggleSidebar={toggleSidebar}
-                        selectedModel={selectedModel}
-                        onModelChange={setSelectedModel}
-                    />
-                </ErrorBoundary>
-
-                <div className="flex flex-1 overflow-hidden">
-                    <ErrorBoundary>
-                        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
-                    </ErrorBoundary>
-
-                    <div className="flex-1 flex flex-col">
+                <div className='flex flex-1 overflow-hidden w-full'>
+                    <div id="mainLayoutA" className='w-full'>
                         <ErrorBoundary>
-                            <ChatInterface />
-                        </ErrorBoundary>
-                        <ErrorBoundary>
-                            <InputSection
-                                onSendMessage={sendMessage}
-                                onToggleCanvas={toggleCanvas}
+                            <Header
+                                onToggleSidebar={toggleSidebar}
+                                selectedModel={selectedModel}
+                                onModelChange={setSelectedModel}
                             />
                         </ErrorBoundary>
+                        <div className="flex flex-1 overflow-hidden">
+                            <ErrorBoundary>
+                                <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+                            </ErrorBoundary>
+
+                            <div className="flex-1 flex flex-col">
+                                <ErrorBoundary>
+                                    <ChatInterface />
+                                </ErrorBoundary>
+                                <ErrorBoundary>
+                                    <InputSection
+                                        onSendMessage={sendMessage}
+                                        onToggleCanvas={toggleCanvas}
+                                        onToggleRecording={toggleRecording}
+                                    />
+                                </ErrorBoundary>
+                            </div>
+                        </div>
+
                     </div>
                     <ErrorBoundary>
                         <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
                     </ErrorBoundary>
                 </div>
+                <ErrorBoundary>
+                    <Recording  isOpen={isRecordingOn} onToggle={toggleRecording}/>
+                </ErrorBoundary>
             </MainLayout>
         </ErrorBoundary>
     );

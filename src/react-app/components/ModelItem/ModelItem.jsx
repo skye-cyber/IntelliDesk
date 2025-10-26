@@ -33,7 +33,6 @@ export const ModelItem = ({ model, isSelected, onSelect }) => {
 
 const ModelIconSvg = (icon) => {
     const getIcon = (iconType) => {
-        console.log(iconType)
         // Return appropriate SVG based on iconType
         switch (iconType) {
             case 'qwen':

@@ -301,41 +301,6 @@ setTimeout(()=>{
         canvasUpdate()
     }
 
-    class ResizeClassToggler {
-        constructor(targetId, toggleTarget, breakpoint = 640, className = 'sm:flex') {
-            this.target = document.getElementById(targetId);
-            this.toggleTarget = document.getElementById(toggleTarget);
-            this.breakpoint = breakpoint;
-            this.className = className;
-
-            if (!this.target || !this.toggleTarget) return;
-
-            this.checkSize = this.checkSize.bind(this);
-
-            if ('ResizeObserver' in window) {
-                this.resizeObserver = new ResizeObserver(this.checkSize);
-                this.resizeObserver.observe(this.target);
-            } else {
-                window.addEventListener('resize', this.checkSize);
-            }
-
-            // Initial check
-            this.checkSize();
-        }
-
-        checkSize() {
-            const width = this.target.offsetWidth;
-            if (width <= this.breakpoint) {
-                this.toggleTarget.classList.remove(this.className);
-            } else {
-                this.toggleTarget.classList.add(this.className);
-            }
-        }
-    }
-
-    new ResizeClassToggler('userInput', 'CanvasOpen', 430, 'sm:flex');
-    new ResizeClassToggler('userInput', 'image-gen', 400, 'sm:flex');
-
     function NormalizeCanvasCode() {
         setTimeout(() => {
             const codeNode = codeView.querySelector('code');

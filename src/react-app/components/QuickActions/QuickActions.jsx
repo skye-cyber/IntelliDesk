@@ -18,9 +18,29 @@ export const QuickActions = () => {
 
     return (
         <section id='suggestions' className="mx-auto" style={{zIndex: 0}}>
-                <div className="flex justify-center items-center text-center text-2xl font-semibold leading-9 dark:text-white transition-colors duration-1000">
-                    <h1>What can I help you with? </h1>
+            <div className="flex justify-center items-center text-center perspective-1000">
+                <div className="p-2 rounded-lg">
+                    <h1 className="text-3xl font-bold text-cyan-300 holographic-text">
+                        What can I help you with?
+                    </h1>
                 </div>
+            </div>
+            <div className="hidden justify-center items-center text-center">
+                <div className="cyber-terminal p-4 border-2 border-green-400 rounded">
+                    <h1 className="text-2xl font-mono font-bold text-green-400 terminal-text">
+                    &gt; What can I help you with? _
+                    </h1>
+                </div>
+            </div>
+
+            <div className="hidden justify-center items-center text-center">
+                <div className="relative">
+                    <h1 className="text-4xl text-black font-light modern-glow">
+                    What can I help you with?
+                    </h1>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse"></div>
+                </div>
+            </div>
 
                 <div className="h-fit">
                     <div className="mt-5 flex items-center justify-center gap-x-2 transition-opacity duration-700 xl:gap-x-2.5 opacity-100 flex-wrap">

@@ -311,6 +311,16 @@ ipcMain.handle('save-dg-As-PNG', async (event, buffer, path) => {
     }
 });
 
+
+// IPC handler for keys reset
+ipcMain.handle('get-app-version', async (event, accounts) => {
+    try {
+        return app.getVersion()
+    } catch (err) {
+        //console.log(err)
+    }
+});
+
 async function prepDirectories() {
     try {
         const baseDir = path.join(app.getPath('home'), '.IntelliDesk');

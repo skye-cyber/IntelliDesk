@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { opendiagViewModal, closediagViewModal } from '@js/diagraming/Utils.js';
 
-export const DropZone = ({ isOpen, onToggle }) => {
+export const DiagramUi = ({ isOpen, onToggle }) => {
 
     const shouldClose = useCallback((e)=>{
         const overlay = document.getElementById('view-content');

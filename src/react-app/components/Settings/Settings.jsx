@@ -1,55 +1,105 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { SettingToggle } from '@components/Settings/toggle.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 
 export const Settings = ({ isOpen, onToggle }) => {
-    const [isDarkTheme, setIsDarkTheme] = useState(true);
-    const [useFlux, setUseFlux] = useState(false);
-    const [animationsEnabled, setAnimationsEnabled] = useState(true);
-    const [language, setlanguage] = useState('en');
-    const [preference, setpreference] = useState('')
-    const [preferenceChange, setpreferenceChange] = useState(false)
+    const [preferenceChange, setPreferenceChange] = useState(false);
+    const [currentPreference, setCurrentPreference] = useState('');
 
-    const CloseSettings = useCallback(() => {
-        const settings = document.getElementById('settingsModal')
-        settings.classList.remove('translate-x-0')
-        settings.classList.add('translate-x-full')
-        setTimeout(() => {
-            settings.classList.add('hidden')
-        }, 800)
-    }, [])
+    const [settings, setSettings] = useState({
+        autoscroll: true,
+        theme: 'light',
+        animations: true,
+        preference: '',
+        language: 'en',
+        fluxmodel: false
+    });
 
-    const shouldClose = useCallback((e) => {
-        e.stopPropagation()
-        const settings = document.getElementById('settingsModal');
-        if (settings.contains(e.target)) CloseSettings();
-    }, [])
-
-    // Load preference on component mount
+    // Load settings on component mount
     useEffect(() => {
-        const loadPreference = async () => {
-            const pref = await window.electron.getPreferences();
-            //setCurrentPreference(pref || '');
-            setpreference(pref?.data?.preference);
-            setAnimationsEnabled(pref?.data?.animations);
-            setUseFlux(pref?.data?.fluxmodel);
-            setIsDarkTheme(pref?.data?.darktheme)
-            setlanguage(pref?.data?.language)
+        const loadSettings = async () => {
+            try {
+                const savedSettings = await window.electron.getPreferences();
+                //console.log('Loaded settings:', savedSettings?.data);
+                if (savedSettings?.data) {
+                    setSettings(prev => ({ ...prev, ...savedSettings.data }));
+                    setCurrentPreference(savedSettings.data.preference || '');
+                }
+            } catch (error) {
+                window.ModalManager.showMessage(`Failed to load settings: ${error}`, 'error');
+            }
         };
-        loadPreference();
+        loadSettings();
     }, []);
 
+    // Update DOM when settings change
+    useEffect(() => {
+        updateDOMWithSettings();
+    }, [settings]);
 
-    const handlePreferenceInput = useCallback(() => {
-        setpreferenceChange(true)
+    const updateDOMWithSettings = useCallback(() => {
+        //console.log("Updating DOM with settings:", settings);
 
-        const prefInput = document.getElementById('pref-input');
+        // Update theme
+        const themeSwitch = document.getElementById('themeSwitch');
+        if (themeSwitch) {
+            themeSwitch.checked = settings.theme === 'dark';
+        }
+
+        // Update other checkboxes
+        const autoScroll = document.getElementById('autoScroll');
+        if (autoScroll) autoScroll.checked = settings.autoscroll;
+
+        const animations = document.getElementById('animations');
+        if (animations) animations.checked = settings.animations;
+
+        const fluxModel = document.getElementById('fluxModel');
+        if (fluxModel) fluxModel.checked = settings.fluxmodel;
+
+        // Update language
+        const languagePref = document.getElementById('languagePref');
+        if (languagePref) languagePref.value = settings.language;
+    }, [settings]);
+
+    const CloseSettings = useCallback(() => {
+        const settingsModal = document.getElementById('settingsModal');
+        settingsModal.classList.remove('translate-x-0');
+        settingsModal.classList.add('translate-x-full');
+        setTimeout(() => {
+            settingsModal.classList.add('hidden');
+        }, 800);
+    }, []);
+
+    const shouldClose = useCallback((e) => {
+        e.stopPropagation();
+        const settingsM = document.getElementById('settingsModal');
+        if (settingsM.contains(e.target)) CloseSettings();
+    }, [CloseSettings]);
+
+    const handleSettingChange = useCallback((key, value) => {
+        //console.log(`Setting ${key} changed to:`, value);
+        setSettings(prev => {
+            const newSettings = { ...prev, [key]: value };
+
+            // Save immediately when settings change
+            window.electron.savePreference(newSettings).catch(error => {
+                console.error('Failed to save settings:', error);
+            });
+
+            return newSettings;
+        });
+    }, []);
+
+    const handlePreferenceInput = useCallback((e) => {
+        setPreferenceChange(true);
+        const prefInput = e.target;
+        prefInput.style.height = 'auto';
         prefInput.style.height = Math.min(prefInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
-    })
+    }, []);
 
-    const handlePreferenceSubmit = useCallback(() => {
-        const prefInputSection = document.getElementById('prefInputSection')
+    const handlePreferenceSubmit = useCallback(async () => {
         const prefInput = document.getElementById('pref-input');
+        const prefInputSection = document.getElementById('prefInputSection')
         const prefContent = document.getElementById('pref-content');
         const prefContentSection = document.getElementById('prefContentSection')
 
@@ -58,17 +108,22 @@ export const Settings = ({ isOpen, onToggle }) => {
 
         prefInputSection.classList.add('hidden'); //Show input section
         prefContentSection.classList.remove('hidden'); //Hide preference display block
-        const savePref = (async () => {
-            const saved = savePrefAPI()
-            prefInput.value = '';
-            if (saved) {
-                SuccessModal.success('Your preferences have been saved successfully!');
-            }
-        })
 
-        savePref()
+        if (!content) return;
 
-    })
+        setCurrentPreference(content);
+
+        const newSettings = { ...settings, preference: content };
+        setSettings(newSettings);
+
+        try {
+            await window.electron.savePreference(newSettings);
+            SuccessModal.success('Your preferences have been saved successfully!');
+        } catch (error) {
+            window.ModalManager.showMessage('Failed to save preferences', 'error');
+        }
+    }, [settings]);
+
 
     const handleEditPreference = useCallback(() => {
         const prefInputSection = document.getElementById('prefInputSection')
@@ -78,45 +133,88 @@ export const Settings = ({ isOpen, onToggle }) => {
 
         prefInputSection.classList.remove('hidden'); //Show input section
 
-        prefInput.value = prefContent.innerText;
+        prefInput.value = currentPreference ? currentPreference : prefContent.innerText;
         prefInput.focus() //Focus text area for editing
 
         prefContentSection.classList.add('hidden'); //Hide preference display block
         prefInput.style.height = Math.min(prefInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
-    })
+
+        setPreferenceChange(true);
+
+    }, [currentPreference])
 
     const handleDeletePreference = useCallback(async () => {
         const prefInputSection = document.getElementById('prefInputSection')
         const prefInput = document.getElementById('pref-input');
         const prefContent = document.getElementById('pref-content');
         const prefContentSection = document.getElementById('prefContentSection')
+
         const confirmed = await window.ModalManager.confirm("This action cannot be undone", "Delete preferences?")
 
         if (!confirmed) return;
 
-        if (await window.electron.deletePreference()) {
-            prefContent.textContent = '';
-            prefContentSection.classList.add('hidden'); //Hide preference display block
-            prefInputSection.classList.remove('hidden'); //Show input section
-            prefInput.value = "";
+        try {
+            setCurrentPreference('');
+            const newSettings = { ...settings, preference: '' };
+            setSettings(newSettings);
 
-            SuccessModal.success('Your preferences have been deleted successfully!');
-        } else {
-            const errorContainer = document.getElementById('errorContainer');
-            const errorArea = document.getElementById('errorArea');
-            errorArea.textContent = "Failed to delete preferences!"
-            errorContainer?.classList.remove('hidden');
-            setTimeout(() => {
-                errorContainer?.classList.add('hidden');
-            }, 3000)
+            if (await window.electron.savePreference()) {
+                prefContent.textContent = '';
+                prefContentSection.classList.add('hidden'); //Hide preference display block
+                prefInputSection.classList.remove('hidden'); //Show input section
+                prefInput.value = "";
 
-            if (saved) {
-                displayStatus("Deletion failed", 'error')
-                setTimeout(() => {
-                    hideStatus('error')
-                }, 700)
+                SuccessModal.success('Your preferences have been deleted successfully!');
+            } else {
+                window.ModalManager.showMessage('Failed to delete preferences', 'error');
             }
+        } catch (error) {
+            window.ModalManager.showMessage(`Failed to delete preferences: ${error.message}`, 'error');
         }
+    }, [settings])
+
+    const handleSaveSettings = useCallback(() => {
+        const prefInputSection = document.getElementById('prefInputSection')
+        const prefInput = document.getElementById('pref-input');
+        const prefContent = document.getElementById('pref-content');
+        const prefContentSection = document.getElementById('prefContentSection')
+
+        const inputText = prefInput.value.trim();
+        prefInput.value = "";
+
+        // Dispatch Save event
+        const saved = saveSettingsAPI()
+        if (inputText) {
+            prefInputSection.classList.add('hidden'); //hide input section
+            prefContent.innerText = inputText; //Update preference content
+            prefContentSection.classList.remove('hidden');
+        }
+        if (saved) {
+            window.ModalManager.showMessage("Settings updated successfully", 'success')
+        }
+    })
+
+    const saveSettingsAPI = (async () => {
+        const theme = document.getElementById('themeSwitch')
+        const autoScroll = document.getElementById('autoScroll')
+        const animations = document.getElementById('animations')
+        const language = document.getElementById('languagePref')
+        const fluxModel = document.getElementById('fluxModel')
+        const prefInput = document.getElementById('pref-input');
+        const prefContent = document.getElementById('pref-content');
+
+        const inputText = prefInput.value.trim();
+        const data = {
+            theme: theme.ckecked ? 'dark' : 'light',
+            autoscroll: autoScroll.checked,
+            animations: animations.checked,
+            preference: inputText ? inputText : prefContent.textContent.trim(),
+            language: language.value || 'en',
+            fluxmodel: fluxModel.checked
+        }
+        //console.log(settings, data)
+        const saved = await window.electron.savePreference(settings)
+        return saved
     })
 
     const showApiManModal = useCallback(() => {
@@ -134,52 +232,30 @@ export const Settings = ({ isOpen, onToggle }) => {
         showApiManModal()
     })
 
-    const handleResetSettings = useCallback(() => {
-        handleDeletePreference()
-    })
+    const handleResetSettings = useCallback(async () => {
+        const confirmed = await window.ModalManager.confirm("This action cannot be undone", "Delete preferences?");
+        if (!confirmed) return;
 
-    const handleSaveSettings = useCallback(() => {
-        const prefInputSection = document.getElementById('prefInputSection')
-        const prefInput = document.getElementById('pref-input');
-        const prefContent = document.getElementById('pref-content');
-        const prefContentSection = document.getElementById('prefContentSection')
+        try {
+            setCurrentPreference('');
+            const newSettings = {
+                autoscroll: true,
+                theme: 'light',
+                animations: true,
+                preference: '',
+                language: 'en',
+                fluxmodel: false,
+                preference: ''
+            };
 
-        const inputText = prefInput.value.trim();
-        console.log(prefContent.textContent.trim(), inputText)
-        prefInput.value = "";
+            setSettings(newSettings);
 
-        // Dispatch Save event
-        const saved = savePrefAPI()
-        prefInputSection.classList.add('hidden'); //hide input section
-        prefContent.innerText = inputText ? inputText : prefContent.innerText; //Update preference content
-        prefContentSection.classList.remove('hidden');
-        if (saved) {
-            window.ModalManager.showMessage("Settings updated successfully", 'success')
+            await window.electron.savePreference(newSettings);
+            SuccessModal.success('Your preferences have been deleted successfully!');
+        } catch (error) {
+            window.ModalManager.showMessage('Failed to delete preferences', 'error');
         }
-    })
-
-    const savePrefAPI = (async () => {
-        const theme = document.getElementById('themeSwitch')
-        const autoScroll = document.getElementById('autoScroll')
-        const animations = document.getElementById('animations')
-        const language = document.getElementById('languagePref')
-        const fluxModel = document.getElementById('fluxModel')
-        const prefInput = document.getElementById('pref-input');
-        const prefContent = document.getElementById('pref-content');
-
-        const inputText = prefInput.value.trim();
-        const data = {
-            darktheme: theme.ckecked || isDarkTheme,
-            autoscroll: autoScroll.checked || true,
-            animations: animations.checked || animationsEnabled,
-            preference: inputText ? inputText : prefContent.textContent.trim(),
-            language: language.value || language || 'en',
-            fluxmodel: fluxModel.value || false
-        }
-        console.log(prefContent.textContent.trim())
-        const saved = await window.electron.savePreference(data)
-        return saved
-    })
+    }, [settings])
 
     return (
         <div onClick={shouldClose} id="settingsModal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-700 hidden translate-x-full">
@@ -238,7 +314,8 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 label="Dark Theme"
                                 description="Switch between light and dark mode"
                                 icon="🌓"
-                                defaultChecked={isDarkTheme}
+                                checked={settings.theme === 'dark'}
+                                onChange={(checked) => handleSettingChange('theme', checked ? 'dark' : 'light')}
                             />
 
                             {/* Auto Scroll */}
@@ -247,7 +324,8 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 label="Auto Scroll"
                                 description="Automatically scroll to new content"
                                 icon="📜"
-                                defaultChecked={true}
+                                checked={settings.autoscroll}
+                                onChange={(checked) => handleSettingChange('autoscroll', checked)}
                             />
 
                             {/* Use FLUX Model */}
@@ -256,7 +334,8 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 label="FLUX Model"
                                 description="Use FLUX for image generation"
                                 icon="🖼️"
-                                defaultChecked={useFlux}
+                                checked={settings.fluxmodel}
+                                onChange={(checked) => handleSettingChange('fluxmodel', checked)}
                             />
 
                             {/* Animations */}
@@ -265,7 +344,8 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 label="Animations"
                                 description="Enable interface animations"
                                 icon="✨"
-                                defaultChecked={animationsEnabled}
+                                checked={settings.animations}
+                                onChange={(checked) => handleSettingChange('animations', checked)}
                             />
                         </div>
                     </div>
@@ -281,7 +361,7 @@ export const Settings = ({ isOpen, onToggle }) => {
 
                         <div className="space-y-4">
                             {/* Preference Input */}
-                            <div id="prefInputSection" className={`${preference ? 'hidden' : ''} bg-gray-50/50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50`}>
+                            <div id="prefInputSection" className={`${currentPreference ? 'hidden' : ''} bg-gray-50/50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50`}>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                                     Tell me about your preferences...
                                 </label>
@@ -313,7 +393,7 @@ export const Settings = ({ isOpen, onToggle }) => {
 
                             {/* Current Preference Display */}
                             <ErrorBoundary>
-                                <div id="prefContentSection" className={`${!preference ? 'hidden' : ''} bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50`}>
+                                <div id="prefContentSection" className={`${!currentPreference ? 'hidden' : ''} bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50`}>
                                     <div className="flex justify-between items-start mb-2">
                                         <h4 className="font-medium text-blue-900 dark:text-blue-100">Current Preference</h4>
                                         <div className="flex space-x-2">
@@ -335,7 +415,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                             </button>
                                         </div>
                                     </div>
-                                    <p id="pref-content" className="text-blue-800 dark:text-blue-200 text-sm">{preference}</p>
+                                    <p id="pref-content" className="text-blue-800 dark:text-blue-200 text-sm">{currentPreference}</p>
                                 </div>
                             </ErrorBoundary>
                         </div>
@@ -351,7 +431,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 </svg>
                                 Language & Region
                             </h3>
-                            <select id="languagePref" className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" defaultValue={language || 'en'} key={language}>
+                            <select id="languagePref" className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" onChange={(e) => handleSettingChange('language', e.target.value)}>
                                 <option value="en">🌐 English</option>
                                 <option value="fr">🇫🇷 French</option>
                                 <option value="es">🇪🇸 Spanish</option>
@@ -409,3 +489,4 @@ export const Settings = ({ isOpen, onToggle }) => {
         </div>
     );
 };
+

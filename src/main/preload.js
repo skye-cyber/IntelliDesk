@@ -655,7 +655,7 @@ contextBridge.exposeInMainWorld('electron', {
             fs.rmSync(prefPath, data);
             return true
         } catch (err) {
-            //console.log(err);
+            console.log(err);
             return false
         }
     },
@@ -753,14 +753,7 @@ contextBridge.exposeInMainWorld('api', {
     saveKeys: async (keys) => ipcRenderer.invoke('save-keys', keys),
     getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),
     resetKeys: async (accounts) => ipcRenderer.invoke('reset-keys', accounts),
-
-});
-
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld('electronAPI', {
-    // App info
-    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    appVersion: async () => ipcRenderer.invoke('get-app-version', ),
 
     // Chat functionality
     sendChatMessage: (message, model, options) =>

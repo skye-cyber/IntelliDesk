@@ -191,7 +191,7 @@ export class SuccessModal {
     }
 
     hide() {
-        this.clearTimers();
+        this?.clearTimers();
 
         this.isVisible = false;
         this.backdrop.classList.remove('visible');
@@ -241,6 +241,7 @@ export class SuccessModal {
 // Create global instance
 window.SuccessModal = new SuccessModal();
 
+window.hideSuccessModal = window.SuccessModal.hide
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = SuccessModal;

@@ -84,7 +84,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         // Only update changed/edited fields, marked by mask *
         mistralKey = mistralKey.includes('*') ? null : mistralKey;
         huggingfaceKey = huggingfaceKey.includes('*') ? null : huggingfaceKey;
-        saveKeys([mistralKey, huggingfaceKey], task)
+        saveKeys({mistralKey, huggingfaceKey}, task)
     })
 
     const saveKeys = useCallback(async(keyStore, task='create') => {

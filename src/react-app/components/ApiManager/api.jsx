@@ -1,20 +1,26 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 
 export const APIKeysManager = ({ isOpen, onToggle }) => {
+
+    const [huggingfaceKey, sethuggingfaceKey] = useState('');
+    const [mistralKey, setmistralKey] = useState('')
 
     useEffect(() => {
         loadKeys()
     })
 
-    const toggleVisibility = useCallback((e) => {
-        console.log(e.target.id)
-        const input = document.getElementById(e.target.id);
+    const toggleVisibility = useCallback((id) => {
+        //const id = e.target?.parentElement?.firstChild.id
+        //console.log(e.target?.parentElement)
+        //if (!['mistralKeyMan', 'huggingfaceKeyMan', 'mistralKey', 'huggingfaceKey'].includes(id)) return
+        const input = document.getElementById(id);
         input.type = input.type === 'password' ? 'text' : 'password';
     })
 
 
     const showApiQueryModal = useCallback(() => {
         closeWarningModal()
+        closeApiNotSetWarning()
         const modal = document.getElementById('apiKeyModal');
         const modalContent = document.getElementById('apiKeyModalContent');
         modal.classList.remove('hidden');
@@ -23,11 +29,13 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
     })
 
     const closeApiQueryModal = useCallback(() => {
-        const mistralApiValue = document.getElementById('mistralKeyMan').defaultValue;
-        const hfApiValue = document.getElementById('huggingfaceKeyMan').defaultValue;
+        /*
+         * const mistralApiValue = document.getElementById('mistralKeyMan').value;
+        const hfApiValue = document.getElementById('huggingfaceKeyMan').value;
         if (!mistralApiValue && !hfApiValue) {
             showApiNotSetWarning();
         }
+        */
         const modal = document.getElementById('apiKeyModal');
         const modalContent = document.getElementById('apiKeyModalContent');
 
@@ -39,36 +47,48 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
     })
 
     const showApiManModal = useCallback(() => {
-        const manPagemodal = document.getElementById('apiKeyManPage')
+        const modal = document.getElementById('apiKeyManPage')
+        const content = document.getElementById('apiManContent');
 
-        manPagemodal.classList.remove('translate-y-[100vh]', 'hidden');
-        manPagemodal.classList.add('translate-y-1');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('translate-y-8', 'opacity-0');
+            content.classList.add('translate-y-0', 'opacity-100');
+        }, 10);
     })
 
 
     const hideApiManModal = useCallback(() => {
-        const manPagemodal = document.getElementById('apiKeyManPage')
+        const modal = document.getElementById('apiKeyManPage')
+        const content = document.getElementById('apiManContent');
 
-        manPagemodal.classList.add('translate-y-[100vh]');
-        manPagemodal.classList.remove('translate-y-1');
+        content.classList.remove('translate-y-0', 'opacity-100');
+        content.classList.add('translate-y-8', 'opacity-0');
         setTimeout(() => {
-            manPagemodal.classList.add('hidden')
-        })
+            modal.classList.add('hidden');
+        }, 510);
     })
 
-
     // Save keys using keytar via the preload API
-    const saveKeys = useCallback(async (task = "save") => {
-        let mistralKey = (task === "save") ? document.getElementById('mistralKey').defaultValue : document.getElementById('mistralKeyMan').defaultValue;
-        let huggingfaceKey = (task === "save") ? document.getElementById('mistralKey').defaultValue : document.getElementById('huggingfaceKeyMan').defaultValue;
+    const HandleKeysave= useCallback(async (task = 'create') => {
+        let mistralKey;
+        let huggingfaceKey
+        if (task === 'create') {
+            mistralKey = document.getElementById('mistralKey').value
+            huggingfaceKey = document.getElementById('huggingfaceKey').value
+        } else {
+            mistralKey = document.getElementById('mistralKeyMan').value
+            huggingfaceKey = document.getElementById('huggingfaceKeyMan').value
+        }
 
         // Only update changed/edited fields, marked by mask *
         mistralKey = mistralKey.includes('*') ? null : mistralKey;
         huggingfaceKey = huggingfaceKey.includes('*') ? null : huggingfaceKey;
+        saveKeys([mistralKey, huggingfaceKey], task)
+    })
 
-        const keyStore = { mistralKey, huggingfaceKey }
-
-        //console.log(keyStore);
+    const saveKeys = useCallback(async(keyStore, task='create') => {
+        const { mistralKey, huggingfaceKey } = keyStore
 
         // Exit if no changes were made
         if (!keyStore) {
@@ -91,15 +111,13 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                 // if taskis update, close manpage modal
                 (task === "update") ? hideApiManModal() : '';
 
-                window.ModalManager.showMessage('API Keys saved successfully.', 'success');
+                window.ModalManager.showMessage(`API Keys ${ (task==='updated')? 'updated' : 'saved'} successfully.`, 'success');
             }
         } else {
             console.log('No keys set')
             showApiNotSetWarning();
         }
-
     })
-
     // Load keys from keytar via the preload API and mask them
     const loadKeys = useCallback(async () => {
         const mistralApiField = document.getElementById('mistralKeyMan');
@@ -107,30 +125,50 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
 
         const { mistralKey, huggingfaceKey } = await window.api.getKeys() || {};
 
-        //console.log('keys:', mistralKey, huggingfaceKey)
+        sethuggingfaceKey(huggingfaceKey)
+        setmistralKey(mistralKey)
+
         if (!mistralKey && !huggingfaceKey) {
-            mistralApiField.defaultValue = "";
-            hfApiField.defaultValue = "";
+            mistralApiField.value = "";
+            hfApiField.value = "";
             showWarningModal();
             //showApiQueryModal();
         } else {
-            mistralApiField.defaultValue = mistralKey ? maskKey(mistralKey) : '';
-            hfApiField.defaultValue = huggingfaceKey ? maskKey(huggingfaceKey) : '';
+            mistralApiField.value = mistralKey ? maskKey(mistralKey) : '';
+            hfApiField.value = huggingfaceKey ? maskKey(huggingfaceKey) : '';
         }
     })
 
     // Simple masking function: show only the last 4 characters
-    function maskKey(key) {
-        const visibleChars = 4;
-        const maskedSection = '*'.repeat(Math.max(0, key.length - visibleChars));
-        const visibleSection = key.slice(-visibleChars);
-        return maskedSection + visibleSection;
+    function maskKey(key, options = {}) {
+        if (!key || typeof key !== 'string') return '';
+
+        const {
+            visibleChars = 4,
+            maskChar = '*',
+            showLastChars = 2 // Optionally show last characters too
+        } = options;
+
+        if (key.length <= visibleChars + showLastChars) return key;
+
+        const firstVisible = key.slice(0, visibleChars);
+        const lastVisible = showLastChars > 0 ? key.slice(-showLastChars) : '';
+        const maskedLength = key.length - visibleChars - showLastChars;
+        const maskedSection = maskChar.repeat(Math.max(0, maskedLength));
+        //console.log(firstVisible + maskedSection + lastVisible)
+        return firstVisible + maskedSection + lastVisible;
     }
 
     // Reset keys (clear inputs)
-    const resetKeys = useCallback(() => {
-        document.getElementById('mistralKey').defaultValue = '';
-        document.getElementById('huggingfaceKey').defaultValue = '';
+    const resetKeys = useCallback(async() => {
+        document.getElementById('mistralKey').value = '';
+        document.getElementById('huggingfaceKey').value = '';
+        document.getElementById('mistralKeyMan').value = '';
+        document.getElementById('huggingfaceKeyMan').value = '';
+
+        const result = await window.api.resetKeys(['mistral', 'huggingface']);
+
+        if(result) window.ModalManager.showMessage('API Keys reset successfully.', 'success');
     })
 
     const openApiModal = useCallback(() => {
@@ -210,190 +248,468 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         }
     })
 
-    function closeWarningQuery(){
+    function closeWarningQuery() {
         closeWarningModal()
-        showApiQueryModal()
+        //showApiQueryModal()
     }
 
-    function closeNotSetQuery(){
+    function closeNotSetQuery() {
         closeApiNotSetWarning()
-        showApiQueryModal()
+        //showApiQueryModal()
     }
+
+    const setMistralKey = useCallback((value) => {
+        //document.getElementById('mistralKey').value = value;
+    })
+
+    const setHuggingfaceKey = useCallback((value) => {
+        //document.getElementById('huggingfaceKey').value = value;
+    })
 
     return (
         <section>
-            <div id="apiKeyModal" className="fixed inset-0 bg-blue-900/40 dark:bg-zinc-900/80 flex items-center justify-center z-30 hidden transition-colors duration-1000">
-                <div id="apiKeyModalContent" className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-2xl w-96 fade-in">
-                    <h2 className="text-xl font-semibold text-center text-gray-900 dark:text-gray-100 transition-colors duration-1000">
-                        Enter Your API Keys
-                    </h2>
-                    <div className="mt-4 space-y-4">
-                        <div className="space-y-2">
-                            <label htmlFor="mistralKey" className="block text-gray-700 dark:text-gray-300 transition-colors duration-1000">Mistral API Key</label>
-                            <div className="relative">
-                                <input id="mistralKey" type="password" className="w-full p-2 border border-orange-400 dark:border-blue-300 rounded-md dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 transition-colors duration-1000"></input>
-                                <button type="button" className="absolute inset-y-0 right-2 flex items-center text-gray-500 dark:text-gray-400" onClick={toggleVisibility}>
-                                    👁
-                                </button>
+            <div id="apiKeyModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300 hidden">
+                <div id="apiKeyModalContent" className="bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-300 scale-95 opacity-0 backdrop-blur-lg">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
+                        <div className="flex items-center space-x-3">
+                            <div className="p-2 bg-blue-500/10 rounded-xl">
+                                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="huggingfaceKey" className="block text-gray-700 dark:text-gray-300 transition-colors duration-1000">Hugging Face API Key</label>
-                            <div className="relative">
-                                <input id="huggingfaceKey" type="password" className="w-full p-2 border border-pink-400 rounded-md dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 transition-colors duration-1000"></input>
-                                <button type="button" className="absolute inset-y-0 right-2 flex items-center text-gray-500 dark:text-gray-400 transition-colors duration-1000" onClick={toggleVisibility}>
-                                    👁
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex justify-end mt-6 space-x-3">
-                        <button className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 transition" onClick={closeApiQueryModal}>
-                            Cancel
-                        </button>
-                        <button id="saveKeysBt" className="px-4 py-2 bg-blue-600 text-white rounded-md dark:hover:bg-blue-700 hover:bg-green-600 transition" onClick={saveKeys}>
-                            Save
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Key management modal*/}
-            <div id="apiKeyManPage" className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 translate-y-[100vh] hidden transition-all duration-700">
-                <div className="relative w-fit max-w-3xl mx-auto bg-white dark:bg-stone-800 p-6 rounded-lg shadow-lg aimate-fadeIn overflow-hidden">
-                    {/* Close Button */}
-                    <button onClick={hideApiManModal} id="closeModalManPage" className="absolute top-2 right-2 text-black dark:text-blue-400 hover:text-gray-900 hover:rotate-45 duration-300 dark:hover:text-gray-400 transition-colors duration-1000">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-white text-center mb-4 transition-colors duration-1000">Manage API Keys</h2>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-300">Mistral API Key</label>
-                            <div className="relative">
-                                <input id="mistralKeyMan" type="password" defaultValue="***************" className="w-full p-2 border rounded-md dark:bg-stone-600 dark:border-gray-400 dark:text-gray-100 transition-colors duration-1000"></input>
-                                <button type="button" className="absolute inset-y-0 right-2 flex items-center text-gray-500 dark:text-gray-400 transition-colors duration-1000" onClick={toggleVisibility}>
-                                    👁
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-300">Hugging Face API Key</label>
-                            <div className="relative">
-                                <input id="huggingfaceKeyMan" type="password" defaultValue="***************" className="w-full p-2 border rounded-md dark:bg-zinc-600 dark:border-gray-400 dark:text-gray-100"></input>
-                                <button type="button" className="absolute inset-y-0 right-2 flex items-center text-gray-500 dark:text-gray-400" onClick={toggleVisibility}>
-                                    👁
-                                </button>
+                            <div>
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 dark:from-white dark:to-blue-400 bg-clip-text text-transparent">
+                                    API Keys
+                                </h2>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    Secure your API credentials
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-end mt-6 space-x-3">
-                        <button className="px-4 py-2 dark:text-white text-gray-900 bg-gray-300 dark:bg-gray-500 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 cursor-not-allowed pointer-events-none transition-colors duration-1000" onClick={resetKeys}>
-                            Reset
-                        </button>
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-1000" onClick={saveKeys.bind(null, 'update')}>
-                            Save Changes
-                        </button>
+                    {/* Content */}
+                    <div className="p-6 space-y-6">
+                        {/* Mistral API Key */}
+                        <div className="space-y-3">
+                            <label htmlFor="mistralKey" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                <span>Mistral API Key</span>
+                            </label>
+                            <div className="relative group">
+                                <input
+                                    id="mistralKey"
+                                    type="password"
+                                    defaultValue=''
+                                    onChange={(e) => setMistralKey(e.target.value)}
+                                    placeholder="mk-..."
+                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-mono text-sm"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={()=>toggleVisibility('mistralKey')}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 group-hover:scale-110"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                <span>Your key is encrypted and stored securely</span>
+                            </p>
+                        </div>
+
+                        {/* Hugging Face API Key */}
+                        <div className="space-y-3">
+                            <label htmlFor="huggingfaceKey" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                                <span>Hugging Face API Key</span>
+                            </label>
+                            <div className="relative group">
+                                <input
+                                    id="huggingfaceKey"
+                                    type="password"
+                                    defaultValue=''
+                                    onChange={(e) => setHuggingfaceKey(e.target.value)}
+                                    placeholder="hf_..."
+                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-pink-200 dark:border-pink-800 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all duration-200 font-mono text-sm"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={()=>toggleVisibility('huggingfaceKey')}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 group-hover:scale-110"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                <span>Required for model access and inference</span>
+                            </p>
+                        </div>
+
+                        {/* Security Note */}
+                        <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 rounded-xl p-4">
+                            <div className="flex items-start space-x-3">
+                                <svg className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                <div>
+                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Security First</p>
+                                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                        API keys are stored locally and never shared with third parties.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6 rounded-b-2xl">
+                        <div className="flex space-x-3">
+                            <button
+                                onClick={closeApiQueryModal}
+                                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                id="HandleKeysaveBt"
+                                onClick={() => HandleKeysave('create')}
+                                className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Save Keys</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Key Management Modal */}
+            <div id="apiKeyManPage" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden">
+                <div id="apiManContent" className="relative w-full max-w-2xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl backdrop-blur-lg transform transition-all duration-500 translate-y-8 opacity-0">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-blue-500/10 rounded-xl">
+                                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 dark:from-white dark:to-blue-400 bg-clip-text text-transparent">
+                                        Manage API Keys
+                                    </h2>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        Update and secure your API credentials
+                                    </p>
+                                </div>
+                            </div>
 
-            {/*Warning Modal: No API Key Set*/}
-            <div id="warningModal" className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30 pointer-events-none transition-all duration-700 hidden">
-                <div id="warningModalContent" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96 transform translate-y-full transition-all duration-300 animate-exit">
+                            {/* Close Button */}
+                            <button
+                                onClick={hideApiManModal}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
+                            >
+                                <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
-                    {/* Warning Title */}
-                    <h2 className="text-xl font-semibold text-center text-red-500 dark:text-red-400 flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500" viewBox="0 0 24 24" fill="currentColor">
-                            <path fillRule="evenodd" d="M12 2a1 1 0 0 1 .894.553l9 18A1 1 0 0 1 21 22H3a1 1 0 0 1-.894-1.447l9-18A1 1 0 0 1 12 2zm-1 8a1 1 0 0 0 2 0v4a1 1 0 0 0-2 0v-4zm1 8a1.25 1.25 0 1 0 0-2.5A1.25 1.25 0 0 0 12 18z" clipRule="evenodd" />
-                        </svg>
-                        <span className="font-bold text-red-500">Warning:</span> <span className="text-orange-400 font-normal">API Key Not Set</span>
-                    </h2>
+                    {/* Content */}
+                    <div className="p-6 space-y-6">
+                        {/* Mistral API Key */}
+                        <div className="space-y-3">
+                            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                <span>Mistral API Key</span>
+                            </label>
+                            <div className="relative group">
+                                <input
+                                    id="mistralKeyMan"
+                                    type="password"
+                                    defaultValue=''
+                                    onChange={(e) => setMistralKey(e.target.value)}
+                                    placeholder="Enter your Mistral API key (mk-...)"
+                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-mono text-sm"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => toggleVisibility('mistralKeyMan')}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 group-hover:scale-110"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
 
-                    {/* Warning Message */}
-                    <p className="mt-4 text-center text-gray-800 dark:text-gray-200">
-                        It looks like you haven't set up your API keys. To proceed, please enter your keys.
-                    </p>
+                        {/* Hugging Face API Key */}
+                        <div className="space-y-3">
+                            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                                <span>Hugging Face API Key</span>
+                            </label>
+                            <div className="relative group">
+                                <input
+                                    id="huggingfaceKeyMan"
+                                    type="password"
+                                    defaultValue=''
+                                    onChange={(e) => setHuggingfaceKey(e.target.value)}
+                                    placeholder="Enter your Hugging Face API key (hf_...)"
+                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-pink-200 dark:border-pink-800 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all duration-200 font-mono text-sm"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => toggleVisibility('huggingfaceKeyMan')}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 group-hover:scale-110"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
 
-                    {/* Action Buttons */}
-                    <div className="mt-6 flex justify-between space-x-4">
-                        <button className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-1000"
-                            onClick={closeWarningQuery}>
-                            Close
-                        </button>
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-1000"
-                            onClick={showApiQueryModal}>
-                            Set API Keys
-                        </button>
+                        {/* Security Information */}
+                        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200/50 dark:border-blue-700/50 rounded-xl p-4">
+                            <div className="flex items-start space-x-3">
+                                <svg className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                <div>
+                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Security Best Practices</p>
+                                    <ul className="text-xs text-blue-700 dark:text-blue-300 mt-2 space-y-1">
+                                        <li>• API keys are encrypted and stored locally</li>
+                                        <li>• Never share your keys with untrusted parties</li>
+                                        <li>• Rotate keys regularly for enhanced security</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6 rounded-b-2xl">
+                        <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                            <button
+                                onClick={resetKeys}
+                                className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={!mistralKey && !huggingfaceKey}
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.981-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                <span>Clear All Keys</span>
+                            </button>
+
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={hideApiManModal}
+                                    className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => HandleKeysave('update')}
+                                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>Save Changes</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-
-            {/*ApiNotSetModal Modal: atleast one API must be set*/}
-            <div id="ApiNotSetModal" className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50 transition-colors duration-1000">
-                <div id="ApiNotSetContent" className="relative bg-white dark:bg-gray-800 p-6 xl:p-8 rounded-lg shadow-lg flex flex-col items-center animate-exit md:min-w-md lg:min-w-lg xl:min-w-2xl transition-colors duration-1000">
-                    {/* Close Button */}
-                    <button id="closeModalApiWarn" onClick={closeNotSetQuery} className="absolute top-2 right-2 text-gray-600 dark:text-gray-300 hover:text-red-500 duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 hover:rotate-45 duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinejoin="round" strokeLinecap="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-
-                    {/* Warning Icon */}
-                    <div className="flex items-center justify-center w-16 h-16 bg-yellow-500 dark:bg-yellow-500 rounded-full shadow-md transition-colors duration-1000">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" viewBox="0 0 24 24" fill="currentColor">
-                            <path fillRule="evenodd" d="M12 2a1 1 0 0 1 .894.553l9 18A1 1 0 0 1 21 22H3a1 1 0 0 1-.894-1.447l9-18A1 1 0 0 1 12 2zm-1 8a1 1 0 0 0 2 0v4a1 1 0 0 0-2 0v-4zm1 8a1.25 1.25 0 1 0 0-2.5A1.25 1.25 0 0 0 12 18z" clipRule="evenodd" />
-                        </svg>
+            {/* Warning Modal: No API Key Set */}
+            <div id="warningModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden">
+                <div id="warningModalContent" className="bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 scale-95 opacity-0 backdrop-blur-lg">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 dark:from-orange-900/20 dark:to-red-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-center space-x-3">
+                            <div className="p-2 bg-orange-500/10 rounded-xl">
+                                <svg className="w-6 h-6 text-orange-500 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                            </div>
+                            <div className="text-center">
+                                <h2 className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400 bg-clip-text text-transparent">
+                                    API Key Required
+                                </h2>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    Configuration needed to continue
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Warning Message */}
-                    <p id="warningMSG" className="mt-4 text-gray-700 dark:text-gray-200 text-center font-medium transition-colors duration-1000">
-                        Please set at least one API key:
-                    </p>
-                    <div className="flex gap-2 mt-2">
-                        <span className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-md transition-colors duration-1000">HF-Huggingface</span>
-                        <span className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-md transition-colors duration-1000">Mistral</span>
-                    </div>
-                    <p className="mt-2 text-gray-700 dark:text-gray-200 text-center">
-                        or <span className="font-semibold text-blue-500 dark:text-blue-400">both</span>.
-                    </p>
+                    {/* Content */}
+                    <div className="p-6">
+                        <div className="text-center">
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                It looks like you haven't set up your API keys yet. To access all features and continue, please configure your API credentials.
+                            </p>
 
+                            {/* Feature Highlights */}
+                            <div className="mt-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50">
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">What you'll get:</p>
+                                <div className="flex justify-center space-x-4 text-xs">
+                                    <span className="flex items-center space-x-1 text-green-600 dark:text-green-400">
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>AI Chat</span>
+                                    </span>
+                                    <span className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Code Generation</span>
+                                    </span>
+                                    <span className="flex items-center space-x-1 text-purple-600 dark:text-purple-400">
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Image Creation</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6 rounded-b-2xl">
+                        <div className="flex space-x-3">
+                            <button
+                                onClick={closeWarningQuery}
+                                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                            >
+                                Close
+                            </button>
+                            <button
+                                onClick={showApiQueryModal}
+                                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
+                                <span>Set API Keys</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/*API setting Success Modal*/}
-            <div id="successModal" className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 pointer-events-none transition-opacity duration-500 hidden">
-                <div id="successModalContent" className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96 transform scale-95 transition-all transform duration-1000">
+            {/* API Not Set Modal: At Least One API Required */}
+            <div id="ApiNotSetModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden">
+                <div id="ApiNotSetContent" className="bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 scale-95 opacity-0 backdrop-blur-lg">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 dark:from-yellow-900/20 dark:to-amber-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-yellow-500/10 rounded-xl">
+                                    <svg className="w-6 h-6 text-yellow-500 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold bg-gradient-to-r from-yellow-600 to-amber-600 dark:from-yellow-400 dark:to-amber-400 bg-clip-text text-transparent">
+                                        Configuration Required
+                                    </h2>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        Set up your API keys to continue
+                                    </p>
+                                </div>
+                            </div>
 
-                    {/* Success Icon & Title */}
-                    <h2 className="text-xl font-semibold text-center text-green-500 dark:text-green-400 flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500 dark:text-green-400" viewBox="0 0 24 24" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 15.172l7.071-7.071a1 1 0 011.415 1.414l-8.486 8.485a1 1 0 01-1.414 0L4.929 13.9a1 1 0 011.415-1.414L10 15.172z" clipRule="evenodd" />
-                        </svg>
-                        Success!
-                    </h2>
+                            {/* Close Button */}
+                            <button
+                                onClick={closeNotSetQuery}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
+                            >
+                                <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
-                    {/* Success Message */}
-                    <p id="success-message" className="mt-4 text-center text-gray-800 dark:text-gray-200">
-                        Operation Successful
-                    </p>
-                    <p id="restartBt" className="hidden text-center text-black dark:text-gray-200">Need to <span className="text-green-400 font-semibold">Restart</span> the app for changes to take effect!</p>
-                    {/* Action Buttons */}
-                    <div className="hidden mt-6 flex justify-between space-x-4">
-                        <button className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-1000 cursor-not-allowed"
-                            onClick={()=>SuccessModal('close')}>
-                            Close
-                        </button>
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-orange-400 hover:text-slate-900 transition-colors duration-1000"
-                            onClick={()=>SuccessModal('close')}>
-                            Ok
-                        </button>
+                    {/* Content */}
+                    <div className="p-6">
+                        <div className="text-center">
+                            <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                                Please set up at least one API provider to unlock all features:
+                            </p>
+
+                            {/* API Provider Options */}
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 border-2 border-pink-200 dark:border-pink-800 rounded-xl p-4 text-center group hover:border-pink-300 dark:hover:border-pink-700 transition-all duration-200">
+                                    <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                                        <span className="text-white font-bold text-sm">HF</span>
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Hugging Face</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Models & Inference</p>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-xl p-4 text-center group hover:border-orange-300 dark:hover:border-orange-700 transition-all duration-200">
+                                    <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                                        <span className="text-white font-bold text-sm">M</span>
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Mistral AI</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Chat & Completion</p>
+                                </div>
+                            </div>
+
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Or <span className="font-semibold text-blue-500 dark:text-blue-400">set up both</span> for the best experience!
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6 rounded-b-2xl">
+                        <div className="flex space-x-3">
+                            <button
+                                onClick={closeNotSetQuery}
+                                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                            >
+                                Maybe Later
+                            </button>
+                            <button
+                                onClick={showApiQueryModal}
+                                className="flex-1 px-4 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>Configure Now</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

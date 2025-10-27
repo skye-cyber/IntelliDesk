@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { opendiagViewModal, closediagViewModal } from '@js/diagraming/Utils.js';
 
 export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording }) => {
@@ -7,6 +7,22 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
         //element.a
         //console.log(element);
     }, []);
+
+    const showApiNotSetWarning = useCallback(() => {
+        const ApiwarnModal = document.getElementById('ApiNotSetModal');
+        const ApiWarnContent = document.getElementById('ApiNotSetContent');
+        ApiwarnModal.classList.remove('hidden');
+        ApiWarnContent.classList.remove('animate-exit');
+        ApiWarnContent.classList.add('animate-enter')
+    })
+
+    const handleSendMessage = useCallback(() => {
+        if (document.getElementById('mistralKey').value || document.getElementById('huggingfaceKey').value) {
+            onSendMessage()
+        } else {
+            showApiNotSetWarning()
+        }
+    })
 
     return (
         <div id="userInput-wrapper" className="absolute flex justify-center left-0 lg:left-auto w-full lg:items-center lg:justify-center z-30 bottom-[2%] transition-all duration-1000">
@@ -36,38 +52,38 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                     <div className="flex space-x-2">
                         <div style={{ viewTransitionName: 'var(--vt-composer-reason-action)' }}>
                             <div>
-                            {/* Toggle button with aria-pressed to indicate state */}
-                            <button id="previewBtn"
+                                {/* Toggle button with aria-pressed to indicate state */}
+                                <button id="previewBtn"
                                     className="flex h-9 min-w-8 items-center justify-center rounded-full border p-2 text-[13px] font-medium
                                             border-sky-900 bg-blue-100 hover:bg-sky-300 dark:border-[#aa55ff] dark:bg-[#171717] dark:hover:bg-[#225]
                                             text-gray-900 dark:text-white transition-colors duration-1000"
                                     aria-pressed="false"
                                     aria-label="Preview">
-                                <div className="h-[18px] w-[18px]">
-                                <svg fill="none" viewBox="0 0 24 24" xmlns="http:/*www.w3.org/2000/svg">
-                                    <path className="fill-current"
-                                        d="M12 3c-3.585 0-6.5 2.9225-6.5 6.5385 0 2.2826 1.162 4.2913 2.9248 5.4615h7.1504c1.7628-1.1702 2.9248-3.1789 2.9248-5.4615 0-3.6159-2.915-6.5385-6.5-6.5385zm2.8653 14h-5.7306v1h5.7306v-1zm-1.1329 3h-3.4648c0.3458 0.5978 0.9921 1 1.7324 1s1.3866-0.4022 1.7324-1zm-5.6064 0c0.44403 1.7252 2.0101 3 3.874 3s3.43-1.2748 3.874-3c0.5483-0.0047 0.9913-0.4506 0.9913-1v-2.4593c2.1969-1.5431 3.6347-4.1045 3.6347-7.0022 0-4.7108-3.8008-8.5385-8.5-8.5385-4.6992 0-8.5 3.8276-8.5 8.5385 0 2.8977 1.4378 5.4591 3.6347 7.0022v2.4593c0 0.5494 0.44301 0.9953 0.99128 1z"
-                                        clipRule="evenodd" fillRule="evenodd"></path>
-                                </svg>
-                                </div>
-                                <div className="whitespace-nowrap pl-1 pr-1">Preview</div>
-                            </button>
+                                    <div className="h-[18px] w-[18px]">
+                                        <svg fill="none" viewBox="0 0 24 24" xmlns="http:/*www.w3.org/2000/svg">
+                                            <path className="fill-current"
+                                                d="M12 3c-3.585 0-6.5 2.9225-6.5 6.5385 0 2.2826 1.162 4.2913 2.9248 5.4615h7.1504c1.7628-1.1702 2.9248-3.1789 2.9248-5.4615 0-3.6159-2.915-6.5385-6.5-6.5385zm2.8653 14h-5.7306v1h5.7306v-1zm-1.1329 3h-3.4648c0.3458 0.5978 0.9921 1 1.7324 1s1.3866-0.4022 1.7324-1zm-5.6064 0c0.44403 1.7252 2.0101 3 3.874 3s3.43-1.2748 3.874-3c0.5483-0.0047 0.9913-0.4506 0.9913-1v-2.4593c2.1969-1.5431 3.6347-4.1045 3.6347-7.0022 0-4.7108-3.8008-8.5385-8.5-8.5385-4.6992 0-8.5 3.8276-8.5 8.5385 0 2.8977 1.4378 5.4591 3.6347 7.0022v2.4593c0 0.5494 0.44301 0.9953 0.99128 1z"
+                                                clipRule="evenodd" fillRule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <div className="whitespace-nowrap pl-1 pr-1">Preview</div>
+                                </button>
                             </div>
                         </div>
                         <button id="microphone" onClick={onToggleRecording} className="mx-2">
                             <svg id="microphoneSVG" xmlns="http:/*www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="stroke-blue-600 dark:stroke-cyan-400 hover:stroke-sky-800 dark:hover:stroke-sky-200 w-6 h-6 transition-colors duration-1000">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                             </svg>
                         </button>
 
                         {/* Toolbar button with SVG icon */}
                         <button
-                        id='diagToggle'
-                        onClick={opendiagViewModal}
-                        className="px-1 rounded hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-300 bg-blue-200 dark:bg-teal-700 rounded-md"
-                        aria-label="Open Diagram modal"
-                        title="Open Diagram modal">
-                        {/* SVG: Nodes/Flow Diagram */}
+                            id='diagToggle'
+                            onClick={opendiagViewModal}
+                            className="px-1 rounded hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-300 bg-blue-200 dark:bg-teal-700 rounded-md"
+                            aria-label="Open Diagram modal"
+                            title="Open Diagram modal">
+                            {/* SVG: Nodes/Flow Diagram */}
                             <svg xmlns="http:/*www.w3.org/2000/svg" className="h-6 w-8 text-gray-800 dark:text-gray-100 transition-colors duration-1000" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <circle cx="5" cy="12" r="2" strokeWidth="2" />
                                 <circle cx="12" cy="5" r="2" strokeWidth="2" />
@@ -89,27 +105,27 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                         <button id="ToggleCanvasBt" onClick={onToggleCanvas} className="group hidden sm:flex items-center gap-3 px-2 py-1 rounded-full bg-white dark:bg-slate-700 text-blue-600 dark:text-teal-300 border border-blue-300 dark:border-gray-500 shadow-md hover:shadow-lg transition-all duration-500" aria-pressed="false">
                             <span id="iconContainer" className="transition-transform duration-300">
                                 <svg id="plusIcon" className="w-6 h-6 transition-transform duration-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                                 </svg>
                                 <svg id="closeIcon" className="w-6 h-6 hidden transition-transform duration-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </span>
                             <span className="text-md font-semibold tracking-wide select-none">&lt;/&gt; canvas</span>
                         </button>
 
                         {/* Triple Ripple with Gradient Border */}
-                        <button id="sendBtn" onClick={onSendMessage} className="absolute right-2 h-14 w-14 bottom-4 rounded-full transition-all ease-in-out duration-1000 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden" aria-label="Send message" title="Send message">
+                        <button id="sendBtn" onClick={handleSendMessage} className="absolute right-2 h-14 w-14 bottom-4 rounded-full transition-all ease-in-out duration-1000 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden" aria-label="Send message" title="Send message">
                             <div id="normalSend" className=" flex items-center justify-center h-full w-full">
-                            {/* Alternative Send Icon with a warm gradient */}
+                                {/* Alternative Send Icon with a warm gradient */}
                                 <svg className="w-8 h-8" viewBox="0 0 24 24" xmlns="http:/*www.w3.org/2000/svg">
-                                <defs>
-                                    <linearGradient id="planeGradient2" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0%" stopColor="#ff8a65" />
-                                    <stop offset="100%" stopColor="#ff7043" />
-                                    </linearGradient>
-                                </defs>
-                                <path fill="url(#planeGradient2)" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                    <defs>
+                                        <linearGradient id="planeGradient2" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stopColor="#ff8a65" />
+                                            <stop offset="100%" stopColor="#ff7043" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path fill="url(#planeGradient2)" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                                 </svg>
                             </div>
                             <div id="spinningSquares" className="hidden absolute inset-0 flex items-center justify-center">

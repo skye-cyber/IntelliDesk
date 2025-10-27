@@ -119,11 +119,15 @@ export const Settings = ({ isOpen, onToggle }) => {
         }
     })
 
-    const showApiManModal = useCallback(()=>{
-        const manPagemodal = document.getElementById('apiKeyManPage')
+    const showApiManModal = useCallback(() => {
+        const modal = document.getElementById('apiKeyManPage')
+        const content = document.getElementById('apiManContent');
 
-        manPagemodal.classList.remove('translate-y-[100vh]', 'hidden');
-        manPagemodal.classList.add('translate-y-1');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('translate-y-8', 'opacity-0');
+            content.classList.add('translate-y-0', 'opacity-100');
+        }, 10);
     })
 
     const handleApiManagement = useCallback(() => {

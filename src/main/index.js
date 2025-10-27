@@ -250,7 +250,7 @@ app.on('activate', () => {
 });
 
 
-const SERVICE_NAME = 'com.IntelliDesk.app'
+const SERVICE_NAME = 'com.intellidesk.app'
 
 // IPC handler to save keys
 ipcMain.handle('save-keys', async (event, keys) => {
@@ -264,11 +264,22 @@ ipcMain.handle('save-keys', async (event, keys) => {
     return { success: true };
 });
 
+// IPC handler for keys reset
+ipcMain.handle('reset-keys', async (event, accounts) => {
+    accounts.forEach(async (account) => {
+        try {
+            await keytar.deletePassword(SERVICE_NAME, account);
+        } catch (err) {
+            //console.log(err)
+        }
+    })
+    return { success: true };
+});
+
 // IPC handler to retrieve keys
 ipcMain.handle('get-keys', async (event, keyType) => {
     const mistralKey = await keytar.getPassword(SERVICE_NAME, 'mistral') || null;
     const huggingfaceKey = await keytar.getPassword(SERVICE_NAME, 'huggingface') || null;
-
     if (keyType) {
         return (keyType === "mistral") ? { mistralKey } : { huggingfaceKey };
 
@@ -306,15 +317,15 @@ async function prepDirectories() {
 
         // Create the base .IntelliDesk directory if it doesn't exist
         fs.mkdirSync(baseDir, { recursive: true });
-        console.log(`Ensured base directory: ${baseDir}`);
+        //console.log(`Ensured base directory: ${baseDir}`);
 
         // Define subdirectories to be created inside .IntelliDesk
-        const subdirs = ['.IntelliDesk.config', '.IntelliDesk.store', '.IntelliDesk.cache'];
+        const subdirs = ['.config', '.store', '.cache'];
 
         subdirs.forEach(sub => {
             const fullPath = path.join(baseDir, sub);
             fs.mkdirSync(fullPath, { recursive: true });
-            console.log(`Ensured subdirectory: ${fullPath}`);
+            //console.log(`Ensured subdirectory: ${fullPath}`);
         });
     } catch (error) {
         console.log(error)

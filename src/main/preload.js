@@ -630,7 +630,7 @@ contextBridge.exposeInMainWorld('electron', {
     },
     savePreference: async (data) => {
         try {
-            const skeleton ={
+            const skeleton = {
                 data: data
             }
             const prefFile = ".preference.json"
@@ -649,7 +649,7 @@ contextBridge.exposeInMainWorld('electron', {
             return false
         }
     },
-    deletePreference: async (data=null) => {
+    deletePreference: async (data = null) => {
         try {
             const prefPath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
             fs.rmSync(prefPath, data);
@@ -752,6 +752,8 @@ contextBridge.exposeInMainWorld('electron', {
 contextBridge.exposeInMainWorld('api', {
     saveKeys: async (keys) => ipcRenderer.invoke('save-keys', keys),
     getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),
+    resetKeys: async (accounts) => ipcRenderer.invoke('reset-keys', accounts),
+
 });
 
 // Expose protected methods that allow the renderer process to use

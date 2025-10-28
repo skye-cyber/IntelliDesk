@@ -1,10 +1,13 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { SettingToggle } from '@components/Settings/toggle.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
+import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 
 export const Settings = ({ isOpen, onToggle }) => {
     const [preferenceChange, setPreferenceChange] = useState(false);
     const [currentPreference, setCurrentPreference] = useState('');
+
+    const { isDark, toggleTheme, setTheme } = useTheme();
 
     const [settings, setSettings] = useState({
         autoscroll: true,
@@ -25,12 +28,27 @@ export const Settings = ({ isOpen, onToggle }) => {
                     setSettings(prev => ({ ...prev, ...savedSettings.data }));
                     setCurrentPreference(savedSettings.data.preference || '');
                 }
+                setTheme(savedSettings.data.theme)
+                updateCanvasTheme()
             } catch (error) {
                 window.ModalManager.showMessage(`Failed to load settings: ${error}`, 'error');
             }
         };
         loadSettings();
     }, []);
+
+    function updateCanvasTheme(){
+        const moon = document.getElementById('icon-moon')
+        const sun = document.getElementById('icon-sun')
+
+        if (settings.theme==='dark') {
+            sun?.classList.add('hidden')
+            moon?.classList.remove('hidden')
+        } else {
+            moon?.classList.add('hidden')
+            sun?.classList.remove('hidden')
+        }
+    }
 
     // Update DOM when settings change
     useEffect(() => {
@@ -78,6 +96,8 @@ export const Settings = ({ isOpen, onToggle }) => {
 
     const handleSettingChange = useCallback((key, value) => {
         //console.log(`Setting ${key} changed to:`, value);
+        if (key === "theme") setTheme(value)
+
         setSettings(prev => {
             const newSettings = { ...prev, [key]: value };
 

@@ -58,7 +58,6 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
         //if (!event) return;
 
         event.stopPropagation();
-        console.log('Event target:', event.target);
 
         // Check if the click was on the AI toggle checkbox or its label
         const aiToggleElement = document.getElementById('aiCanvasToggle');
@@ -129,7 +128,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                 <section id="userInputSection" className="absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
                     <section className='flex'>
                         {/* Left side: File and Media Tools */}
-                        <div className="flex items-center space-x-1 bg-white/0 dark:bg-gray-800/80 rounded-lg px-0 py-0 mr-0">
+                        <div className="flex items-center space-x-1 bg-white/0 dark:bg-gray-800/0 rounded-lg px-0 py-0 mr-0">
                             {/* File Attachment */}
                             <div onClick={showDropZoneModal} id="AttachFiles" className="flex items-center rounded-lg" title="Attach files">
                                 <button aria-label="Attach files" className="flex items-center justify-center h-8 w-8 rounded-lg text-token-text-primary dark:text-white dark:hover:text-blue-400 focus-visible:outline-black dark:focus-visible:outline-white hover:bg-black/20 transition-colors duration-300">
@@ -148,7 +147,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                         </div>
 
                         {/* Center: Creation & Visualization Tools */}
-                        <div className="flex items-center space-x-1 bg-white/0 dark:bg-gray-800/80 rounded-lg px-2 py-1">
+                        <div className="flex items-center space-x-1 bg-white/0 dark:bg-gray-800/0 rounded-lg px-2 py-1">
                             {/* Image Generation */}
                             <button id="image-gen" className="hidden xs:flex items-center justify-center text-sm font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 shadow-md hover:scale-105 hover:shadow-lg dark:shadow-none dark:text-blue-950 h-8 rounded-full gap-1 text-black px-2 py-1 focus:ring-none transform transition-all duration-300 ease-in-out border border-black sm:bg-[#ffaa7f] dark:bg-orange-400" type="button" aria-pressed="false" aria-label="Generate image" title="Generate image">
                                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
@@ -193,7 +192,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                         </div>
 
                         {/* Right side: AI & Canvas Tools */}
-                        <div className="hidden xs:flex items-center space-x-1 bg-white/0 dark:bg-gray-800/80 rounded-lg px-2 py-1 mr-2">
+                        <div className="hidden xs:flex items-center space-x-1 bg-white/0 dark:bg-gray-800/0 rounded-lg px-2 py-1 mr-2">
                             {/* Multi-Purpose Canvas Toggle */}
                             <button
                                 id="ToggleCanvasBt"
@@ -223,7 +222,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                                 {/* Text and AI Status */}
                                 <div className="flex flex-col items-start min-w-fit">
                                     <div className='flex gap-2'>
-                                        <span className="text-sm font-bold tracking-wide select-none whitespace-nowrap inline">&lt;/&gt; <span className='hidden xs:inline'>Canvas</span></span>
+                                        <span className="text-[12px] font-bold tracking-wide select-none whitespace-nowrap inline">&lt;/&gt; <span className='hidden xs:inline'>Canvas</span></span>
                                     </div>
                                     {/* AI Toggle Status */}
                                     <div className='flex justify-between'>
@@ -233,7 +232,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                                         </div>
 
                                         {/* Mini Checkbox Indicator */}
-                                        <div className="relative flex">
+                                        <div className="relative flex ml-0.5">
                                             <input
                                                 type="checkbox"
                                                 id="aiCanvasToggle"
@@ -265,25 +264,27 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                         </div>
                     </section>
 
-                    {/* Send Button - Always prominent */}
-                    <button id="sendBtn" onClick={handleSendMessage} className="flex items-center justify-center h-12 w-12 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2" aria-label="Send message" title="Send message">
-                        <div id="normalSend" className="flex items-center justify-center h-full w-full">
-                            <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <linearGradient id="planeGradient2" x1="0" y1="0" x2="1" y2="1">
-                                        <stop offset="0%" stopColor="#ff8a65" />
-                                        <stop offset="100%" stopColor="#ff7043" />
-                                    </linearGradient>
-                                </defs>
-                                <path fill="url(#planeGradient2)" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                            </svg>
-                        </div>
-                        <div id="spinningSquares" className="hidden absolute inset-0 flex items-center justify-center">
-                            <span className="ripple-single-1"></span>
-                            <span className="ripple-single-2"></span>
-                            <span className="ripple-single-3"></span>
-                        </div>
-                    </button>
+                    <section>
+                        {/* Send Button - Always prominent */}
+                        <button id="sendBtn" onClick={handleSendMessage} className="flex relative items-center justify-center h-12 w-12 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2" aria-label="Send message" title="Send message">
+                            <div id="normalSend" className="flex items-center justify-center h-full w-full">
+                                <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="planeGradient2" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stopColor="#ff8a65" />
+                                            <stop offset="100%" stopColor="#ff7043" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path fill="url(#planeGradient2)" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                </svg>
+                            </div>
+                            <div id="spinningSquares" className="hidden absolute inset-0 flex items-center justify-center">
+                                <span className="ripple-single-1"></span>
+                                <span className="ripple-single-2"></span>
+                                <span className="ripple-single-3"></span>
+                            </div>
+                        </button>
+                    </section>
                 </section>
             </section>
         </div>

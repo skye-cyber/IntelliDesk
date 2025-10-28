@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { updateHandPosition } from '@js/Utils/CaretUtil.js'
 import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
+import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 
 export const Canvas = ({ isOpen, onToggle }) => {
     const [isCanvasActive, setIsCanvasActive] = useState(false);
@@ -12,6 +13,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
     const isControlledCloseRef = useRef(false); // Track if WE initiated the close
+    const { isDark, toggleTheme, setTheme } = useTheme();
 
     // Single ref object for all DOM elements
     const refs = useRef({
@@ -34,7 +36,8 @@ export const Canvas = ({ isOpen, onToggle }) => {
         codeScrollWrapper: null,
         handIndicator: null,
         imageGen: null,
-        mainLayoutA: null
+        mainLayoutA: null,
+        isDark: isDark
     });
 
     // Handle opening
@@ -94,7 +97,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
         currentRefs.imageGen = document.getElementById('image-gen');
         currentRefs.mainLayoutA = document.getElementById('mainLayoutA');
         //console.log('DOM refs initialized:', currentRefs.previewView);
-        console.log(currentRefs.codeView)
         // Set initial active state
         setIsCanvasActive(currentRefs.ToggleCanvasBt?.getAttribute('aria-pressed') === 'true');
         initialize()
@@ -444,7 +446,22 @@ export const Canvas = ({ isOpen, onToggle }) => {
     }, [setIsCanvasOpen, DeactivateCanvas])
 
 
-    //updatehandl
+    function updateTheme() {
+        const { isDark } = refs.current
+        const moon = document.getElementById('icon-moon')
+        const sun = document.getElementById('icon-sun')
+
+        if (isDark) {
+            sun.classList.add('hidden')
+            moon.classList.remove('hidden')
+        } else {
+            moon.classList.add('hidden')
+            sun.classList.remove('hidden')
+        }
+        document.getElementById('themeSwitch').click()
+        refs.current.isDark = !isDark
+    }
+
     const updateHandIndicator = useCallback((e) => {
         const { codeView, handIndicator, codeScrollWrapper } = refs.current;
 
@@ -520,7 +537,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                 {/* Header with title and theme toggle */}
                 <header className="flex items-center justify-between px-3 py-1 border-b border-purple-200 dark:border-purple-700 select-none transition-colors duration-500">
                     <h2 className="text-xl font-semibold text-purple-900 dark:text-purple-200">Canvas</h2>
-                    <button id="canvas-theme-toggle" aria-label="Toggle dark mode" className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-purple-200 dark:hover:bg-purple-700 transition-colors duration-500 focus:outline-none focus:ring-2 focus:ring-purple-400" title="Toggle theme">
+                    <button onClick={updateTheme} id="canvas-theme-toggle" aria-label="Toggle dark mode" className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-purple-200 dark:hover:bg-purple-700 transition-colors duration-500 focus:outline-none focus:ring-2 focus:ring-purple-400" title="Toggle theme">
                         <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-purple-700 dark:text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z" /></svg>
                         <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-purple-600 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
                     </button>
@@ -576,7 +593,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
                         {/* Preview block */}
                         <div id="preview-view" tabIndex="0" aria-label="Preview output" className="hidden bg-white dark:bg-purple-800 rounded-lg p-6 ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner max-h-full overflow-auto text-purple-900 dark:text-purple-200 font-sans text-base whitespace-pre-wrap transition-colors duration-500">
-                            Hello, QuickAI Canvas!
+                            Hello, IntelliDesk Canvas!
                         </div>
                     </article>
                 </section>

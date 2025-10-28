@@ -14,3 +14,23 @@ export const useErrorHandler = () => {
 
     return { error, handleError, clearError };
 };
+
+
+export const useErrorModal = () => {
+    const [error, setError] = useState(null);
+
+    const showError = useCallback((message, title = "Error", retryAction = null) => {
+        setError({ message, title, retryAction });
+        console.log(error)
+    }, [setError]);
+
+    const hideError = useCallback(() => {
+        setError(null);
+    }, []);
+
+    return {
+        error,
+        showError,
+        hideError
+    };
+};

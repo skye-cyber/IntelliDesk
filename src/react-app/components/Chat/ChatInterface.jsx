@@ -73,7 +73,7 @@ export const ChatInterface = () => {
         <section
             id="chatArea"
             ref={chatAreaRef}
-            className="bg-gray-50 dark:bg-stone-900 h-[75vh] p-2 shadow-inner shadow-gray-400 dark:shadow-none md:p-4 rounded-lg dark:shadow-gray-950 overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 w-[98vw] mb-[15vh]"
+            className="bg-gray-50 dark:bg-stone-900 h-[75vh] p-2 shadow-inner shadow-gray-400 dark:shadow-none md:p-4 rounded-lg dark:shadow-gray-950 overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 max-w-[98vw] mb-[15vh]"
         >
             {/* Show quick actions when no messages */}
             {messages.length === 0 && !isLoading && (

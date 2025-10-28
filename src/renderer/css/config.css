@@ -586,3 +586,13 @@ height: 2.4em; /* Adjust this value to match the height of an empty row */
 .message-toast {
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+
+@keyframes wave {
+    0%, 100% { transform: scaleY(0.5); }
+    50% { transform: scaleY(1.5); }
+}
+
+.animate-wave {
+    animation: wave 1s ease-in-out infinite;
+}

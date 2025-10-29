@@ -18,12 +18,52 @@ class ChatManager {
 
         this.checkAndCreateDirectory();
         // Fetch and display conversations on page load
-        this.conversationManager.fetchConversations();
+        //this.conversationManager.fetchConversations();
 
         // Setup ipc recievers
         this.setupIPCRecievers()
 
         return this
+    }
+
+    // Function to fetch conversation files and display their IDs
+    async fetchConversations(conversationsPanel) {
+        try {
+            const files = await window.electron.readDir(this.storagePath);
+
+            if (files.length > 0) {
+                conversationsPanel.innerHTML = ''; // Clear the pane if conversations exist
+                // Define the colors you want to cycle through
+                const colors = ['bg-amber-500', 'bg-rose-900', 'bg-teal-700', 'bg-red-500', 'bg-blue-500', 'bg-green-600', 'bg-yellow-800', 'bg-purple-500', 'bg-fuchsia-500'];
+                for (let [index, file] of files.entries()) {
+                    if (window.electron.getExt(file) === '.json') {
+                        const conversationId = window.electron.getBasename(file, '.json');
+                        const conversationItem = document.createElement('div');
+                        const color = (index <= colors.length - 1) ? colors[index] : colors[Math.floor(Math.random() * colors.length)]
+                        conversationItem.classList.add('p-2', color, 'transition-transform', "text-black", 'tranform', 'hover:scale-105', 'transition', 'duration-700', 'ease-in-out', 'scale-100', 'infinite', 'hover:bg-blue-800', 'decoration-underline', 'decoration-pink-400', 'dark:decoration-fuchsia-500', 'dark:hover:bg-cyan-700', 'cursor-pointer', 'rounded-lg', "space-y-2", "w-full", "sm:w-[90%]", "md:w-[80%]", "lg:w-[90%]", "whitespace-nowrap", "max-w-full", "overflow-auto", "scrollbar-hide");
+                        conversationItem.setAttribute('data-text', conversationId);
+
+                        conversationItem.textContent = conversationId;
+                        conversationItem.onclick = () => renderConversationFromFile(conversationItem, conversationId);
+                        conversationsPanel.appendChild(conversationItem);
+
+                        //Chat Options
+                        conversationItem.addEventListener('contextmenu', (event) => {
+                            // Prevent the default context menu
+                            event.preventDefault();
+                            ConversationAdmin(conversationId)
+                        });
+                    } else {
+                        console.log("No conversations saved!")
+                    }
+                }
+                return true
+            }
+            return false
+        } catch (err) {
+            console.error('Error reading conversation files:', err);
+            return false
+        }
     }
 
     setupIPCRecievers() {

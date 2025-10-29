@@ -1,4 +1,4 @@
-const { waitForElement }  require("../../Utils/dom_utils");
+import { waitForElement }  from "../../Utils/dom_utils";
 
 class ConversationManager {
     constructor(storagePath) {

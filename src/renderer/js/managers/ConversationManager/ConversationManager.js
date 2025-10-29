@@ -1,7 +1,10 @@
+import { waitForElement } from "../../Utils/dom_utils";
 
 class ConversationManager {
     constructor(storagePath) {
         this.storagePath = storagePath;
+        this.chatArea
+        waitForElement('#chatArea', (el) => this.chatArea = el)
     }
 
     // Save conversation to a JSON file
@@ -59,7 +62,7 @@ class ConversationManager {
 
     // Render the conversation in the web interface
     renderConversation(conversationData, model = "text") {
-        chatArea.innerHTML = '';
+        this.chatArea.innerHTML = '';
         const value = (model === "Vision") ? 'mistral-small-latest' : 'mistral-large-latest';
         const element = document.querySelector(`[data-value="${value}"]`);
         if (element) {
@@ -196,13 +199,13 @@ class ConversationManager {
             const filesContainer = document.createElement("div");
             filesContainer.className = "flex justify-end";
             filesContainer.innerHTML = fileHtml;
-            chatArea.appendChild(filesContainer);
+            this.chatArea.appendChild(filesContainer);
         }
 
         // Append the user text to the page
         userMessage.innerHTML = messageHtml;
-        chatArea.appendChild(userMessage);
-        User_wfit(isCanvasOpen? 'add':'remove')
+        this.chatArea.appendChild(userMessage);
+        User_wfit(isCanvasOpen ? 'add' : 'remove')
     }
 
     // Render text-based assistant message
@@ -211,7 +214,7 @@ class ConversationManager {
         const foldId = `think-content-${Math.random().toString(28).substring(3, 9)}`;
         const aiMessage = document.createElement('div');
         aiMessage.classList.add('flex', 'justify-start', 'mb-12', 'overflow-wrap');
-        chatArea.appendChild(aiMessage);
+        this.chatArea.appendChild(aiMessage);
         const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
 
         let actualResponse = "";
@@ -347,7 +350,7 @@ class ConversationManager {
         const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
 
         visionMessage.classList.add('flex', 'justify-start', 'mb-12', 'overflow-wrap');
-        chatArea.appendChild(visionMessage);
+        this.chatArea.appendChild(visionMessage);
         const textContent = content[0].text
         //const fileType = this.getFileType(content);
         //const fileDataUrl = this.getFileUrl(content);

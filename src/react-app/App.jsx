@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MainLayout } from '@components/Layout/MainLayout';
 import { Header } from '@components/Header/Header';
 import { ChatInterface } from '@components/Chat/ChatInterface';
-import { InputSection } from '@components/InputSection/InputSection';
+import { InputSection } from '@components/Input/InputSection';
 import { Sidebar } from '@components/Sidebar/Sidebar';
 import { Canvas } from '@components/Canvas/Canvas';
 //import { ModelSelector } from '@components/ModelSelector/ModelSelector';
@@ -10,8 +10,6 @@ import { useElectron } from '@hooks/useElectron';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import '@js/katex/katex.min.js';
 import '@js/katex/contrib/auto-render.min.js';
-import '@js/managers/packed_HF_Chat.js';
-import '@js/managers/packed_MistralChatsAdmin.js';
 import '@css/styles.css';
 import { Recording } from '@components/RecordingUI/Recording';
 import '@js/Timer/timer.js'
@@ -22,6 +20,7 @@ import '@js/StatusUIManager/SuccessModal.js'
 import '@js/StatusUIManager/Manager.js'
 import { APIKeysManager } from '@components/ApiManager/api.jsx';
 import { DropZone } from '@components/DropZone/dropzone.jsx'
+import { NotificationFlyer } from '@components/Notifications/Notification.jsx'
 
 const App = () => {
     //const { electron } = useElectron();
@@ -91,6 +90,10 @@ const App = () => {
                 </div>
                 <ErrorBoundary>
                     <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
+                </ErrorBoundary>
+
+                <ErrorBoundary>
+                    <NotificationFlyer isOpen={true} onToggle={null} />
                 </ErrorBoundary>
             </MainLayout>
         </ErrorBoundary>

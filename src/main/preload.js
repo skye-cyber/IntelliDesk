@@ -748,7 +748,7 @@ contextBridge.exposeInMainWorld('electron', {
 });
 
 
-//Exporse Api keys
+//Exporse Api
 contextBridge.exposeInMainWorld('api', {
     saveKeys: async (keys) => ipcRenderer.invoke('save-keys', keys),
     getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { updateHandPosition } from '@js/Utils/CaretUtil.js'
+import { updateHandPosition } from '@js/Utils/caret.js'
 import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 

@@ -148,17 +148,17 @@
     border-radius: 4px;
 }
 .scrollbar-custom::-webkit-scrollbar-track {
-    background: #0b0b0b;
+    background: #ffffff;
 }
 .scrollbar-custom.dark::-webkit-scrollbar-track {
     background: #181818;
 }
 .scrollbar-custom::-webkit-scrollbar-thumb {
-    background: linear-gradient(145deg, #00aa7f, #aaffff, #00aaff);
+    background: #0a0a1f;
 }
 
 .scrollbar-custom.dark::-webkit-scrollbar-thumb {
-    background: linear-gradient(145deg, #00557f, #aaffff, #0089ce);
+    background: #2a2a82;
 }
 
 /* Exclude elements with .scrollbar-default */

@@ -34,7 +34,6 @@ export const useTheme = () => {
     };
 
     const setTheme = (theme) => {
-        console.log(theme)
         if (theme === 'dark') {
             setIsDark(true);
             document.documentElement.classList.add('dark');

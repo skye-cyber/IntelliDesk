@@ -1,19 +1,24 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { updateHandPosition } from '@js/Utils/caret.js'
+import { Caret } from '@js/Utils/caret.js'
 import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 
 export const Canvas = ({ isOpen, onToggle }) => {
     const [isCanvasActive, setIsCanvasActive] = useState(false);
     const [codeViewVisible, setCodeViewVisible] = useState(true);
-    const [targetScroll, settargetScroll] = useState(0);
-    const [isScrolling, setisScrolling] = useState(false);
-    const [currentScroll, setcurrentScroll] = useState(0);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
     const isControlledCloseRef = useRef(false); // Track if WE initiated the close
     const { isDark, toggleTheme, setTheme } = useTheme();
+
+    // Use refs for values that change during animation
+    const scrollState = useRef({
+        targetScroll: 0,
+        currentScroll: 0,
+        isScrolling: false,
+        animationId: null
+    });
 
     // Single ref object for all DOM elements
     const refs = useRef({
@@ -96,7 +101,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
         currentRefs.handIndicator = document.getElementById('hand-indicator');
         currentRefs.imageGen = document.getElementById('image-gen');
         currentRefs.mainLayoutA = document.getElementById('mainLayoutA');
-        //console.log('DOM refs initialized:', currentRefs.previewView);
+        //console.log('DOM refs initialized:', currentRefs.codeView);
         // Set initial active state
         setIsCanvasActive(currentRefs.ToggleCanvasBt?.getAttribute('aria-pressed') === 'true');
         initialize()
@@ -110,12 +115,12 @@ export const Canvas = ({ isOpen, onToggle }) => {
         resizeObserver.observe(codeView);
         // Update line numbers initially and whenever content changes
         canvasUpdate();
-        updateHandPosition(codeView, handIndicator, codeScrollWrapper)
+        new Caret(codeView, handIndicator, codeScrollWrapper, scrollState.current.currentScroll).updateHandPosition()
 
         openCanvas()
         new ResizeClassToggler(userInput, ToggleCanvasBt, 430, 'sm:flex');
         new ResizeClassToggler(userInput, imageGen, 400, 'sm:flex');
-
+        setEventListeners()
     }, []);
 
     function canvasUpdate() {
@@ -153,14 +158,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
         // wrapFoldableBlocks(); // You'll need to convert this too
     }, []);
 
-    const syncScroll = useCallback(() => {
-        const { codeView, lineNumbers } = refs.current;
-        if (!codeView || !lineNumbers) return;
-
-        requestAnimationFrame(() => {
-            lineNumbers.scrollTop = codeView.scrollTop;
-        });
-    }, []);
 
     const setActiveButton = useCallback((activeBtn) => {
         const { btnCode, btnPreview } = refs.current;
@@ -238,61 +235,125 @@ export const Canvas = ({ isOpen, onToggle }) => {
         }
     }, []);
 
-    // Smooth scrolling loop
+
+    // Single source of truth for scroll values
     const animateScroll = useCallback(() => {
-        const { codeView } = refs.current
+        const { codeView, codeScrollWrapper } = refs.current;
 
-        if (!isScrolling) return;
+        if (!codeView || !scrollState.current.isScrolling) return;
 
-        setcurrentScroll(currentScroll + (targetScroll - currentScroll) * 0.15);
+        const { targetScroll, currentScroll } = scrollState.current;
 
-        // Stop animation when close enough
-        if (Math.abs(targetScroll - currentScroll) < 0.5) {
+        // Smooth interpolation
+        const newScroll = currentScroll + (targetScroll - currentScroll) * 0.15;
+        scrollState.current.currentScroll = newScroll;
+
+        // Apply transform
+        codeView.style.transform = `translateX(${-newScroll}px)`;
+
+        // Check if we need to continue animating
+        const distance = Math.abs(targetScroll - newScroll);
+
+        if (distance < 0.5) {
+            // Snap to final position
+            scrollState.current.currentScroll = targetScroll;
+            scrollState.current.isScrolling = false;
+            codeView.style.transform = `translateX(${-targetScroll}px)`;
+
+            // Update React state for UI consistency
             setcurrentScroll(targetScroll);
-            setisScrolling(false);
+        } else {
+            // Continue animation
+            scrollState.current.animationId = requestAnimationFrame(animateScroll);
         }
+    }, []);
 
-        // Apply smooth scroll transform
-        codeView.style.transform = `translateX(${-currentScroll}px)`;
-
-        // If bouncing, snap back to valid range
+    // Start/stop animation helper
+    const startScrollAnimation = useCallback((newTargetScroll) => {
+        const { codeView, codeScrollWrapper } = refs.current;
         const maxScroll = codeView.scrollWidth + 50 - codeScrollWrapper.clientWidth;
-        if (targetScroll < 0 || targetScroll > maxScroll) {
-            settargetScroll(Math.max(0, Math.min(targetScroll, maxScroll)));
-            setisScrolling(true);
+
+        // Clamp target scroll
+        const clampedScroll = Math.max(0, Math.min(newTargetScroll, maxScroll));
+
+        // Update ref state
+        scrollState.current.targetScroll = clampedScroll;
+        scrollState.current.isScrolling = true;
+
+        // Update React state
+        //settargetScroll(clampedScroll);
+
+        // Cancel any existing animation
+        if (scrollState.current.animationId) {
+            cancelAnimationFrame(scrollState.current.animationId);
         }
 
-        requestAnimationFrame(animateScroll);
-    }, [isScrolling, targetScroll, currentScroll])
+        // Start new animation
+        scrollState.current.animationId = requestAnimationFrame(animateScroll);
+    }, [animateScroll]);
 
-    // handle whenDependentTypesAreResolved
-    const handleWheelScroll = useCallback(async (e) => {
-        const { codeScrollWrapper } = refs.current
+    // Improved wheel handler
+    const handleWheelScroll = useCallback((e) => {
+        const { codeScrollWrapper, codeView, handIndicator } = refs.current;
+
+        if (!codeView) return;
+
         const isVertical = Math.abs(e.deltaY) > Math.abs(e.deltaX);
-        const maxScroll = (codeView.scrollWidth + 50) - codeScrollWrapper.clientWidth;
+        const maxScroll = codeView.scrollWidth + 50 - codeScrollWrapper.clientWidth;
 
         if (isVertical) {
             // Delegate vertical scroll to wrapper
             e.preventDefault();
             codeScrollWrapper.scrollTop += e.deltaY;
-
         } else {
-            // Handle horizontal scroll
+            // Handle horizontal scroll with bounce
             e.preventDefault();
-            settargetScroll(clampBounce(targetScroll + e.deltaX, 0, maxScroll));
-            setisScrolling(true);
-            animateScroll()
-        }
-        // Update typing indicator position
-        updateHandPosition();
-    }, [animateScroll, updateHandPosition])
 
-    // Clamp with optional bounce
-    function clampBounce(value, min, max, bounce = 20) {
+            const currentTarget = scrollState.current.targetScroll;
+            let newTargetScroll = currentTarget + e.deltaX;
+
+            // Apply bounce effect at boundaries
+            if (newTargetScroll < 0) {
+                newTargetScroll = -Math.min(20, Math.abs(newTargetScroll));
+            } else if (newTargetScroll > maxScroll) {
+                newTargetScroll = maxScroll + Math.min(20, newTargetScroll - maxScroll);
+            }
+
+            startScrollAnimation(newTargetScroll);
+
+            // Update typing indicator
+            if (handIndicator && Caret) {
+                new Caret(codeView, handIndicator, codeScrollWrapper, scrollState.current.currentScroll)
+                .updateHandPosition();
+            }
+        }
+    }, [startScrollAnimation, Caret]);
+
+    const clampBounce = useCallback((value, min, max, bounce = 20) => {
         if (value < min) return min - Math.min(bounce, Math.abs(value - min));
         if (value > max) return max + Math.min(bounce, Math.abs(value - max));
         return value;
-    }
+    }, []);
+
+    // Sync scroll (make sure this is properly attached)
+    const syncScroll = useCallback(() => {
+        const { codeView, lineNumbers } = refs.current;
+
+        if (!codeView || !lineNumbers) return;
+
+        requestAnimationFrame(() => {
+            lineNumbers.scrollTop = codeView.scrollTop;
+        });
+    }, []);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (scrollState.current.animationId) {
+                cancelAnimationFrame(scrollState.current.animationId);
+            }
+        };
+    }, []);
 
     const UserMessagesWfitAdjust = useCallback((task = 'add') => {
         //if (!isCanvasOpen) return;
@@ -368,7 +429,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
     const hideCanvas = useCallback(() => {
         const { canvas } = refs.current;
 
-        console.log('Closing')
         canvas.classList.add('translate-x-[100vw]');
 
         setTimeout(() => {
@@ -404,13 +464,21 @@ export const Canvas = ({ isOpen, onToggle }) => {
         if (!codeView.contains(e.target)) {
             handIndicator.style.opacity = '0';
         } else {
-            updateHandPosition(codeView, handIndicator, codeScrollWrapper);
+            new Caret(codeView, handIndicator, codeScrollWrapper, scrollState.current.currentScroll).updateHandPosition();
         }
-    }, [updateHandPosition])
+    }, [Caret])
+
+    const handleInput = useCallback((e) => {
+        console.log('Updating hand')
+        updateLineNumbers()
+        updateHandIndicator(e)
+    })
 
     // Add event listeners
-    useEffect(() => {
-        const { themeToggle, btnCode, btnPreview, btnCopy, codeView, lineNumbers, handIndicator, codeScrollWrapper } = refs.current;
+    const setEventListeners = useCallback(() => {
+
+        const { themeToggle, btnCode, btnPreview, btnCopy, codeView, lineNumbers } = refs.current;
+
 
         // Theme toggle
         themeToggle?.addEventListener('click', () => {
@@ -426,21 +494,17 @@ export const Canvas = ({ isOpen, onToggle }) => {
         codeView?.addEventListener('scroll', syncScroll);
         lineNumbers?.addEventListener('scroll', syncScroll);
 
-        // Input events
-        codeView?.addEventListener('input', updateLineNumbers);
-
         // Canvas open/close
-        //ToggleCanvasBt?.addEventListener('click', handleCanvasToggle);
-
         codeView?.addEventListener("wheel", handleWheelScroll, { passive: false });
 
         // Update handIndicator position
         //document.addEventListener('click', updateHandIndicator);
 
         // Update hand position
-        ['input', 'keyup', 'click', 'keydown'].forEach(evt =>
-            codeView?.addEventListener(evt, () => {
-                updateHandPosition(codeView, handIndicator, codeScrollWrapper)
+        ['input', 'keyup', 'click', 'keydown'].forEach((evt) =>
+            codeView.addEventListener(evt, (e) => {
+                updateLineNumbers()
+                updateHandIndicator(e)
             })
         )
 
@@ -452,11 +516,9 @@ export const Canvas = ({ isOpen, onToggle }) => {
             codeView?.removeEventListener('scroll', syncScroll);
             lineNumbers?.removeEventListener('scroll', syncScroll);
             codeView?.removeEventListener('input', updateLineNumbers);
-            //ToggleCanvasBt?.removeEventListener('click', handleCanvasToggle);
             codeView?.removeEventListener('wheel', handleWheelScroll)
-            //document.removeEventListener('click', updateHandVisibility)
             ['input', 'keyup', 'click', 'keydown'].forEach(evt =>
-                codeView.removeEventListener(evt, updateHandPosition))
+                codeView.removeEventListener(evt, Caret))
         };
     }, [handleCodeView, handlePreviewView, handleCopy, syncScroll, updateLineNumbers]);
 
@@ -503,7 +565,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
 
                         {/* Code block with line numbers and code content side by side */}
-                        <div id="code-block-container" className="flex flex-row h-[93vh] max-h-full overflow-hidden rounded-lg rounded-t-none ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner bg-white dark:bg-zinc-950 select-text text-sm max-w-[56vw]">
+                        <div id="code-block-container" className="flex flex-row h-[93vh] max-h-full overflow-auto rounded-lg rounded-t-none ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner bg-white dark:bg-zinc-950 select-text text-sm max-w-[56vw]">
                             {/* Code content scrollable container */}
                             <div id="code-scroll-wrapper" className="flex flex-row flex-1 overflow-hidden">
                                 {/* Line numbers gutter */}
@@ -517,12 +579,79 @@ export const Canvas = ({ isOpen, onToggle }) => {
                                     contentEditable="true"
                                     spellCheck="false">
                                 </pre>
-                                {/* Pen Indicator (Floating Pen) */}
-                                <div id="hand-indicator"
-                                    className="absolute w-6 h-6 z-[1] pointer-events-none bg-no-repeat bg-contain animate-heartpulse text-[#00557f] dark:text-green-500 transition-colors duration-500"><span className="hidden">✍️</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" className="w-full h-full">
-                                        <path fill="currentColor" d="M52.5 11.5c-1.5-1.5-4-1.5-5.5 0L38 20.5l-4.6-4.6c-1.2-1.2-3.1-1.2-4.2 0s-1.2 3.1 0 4.2l4.6 4.6-16.1 16.1c-0.5 0.5-0.8 1.1-0.9 1.8L15 52c-0.1 0.8 0.2 1.7 0.9 2.3 0.6 0.6 1.5 0.9 2.3 0.9h0.3l8.4-1.7c0.7-0.1 1.3-0.4 1.8-0.9L45.1 35l4.6 4.6c1.2 1.2 3.1 1.2 4.2 0s1.2-3.1 0-4.2l-4.6-4.6 9-9c1.4-1.5 1.4-4 0-5.5L52.5 11.5zM22 48.5l-5.6 1.1 1.1-5.6L36.5 25 39 27.5 22 44.5v4z" />
-                                    </svg>
+                                {/* Enhanced Pen Indicator with Multiple Visual States */}
+                                <div
+                                    id="hand-indicator"
+                                    className="absolute z-[60] pointer-events-none transition-all duration-700 ease-out"
+                                    style={{ filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))' }}
+                                >
+                                    {/* Main Pen Container */}
+                                    <div className="relative w-8 h-8 transform transition-transform duration-500 group-hover:scale-110">
+
+                                        {/* Glow Effect */}
+                                        <div className="absolute inset-0 bg-blue-400/20 dark:bg-green-400/20 rounded-full blur-md animate-pulse-slow transform scale-150"></div>
+
+                                        {/* Floating Animation Container */}
+                                        <div className="relative w-full h-full animate-float">
+
+                                            {/* Pen Icon with Gradient */}
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 64 64"
+                                                className="w-full h-full drop-shadow-lg transform transition-all duration-300 hover:rotate-12"
+                                            >
+                                                {/* Gradient Definition */}
+                                                <defs>
+                                                    <linearGradient id="penGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                        <stop offset="0%" stopColor="#00557f" stopOpacity="1" />
+                                                        <stop offset="50%" stopColor="#0088cc" stopOpacity="1" />
+                                                        <stop offset="100%" stopColor="#00557f" stopOpacity="1" />
+                                                    </linearGradient>
+                                                    <linearGradient id="penGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                        <stop offset="0%" stopColor="#10b981" stopOpacity="1" />
+                                                        <stop offset="50%" stopColor="#34d399" stopOpacity="1" />
+                                                        <stop offset="100%" stopColor="#10b981" stopOpacity="1" />
+                                                    </linearGradient>
+                                                </defs>
+
+                                                {/* Pen Body */}
+                                                <path
+                                                    fill="url(#penGradient)"
+                                                    className="dark:fill-[url(#penGradientDark)]"
+                                                    d="M52.5 11.5c-1.5-1.5-4-1.5-5.5 0L38 20.5l-4.6-4.6c-1.2-1.2-3.1-1.2-4.2 0s-1.2 3.1 0 4.2l4.6 4.6-16.1 16.1c-0.5 0.5-0.8 1.1-0.9 1.8L15 52c-0.1 0.8 0.2 1.7 0.9 2.3 0.6 0.6 1.5 0.9 2.3 0.9h0.3l8.4-1.7c0.7-0.1 1.3-0.4 1.8-0.9L45.1 35l4.6 4.6c1.2 1.2 3.1 1.2 4.2 0s1.2-3.1 0-4.2l-4.6-4.6 9-9c1.4-1.5 1.4-4 0-5.5L52.5 11.5zM22 48.5l-5.6 1.1 1.1-5.6L36.5 25 39 27.5 22 44.5v4z"
+                                                />
+
+                                                {/* Pen Tip Highlight */}
+                                                <path
+                                                    fill="#ffffff"
+                                                    fillOpacity="0.3"
+                                                    d="M52.5 11.5L45.1 35l4.6 4.6 9-9c1.4-1.5 1.4-4 0-5.5L52.5 11.5z"
+                                                />
+                                            </svg>
+
+                                            {/* Ink Drip Effect */}
+                                            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
+                                                <div className="w-1 h-2 bg-blue-500 dark:bg-green-400 rounded-full opacity-70">
+                                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 dark:bg-green-400 rounded-full animate-drip"></div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        {/* Sparkle Particles */}
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-sparkle-1"></div>
+                                        <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 bg-yellow-300 rounded-full animate-sparkle-2"></div>
+
+                                        {/* Pulse Ring */}
+                                        <div className="absolute inset-0 border-2 border-blue-400/30 dark:border-green-400/30 rounded-full animate-ping-slow"></div>
+
+                                    </div>
+
+                                    {/* Tooltip */}
+                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                        Draw on canvas
+                                        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

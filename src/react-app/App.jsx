@@ -21,6 +21,7 @@ import '@js/StatusUIManager/Manager.js'
 import { APIKeysManager } from '@components/ApiManager/api.jsx';
 import { DropZone } from '@components/DropZone/dropzone.jsx'
 import { NotificationFlyer } from '@components/Notifications/Notification.jsx'
+import { ChatOptions } from '@components/Chat/ChatOptions.jsx';
 
 const App = () => {
     //const { electron } = useElectron();
@@ -51,6 +52,9 @@ const App = () => {
                         <div className="flex flex-1 overflow-hidden">
                             <ErrorBoundary>
                                 <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+                            </ErrorBoundary>
+                            <ErrorBoundary>
+                                <ChatOptions isOpen={true} onToggle={null} />
                             </ErrorBoundary>
 
                             <div className="flex-1 flex flex-col">

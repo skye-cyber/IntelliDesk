@@ -21,7 +21,7 @@ prefSubmit.addEventListener("click", () => {
     if (inputText && inputText.length > 10) {
         prefInput.value = "";
         // Dispatch Save event
-        window.electron.savePreference(inputText)
+        window.desk.api.savePreference(inputText)
         prefInputSection.classList.add('hidden'); //hide input section
         prefContent.innerText = inputText; //Update preference content
         prefPrevSection.classList.remove('hidden');
@@ -35,7 +35,7 @@ prefInput.addEventListener("keydown", (e) => {
         if (inputText && inputText.length > 10) {
             prefInput.value = "";
             // Dispatch Save event
-            window.electron.savePreference(inputText)
+            window.desk.api.savePreference(inputText)
             prefInputSection.classList.add('hidden'); //hide input section
             prefContent.innerText = inputText; //Update preference content
             prefPrevSection.classList.remove('hidden');
@@ -59,7 +59,7 @@ prefDelete.addEventListener('click', function() {
 })
 
 async function DeletePref() {
-    if (await window.electron.deletePreference()) {
+    if (await window.desk.api.deletePreference()) {
         prefPrevSection.classList.add('hidden'); //Hide preference display block
         prefInputSection.classList.remove('hidden'); //Show input section
         prefInput.value = "";
@@ -75,7 +75,7 @@ async function DeletePref() {
 }
 // Retrieve preferences
 async function displayPref() {
-    const pref = await window.electron.getPreferences()
+    const pref = await window.desk.api.getPreferences()
 
     if (pref) {
         prefContent.innerText = pref;

@@ -1,6 +1,6 @@
 import { waitForElement }  from "../../Utils/dom_utils";
 
-class ConversationManager {
+export class ConversationManager {
     constructor(storagePath) {
         this.storagePath = storagePath;
         this.chatArea
@@ -13,7 +13,7 @@ class ConversationManager {
         //console.log(JSON.stringify(conversationData))
         try {
             //console.log("Saving: " + conversationId + filePath)
-            await window.electron.write(filePath, conversationData);
+            await window.desk.api.write(filePath, conversationData);
         } catch (err) {
             console.error('Error saving conversation:', err);
         }
@@ -23,10 +23,10 @@ class ConversationManager {
     async loadConversation(conversationId) {
         const filePath = `${this.storagePath}/${conversationId}.json`;
         try {
-            if (window.electron.stat(filePath)) {
-                const model = conversationId.startsWith('V') ? "Vision" : "text";
-                const data = await window.electron.read(filePath, model);
-                return [data, model]
+            if (window.desk.api.stat(filePath)) {
+                const data = await window.desk.api.read(filePath);
+                //console.log(JSON.stringify(data))
+                return [data, data[1]?.metadata?.model || 'chat']
             }
         } catch (err) {
             console.error('Error loading conversation:', err);
@@ -48,30 +48,30 @@ class ConversationManager {
                     { type: "text", text: content }
                 ];
             }
-            window.electron.addToVisionChat({ role, content: messageContent });
+            window.desk.api.addHistory({ role, content: messageContent });
         } else {
-            /*const HasThink = (content.indexOf("</think>") && content.indexOf("</think>") != -1) ? true : false;
-            if (HasThink){
-              content = content.slice(content.indexOf('</think>') + 8, -1)
-            }*/
             messageContent = [{ type: "text", text: content }];
-            //console.log(messageContent)
-            window.electron.addToChat({ role, content: messageContent });
+            window.desk.api.addHistory({ role, content: messageContent });
         }
     }
 
     // Render the conversation in the web interface
     renderConversation(conversationData, model = "text") {
         this.chatArea.innerHTML = '';
-        const value = (model === "Vision") ? 'mistral-small-latest' : 'mistral-large-latest';
-        const element = document.querySelector(`[data-value="${value}"]`);
-        if (element) {
+        const value = 'mistral-large-latest';
+        //const element = document.querySelector(`[data-value="${value}"]`);
+        document.getElementById('modelButton').click()
+        waitForElement(`[data-value="${value}"]`, (el)=>el.click())
+        /*
+         * if (element) {
             element.click();
         } else {
             console.error('Element not found with data-value: ', value);
         }
+        */
 
-        conversationData.forEach(message => {
+        conversationData[0].chats.forEach(message => {
+            console.log(message)
             if (message.role === "user") {
                 //console.log(message.content[0]);
                 this.renderUserMessage(message.content, model);
@@ -82,19 +82,13 @@ class ConversationManager {
                     this.renderTextAssistantMessage(message.content);
                 }
             }
-            window.electron.CreateNew(conversationData, model)
+            window.desk.api.CreateNew(conversationData, model)
             //window.debounceRenderKaTeX(null, null, true);
         });
 
         window.implementUserCopy();
         window.copyBMan();
         //window.addCopyListeners();
-
-        if (check === false) {
-            // Sending a message to the main process
-            window.electron.send('toMain', { message: 'set-Utitility-Script' });
-            check = true;
-        }
     }
 
     // Get file type from message content
@@ -153,7 +147,7 @@ class ConversationManager {
         const fileType = this.getFileType(content);
         var fileDataUrl = null;
         var userText = null;
-        //console.log(fileType)
+        console.log(content)
         if (fileType) {
             fileDataUrl = this.getFileUrl(content);
         }
@@ -205,7 +199,7 @@ class ConversationManager {
         // Append the user text to the page
         userMessage.innerHTML = messageHtml;
         this.chatArea.appendChild(userMessage);
-        User_wfit(isCanvasOpen ? 'add' : 'remove')
+        //User_wfit(isCanvasOpen ? 'add' : 'remove')
     }
 
     // Render text-based assistant message
@@ -446,4 +440,3 @@ class ConversationManager {
     }
 }
 
-module.exports = { ConversationManager };

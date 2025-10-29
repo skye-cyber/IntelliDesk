@@ -5,7 +5,7 @@ InputPurify = window.InputPurify;
 export class ChatManager {
     constructor() {
         this.currentConversationId;
-        this.storagePath = window.electron.joinPath(window.electron.home_dir(), '.IntelliDesk/.store');
+        this.storagePath = window.desk.api.joinPath(window.desk.api.home_dir(), '.IntelliDesk/.store');
         this.conversationManager = new ConversationManager(storagePath);
         this.activeItem
         this.init()
@@ -28,10 +28,10 @@ export class ChatManager {
 
     setupIPCRecievers() {
         // Listen for updates messages from ipc for Chat models and update the history files
-        window.electron.receive('fromMain-ToChat', (data) => {
+        window.desk.api.receive('fromMain-ToChat', (data) => {
             let Chat = data
             try {
-                let conversationId = window.electron.getSuperCId() || window.electron.getNewChatUUId();
+                let conversationId = window.desk.api.getConversationId() || window.desk.api.getNewChatUUId();
                 console.log('ChatUpdated::');
                 if (Chat.length > 1) {
                     this.conversationManager.saveConversation(Chat, conversationId);
@@ -45,11 +45,11 @@ export class ChatManager {
 
 
         // Listen for updates messages from ipc for Vision models and update the history files
-        window.electron.receive('fromMain-ToVision', (data) => {
+        window.desk.api.receive('fromMain-ToVision', (data) => {
             try {
                 let VChat = data
                 //console.log(JSON.stringify(VChat));
-                let VconversationId = window.electron.getSuperCId() || window.electron.getNewVisionUUId()
+                let VconversationId = window.desk.api.getConversationId() || window.desk.api.getNewVisionUUId()
                 console.log("VChatUpdated::");
                 if (VChat && VChat.length > 1) {
                     this.conversationManager.saveConversation(VChat, VconversationId);
@@ -70,7 +70,7 @@ export class ChatManager {
         if (this.storagePath) {
             try {
                 // Check if the directory exists
-                const exists = await window.electron.mkdir(this.storagePath);
+                const exists = await window.desk.api.mkdir(this.storagePath);
                 if (!exists) {
                     console.log("Error creating directory", this.storagePath)
                 } else {
@@ -136,7 +136,7 @@ export class ChatManager {
             const newName = `${this.currentConversationId[0]}-${name}`;
             const conversationItem = document.querySelector(`[data-text="${currentConversationId}"]`);
             if (conversationItem && newName !== '') {
-                const rename = window.electron.Rename(storagePath, currentConversationId, newName);
+                const rename = window.desk.api.Rename(storagePath, currentConversationId, newName);
                 if (rename) {
                     conversationItem.textContent = newName;
                     conversationItem.setAttribute('data-text', newName);
@@ -153,7 +153,7 @@ export class ChatManager {
 
     DeleteConversation() {
         this.showLoadingModal(`Deleting ${currentConversationId}`);
-        const _delete = window.electron.deleteChat(storagePath, currentConversationId);
+        const _delete = window.desk.api.deleteChat(storagePath, currentConversationId);
         if (_delete) {
             this.hideLoadingModal();
             this.hideConversationOptions();
@@ -179,7 +179,7 @@ export class ChatManager {
         const [conversationData, model] = await conversationManager.loadConversation(conversationId);
         //console.log(conversationData, model)
         if (conversationData) {
-            window.electron.setSuperCId(conversationId);  //Set global conversation id to the current conversation id
+            window.desk.api.setConversationId(conversationId);  //Set global conversation id to the current conversation id
             //console.log(conversationData)
             conversationManager.renderConversation(conversationData, model);
         } else {

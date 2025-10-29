@@ -7,6 +7,7 @@ export const ModelItem = ({ model, isSelected, onSelect }) => {
             className={`flex items-center m-1.5 p-2.5 text-sm cursor-pointer focus-visible:outline-0 radix-disabled:pointer-events-none radix-disabled:opacity-90 group relative hover:bg-gray-200 dark:hover:bg-zinc-800 focus-visible:bg-zinc-700 radix-state-open:bg-zinc-700 rounded-md py-3 px-3 gap-2.5 border-x-2 border-x-[#00aeff] transition-colors duration-1000 ${isSelected ? 'bg-blue-100 dark:bg-blue-900' : ''
                 }`}
             tabIndex="-1"
+            data-value={model.value}
             onClick={() => onSelect(model.value)}
         >
             <div className="flex grow items-center justify-between gap-2">

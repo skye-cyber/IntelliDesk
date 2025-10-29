@@ -1,4 +1,7 @@
 import React, { useEffect, useCallback, useRef } from 'react';
+import { ChatManager } from '@js/managers/ConversationManager/ChatManager';
+
+const Manager = new ChatManager()
 
 export const Sidebar = ({ isOpen, onToggle }) => {
 
@@ -8,13 +11,26 @@ export const Sidebar = ({ isOpen, onToggle }) => {
 
     useEffect(() => {
         if (!isOpen && !refs.current) return;
+        const ConversationSection = document.getElementById('conversations');
+
+        Manager.fetchConversations(ConversationSection)
+        showPanel()
+    })
+
+    function showPanel(){
         const panel = document.getElementById('conversationPane');
         setTimeout(() => {
             panel?.classList.remove('-translate-x-[100vw]')
             panel?.classList.add('translate-x-0')
         })
-    })
-
+    }
+    function hidePanel(){
+        const panel = document.getElementById('conversationPane');
+        setTimeout(() => {
+            panel?.classList.remove('-translate-x-[100vw]')
+            panel?.classList.add('translate-x-0')
+        })
+    }
     const showConversationOptions = useCallback(() => {
         const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
         const chatOptions = document.getElementById('chatOptions');
@@ -23,11 +39,16 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         chatOptions.classList.add('animate-enter')
     })
 
+    const shouldClosePanel = useCallback((e)=>{
+        if(document.getElementById('conversations')?.contains(e.target)) hidePanel();
+    })
+
     if (!isOpen) return null;
 
     return (
         <div
             id="conversationPane"
+            onClick={shouldClosePanel}
             className="fixed top-0 left-0 h-screen w-80 max-w-[85vw] bg-gradient-to-b from-slate-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/95 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 shadow-2xl transform transition-transform -translate-x-[100vw] transition-all duration-500 ease-out z-40 overflow-hidden"
         >
             {/* Header Section */}
@@ -95,7 +116,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             {/* Conversations List */}
             <div id="conversations" className="h-[calc(100vh-120px)] overflow-y-auto py-2 px-3 space-y-1">
                 {/* Sample Conversation Items */}
-                <div className="conversation-item group hidden">
+                <div className="hidden conversation-item group ">
                     <div className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-700/50 cursor-pointer transition-all duration-200 active:scale-95">
                         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-md">
                             <span className="text-white font-semibold text-sm">AI</span>
@@ -115,7 +136,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </div>
 
                 {/* Active Conversation */}
-                <div className="conversation-item group hidden">
+                <div className="hidden conversation-item group">
                     <div className="flex items-center space-x-3 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 cursor-pointer transition-all duration-200">
                         <div className="relative flex-shrink-0">
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-md">
@@ -138,7 +159,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </div>
 
                 {/* Empty State */}
-                <div id="empty-conversations" className=" flex-col items-center justify-center py-12 px-4 text-center">
+                <div id="empty-conversations" className="hidden flex-col items-center justify-center py-12 px-4 text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-4">
                         <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />

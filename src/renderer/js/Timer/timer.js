@@ -32,7 +32,7 @@ export class Timer {
 				const milliseconds = Math.floor(timeTaken % 1000);
 				window.Notify(null, `${seconds} seconds and ${milliseconds} ms`);
 				// Call app systewide notify
-				window.electron.send('Notify', { message: timeTaken });
+				window.desk.api.send('Notify', { message: timeTaken });
 			} else {
 				console.error('window.Notify is not defined.');
 			}

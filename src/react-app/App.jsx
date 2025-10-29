@@ -5,7 +5,6 @@ import { ChatInterface } from '@components/Chat/ChatInterface';
 import { InputSection } from '@components/Input/InputSection';
 import { Sidebar } from '@components/Sidebar/Sidebar';
 import { Canvas } from '@components/Canvas/Canvas';
-//import { ModelSelector } from '@components/ModelSelector/ModelSelector';
 import { useElectron } from '@hooks/useElectron';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import '@js/katex/katex.min.js';

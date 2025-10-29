@@ -10,7 +10,7 @@ const iconMoon = document.getElementById('icon-moon');
 // Set the initial theme
 setTheme(currentTheme);
 //Set code these styleSheet
-window.electron.addCodeThemeSheet(currentTheme);
+window.desk.api.addCodeThemeSheet(currentTheme);
 
 
 // Function to set the theme
@@ -32,7 +32,7 @@ function setTheme(theme) {
         iconMoon.classList.remove('hidden');
     }
 
-    window.electron.ThemeChangeDispatch()
+    window.desk.api.ThemeChangeDispatch()
 
     localStorage.setItem("theme", theme);
 }
@@ -41,5 +41,5 @@ function setTheme(theme) {
 themeSwitch.addEventListener("click", () => {
     const newTheme = rootElement.classList.contains("dark") ? "light" : "dark";
     setTheme(newTheme);
-    window.electron.addCodeThemeSheet(newTheme);
+    window.desk.api.addCodeThemeSheet(newTheme);
 });

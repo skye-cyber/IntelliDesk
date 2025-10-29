@@ -36,7 +36,7 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
         {
             title: "Math Models",
             models: [
-                { value: "Qwen/Qwen2.5-Math-1.5B", name: "Qwen2.5-Math-1.5B", icon:"default", description: "Math model" },
+                { value: "Qwen/Qwen2.5-Math-1.5B", name: "Qwen2.5-Math-1.5B", icon: "default", description: "Math model" },
             ]
         },
         {
@@ -182,7 +182,7 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
     ];
 
     return (
-        <div className="fixed z-[999] mt-1 -ml-14 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border border-blue-300 dark:border-[#242470] dark:bg-[#050511] text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-truncate animation transition-colors duration-1000 transform-gpu scrollbar-custom scroll-smooth">
+        <div className="fixed z-[55] mt-1 -ml-2 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border border-blue-300 dark:border-[#242470] dark:bg-[#050511] text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-truncate animation transition-colors duration-1000 transform-gpu scrollbar-custom scroll-smooth">
             <div role="menu" aria-orientation="vertical">
                 {hfmodelCategories.map((category, index) => (
                     <ModelCategory

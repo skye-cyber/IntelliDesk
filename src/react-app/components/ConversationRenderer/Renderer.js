@@ -1,4 +1,4 @@
-const storagePath = window.electron.joinPath(window.electron.home_dir(), '.quickai/.quickai.store');
+const storagePath = window.desk.api.joinPath(window.desk.api.home_dir(), '.quickai/.quickai.store');
 const { ConversationManager } = require('./managers/ConversationManager/ConversationManager.js')
 
 const chatArea = document.getElementById('chatArea');
@@ -16,7 +16,7 @@ async function checkAndCreateDirectory() {
     if (storagePath) {
         try {
             // Check if the directory exists
-            const exists = await window.electron.mkdir(storagePath);
+            const exists = await window.desk.api.mkdir(storagePath);
             if (!exists) {
                 console.log("Error creating directory", storagePath)
             } else {
@@ -39,15 +39,15 @@ async function fetchConversations() {
     `;// Clear previous entries
 
     try {
-        const files = await window.electron.readDir(storagePath);
+        const files = await window.desk.api.readDir(storagePath);
 
         if (files.length > 0) {
             conversationsPanel.innerHTML = ''; // Clear the pane if conversations exist
             // Define the colors you want to cycle through
             const colors = ['bg-amber-500', 'bg-rose-900', 'bg-teal-700', 'bg-red-500', 'bg-blue-500', 'bg-green-600', 'bg-yellow-800', 'bg-purple-500', 'bg-fuchsia-500'];
             for (let [index, file] of files.entries()) {
-                if (window.electron.getExt(file) === '.json') {
-                    const conversationId = window.electron.getBasename(file, '.json');
+                if (window.desk.api.getExt(file) === '.json') {
+                    const conversationId = window.desk.api.getBasename(file, '.json');
                     const conversationItem = document.createElement('div');
                     const color = (index <= colors.length - 1) ? colors[index] : colors[Math.floor(Math.random() * colors.length)]
                     conversationItem.classList.add('p-2', color, 'transition-transform', "text-black", 'tranform', 'hover:scale-105', 'transition', 'duration-700', 'ease-in-out', 'scale-100', 'infinite', 'hover:bg-blue-800', 'decoration-underline', 'decoration-pink-400', 'dark:decoration-fuchsia-500', 'dark:hover:bg-cyan-700', 'cursor-pointer', 'rounded-lg', "space-y-2", "w-full", "sm:w-[90%]", "md:w-[80%]", "lg:w-[90%]", "whitespace-nowrap", "max-w-full", "overflow-auto", "scrollbar-hide");
@@ -84,7 +84,7 @@ async function renderConversationFromFile(item, conversationId) {
     const [conversationData, model] = await conversationManager.loadConversation(conversationId);
     //console.log(conversationData, model)
     if (conversationData) {
-        window.electron.setSuperCId(conversationId);  //Set global conversation id to the current conversation id
+        window.desk.api.setConversationId(conversationId);  //Set global conversation id to the current conversation id
         //console.log(conversationData)
         conversationManager.renderConversation(conversationData, model);
     } else {

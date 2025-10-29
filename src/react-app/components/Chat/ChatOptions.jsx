@@ -1,53 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { ChatManager } from '@js/managers/conversationManager/ChatManager';
+import { ChatManager } from '@js/managers/ConversationManager/ChatManager';
 
 const Manager = new ChatManager()
 
 export const ChatOptions = ({ isOpen, onToggle }) => {
-
-    const [isVisible, setIsVisible] = useState(false);
-    const [shouldRender, setShouldRender] = useState(false);
-    const isControlledCloseRef = useRef(false); // Track if WE initiated the close
-
-    //const refs = useRef({})
-
-
-    // Handle opening
-    useEffect(() => {
-        if (isOpen) {
-            //setShouldRender(true);
-            // Wait for render then show with animation
-            setTimeout(() => setIsVisible(true), 10);
-            const pane = document.getElementById('conversationsPanel')
-            Manager.fetchConversations(pane)
-        }
-    }, [isOpen]);
-
-    // Handle close animation then notify parent
-    const handleClose = useCallback((notifyParent = true) => {
-        closeRecording()
-        setIsVisible(false);
-        // Wait for animation to complete before unmounting
-        setTimeout(() => {
-            //setShouldRender(false);
-            if (notifyParent) {
-                onToggle(); // Only notify parent if this was user-initiated
-            }
-        }, 1000);
-    }, [onToggle]);
-
-    // Close when isOpen becomes false (only if WE didn't initiate it)
-    useEffect(() => {
-        if (!isOpen && isVisible && !isControlledCloseRef.current) {
-            // This close was initiated by parent prop change
-            handleClose(false); // Don't notify parent to avoid loop
-        }
-    }, [isOpen, isVisible, handleClose]);
-
-    useEffect(() => {
-        if (!isOpen) return;
-    }, [])
-
 
     const confirmDeletion = useCallback(() => {
         const confirmed = window.ModalManager.confirm("Are you sure you want to delete this item?", "Confirm Deletion")
@@ -62,7 +18,8 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
         renameModal.classList.remove('translate-y-full')
         renameModal.classList.add('translate-y-0')
 
-        modalTitle?.textContent = `Rename ${currentConversationId}`;
+        const currentConversationId = Manager._get_conversation_id()
+        if (modalTitle && currentConversationId) modalTitle.textContent = `Rename ${currentConversationId}`;
 
     })
 
@@ -121,7 +78,7 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
                 <div className="bg-white p-6 rounded-lg shadow-lg">
                     <h3 id="modalTitle" className="text-2xl font-bold text-gray-800 mb-4"></h3>
                     <div className="mb-4">
-                        <label for="newName" className="block text-gray-700 mb-2">New Name:</label>
+                        <label htmlFor="newName" className="block text-gray-700 mb-2">New Name:</label>
                         <input type="text" id="newName" className="w-full p-2 border rounded" placeholder="Enter new name"></input>
                     </div>
                     <div className="flex justify-end space-x-4">

@@ -80,14 +80,14 @@ export async function exportSvgToPng(svgElementId, outputFileName = `${svgElemen
                         ctx.setTransform(scale, 0, 0, scale, 0, 0);
                         ctx.drawImage(img, 0, 0);
 
-                        // Get downloads path (assuming window.electron API is available)
-                        const downloadsPath = window.electron.joinPath(
-                            window.electron.getDownloadsPath(),
+                        // Get downloads path (assuming window.desk.api API is available)
+                        const downloadsPath = window.desk.api.joinPath(
+                            window.desk.api.getDownloadsPath(),
                             outputFileName
                         );
 
                         // Save image buffer (await inside onload is fine here)
-                        const result = await window.electron.saveImageBuffer(canvas, downloadsPath, url);
+                        const result = await window.desk.api.saveImageBuffer(canvas, downloadsPath, url);
 
                         // Resolve the Promise with the result
                         resolve(result);

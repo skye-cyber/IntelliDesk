@@ -143,7 +143,7 @@ async function main(fpath){
 		// Add audio to user interface
 		displayUserAudio(fpath)
 		//Read data from file
-		const data = await window.electron.readFileData(fpath)
+		const data = await window.desk.api.readFileData(fpath)
 
 		// call automaticSpeechRecognition
 		const response = await autoSpeech(data)
@@ -243,7 +243,7 @@ function utilityScriptExists(){
 	console.log("Utility missing. Adding");
 	// add export utility script
 	// Sending a message to the main process if script does not exist already
-	window.electron.send('toMain', { message: 'set-Utitility-Script' })
+	window.desk.api.send('dispatch-to-main-process', { message: 'set-Utitility-Script' })
 	return exists
 }
 
@@ -295,7 +295,7 @@ async function startRecording(task=null) {
 			microphoneSVG.classList.remove('animate-pulse')
 
 			// Save the audioBlob to a temporary file
-			const savePath = await window.electron.saveRecording(audioBlob);
+			const savePath = await window.desk.api.saveRecording(audioBlob);
 
 			// Release microphone
 			await ReleaseMediaDevice();

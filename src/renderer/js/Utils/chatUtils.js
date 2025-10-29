@@ -221,7 +221,7 @@ export function handleRequestError(error, userMessage, aiMessage, VS_url = null)
 
         // change send button appearance to processing status
         HandleProcessingEventChanges('hide')
-        const conversationHistory = VS_url ? window.electron.getVisionChat() : window.electron.getChat()
+        const conversationHistory = VS_url ? window.desk.api.getHistory() : window.desk.api.getHistory()
         if (!error.message === "Failed to fetch" && !error.message === "network error") {
             console.log("History length:", conversationHistory.length);
             console.log('Error:', JSON.stringify(error, null, 2));
@@ -287,7 +287,7 @@ export function handleRequestError(error, userMessage, aiMessage, VS_url = null)
                     ErrorMs = "This model is unreachabble: It might be overloaded!"
                 }
                 errorArea.textContent = ErrorMs;
-                window.electron.popFromChat(); // Remove the last conversation entry
+                window.desk.api.popFromChat(); // Remove the last conversation entry
             }
 
             async function HideErrorModal() {
@@ -564,7 +564,7 @@ export function addPreviewClickListener(el) {
         //console.log(this.getAttribute('aria-pressed'))
 
         //update system instructions
-        window.electron.updateSysInit()
+        window.desk.api.updateSysInit()
 
         if (isActive !== "true") {
             // When activated: switch to vibrant green theme
@@ -618,7 +618,7 @@ export function setutilityScriptisSet() {
     }
     console.log("Utility missing. Adding");
     // Sending a message to the main process if script does not exist already
-    window.electron.send('toMain', { message: 'set-Utitility-Script' })
+    window.desk.api.send('dispatch-to-main-process', { message: 'set-Utitility-Script' })
     return exists
 }
 

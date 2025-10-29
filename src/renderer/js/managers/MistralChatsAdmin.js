@@ -11,7 +11,7 @@ async function loadApiKey() {
 
 await loadApiKey()
 
-//const MISTRAL_CODESTRAL_API_KEY = window.electron.MISTRAL_CODESTRAL_API_KEY();
+//const MISTRAL_CODESTRAL_API_KEY = window.desk.api.MISTRAL_CODESTRAL_API_KEY();
 //const modelSelect = document.getElementById('model');
 
 const Mistarlclient = new Mistral({ apiKey: MISTRAL_API_KEY });
@@ -90,7 +90,7 @@ async function MistraChat(text, modelName) {
 
 		const stream = await Mistarlclient.chat.stream({
 			model: modelName,
-			messages: window.electron.getChat(),
+			messages: window.desk.api.getHistory(),
 			max_tokens: 3000
 		});
 
@@ -270,7 +270,7 @@ async function MistraChat(text, modelName) {
 		NormalizeCanvasCode();
 
 		// Store conversation history
-		window.electron.addToChat({ role: "assistant", content: output });
+		window.desk.api.addHistory({ role: "assistant", content: output });
 
 		//console.log(actualResponse, fullResponse, output)
 		// render diagrams from this response
@@ -301,7 +301,7 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 	addLoadingAnimation(aiMessage);
 
 	//Add Timestamp
-	text = `${text} [${window.electron.getDateTime()} UTC]`
+	text = `${text} [${window.desk.api.getDateTime()} UTC]`
 
 	//console.log(text)
 	// Determine the content based on fileDataUrl
@@ -352,7 +352,7 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 	}
 
 	// Add user message to VisionHistory
-	window.electron.addToVisionChat({
+	window.desk.api.addHistory({
 		role: "user",
 		content: userContent,
 	});
@@ -384,17 +384,17 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 		`;
 
 	try {
-		//console.log(window.electron.clearImages(window.electron.getVisionChat()),)
+		//console.log(window.desk.api.clearImages(window.desk.api.getHistory()),)
 		//const visionstream = window.generateTextChunks();
 		const visionstream = await Mistarlclient.chat.stream({
 			model: modelName,
-			messages: window.electron.clearImages(window.electron.getVisionChat()),
+			messages: window.desk.api.clearImages(window.desk.api.getHistory()),
 			max_tokens: 2000,
 		});
 
 
-		//console.log("Final VisionHistory:", JSON.stringify(window.electron.getVisionChat(), null, 2));
-		//console.log("Final VisionHistory:", JSON.stringify(window.electron.clearImages(window.electron.getVisionChat(), null, 2)));
+		//console.log("Final VisionHistory:", JSON.stringify(window.desk.api.getHistory(), null, 2));
+		//console.log("Final VisionHistory:", JSON.stringify(window.desk.api.clearImages(window.desk.api.getHistory(), null, 2)));
 
 		// change send button appearance to processing status
 		window.HandleProcessingEventChanges('show')
@@ -574,8 +574,8 @@ async function MistraVision(text, fileType, fileDataUrl = null, modelName) {
 		window.debounceRenderKaTeX(`.${VisionMessageUId}`, null, true);
 		normaliZeMathDisplay(`.${VisionMessageUId}`)
 
-		window.electron.addToVisionChat({ role: "assistant", content: [{ type: "text", text: output }] });
-		//console.log("Final VisionHistory:", JSON.stringify(window.electron.getVisionChat(), null, 2));
+		window.desk.api.addHistory({ role: "assistant", content: [{ type: "text", text: output }] });
+		//console.log("Final VisionHistory:", JSON.stringify(window.desk.api.getHistory(), null, 2));
 
 		// render diagrams fromthis response
 		window.handleDiagrams(output, 'both');
@@ -623,8 +623,8 @@ function addUserMessage(text, fileType, fileDataUrl, fileContainerId) {
 	chatArea.appendChild(userMessage);
 
 	// Add Timestamp to user prompt
-	text = `${text} [${window.electron.getDateTime()} UTC]`
-	window.electron.addToChat({ role: "user", content: text });
+	text = `${text} [${window.desk.api.getDateTime()} UTC]`
+	window.desk.api.addHistory({ role: "user", content: text });
 	User_wfit(isCanvasOpen? 'add':'remove')
 }
 

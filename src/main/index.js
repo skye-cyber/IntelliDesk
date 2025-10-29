@@ -34,29 +34,29 @@ ipcMain.on('Notify', (event, data) => {
     }
 
     // Optionally send a response back
-    // event.reply('fromMain', data);
+    // event.reply('reply-from-main-process', data);
 });
 
 
 // Handle IPC messages from renderer
-ipcMain.on('toMain', (event, data) => {
+ipcMain.on('dispatch-to-main-process', (event, data) => {
     //console.log('Received data from renderer:', data);
     // Optionally send a response back
-    event.reply('fromMain', data);
+    event.reply('reply-from-main-process', data);
 });
 
 // Handle IPC messages from renderer
-ipcMain.on('fromVision-ToMain', (event, data) => {
+ipcMain.on('desk.api-update-visionchat', (event, data) => {
     //console.log('Received data from VChat:', data);
     // Optionally send a response back
-    event.reply('fromMain-ToVision', data);
+    event.reply('reply-from-main-process', data);
 });
 
 // Handle IPC messages from renderer
-ipcMain.on('fromChat-ToMain', (event, data) => {
+ipcMain.on('desk.api-update-chat', (event, data) => {
     //console.log('Received data from Chat:', data);
     // Optionally send a response back
-    event.reply('fromMain-ToChat', data);
+    event.reply('reply-from-main-process', data);
 });
 
 app.disableHardwareAcceleration()
@@ -195,7 +195,7 @@ function createWindow() {
 }
 
 // Set the app user model ID
-app.setAppUserModelId('com.IntelliDesk.app');
+app.setAppUserModelId('com.intellidesk.app');
 
 app.on('ready', async () => {
     try {

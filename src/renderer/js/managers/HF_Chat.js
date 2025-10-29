@@ -66,9 +66,9 @@ async function routeToHf(text) {
 		chatArea.scrollTop = chatArea.scrollHeight;
 
 		// Add Timestamp
-		text = `${text} [${window.electron.getDateTime()} UTC]`
+		text = `${text} [${window.desk.api.getDateTime()} UTC]`
 		// Add timestamped  user prompt to history
-		window.electron.addToChat({ role: "user", content: text });
+		window.desk.api.addHistory({ role: "user", content: text });
 
 		const aiMessage = document.createElement("div");
 		aiMessage.innerHTML = `
@@ -97,16 +97,16 @@ async function routeToHf(text) {
 		const foldId = `think-content-${Math.random().toString(33).substring(3, 9)}`;
 		const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
 
-		//console.log(JSON.stringify(window.electron.getChat()), null, 4);
+		//console.log(JSON.stringify(window.desk.api.getHistory()), null, 4);
 
 		const _Timer = new window.Timer;
 		try {
 			processing = true;
 
-			//console.log(typeof(window.electron.getChat()))
+			//console.log(typeof(window.desk.api.getHistory()))
 			const options = {
 				model: Currentmodel,
-				messages: window.electron.getChat(), // Add conversation in JSON format to avoid size limitation
+				messages: window.desk.api.getHistory(), // Add conversation in JSON format to avoid size limitation
 				//max_tokens: 3000
 			};
 
@@ -291,7 +291,7 @@ async function routeToHf(text) {
 
 			if (check === false) {
 				// Sending a message to the main process
-				window.electron.send('toMain', { message: 'set-Utitility-Script' });
+				window.desk.api.send('dispatch-to-main-process', { message: 'set-Utitility-Script' });
 				check = true;
 			}
 
@@ -300,7 +300,7 @@ async function routeToHf(text) {
 			normaliZeMathDisplay(`.${aiMessageUId}`)
 
 			// Store conversation history
-			window.electron.addToChat({ role: "assistant", content: fullResponse });
+			window.desk.api.addHistory({ role: "assistant", content: fullResponse });
 
 			// render diagrams fromthis response
 			window.handleDiagrams(actualResponse, 'both');
@@ -330,7 +330,7 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 	const userMessage = addUserMessage(text, fileType, fileDataUrl, fileContainerId);
 
 	//Add Timestamp
-	text = `${text} [${window.electron.getDateTime()} UTC]`
+	text = `${text} [${window.desk.api.getDateTime()} UTC]`
 	//console.log(text)
 	// Determine the content based on fileDataUrl
 	let userContent;
@@ -380,7 +380,7 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 	}
 
 	// Add user message to VisionHistory
-	window.electron.addToVisionChat({
+	window.desk.api.addHistory({
 		role: "user",
 		content: userContent,
 	});
@@ -412,12 +412,12 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 		`;
 
 	try {
-		//console.log(window.electron.clearImages(window.electron.getVisionChat()),)
+		//console.log(window.desk.api.clearImages(window.desk.api.getHistory()),)
 		//const visionstream = window.generateTextChunks(null, true);
 
 		const visionstream = client.chatCompletionStream({
 			model: Vmodel,
-			messages: window.electron.clearImages(window.electron.getVisionChat()),
+			messages: window.desk.api.clearImages(window.desk.api.getHistory()),
 			max_tokens: 2000,
 		});
 
@@ -553,7 +553,7 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 		window.debounceRenderKaTeX(null, null, true);
 		normaliZeMathDisplay(`.${VisionMessageUId}`)
 
-		window.electron.addToVisionChat({ role: "assistant", content: [{ type: "text", text: visionMs }] });
+		window.desk.api.addHistory({ role: "assistant", content: [{ type: "text", text: visionMs }] });
 		//console.log("Final VisionHistory:", JSON.stringify(VisionHistory, null, 2));
 
 		// render diagrams from this response

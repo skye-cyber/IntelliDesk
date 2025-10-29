@@ -96,7 +96,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         }
 
         if (mistralKey || huggingfaceKey) {
-            const result = await window.api.saveKeys(keyStore);
+            const result = await window.desk.api2.saveKeys(keyStore);
             if (result.success) {
                 //Load keys after saving
                 loadKeys();
@@ -123,7 +123,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         const mistralApiField = document.getElementById('mistralKeyMan');
         const hfApiField = document.getElementById('huggingfaceKeyMan');
 
-        const { mistralKey, huggingfaceKey } = await window.api.getKeys() || {};
+        const { mistralKey, huggingfaceKey } = await window.desk.api2.getKeys() || {};
 
         sethuggingfaceKey(huggingfaceKey)
         setmistralKey(mistralKey)
@@ -166,7 +166,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         document.getElementById('mistralKeyMan').value = '';
         document.getElementById('huggingfaceKeyMan').value = '';
 
-        const result = await window.api.resetKeys(['mistral', 'huggingface']);
+        const result = await window.desk.api2.resetKeys(['mistral', 'huggingface']);
 
         if(result) window.ModalManager.showMessage('API Keys reset successfully.', 'success');
     })

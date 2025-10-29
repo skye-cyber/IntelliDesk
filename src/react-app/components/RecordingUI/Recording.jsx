@@ -424,7 +424,7 @@ export const Recording = ({ isOpen, onToggle }) => {
             // Add audio to user interface
             displayUserAudio(fpath)
             //Read data from file
-            const data = await window.electron.readFileData(fpath)
+            const data = await window.desk.apireadFileData(fpath)
 
             // call automaticSpeechRecognition
             const response = await autoSpeech(data)
@@ -513,7 +513,7 @@ export const Recording = ({ isOpen, onToggle }) => {
                     microphoneSVG.classList.remove('animate-pulse')
 
                     // Save the audioBlob to a temporary file
-                    const savePath = await window.electron.saveRecording(audioBlob);
+                    const savePath = await window.desk.apisaveRecording(audioBlob);
 
                     // Release microphone
                     ReleaseMediaDevice();

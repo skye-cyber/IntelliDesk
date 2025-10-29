@@ -109,8 +109,8 @@ function HTML2Jpg(event, selector) {
 
         toJpeg(element, { width, height })
         .then((dataUrl) => {
-            const downloadsPath = window.electron.getDownloadsPath();
-            window.electron.saveAndOpenImage(downloadsPath, dataUrl);
+            const downloadsPath = window.desk.api.getDownloadsPath();
+            window.desk.api.saveAndOpenImage(downloadsPath, dataUrl);
         })
         .catch((error) => {
             console.error('Error creating image:', error);

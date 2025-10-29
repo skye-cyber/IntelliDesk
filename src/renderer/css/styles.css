@@ -925,12 +925,12 @@ video {
   z-index: 40;
 }
 
-.z-\[60\] {
-  z-index: 60;
+.z-\[55\] {
+  z-index: 55;
 }
 
-.z-\[999\] {
-  z-index: 999;
+.z-\[60\] {
+  z-index: 60;
 }
 
 .m-1\.5 {
@@ -987,8 +987,8 @@ video {
   margin-bottom: auto;
 }
 
-.-ml-14 {
-  margin-left: -3.5rem;
+.-ml-2 {
+  margin-left: -0.5rem;
 }
 
 .mb-1 {
@@ -1813,7 +1813,7 @@ video {
   }
 
   50% {
-    transform: scale(1.2);
+    transform: scale(1.1);
   }
 
   100% {
@@ -1823,6 +1823,10 @@ video {
 
 .animate-heartpulse {
   animation: heartpulse 1s infinite;
+}
+
+.animate-heartpulse-slow {
+  animation: heartpulse-slow 1s infinite;
 }
 
 .cursor-not-allowed {
@@ -3531,20 +3535,12 @@ video {
   text-align: start;
 }
 
-.font-mono {
-  font-family: JetBrains Mono, monospace;
-}
-
-.font-body {
-  font-family: Synonym, system-ui, sans-serif;
-}
-
-.font-brand {
-  font-family: Poppins, sans-serif;
-}
-
 .font-handwriting {
   font-family: "Dancing Script", cursive;
+}
+
+.font-mono {
+  font-family: JetBrains Mono, monospace;
 }
 
 .text-2xl {

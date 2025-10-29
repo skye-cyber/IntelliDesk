@@ -22,7 +22,7 @@ export const Settings = ({ isOpen, onToggle }) => {
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const savedSettings = await window.electron.getPreferences();
+                const savedSettings = await window.desk.api.getPreferences();
                 //console.log('Loaded settings:', savedSettings?.data);
                 if (savedSettings?.data) {
                     setSettings(prev => ({ ...prev, ...savedSettings.data }));
@@ -102,7 +102,7 @@ export const Settings = ({ isOpen, onToggle }) => {
             const newSettings = { ...prev, [key]: value };
 
             // Save immediately when settings change
-            window.electron.savePreference(newSettings).catch(error => {
+            window.desk.api.savePreference(newSettings).catch(error => {
                 console.error('Failed to save settings:', error);
             });
 
@@ -137,7 +137,7 @@ export const Settings = ({ isOpen, onToggle }) => {
         setSettings(newSettings);
 
         try {
-            await window.electron.savePreference(newSettings);
+            await window.desk.api.savePreference(newSettings);
             SuccessModal.success('Your preferences have been saved successfully!');
         } catch (error) {
             window.ModalManager.showMessage('Failed to save preferences', 'error');
@@ -178,7 +178,7 @@ export const Settings = ({ isOpen, onToggle }) => {
             const newSettings = { ...settings, preference: '' };
             setSettings(newSettings);
 
-            if (await window.electron.savePreference()) {
+            if (await window.desk.api.savePreference()) {
                 prefContent.textContent = '';
                 prefContentSection.classList.add('hidden'); //Hide preference display block
                 prefInputSection.classList.remove('hidden'); //Show input section
@@ -233,7 +233,7 @@ export const Settings = ({ isOpen, onToggle }) => {
             fluxmodel: fluxModel.checked
         }
         //console.log(settings, data)
-        const saved = await window.electron.savePreference(settings)
+        const saved = await window.desk.api.savePreference(settings)
         return saved
     })
 
@@ -269,7 +269,7 @@ export const Settings = ({ isOpen, onToggle }) => {
 
             setSettings(newSettings);
 
-            await window.electron.savePreference(newSettings);
+            await window.desk.api.savePreference(newSettings);
             SuccessModal.success('Your preferences have been deleted successfully!');
         } catch (error) {
             window.ModalManager.showMessage('Failed to delete preferences', 'error');
@@ -387,7 +387,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 <div className="relative">
                                     <textarea
                                         id="pref-input"
-                                        className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 custom-scrollbar"
+                                        className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 custom-scrollbar"
                                         placeholder="How would you like me to assist you? Share your preferences, communication style, or specific needs..."
                                         rows="3"
                                         onChange={handlePreferenceInput}
@@ -450,7 +450,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 </svg>
                                 Language & Region
                             </h3>
-                            <select id="languagePref" className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" onChange={(e) => handleSettingChange('language', e.target.value)}>
+                            <select id="languagePref" className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" onChange={(e) => handleSettingChange('language', e.target.value)}>
                                 <option value="en">🌐 English</option>
                                 <option value="fr">🇫🇷 French</option>
                                 <option value="es">🇪🇸 Spanish</option>

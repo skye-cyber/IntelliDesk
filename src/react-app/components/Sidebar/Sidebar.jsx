@@ -10,8 +10,8 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         if (!isOpen && !refs.current) return;
         const panel = document.getElementById('conversationPane');
         setTimeout(() => {
-            panel.classList.remove('-translate-x-[100vw]')
-            panel.classList.add('translate-x-0')
+            panel?.classList.remove('-translate-x-[100vw]')
+            panel?.classList.add('translate-x-0')
         })
     })
 

@@ -348,73 +348,10 @@ export const Canvas = ({ isOpen, onToggle }) => {
         }
     }, [])
 
-    // Activate Canvas
-    const ActivateCanvas = useCallback(() => {
-        const { ToggleCanvasBt, closeIcon, plusIcon } = refs.current;
-
-        // Hide plus icon, show close icon
-        plusIcon.classList.add('hidden');
-        closeIcon.classList.remove('hidden');
-
-        // Remove inactive styles
-        ToggleCanvasBt.classList.remove(
-            'bg-white',
-            'dark:bg-slate-700',
-            'text-blue-600',
-            'dark:text-teal-300',
-            'border-blue-300',
-            'shadow-md',
-            'dark:border-gray-500'
-        );
-
-        // Add active styles
-        ToggleCanvasBt.classList.add(
-            'bg-[#00ca62]',
-            'text-black',
-            'border-blue-600',
-            'shadow-xl',
-            'dark:border-teal-500'
-        );
-
-        setIsCanvasActive(true);
-        ToggleCanvasBt?.setAttribute('aria-pressed', 'true');
-    }, [])
-
-    //Deactivate canvas
-    const DeactivateCanvas = useCallback(() => {
-        const { ToggleCanvasBt, closeIcon, plusIcon } = refs.current;
-
-        // Show plus icon, hide close icon
-        closeIcon?.classList.add('hidden');
-        plusIcon?.classList.remove('hidden');
-
-        // Remove active styles
-        ToggleCanvasBt?.classList.remove(
-            'bg-[#00ca62]',
-            'text-black',
-            'border-blue-600',
-            'shadow-xl',
-            'dark:border-teal-500'
-        );
-
-        // Add inactive styles
-        ToggleCanvasBt?.classList.add(
-            'bg-white',
-            'dark:bg-slate-700',
-            'text-blue-600',
-            'dark:text-teal-300',
-            'border-blue-300',
-            'shadow-md',
-            'dark:border-gray-500'
-        );
-        setIsCanvasActive(false);
-        ToggleCanvasBt?.setAttribute('aria-pressed', 'true');
-    }, [])
 
     // Open canvas
     const openCanvas = useCallback(() => {
         const { canvas } = refs.current
-        ActivateCanvas()
 
         canvas.classList.remove('hidden');
         setTimeout(() => {
@@ -425,12 +362,11 @@ export const Canvas = ({ isOpen, onToggle }) => {
             InputSectionWfitAdjust('add')
             mainLayoutAWfitAdjust('retract')
         }, 400)
-    }, [setIsCanvasOpen, ActivateCanvas])
+    }, [setIsCanvasOpen])
 
     // Hide canvas
     const hideCanvas = useCallback(() => {
         const { canvas } = refs.current;
-        DeactivateCanvas()
 
         console.log('Closing')
         canvas.classList.add('translate-x-[100vw]');
@@ -443,7 +379,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
             InputSectionWfitAdjust('remove')
             mainLayoutAWfitAdjust('scale')
         }, 400)
-    }, [setIsCanvasOpen, DeactivateCanvas])
+    }, [setIsCanvasOpen])
 
 
     function updateTheme() {
@@ -529,7 +465,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
     return (
         <section id="canvas-wrapper" className="relative hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-pink-900 min-h-[80vh] flex items-center justify-center p-2 font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-500">
 
-            <button onClick={hideCanvas} className="flex justify-center items-center absolute top-2 left-0 text-xl hover:rotate-45 transform transition-transform transition-all duration-500 ease-in-out hover:bg-purple-300 rounded-full py-[0px] px-[6px]">
+            <button onClick={hideCanvas} className="flex justify-center items-center absolute top-2 left-0 text-xl hover:rotate-45 transform transition-transform transition-all duration-500 ease-in-out rounded-full py-[0px] px-[6px]">
                 <span>{'\u00D7'}</span>
             </button>
 

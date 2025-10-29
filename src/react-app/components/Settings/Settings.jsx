@@ -265,7 +265,6 @@ export const Settings = ({ isOpen, onToggle }) => {
                 preference: '',
                 language: 'en',
                 fluxmodel: false,
-                preference: ''
             };
 
             setSettings(newSettings);

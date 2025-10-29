@@ -2,7 +2,7 @@ const { ConversationManager } = require('./ConversationManager.js')
 
 InputPurify = window.InputPurify;
 
-export class ChatManager {
+class ChatManager {
     constructor() {
         this.currentConversationId;
         this.storagePath = window.electron.joinPath(window.electron.home_dir(), '.IntelliDesk/.store');
@@ -197,3 +197,5 @@ export class ChatManager {
         }
     }
 }
+
+module.exports = { ChatManager };

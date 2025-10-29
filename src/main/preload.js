@@ -3,9 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { Buffer } = require('node:buffer');
-const { ConversationManager } = require('../renderer/js/managers/ConversationManager/ConversationManager.js')
-
-const { EventHandler } = require('./eventListener.js')
 
 let CurrentId = "";
 window.global = window;

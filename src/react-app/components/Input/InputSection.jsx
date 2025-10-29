@@ -70,11 +70,11 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
 
         if (isAIToggleClick) {
             // Let the checkbox handle its own change event
-            console.log('AI toggle clicked - letting checkbox handle');
+            // console.log('AI toggle clicked - letting checkbox handle');
             return; // Don't toggle canvas when AI checkbox is clicked
         } else {
             // Toggle the canvas for any other part of the button
-            console.log('Canvas area clicked - toggling canvas');
+            //console.log('Canvas area clicked - toggling canvas');
             onToggleCanvas(); // Your canvas toggle function
         }
     }, [onToggleCanvas]); // Add dependencies
@@ -87,8 +87,8 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
         const aiStatusText = document.getElementById('aiStatusText');
         const aiToggleRing = document.getElementById('aiToggleRing');
         const aiActivePulse = document.getElementById('aiActivePulse');
-        const checkmark = event.target.nextElementSlection.querySelector('svg');
-        const glow = event.target.nextElementSlection.querySelector('div:last-child');
+        const checkmark = document.querySelector('#aiCanvascheckmark');
+        const glow = document.getElementById('aiCanvasToggleGlow');
 
         if (isChecked) {
             // AI Active state
@@ -112,6 +112,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
             glow.classList.remove('opacity-30');
         }
     };
+
     return (
         <div id="userInput-wrapper" className="absolute flex justify-center left-0 lg:left-auto w-full lg:items-center lg:justify-center z-30 bottom-[2%] transition-all duration-1000">
             <section className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-700">
@@ -197,7 +198,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                             <button
                                 id="ToggleCanvasBt"
                                 onClick={shouldToggleCanvas}
-                                className="group flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 text-blue-700 dark:text-teal-300 border-2 border-blue-200 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 relative overflow-hidden"
+                                className="group flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-950 text-blue-700 dark:text-teal-200 border-2 border-blue-500 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 relative overflow-hidden"
                                 aria-pressed="false"
                                 title="Toggle AI Canvas"
                             >
@@ -241,11 +242,11 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                                             />
                                             <label
                                                 htmlFor="aiCanvasToggle"
-                                                className="relative flex items-center justify-center w-4 h-4 border-2 border-blue-400 dark:border-teal-400 rounded bg-white dark:bg-slate-700 transition-all duration-300 cursor-pointer group/checkbox hover:border-blue-600 dark:hover:border-teal-300"
+                                                className="relative flex items-center justify-center w-4 h-4 border-2 border-blue-400 dark:border-teal-500 rounded bg-white dark:bg-slate-700 transition-all duration-300 cursor-pointer group/checkbox hover:border-blue-600 dark:hover:border-teal-300"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
                                                 {/* Checkmark */}
-                                                <svg
+                                                <svg id="aiCanvascheckmark"
                                                     className="w-2.5 h-2.5 text-green-600 dark:text-teal-400 opacity-0 transition-all duration-200 scale-50"
                                                     fill="none"
                                                     stroke="currentColor"
@@ -255,7 +256,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                                 </svg>
                                                 {/* Glow effect when checked */}
-                                                <div className="absolute inset-0 rounded bg-green-500 dark:bg-teal-500 opacity-0 scale-150 transition-all duration-300 blur-sm"></div>
+                                                <div id="aiCanvasToggleGlow" className="absolute inset-0 rounded bg-green-500 dark:bg-teal-500 opacity-0 scale-150 transition-all duration-300 blur-sm"></div>
                                             </label>
                                         </div>
                                     </div>

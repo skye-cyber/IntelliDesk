@@ -1,5 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ModelSelector } from '../ModelSelector/ModelSelector';
+
+window.currentModel = 'mistral-large-latest'
 
 export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
@@ -14,6 +16,28 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
         }, 10)
     }, [])
 
+    function hideSelectorModal() {
+        const selector = document.getElementById('model-selector')
+
+        selector.classList.add('translate-x-[100vw]', 'opacity-0')
+        selector.classList.remove('translate-x-0', 'opacity-100')
+        setIsModelDropdownOpen(false);
+    }
+
+    function openSelectorModal() {
+        const selector = document.getElementById('model-selector')
+        selector.classList.remove('translate-x-[100vw]', 'opacity-0')
+        selector.classList.add('translate-x-0', 'opacity-100')
+        setIsModelDropdownOpen(true);
+    }
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape' && isModelDropdownOpen) hideSelectorModal();
+        };
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [isModelDropdownOpen, hideSelectorModal]);
+
     return (
         <section>
             <header className="space-b-2 my-2 z-[60] transform transition-transform transition-all duration-500">
@@ -25,7 +49,10 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                                 id="togglePane"
                                 title="View Chats"
                                 className="absolute z-5 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-700"
-                                onClick={onToggleSidebar}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onToggleSidebar()
+                                }}
                             >
                                 <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
@@ -38,12 +65,16 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                             <button
                                 id="modelButton"
                                 className="rounded-lg ml-1 p-2 font-semibold bg-gray-200 hover:bg-blue-200 text-sky-900 dark:text-gray-100 rounded-md dark:bg-zinc-950 dark:hover:bg-stone-600 outline-none cursor-pointer transition-colors duration-1000"
-                                onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                                onClick={() => {
+                                    !isModelDropdownOpen ? openSelectorModal() : hideSelectorModal();
+                                }
+                                }
                             >
                                 <div className="flex">
                                     <span id="selectedModelText" data-class="hf" className="text-md max-w-36 truncate">
                                         {getModelDisplayName(selectedModel)}
                                     </span>
+                                    <select id="selected-model-value" className='hidden' data-value={selectedModel}></select>
                                     <svg className="mt-1" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
@@ -63,16 +94,15 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                 </div>
             </header>
 
-            {isModelDropdownOpen && (
-                <ModelSelector
-                    selectedModel={selectedModel}
-                    onModelSelect={(model) => {
-                        onModelChange(model);
-                        setIsModelDropdownOpen(false);
-                    }}
-                    onClose={() => setIsModelDropdownOpen(false)}
-                />
-            )}
+            <ModelSelector
+                selectedModel={selectedModel}
+                onModelSelect={(model) => {
+                    onModelChange(model);
+                    setIsModelDropdownOpen(false);
+                    window.currentModel = model;
+                }}
+                onClose={() => setIsModelDropdownOpen(false)}
+            />
         </section>
     );
 };

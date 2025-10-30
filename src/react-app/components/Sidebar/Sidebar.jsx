@@ -26,10 +26,12 @@ export const Sidebar = ({ isOpen, onToggle }) => {
     }
     function hidePanel(){
         const panel = document.getElementById('conversationPane');
+        panel?.classList.add('-translate-x-[100vw]')
+        panel?.classList.remove('translate-x-0')
+
         setTimeout(() => {
-            panel?.classList.remove('-translate-x-[100vw]')
-            panel?.classList.add('translate-x-0')
-        })
+            onToggle()
+        }, 1000)
     }
     const showConversationOptions = useCallback(() => {
         const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
@@ -42,6 +44,15 @@ export const Sidebar = ({ isOpen, onToggle }) => {
     const shouldClosePanel = useCallback((e)=>{
         if(document.getElementById('conversations')?.contains(e.target)) hidePanel();
     })
+
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape' && isOpen) hidePanel();
+        };
+            document.addEventListener('keydown', handleEscape);
+            return () => document.removeEventListener('keydown', handleEscape);
+    }, [isOpen, hidePanel]);
+
 
     if (!isOpen) return null;
 

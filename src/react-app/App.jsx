@@ -10,6 +10,8 @@ import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import '@js/katex/katex.min.js';
 import '@js/katex/contrib/auto-render.min.js';
 import '@css/styles.css';
+import '@css/dark-code-theme.css'
+import '@css/light-code-theme.css'
 import { Recording } from '@components/RecordingUI/Recording';
 import '@js/Timer/timer.js'
 import { DiagramUi } from '@components/DiagramUI/diagram.jsx'
@@ -21,12 +23,17 @@ import { APIKeysManager } from '@components/ApiManager/api.jsx';
 import { DropZone } from '@components/DropZone/dropzone.jsx'
 import { NotificationFlyer } from '@components/Notifications/Notification.jsx'
 import { ChatOptions } from '@components/Chat/ChatOptions.jsx';
+import '@js/MathBase/MathNormalize.js';
+import '@js/MathBase/mathRenderer.js';
+import '@js/diagraming/Utils.js'
+import '@js/diagraming/vizcharting.js'
+import '@js/diagraming/jscharting.js'
 
 const App = () => {
     //const { electron } = useElectron();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('Qwen/Qwen2.5-72B-Instruct');
+    const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
     const { sendMessage } = useElectron();
     const [isRecordingOn, setIsRecordingOn] = useState(false);
 
@@ -71,6 +78,7 @@ const App = () => {
                         </div>
 
                     </div>
+
                     <ErrorBoundary>
                         <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
                     </ErrorBoundary>

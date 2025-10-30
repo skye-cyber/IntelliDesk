@@ -1,4 +1,5 @@
-import { waitForElement }  from "../../Utils/dom_utils";
+import { normaliZeMathDisplay } from "../../MathBase/MathNormalize";
+import { waitForElement } from "../../Utils/dom_utils";
 
 export class ConversationManager {
     constructor(storagePath) {
@@ -55,13 +56,23 @@ export class ConversationManager {
         }
     }
 
+    change_model(value='mistral-large-latest') {
+        try {
+            document.getElementById('modelButton').click()
+            const selector = document.getElementById('model-selector')
+            selector.classList.add('hidden')
+            waitForElement(`[data-value="${value}"]`, (el) => el.click())
+            selector?.classList?.remove('hidden')
+
+        } catch (err) {
+            selector?.classList?.remove('hidden')
+        }
+    }
     // Render the conversation in the web interface
     renderConversation(conversationData, model = "text") {
         this.chatArea.innerHTML = '';
-        const value = 'mistral-large-latest';
-        //const element = document.querySelector(`[data-value="${value}"]`);
-        document.getElementById('modelButton').click()
-        waitForElement(`[data-value="${value}"]`, (el)=>el.click())
+        this.change_model()
+
         /*
          * if (element) {
             element.click();
@@ -71,7 +82,6 @@ export class ConversationManager {
         */
 
         conversationData[0].chats.forEach(message => {
-            console.log(message)
             if (message.role === "user") {
                 //console.log(message.content[0]);
                 this.renderUserMessage(message.content, model);
@@ -147,7 +157,7 @@ export class ConversationManager {
         const fileType = this.getFileType(content);
         var fileDataUrl = null;
         var userText = null;
-        console.log(content)
+
         if (fileType) {
             fileDataUrl = this.getFileUrl(content);
         }

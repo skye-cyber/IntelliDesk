@@ -1,4 +1,4 @@
-async function normaliZeMathDisplay(selector, space=true) {
+export async function normaliZeMathDisplay(selector, space=true) {
     let items = null
     if (selector) {
         const target = document.querySelector(selector)
@@ -19,7 +19,7 @@ async function normaliZeMathDisplay(selector, space=true) {
 }
 
 
-async function normalizeCodeBlock(selector){
+export async function normalizeCodeBlock(selector){
     const element = document.querySelector(selector)
     const blocks = element.querySelectorAll('code')
     blocks.forEach(block =>{
@@ -31,7 +31,7 @@ async function normalizeCodeBlock(selector){
         block.innerText = block.innerText.replace(/\$\$(.*?)\$\$/g, '[$1]');
     })
 }
-async function normalizeMathSpacing() {
+export async function normalizeMathSpacing() {
     const items = document.querySelectorAll('.katex');
     if (items) {
         items.forEach(item => {
@@ -41,7 +41,7 @@ async function normalizeMathSpacing() {
     }
 }
 
-function normalizeMathDelimiters(text) {
+export function normalizeMathDelimiters(text) {
     // 1) extract all ```…``` blocks and replace with placeholders
     const codeBlocks = [];
     const placeholder = (_match, idx) => `@@CODEBLOCK${idx}@@`;

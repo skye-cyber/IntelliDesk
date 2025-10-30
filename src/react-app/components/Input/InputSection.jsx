@@ -6,12 +6,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
     // State management for the toggle
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [isAIActive, setIsAIActive] = useState(false);
-
-    useEffect(() => {
-        //const element = document.getElementById('userInput');
-        //element.a
-        //console.log(element);
-    }, []);
+    const [inputValue, setInputValue] = useState('');
 
     const showApiNotSetWarning = useCallback(() => {
         const ApiwarnModal = document.getElementById('ApiNotSetModal');
@@ -57,7 +52,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
     const shouldToggleCanvas = useCallback((event) => {
         //if (!event) return;
 
-        event.stopPropagation();
+        //event.stopPropagation();
 
         // Check if the click was on the AI toggle checkbox or its label
         const aiToggleElement = document.getElementById('aiCanvasToggle');
@@ -73,6 +68,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
             // console.log('AI toggle clicked - letting checkbox handle');
             return; // Don't toggle canvas when AI checkbox is clicked
         } else {
+            console.log('xx')
             // Toggle the canvas for any other part of the button
             //console.log('Canvas area clicked - toggling canvas');
             onToggleCanvas(); // Your canvas toggle function
@@ -123,8 +119,8 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                     aria-label="Message input"
                     autoFocus
                     data-placeholder="Message IntelliDesk 💫"
-                    value="this.textContent()"
-                    className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000"></div>
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.textContent)}                    className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000"></div>
 
                 <section id="userInputSection" className="absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
                     <section className='flex'>

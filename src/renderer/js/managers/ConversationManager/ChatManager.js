@@ -66,7 +66,7 @@ export class ChatManager {
                                 <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-md">
                                     <span class="text-white font-semibold text-sm">GN</span>
                                 </div>
-                                <div id="active-dot" class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
+                                <div id="active-dot" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between">
@@ -298,10 +298,12 @@ export class ChatManager {
     async renderConversationFromFile(item, conversationId) {
         // Remove animation from previous item as it active item is changing
         if (this.activeItem) {
-            activeItem.classList.remove('animate-heartpulse');
+            this.activeItem.classList.remove('animate-heartpulse');
+            this.activeItem.querySelector('#active-dot').classList.add('hidden')
         }
         this.activeItem = item;
         item.classList.add('animate-heartpulse-slow');
+        item.querySelector('#active-dot').classList.remove('hidden')
         const [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
         //console.log(conversationData, model)
         if (conversationData) {

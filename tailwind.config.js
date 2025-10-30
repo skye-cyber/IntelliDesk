@@ -83,6 +83,7 @@ module.exports = {
             'heartpulse': 'heartpulse 1s infinite',
             'heartpulse-slow': 'heartpulse-slow 1s infinite',
             'spin-50': 'spin 0.5s linear infinite',
+            'spin': 'spin 1s linear infinite',
             'reload-100': 'spin 1s linear infinite',
             'spin-200': 'spin 2s linear infinite',
             'fadeIn': 'fadeIn 2s cubic-bezier(0.25, 1, 0.5, 1)'
@@ -112,9 +113,9 @@ module.exports = {
                 '50%': { transform: 'scale(1.2)' },
                 '100%': { transform: 'scale(1)' },
             },
-            heartpulse: {
+            'heartpulse-slow': {
                 '0%': { transform: 'scale(1)' },
-                '50%': { transform: 'scale(1.1)' },
+                '50%': { transform: 'scale(1.05)' },
                 '100%': { transform: 'scale(1)' },
             },
             spin: {

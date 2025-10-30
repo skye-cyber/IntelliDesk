@@ -37,7 +37,7 @@ export const ChatInterface = () => {
         };
     }, [onChatResponse, onError]);
 
-    useEffect(()=>{
+    useEffect(() => {
         document.getElementById('chatArea')?.addEventListener('dragover', showDropZoneModal)
     })
 
@@ -70,21 +70,25 @@ export const ChatInterface = () => {
     }, [messages]);
 
     return (
-        <section
-            id="chatArea"
-            ref={chatAreaRef}
-            className="relative bg-gray-50 dark:bg-[#0a0a1f] h-[75vh] p-2 shadow-inner shadow-gray-400 dark:shadow-none md:p-4 rounded-lg dark:shadow-gray-950 overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 max-w-[98vw] mb-[15vh]"
-        >
-            {/* Show quick actions when no messages */}
-            {messages.length === 0 && !isLoading && (
-                <QuickActions onActionClick={handleQuickAction} />
-            )}
+        <section>
+            <section
+                id="chatArea"
+                ref={chatAreaRef}
+                className="relative bg-gray-50 dark:bg-[#0a0a1f] h-[75vh] p-2 shadow-inner shadow-gray-400 dark:shadow-none md:p-4 rounded-lg dark:shadow-gray-950 overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 max-w-[98vw] mb-[15vh]"
+            >
+                {/* Show quick actions when no messages */}
+                {messages.length === 0 && !isLoading && (
+                    <QuickActions onActionClick={handleQuickAction} />
+                )}
 
-            {/* Messages list */}
-            <MessageList messages={messages} isLoading={isLoading} />
+                {/* Messages list */}
+                <MessageList messages={messages} isLoading={isLoading} />
 
-            {/* Scroll to bottom button */}
-            <ScrollToBottomButton onClick={scrollToBottom} />
+                {/* Scroll to bottom button */}
+                <ScrollToBottomButton onClick={scrollToBottom} />
+            </section>
+            {/* Loading Modal */}
+            <LoadingModal />
         </section>
     );
 };
@@ -101,4 +105,13 @@ const ScrollToBottomButton = ({ onClick }) => (
             <path fillRule="evenodd" clipRule="evenodd" d="M12 21C11.7348 21 11.4804 20.8946 11.2929 20.7071L4.29289 13.7071C3.90237 13.3166 3.90237 12.6834 4.29289 12.2929C4.68342 11.9024 5.31658 11.9024 5.70711 12.2929L11 17.5858V4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4V17.5858L18.2929 12.2929C18.6834 11.9024 19.3166 11.9024 19.7071 12.2929C20.0976 12.6834 20.0976 13.3166 19.7071 13.7071L12.7071 20.7071C12.5196 20.8946 12.2652 21 12 21Z" fill="currentColor"></path>
         </svg>
     </button>
+);
+
+const LoadingModal = ({ }) => (
+    <div id="loadingModal" className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-[61]">
+        <div id="modalMainBox" className="bg-white p-6 rounded-lg shadow-lg flex gap-1 items-center animate-exit transition-all duration-1000">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <p id="loadingMSG" className="mt-3 text-gray-700">Processing, please wait...</p>
+        </div>
+    </div>
 );

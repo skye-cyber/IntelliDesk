@@ -1,92 +1,128 @@
-/*.hljs {
-    background-color: var('bg-blue-200');
-    border-radius: 8px;
+.hljs {
+    background: #001c24;
+    color: #e0e6f1;
+    border-left: 4px solid #00aaff;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 4px 12px rgba(0, 32, 42, 0.8);
 }
-*/
+
 .hljs-keyword {
-    color: #c678dd;
-    font-weight: bold;
+    color: #ff79c6;
+    font-weight: 600;
 }
 
 .hljs-built_in {
-    color: #e06c74;
+    color: #50fa7b;
 }
 
 .hljs-string {
-    color: #98c379;
+    color: #f1fa8c;
 }
 
 .hljs-number {
-    color: #d19a66;
+    color: #bd93f9;
 }
 
 .hljs-comment {
-    color: #5c6370;
+    color: #6272a4;
     font-style: italic;
 }
 
 .hljs-function {
-    color: #61afef;
+    color: #8be9fd;
 }
 
 .hljs-params {
-    color: #abb2bf;
+    color: #f8f8f2;
 }
 
 .hljs-variable {
-    color: #d19a66;
+    color: #ffb86c;
 }
 
 .hljs-class {
-    color: #e5c07b;
+    color: #ffb86c;
+    font-weight: 600;
 }
 
 .hljs-title {
-    color: #61afef;
+    color: #8be9fd;
+    font-weight: 600;
 }
 
 .hljs-attribute {
-    color: #d19a66;
+    color: #50fa7b;
 }
 
 .hljs-symbol {
-    color: #61afef;
+    color: #ff79c6;
 }
 
 .hljs-bullet {
-    color: #abb2bf;
+    color: #f8f8f2;
 }
 
 .hljs-meta {
-    color: #5c6370;
+    color: #6272a4;
 }
 
 .hljs-link {
-    color: #61afef;
+    color: #8be9fd;
     text-decoration: underline;
 }
 
 .hljs-doctag {
-    color: #c678dd;
-    font-weight: bold;
+    color: #ff79c6;
+    font-weight: 600;
 }
 
 .hljs-tag {
-    color: #e06c74;
+    color: #ff79c6;
 }
 
 .hljs-name {
-    color: #61afef;
+    color: #ff79c6;
 }
 
 .hljs-attr {
-    color: #d19a66;
-}
-
-.hljs-attr {
-    color: #00aaff;
+    color: #50fa7b;
 }
 
 .hljs-literal {
-    color: #d19a66;
+    color: #bd93f9;
+}
+
+.hljs-type {
+    color: #8be9fd;
+}
+
+.hljs-operator {
+    color: #ff79c6;
+}
+
+.hljs-punctuation {
+    color: #f8f8f2;
+}
+
+.hljs-property {
+    color: #50fa7b;
+}
+
+.hljs-selector-tag {
+    color: #ff79c6;
+    font-weight: 600;
+}
+
+.hljs-template-variable {
+    color: #ffb86c;
+}
+
+.hljs-addition {
+    background: rgba(80, 250, 123, 0.1);
+    color: #50fa7b;
+}
+
+.hljs-deletion {
+    background: rgba(255, 121, 198, 0.1);
+    color: #ff79c6;
 }

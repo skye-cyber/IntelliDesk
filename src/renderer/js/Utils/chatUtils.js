@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify'; // If using modules
 import { waitForElement } from './dom_utils.js';
 
 let processing = false;
+let isCanvasActive = false;
 
 // Initialize highlight.js
 hljs.configure({ ignoreUnescapedHTML: true });
@@ -45,6 +46,8 @@ renderer.code = function(code) {
             highlighted = hljs.highlightAuto(code).value; // Fallback to auto-detection
         }
     }
+
+    isCanvasActive = document.getElementById('aiCanvasToggle').checked
 
     // Reset language to json-draw
     validLanguage = dgLang ? dgLang : validLanguage
@@ -193,16 +196,16 @@ export function addCopyListeners() {
 }
 
 export async function handleCodeCopy(element, id = null) {
-    console.log(id)
     const codeBlock = document.querySelector(`[data-value="${id}"]`);
-    console.log(codeBlock)
     const textToCopy = codeBlock.innerText;
     const button = document.getElementById(element.id);
     try {
         await navigator.clipboard.writeText(textToCopy);
-        button.children[1].textContent = 'copied!';
+        console.log(button)
+        const BtText = button?.querySelector('#BtText')
+        BtText.textContent = 'copied!';
         setTimeout(() => {
-            button.children[1].textContent = 'copy';
+            BtText.textContent = 'copy';
         }, 2000);
         showCopyModal();
     } catch (err) {

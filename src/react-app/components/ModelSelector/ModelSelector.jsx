@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 //import { createPortal } from 'react-dom';
 import { ModelCategory } from '@components/ModelCategory/ModelCategory';
 
-export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
+
+export const ModelSelector = ({ selectedModel = 'mistral-large-latest', onModelSelect, onClose }) => {
     const hfmodelCategories = [
 
         {
@@ -106,7 +107,7 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
         {
             title: "Coding Models", models: [
                 {
-                    value: "codestral-latest", name: "codestral-latest", description: "Latest coding-focused model.", icon: "mistral", platform: "mitsral"
+                    value: "codestral-latest", name: "codestral-latest", description: "Latest coding-focused model.", icon: "mistral", platform: "mitsral", recommended: true
                 },
                 {
                     value: "codestral-mamba-2407", name: "codestral-mamba-2407", description: "High-performance coding model designed for rapid code generation and debugging, optimized for software development environments.", icon: "mistral", platform: "mitsral"
@@ -129,7 +130,7 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
         {
             title: "General Models", models: [
                 {
-                    value: "mistral-large-latest", name: "mistral-large-latest", description: "The latest iteration of the large LLM.", icon: "mistral", platform: "mistral"
+                    value: "mistral-large-latest", name: "mistral-large-latest", description: "The latest iteration of the large LLM.", icon: "mistral", platform: "mistral", recommended: true
                 },
                 {
                     value: "mistral-small-2402", name: "mistral-small-2402", description: "Tailored for efficient processing with a focus on smaller datasets and lower resource consumption.", icon: "mistral", platform: "mitsral"
@@ -175,14 +176,15 @@ export const ModelSelector = ({ selectedModel, onModelSelect, onClose }) => {
         {
             title: "Embending Models", models: [
                 {
-                    value: "mistral-embed", name: "mistral-embed", description: "Designed for embedding generation, facilitating the transformation of text into vector representations for downstream machine learning tasks.", icon: "mistral", platform: "mitsral"
+                    value: "mistral-embed", name: "mistral-embed", description: "Designed for embedding generation, facilitating the transformation of text into vector representations for downstream machine learning tasks.", icon: "mistral", platform: "mitsral", recommended: true
                 },
             ]
         }
     ];
 
+
     return (
-        <div className="fixed z-[55] mt-1 -ml-2 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border border-blue-300 dark:border-[#242470] dark:bg-[#050511] text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-truncate animation transition-colors duration-1000 transform-gpu scrollbar-custom scroll-smooth">
+        <div id="model-selector" className="fixed z-[55] mt-1 -ml-2 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border border-blue-300 dark:border-[#242470] dark:bg-[#050511] text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-truncate animation transition-colors duration-1000 transform-gpu scrollbar-custom scroll-smooth -translate-x-[100vw] opacity-0 transition-translate transition-all duration-500" value={selectedModel}>
             <div role="menu" aria-orientation="vertical">
                 {hfmodelCategories.map((category, index) => (
                     <ModelCategory

@@ -215,6 +215,30 @@ export class ModalManager {
         });
     }
 
+    startLoader(message) {
+        const loadingModal = document.getElementById('loadingModal')
+        const modalMainBox = document.getElementById('modalMainBox')
+        const msg = document.getElementById('loadingMSG')
+        console.log(loadingModal, modalMainBox, msg)
+        loadingModal.classList.remove('hidden')
+        modalMainBox.classList.remove('animate-exit')
+        modalMainBox.classList.add('animate-enter')
+
+        if (message) msg.textContent = message
+    }
+
+    hideLoader() {
+        const loadingModal = document.getElementById('loadingModal')
+        const modalMainBox = document.getElementById('modalMainBox')
+        const msg = document.getElementById('loadingMSG')
+        modalMainBox.classList.remove('animate-enter')
+        modalMainBox.classList.add('animate-exit')
+        setTimeout(() => {
+            loadingModal.classList.add('hidden')
+        }, 500)
+        msg.textContent = 'Processing, please wait...'
+    }
+
     /**
      * Show loading state on an element
      * @param {HTMLElement} element - The element to show loading state on
@@ -227,9 +251,10 @@ export class ModalManager {
         const originalContent = element.innerHTML;
         const isButton = element.tagName === "BUTTON";
 
+        element.classList.add('fixed', 'z-[99]')
         element.innerHTML = `
         <div class="flex items-center justify-center space-x-2">
-        <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+        <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin-50"></div>
         <span class="text-current">${loadingText || "Loading..."}</span>
         </div>
         `;
@@ -279,6 +304,8 @@ export class ModalManager {
         element.removeAttribute("data-original-content");
         element.removeAttribute("data-original-cursor");
         element.removeAttribute("data-original-bg");
+        element.classList.remove('fixed', 'z-[99]')
+
     }
 
     /**

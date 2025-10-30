@@ -3,6 +3,8 @@ import { Caret } from '@js/Utils/caret.js'
 import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 
+window.openCanvas = null;
+
 export const Canvas = ({ isOpen, onToggle }) => {
     const [isCanvasActive, setIsCanvasActive] = useState(false);
     const [codeViewVisible, setCodeViewVisible] = useState(true);
@@ -424,6 +426,8 @@ export const Canvas = ({ isOpen, onToggle }) => {
             mainLayoutAWfitAdjust('retract')
         }, 400)
     }, [setIsCanvasOpen])
+
+    window.openCanvas = openCanvas
 
     // Hide canvas
     const hideCanvas = useCallback(() => {

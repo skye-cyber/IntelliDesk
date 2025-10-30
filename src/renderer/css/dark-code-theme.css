@@ -1,9 +1,8 @@
 .hljs {
-    background: #001c24;
-    color: #e0e6f1;
-    border-left: 4px solid #00aaff;
+    /*background: #001c24;
+    color: #e0e6f1;*/
+    border-left: 2px solid #00aaff;
     border-radius: 0 8px 8px 0;
-    box-shadow: 0 4px 12px rgba(0, 32, 42, 0.8);
 }
 
 .hljs-keyword {

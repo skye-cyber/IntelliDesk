@@ -1,5 +1,9 @@
-import { normaliZeMathDisplay } from "../../MathBase/MathNormalize";
+import { normaliZeMathDisplay, normalizeMathDelimiters } from "../../MathBase/MathNormalize";
+import { debounceRenderKaTeX } from "../../MathBase/mathRenderer";
+import { LoopRenderCharts } from "../../diagraming/jscharting";
+import { handleDiagrams } from "../../diagraming/vizcharting";
 import { waitForElement } from "../../Utils/dom_utils";
+
 
 export class ConversationManager {
     constructor(storagePath) {
@@ -56,7 +60,7 @@ export class ConversationManager {
         }
     }
 
-    change_model(value='mistral-large-latest') {
+    change_model(value = 'mistral-large-latest') {
         try {
             document.getElementById('modelButton').click()
             const selector = document.getElementById('model-selector')
@@ -182,7 +186,7 @@ export class ConversationManager {
         }
         const messageHtml = `
             <div data-id="${userMessageId}" class="${userMessageId} relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl transition-colors duration-1000">
-                <p class="whitespace-pre-wrap break-words max-w-xl md:max-w-2xl lg:max-w-3xl">${window.InputPurify(userText)}</p>
+                <p class="whitespace-pre-wrap break-words max-w-xl md:max-w-2xl lg:max-w-3xl">${InputPurify(userText)}</p>
                 <button id="${copyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80" onclick="CopyAll('.${userMessageId}', this, true)">
                 Copy
                 </button>
@@ -251,7 +255,7 @@ export class ConversationManager {
 						</button>
 						</div>
 						<div id="${foldId}" class="">
-						<p style="color: #333;">${window.marked(window.normalizeMathDelimiters(thinkContent))}</p>
+						<p style="color: #333;">${window.marked(normalizeMathDelimiters(thinkContent))}</p>
 						</div>
 						</div>
 						` : ''}
@@ -259,7 +263,7 @@ export class ConversationManager {
 						${actualResponse ? `
 							<div  id="AIRes" class="${aiMessageId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
 							${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
-							<p class="text-white">${window.marked(window.normalizeMathDelimiters(actualResponse))}</p>
+							<p class="text-white">${window.marked(normalizeMathDelimiters(actualResponse))}</p>
 							<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
 								<div class="group relative max-w-fit transition-all duration-500 hover:z-50">
 									<div
@@ -340,9 +344,9 @@ export class ConversationManager {
 							</section>`: ""}
                 `;
         // render diagrams fromthis response
-        window.handleDiagrams(actualResponse, 'both');
-        window.LoopRenderCharts(actualResponse)
-        window.debounceRenderKaTeX(`.${aiMessageId}`, null, true);
+        handleDiagrams(actualResponse, 'both');
+        LoopRenderCharts(actualResponse)
+        debounceRenderKaTeX(`.${aiMessageId}`, null, true);
         normaliZeMathDisplay(`.${aiMessageId}`)
 
     }
@@ -360,7 +364,7 @@ export class ConversationManager {
         //const fileDataUrl = this.getFileUrl(content);
         visionMessage.innerHTML = `
                 <section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
-					<div id="AIRes" class="${visionMessageId} w-fit max-w-full lg:max-w-6xl bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg px-4 mb-6 pt-2 pb-4 w-fit max-w-full lg:max-w-6xl transition-colors duration-1000">${window.marked(window.normalizeMathDelimiters(textContent))}
+					<div id="AIRes" class="${visionMessageId} w-fit max-w-full lg:max-w-6xl bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg px-4 mb-6 pt-2 pb-4 w-fit max-w-full lg:max-w-6xl transition-colors duration-1000">${window.marked(normalizeMathDelimiters(textContent))}
 					</div>
 					<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
 						<div class="group relative max-w-fit transition-all duration-500 hover:z-50">
@@ -442,9 +446,9 @@ export class ConversationManager {
 					`;
 
         // render diagrams from this response
-        window.handleDiagrams(textContent, 'both');
-        window.LoopRenderCharts(textContent);
-        window.debounceRenderKaTeX(`.${visionMessageId}`, null, true);
+        handleDiagrams(textContent, 'both');
+        LoopRenderCharts(textContent);
+        debounceRenderKaTeX(`.${visionMessageId}`, null, true);
         normaliZeMathDisplay(`.${visionMessageId}`)
 
     }

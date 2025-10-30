@@ -1,23 +1,28 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 export const QuickActions = () => {
     const [showMore, setShowMore] = useState(false);
 
     const mainActions = [
-        { id: 'create-image', label: 'Create image', icon: 'image' },
-        { id: 'get-advice', label: 'Get advice', icon: 'advice' },
-        { id: 'summarize', label: 'Summarize text', icon: 'summarize' },
-        { id: 'suprise', label: 'Surprise me', icon: 'surprise' },
+        //{ id: 'create-image', label: 'Create image', icon: 'image' },
+        { id: 'get-advice', label: 'Get advice', icon: 'advice', query: 'Give me advice on financial literacy' },
+        { id: 'summarize', label: 'Summarize text', icon: 'summarize', query: 'Summarize the book Rich Dad Poor Dad in one page' },
+        { id: 'suprise', label: 'Surprise me', icon: 'surprise', query:'Surprise me with a story about yourself' },
     ];
 
     const extraActions = [
-        { id: 'code', label: 'Code', icon: 'code' },
-        { id: 'analyze-images', label: 'Analyze images', icon: 'analyze' },
-        { id: 'help-me-write', label: 'Help me write', icon: 'write' },
+        { id: 'code', label: 'Code', icon: 'code', query: 'Help me learn Python' },
+        { id: 'analyze-images', label: 'Analyze images', icon: 'analyze', query: 'Analyze the following images and translate the text in these images' },
+        { id: 'help-me-write', label: 'Help me write', icon: 'write', query: 'Help me write a cover letter ..' },
     ];
 
+    const triggerInput = useCallback((e) => {
+        const input = document.getElementById('userInput');
+        const query = [...mainActions, ...extraActions].find(item => item.id === e.target?.closest('.SG')?.id)?.query
+        input.textContent = query
+    })
     return (
-        <section id='suggestions' className="mx-auto" style={{zIndex: 0}}>
+        <section id='suggestions' className="mx-auto" style={{ zIndex: 0 }}>
             <div className="flex justify-center items-center text-center perspective-1000">
                 <div className="p-2 rounded-lg">
                     <h1 className="text-3xl font-bold text-cyan-300 holographic-text">
@@ -28,7 +33,7 @@ export const QuickActions = () => {
             <div className="hidden justify-center items-center text-center">
                 <div className="cyber-terminal p-4 border-2 border-green-400 rounded">
                     <h1 className="text-2xl font-mono font-bold text-green-400 terminal-text">
-                    &gt; What can I help you with? _
+                        &gt; What can I help you with? _
                     </h1>
                 </div>
             </div>
@@ -36,44 +41,44 @@ export const QuickActions = () => {
             <div className="hidden justify-center items-center text-center">
                 <div className="relative">
                     <h1 className="text-4xl text-black font-light modern-glow">
-                    What can I help you with?
+                        What can I help you with?
                     </h1>
-                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse"></div>
+                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse"></div>
                 </div>
             </div>
 
-                <div className="h-fit">
-                    <div className="mt-5 flex items-center justify-center gap-x-2 transition-opacity duration-700 xl:gap-x-2.5 opacity-100 flex-wrap">
-                        <ul id="SQ-UL" className="flex items-stretch gap-x-2 gap-y-4 overflow-hidden py-2 sm:gap-y-2 xl:gap-x-2.5 xl:gap-y-2.5 flex-wrap justify-center">
-                            {mainActions.map(action => (
-                                <QuickActionButton key={action.id} action={action} />
-                            ))}
+            <div className="h-fit">
+                <div className="mt-5 flex items-center justify-center gap-x-2 transition-opacity duration-700 xl:gap-x-2.5 opacity-100 flex-wrap">
+                    <ul id="SQ-UL" className="flex items-stretch gap-x-2 gap-y-4 overflow-hidden py-2 sm:gap-y-2 xl:gap-x-2.5 xl:gap-y-2.5 flex-wrap justify-center">
+                        {mainActions.map(action => (
+                            <QuickActionButton key={action.id} id={action.id} action={action} onClick={triggerInput} />
+                        ))}
 
-                            <div className="inline-block">
-                                <button
-                                    onClick={() => setShowMore(!showMore)}
-                                    className="relative flex h-[42px] items-center gap-1.5 rounded-full border border-token-border-light px-3 py-2 text-start text-[13px] shadow-md transition enabled:hover:bg-token-main-surface-secondary disabled:cursor-not-allowed xl:gap-2 xl:text-[14px]"
-                                >
-                                    <span className="max-w-full select-none whitespace-nowrap text-gray-600 transition group-hover:text-token-text-primary dark:text-gray-500">
-                                        More
-                                    </span>
-                                </button>
-                            </div>
+                        <div className="inline-block">
+                            <button
+                                onClick={() => setShowMore(!showMore)}
+                                className="relative flex h-[42px] items-center gap-1.5 rounded-full border border-token-border-light px-3 py-2 text-start text-[13px] shadow-md transition enabled:hover:bg-token-main-surface-secondary disabled:cursor-not-allowed xl:gap-2 xl:text-[14px]"
+                            >
+                                <span className="max-w-full select-none whitespace-nowrap text-gray-600 transition group-hover:text-token-text-primary dark:text-gray-500">
+                                    More
+                                </span>
+                            </button>
+                        </div>
 
-                            {showMore && extraActions.map(action => (
-                                <QuickActionButton key={action.id} action={action} />
-                            ))}
-                        </ul>
-                    </div>
+                        {showMore && extraActions.map(action => (
+                            <QuickActionButton key={action.id} id={action.id} action={action} onClick={triggerInput} />
+                        ))}
+                    </ul>
                 </div>
+            </div>
         </section>
     );
 };
 
-const QuickActionButton = ({ action }) => {
+const QuickActionButton = ({ id, action, onClick }) => {
     const getIcon = (iconType) => {
         // Return appropriate SVG based on iconType
-        switch(iconType) {
+        switch (iconType) {
             case 'image':
                 return <ImageIcon />;
             case 'advice':
@@ -94,7 +99,7 @@ const QuickActionButton = ({ action }) => {
     };
 
     return (
-        <li className="SG">
+        <li id={id} onClick={onClick} className="SG">
             <button className="flex h-[42px] items-center gap-1.5 rounded-full border border-token-border-light px-3 py-2 text-start text-[13px] shadow-md transition enabled:hover:bg-token-main-surface-secondary disabled:cursor-not-allowed xl:gap-2 xl:text-[14px]">
                 {getIcon(action.icon)}
                 <span className="max-w-full select-none whitespace-nowrap text-gray-600 transition group-hover:text-token-text-primary dark:text-gray-500">
@@ -110,7 +115,7 @@ const ImageIcon = () => (
 
 );
 const AdviceIcon = () => (
-    <svg viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="icon-md w-5 h-5 w-5 h-5" style={{ color: 'rgb(118, 208, 235)'}}><path fillRule="evenodd" clipRule="evenodd" d="M13.4544 4.10451C13.1689 3.95886 12.8309 3.95886 12.5455 4.10451L2.98609 8.98175L2.07715 7.20022L11.6365 2.32298C12.493 1.88603 13.5069 1.88603 14.3634 2.32298L23.9227 7.20022C24.7332 7.61373 25.091 8.44008 24.9999 9.2194V15C24.9999 15.5523 24.5522 16 23.9999 16C23.4477 16 22.9999 15.5523 22.9999 15V11.2156L20.9666 12.2115V16.3052C20.9666 17.409 20.3605 18.4237 19.3885 18.9468L14.4219 21.6203C13.5341 22.0981 12.4657 22.0981 11.578 21.6203L6.61135 18.9468C5.63941 18.4237 5.03328 17.409 5.03328 16.3052V12.2115L2.10635 10.7779C0.626202 10.0529 0.609039 7.94926 2.07715 7.20022L2.98608 8.98175L12.5601 13.671C12.8376 13.807 13.1623 13.807 13.4398 13.671L23 8.9885C23.0001 8.98394 23.0001 8.97938 23.0003 8.97483L13.4544 4.10451ZM7.03328 13.1911V16.3052C7.03328 16.6732 7.23532 17.0114 7.5593 17.1858L12.526 19.8592C12.8219 20.0185 13.178 20.0185 13.4739 19.8592L18.4406 17.1858C18.7646 17.0114 18.9666 16.6732 18.9666 16.3052V13.1911L14.3195 15.4672C13.4871 15.8749 12.5128 15.8749 11.6803 15.4672L7.03328 13.1911Z" fill="currentColor"></path></svg>
+    <svg viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="icon-md w-5 h-5 w-5 h-5" style={{ color: 'rgb(118, 208, 235)' }}><path fillRule="evenodd" clipRule="evenodd" d="M13.4544 4.10451C13.1689 3.95886 12.8309 3.95886 12.5455 4.10451L2.98609 8.98175L2.07715 7.20022L11.6365 2.32298C12.493 1.88603 13.5069 1.88603 14.3634 2.32298L23.9227 7.20022C24.7332 7.61373 25.091 8.44008 24.9999 9.2194V15C24.9999 15.5523 24.5522 16 23.9999 16C23.4477 16 22.9999 15.5523 22.9999 15V11.2156L20.9666 12.2115V16.3052C20.9666 17.409 20.3605 18.4237 19.3885 18.9468L14.4219 21.6203C13.5341 22.0981 12.4657 22.0981 11.578 21.6203L6.61135 18.9468C5.63941 18.4237 5.03328 17.409 5.03328 16.3052V12.2115L2.10635 10.7779C0.626202 10.0529 0.609039 7.94926 2.07715 7.20022L2.98608 8.98175L12.5601 13.671C12.8376 13.807 13.1623 13.807 13.4398 13.671L23 8.9885C23.0001 8.98394 23.0001 8.97938 23.0003 8.97483L13.4544 4.10451ZM7.03328 13.1911V16.3052C7.03328 16.6732 7.23532 17.0114 7.5593 17.1858L12.526 19.8592C12.8219 20.0185 13.178 20.0185 13.4739 19.8592L18.4406 17.1858C18.7646 17.0114 18.9666 16.6732 18.9666 16.3052V13.1911L14.3195 15.4672C13.4871 15.8749 12.5128 15.8749 11.6803 15.4672L7.03328 13.1911Z" fill="currentColor"></path></svg>
 );
 const SummarizeIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="icon-md w-5 h-5" style={{ color: 'rgb(234, 132, 68)' }}><path fillRule="evenodd" clipRule="evenodd" d="M4 5C4 3.34315 5.34315 2 7 2H14.1716C14.9672 2 15.7303 2.31607 16.2929 2.87868L19.1213 5.70711C19.6839 6.26972 20 7.03278 20 7.82843V19C20 20.6569 18.6569 22 17 22H7C5.34315 22 4 20.6569 4 19V5ZM7 4C6.44772 4 6 4.44772 6 5V19C6 19.5523 6.44772 20 7 20H17C17.5523 20 18 19.5523 18 19V7.82843C18 7.56321 17.8946 7.30886 17.7071 7.12132L14.8787 4.29289C14.6911 4.10536 14.4368 4 14.1716 4H7ZM8 10C8 9.44772 8.44772 9 9 9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H9C8.44772 11 8 10.5523 8 10ZM8 14C8 13.4477 8.44772 13 9 13H13C13.5523 13 14 13.4477 14 14C14 14.5523 13.5523 15 13 15H9C8.44772 15 8 14.5523 8 14Z" fill="currentColor"></path></svg>

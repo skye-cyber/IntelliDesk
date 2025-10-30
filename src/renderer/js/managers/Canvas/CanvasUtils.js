@@ -1,3 +1,5 @@
+import { waitForElement } from "../../Utils/dom_utils";
+
 export class ResizeClassToggler {
     constructor(target, toggleTarget, breakpoint = 640, className = 'sm:flex') {
         this.target = target //document.getElementById(targetId);
@@ -27,5 +29,35 @@ export class ResizeClassToggler {
         } else {
             this.toggleTarget.classList.add(this.className);
         }
+    }
+}
+
+export class CanvasUtil {
+    constructor() {
+        //
+    }
+
+    NormalizeCanvasCode(codeView) {
+        codeView = codeView ? codeView : waitForElement('#code-view', (el) => codeView = el)
+
+        setTimeout(() => {
+            const codeNode = codeView //.querySelector('code');
+            if (!codeNode || !codeNode.innerHTML) return;
+            codeNode.innerHTML = codeNode.innerHTML
+                .replace(
+                    /\$\$([\s\S]*?)\$\$/g,
+                    (_, expr) => `[${expr.trim()}]`
+                );
+
+        }, 0)
+    }
+
+    isCanvasOpen(){
+        const check = document.getElementById('aiCanvasToggle')?.checked
+        return check
+    }
+
+    updateCanvas(){
+        //
     }
 }

@@ -4,7 +4,7 @@ import { createChart, HistogramSeries } from 'lightweight-charts';
 const chartsModal = document.getElementById('modal-content');
 
 
-async function chartRenderer(Cname, Exid = 'JSC-chart-', desc = '') {
+export async function chartRenderer(Cname, Exid = 'JSC-chart-', desc = '') {
 
     // DOM structure
     const section = document.createElement('section');
@@ -70,7 +70,7 @@ const chartCache = new Map();
  * @param {string}    [type='column']  JSC chart type
  * @returns {JSC.Chart}             the chart instance
  */
-async function createLWTCharts(
+export async function createLWTCharts(
     chartName,
     points = [
         { x: 'A', y: 50 },
@@ -148,7 +148,7 @@ async function createLWTCharts(
  * @param {object} [options]
  * @returns {JSC.Chart}
  */
-async function createJSCCharts(chartName, points, type='column', desc, options = { debug: true }){
+export async function createJSCCharts(chartName, points, type='column', desc, options = { debug: true }){
     if (!chartName) throw new Error('createCharts: chartName required');
     if (chartCache.has(chartName)) return chartCache.get(chartName);
 
@@ -186,7 +186,7 @@ async function createJSCCharts(chartName, points, type='column', desc, options =
  * @param {string} [trigger='text'] {1} - Defines method of call, render click or function call.
  * @returns {{ name: string, description: string, data: {x: string, y: number}[] } | null}
  */
-async function LoopRenderCharts(data, type = 'text', trigger = 'function') {
+export async function LoopRenderCharts(data, type = 'text', trigger = 'function') {
     try {
         if (type!=='text'){
             data = await getCodeFromBlock(data.id)
@@ -216,7 +216,7 @@ async function LoopRenderCharts(data, type = 'text', trigger = 'function') {
  * @param {string} input - The full string containing the code block.
  * @returns {string|null} - The language (e.g., "json-chart") or null if not found.
  */
-function extractCodeBlockLanguage(input) {
+export function extractCodeBlockLanguage(input) {
     const match = input.match(/^```([a-zA-Z0-9-_]+)\s*$/m);
     return match ? match[1] : null;
 }
@@ -227,18 +227,18 @@ function extractCodeBlockLanguage(input) {
  * @param {string} input - The full string including the code block.
  * @returns {string|null} - The inner code content or null if not matched.
  */
-function extractCodeBlockContent(input) {
+export function extractCodeBlockContent(input) {
     const match = input.match(/```[a-zA-Z0-9-_]+\s*([\s\S]*?)```/m);
     return match ? match[1].trim() : null;
 }
 
-async function getCodeFromBlock(id) {
+export async function getCodeFromBlock(id) {
     const codeBlock = document.querySelector(`[data-value^="${id}"]`);
     const codeText = codeBlock.textContent;
     return codeText ? codeText : ''
 }
 
-function extractCodeBlocks(input, lang = 'json-chart') {
+export function extractCodeBlocks(input, lang = 'json-chart') {
     const regex = new RegExp(`\`\`\`${lang}\\s*([\\s\\S]*?)\`\`\``, 'g');
     const blocks = [];
     let match;
@@ -249,7 +249,7 @@ function extractCodeBlocks(input, lang = 'json-chart') {
     return blocks;
 }
 
-async function ChartDriver(data, type = 'text') {
+export async function ChartDriver(data, type = 'text') {
     const results = [];
     if (type === 'text') {
         const blocks = extractCodeBlocks(data, 'json-chart');

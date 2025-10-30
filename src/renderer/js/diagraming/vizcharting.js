@@ -1,6 +1,5 @@
 import 'cytoscape';
 import 'graphlib-dot';
-
 import { Graphviz } from "@hpcc-js/wasm-graphviz";
 import { waitForElement } from '../Utils/dom_utils';
 //import graphlib from 'graphlib';
@@ -9,7 +8,7 @@ let diagViewContent;
 
 waitForElement('#view-content', (el) => diagViewContent = el)
 
-function fixUnclosedCodeBlocks(text) {
+export function fixUnclosedCodeBlocks(text) {
     const codeBlockPattern = /```(dot|json-draw)[ \t]*\r?\n([\s\S]*?)(```)?(?=\n|$)/gi;
     return text.replace(codeBlockPattern, (match, lang, body, closing) => {
         if (!closing) {
@@ -19,9 +18,8 @@ function fixUnclosedCodeBlocks(text) {
     });
 }
 
-
 //Extracts json-draw, dot or both
-async function extractDiagCodesWithNames(aiResponse, type = 'both') {
+export async function extractDiagCodesWithNames(aiResponse, type = 'both') {
     //console.log('aiRes:', aiResponse)
     const safeResponse = aiResponse //fixUnclosedCodeBlocks(aiResponse);
     // 1) Decide which languages to look for
@@ -68,7 +66,7 @@ async function extractDiagCodesWithNames(aiResponse, type = 'both') {
     return results;
 }
 
-async function getCodeFromBlock(id) {
+export async function getCodeFromBlock(id) {
     const codeBlock = document.querySelector(`[data-value^="${id}"]`);
     const codeText = codeBlock.textContent;
     return codeText ? codeText : ''
@@ -92,7 +90,7 @@ async function wrapInFences(text, lang) {
  * @param {string} input   – raw code or full message
  * @param {'dot'|'json'|'both'} mode – what to extract/render
  */
-async function handleDiagrams(input, mode = 'both', isPlainCode = false, trigger = 'function') {
+export async function handleDiagrams(input, mode = 'both', isPlainCode = false, trigger = 'function') {
     let toParse = input;
     //console.log("Input:", input);
     // If it doesn’t start with a fence, assume it’s raw code
@@ -133,7 +131,7 @@ async function handleDiagrams(input, mode = 'both', isPlainCode = false, trigger
     }
 }
 
-async function renderWithViz(dotCode, Cname, desc = null) {
+export async function renderWithViz(dotCode, Cname, desc = null) {
     try {
         // 1) Load the WASM Graphviz engine
         const graphviz = await Graphviz.load();
@@ -205,7 +203,7 @@ async function renderWithViz(dotCode, Cname, desc = null) {
     }
 }
 
-async function renderWithCytoscape(graphJson, Cname, desc = '') {
+export async function renderWithCytoscape(graphJson, Cname, desc = '') {
     let graph;
     try {
         graph = JSON.parse(graphJson);
@@ -422,7 +420,7 @@ window.CyManager = (function() {
 
 // 2) Main parser: builds nodes & edges arrays, plus captures graph-wide attrs
 // 1) DOT → Cytoscape converter via graphlib‑dot
-function parseDotToCytoscape(dotCode) {
+export function parseDotToCytoscape(dotCode) {
     // Parse into a graphlib.Graph
     const g = graphlibDot.read(dotCode);
 
@@ -466,7 +464,7 @@ function parseDotToCytoscape(dotCode) {
     return { elements, graphAttributes };
 }
 
-async function renderHtml(Instance) {
+export async function renderHtml(Instance) {
     try {
         const elementId = Instance.id
         const element = document.querySelector(`[data-value^="${elementId}"]`);

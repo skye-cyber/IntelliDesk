@@ -15,6 +15,37 @@ export const DiagramUi = ({ isOpen, onClose, content }) => {
         return () => document.removeEventListener('keydown', handleEscape);
     }, [isOpen, onClose]);
 
+    function initCanvas(){
+        initialized = true;
+        const ctx = canvas.getContext('2d');
+        // background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
+        // subtle grid
+        ctx.strokeStyle = 'rgba(15,23,42,0.04)';
+        ctx.lineWidth = 1;
+        for(let x=0;x<canvas.width;x+=24){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+        for(let y=0;y<canvas.height;y+=24){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+
+
+        // sample drawing
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(120, 120, 48, 0, Math.PI * 2);
+        ctx.fill();
+
+
+        ctx.fillStyle = '#0ea5a4';
+        ctx.fillRect(220, 80, 160, 80);
+
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '18px system-ui, -apple-system, Roboto, Arial';
+        ctx.fillText('Canvas is open', 220, 55);
+    }
+
     if (!isOpen) return null;
 
     return (

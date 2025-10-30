@@ -17,14 +17,14 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         showPanel()
     })
 
-    function showPanel(){
+    function showPanel() {
         const panel = document.getElementById('conversationPane');
         setTimeout(() => {
             panel?.classList.remove('-translate-x-[100vw]')
             panel?.classList.add('translate-x-0')
         })
     }
-    function hidePanel(){
+    function hidePanel() {
         const panel = document.getElementById('conversationPane');
         panel?.classList.add('-translate-x-[100vw]')
         panel?.classList.remove('translate-x-0')
@@ -41,18 +41,21 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         chatOptions.classList.add('animate-enter')
     })
 
-    const shouldClosePanel = useCallback((e)=>{
-        if(document.getElementById('conversations')?.contains(e.target)) hidePanel();
+    const shouldClosePanel = useCallback((e) => {
+        if (document.getElementById('conversations')?.contains(e.target)) hidePanel();
     })
 
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape' && isOpen) hidePanel();
         };
-            document.addEventListener('keydown', handleEscape);
-            return () => document.removeEventListener('keydown', handleEscape);
+        const handleClick = (e) => {
+            if(!document.getElementById('conversationPane')?.contains(e.target) && isOpen) hidePanel();
+        }
+        document.addEventListener('keydown', handleEscape);
+        document.addEventListener('click', handleClick)
+        return () => document.removeEventListener('keydown', handleEscape);
     }, [isOpen, hidePanel]);
-
 
     if (!isOpen) return null;
 

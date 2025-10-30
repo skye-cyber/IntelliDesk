@@ -588,6 +588,7 @@ height: 2.4em; /* Adjust this value to match the height of an empty row */
 }
 
 
+/* canvas toggle styling*/
 @keyframes wave {
     0%, 100% { transform: scaleY(0.5); }
     50% { transform: scaleY(1.5); }
@@ -610,4 +611,33 @@ height: 2.4em; /* Adjust this value to match the height of an empty row */
 
 .animate-ping {
     animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/*Copy modal styling*/
+@keyframes ping-slow {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+@keyframes progress {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(0%);
+    }
+}
+
+.animate-ping-slow {
+    animation: ping-slow 2s ease-in-out infinite;
+}
+
+.animate-progress {
+    animation: progress 4.5s ease-in-out forwards;
 }

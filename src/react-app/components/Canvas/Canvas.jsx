@@ -4,6 +4,7 @@ import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 
 window.openCanvas = null;
+window.canvasUpdate = null
 
 export const Canvas = ({ isOpen, onToggle }) => {
     const [isCanvasActive, setIsCanvasActive] = useState(false);
@@ -129,6 +130,8 @@ export const Canvas = ({ isOpen, onToggle }) => {
         updateLineNumbers();
         updatePreview();
     }
+
+    window.canvasUpdate = canvasUpdate
 
     // set canvas for update
     const setCanvas4Update = useCallback((e) => {

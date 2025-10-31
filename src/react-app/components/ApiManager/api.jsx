@@ -1,4 +1,7 @@
 import React, { useEffect, useCallback, useState } from 'react';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
+
+StateManager.set('api_key_ok', false)
 
 export const APIKeysManager = ({ isOpen, onToggle }) => {
 
@@ -128,6 +131,9 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         sethuggingfaceKey(huggingfaceKey)
         setmistralKey(mistralKey)
 
+        if (huggingfaceKey, mistralKey) StateManager.set('api_key_ok', true)
+
+
         if (!mistralKey && !huggingfaceKey) {
             mistralApiField.value = "";
             hfApiField.value = "";
@@ -169,6 +175,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         const result = await window.desk.api2.resetKeys(['mistral', 'huggingface']);
 
         if(result) window.ModalManager.showMessage('API Keys reset successfully.', 'success');
+        StateManager.set('api_key_ok', false)
     })
 
     const openApiModal = useCallback(() => {
@@ -304,7 +311,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                                     defaultValue=''
                                     onChange={(e) => setMistralKey(e.target.value)}
                                     placeholder="mk-..."
-                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-mono text-sm"
+                                    className="w-full px-4 py-3 text-black dark:text-white bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-mono text-sm"
                                 />
                                 <button
                                     type="button"
@@ -338,7 +345,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                                     defaultValue=''
                                     onChange={(e) => setHuggingfaceKey(e.target.value)}
                                     placeholder="hf_..."
-                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-pink-200 dark:border-pink-800 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all duration-200 font-mono text-sm"
+                                    className="w-full px-4 py-3 text-black dark:text-white bg-white dark:bg-gray-800 border-2 border-pink-200 dark:border-pink-800 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all duration-200 font-mono text-sm"
                                 />
                                 <button
                                     type="button"
@@ -448,7 +455,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                                     defaultValue=''
                                     onChange={(e) => setMistralKey(e.target.value)}
                                     placeholder="Enter your Mistral API key (mk-...)"
-                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-mono text-sm"
+                                    className="w-full px-4 py-3 text-black dark:text-white bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-mono text-sm"
                                 />
                                 <button
                                     type="button"
@@ -476,7 +483,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                                     defaultValue=''
                                     onChange={(e) => setHuggingfaceKey(e.target.value)}
                                     placeholder="Enter your Hugging Face API key (hf_...)"
-                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-pink-200 dark:border-pink-800 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all duration-200 font-mono text-sm"
+                                    className="w-full px-4 py-3 text-black dark:text-white bg-white dark:bg-gray-800 border-2 border-pink-200 dark:border-pink-800 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 transition-all duration-200 font-mono text-sm"
                                 />
                                 <button
                                     type="button"

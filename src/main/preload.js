@@ -129,7 +129,7 @@ const api = {
         }
     },
     addHistory: (item) => {
-        ConversationHistory[1].chats.push(item); // Modify the array
+        ConversationHistory[0].chats.push(item); // Modify the array
         ipcRenderer.send('desk.api-update-chat', ConversationHistory); // Notify other processes
     },
     getHistory: () => {

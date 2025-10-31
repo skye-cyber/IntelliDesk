@@ -52,7 +52,7 @@ export class CanvasUtil {
         }, 0)
     }
 
-    isCanvasOpen(){
+    isCanvasOn(){
         const check = document.getElementById('aiCanvasToggle')?.checked
         return check
     }

@@ -1,6 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { opendiagViewModal, closediagViewModal } from '@js/diagraming/Utils.js';
 import { showDropZoneModal } from '@components/DropZone/util.js'
+import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
+
+let router
+//Import Dynamically
+import('@js/managers/router.js').then(({ Router }) => {
+    router = new Router()
+    // Set a namespaced variable for the watcher
+    window.app = window.app || {};
+    window.app.router = router;
+})
+
 
 export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording }) => {
     // State management for the toggle
@@ -16,14 +27,87 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
         ApiWarnContent.classList.add('animate-enter')
     })
 
-    const handleSendMessage = useCallback(() => {
-        if (document.getElementById('mistralKey').value || document.getElementById('huggingfaceKey').value) {
-            onSendMessage()
-        } else {
+    const handleSend = useCallback(() => {
+        if (!StateManager.get('api_key_ok')) {
             showApiNotSetWarning()
+        } else {
+            const userInput = document.getElementById('userInput');
+
+            const inputText = userInput.innerHTML.trim();
+            if (inputText) {
+                // Reset the input field
+                userInput.innerHTML = "";
+                // Adjust input field height
+                userInput.style.height = 'auto';
+                userInput.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight / 100) + 'px';
+                userInput.scrollTop = userInput.scrollHeight;
+                router.requestRouter(inputText, document.getElementById('chatArea'));
+                // document.getElementById('suggestions').classList.add('hidden');
+                //updateInputHeight(this)
+                //onSendMessage()
+            }
         }
     })
+    useEffect(() => {
+        const routerWatcher = namespaceWatcher.waitFor('app.router', (routerInstance, timedOut) => {
+            const userInput = document.getElementById('userInput');
 
+            //prep user input
+            userInput.focus()
+
+            if (timedOut) {
+                //console.error('Router initialization timeout');
+                return;
+            }
+
+            // Enter key handler for send button
+            const handleEnterKey = (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                }
+            };
+
+            // Image loaded event handler
+            const handleImageLoaded = async (event) => {
+                try {
+                    await routerInstance.chooseRoute(event, document.getElementById('chatArea'));
+                } catch (error) {
+                    console.error('Error in chooseRoute:', error);
+                }
+            };
+
+            // Add event listeners
+
+            userInput.addEventListener('keypress', handleEnterKey);
+
+
+            document.addEventListener('imageLoaded', handleImageLoaded);
+
+            // Store references for cleanup
+            routerWatcher._handlers = {
+                handleEnterKey,
+                handleImageLoaded,
+                userInput
+            };
+        }, {
+            timeout: 10000, // 10 second timeout
+            delay: 50, // Check every 50ms
+            throwOnTimeout: false
+        });
+
+        return () => {
+            // Cleanup event listeners
+            if (routerWatcher._handlers) {
+                const { handleEnterKey, handleImageLoaded, userInput } = routerWatcher._handlers;
+                userInput.removeEventListener('keydown', handleEnterKey);
+                document.removeEventListener('imageLoaded', handleImageLoaded);
+            }
+
+            // Cancel the watcher
+            routerWatcher.cancel();
+        };
+    }, [handleSend]); // Add handleSend to dependencies if it's defined outside
 
     /*
      * const onToggleCanvas = () => {
@@ -117,10 +201,10 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                     contentEditable="true"
                     role="textbox"
                     aria-label="Message input"
-                    autoFocus
+                    autoFocus={true}
                     data-placeholder="Message IntelliDesk 💫"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.textContent)}                    className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000"></div>
+                    onChange={(e) => setInputValue(e.target.textContent)} className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000"></div>
 
                 <section id="userInputSection" className="absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
                     <section className='flex'>
@@ -263,7 +347,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
 
                     <section>
                         {/* Send Button - Always prominent */}
-                        <button id="sendBtn" onClick={handleSendMessage} className="flex relative items-center justify-center h-12 w-12 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2" aria-label="Send message" title="Send message">
+                        <button id="sendBtn" onClick={handleSend} className="flex relative items-center justify-center h-12 w-12 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2" aria-label="Send message" title="Send message">
                             <div id="normalSend" className="flex items-center justify-center h-full w-full">
                                 <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <defs>

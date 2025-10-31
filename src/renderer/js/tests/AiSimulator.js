@@ -1662,7 +1662,7 @@ Basic mode <sub><span class="text-yellow-500 text-xl">{</span>
 
 \`\`\``
 //Ai content emulator for Test
-async function* generateTextChunks(message=null, hf = false) {
+export async function* generateTextChunks(message=null, hf = false) {
 	message = message ? message : Custommessage
 	const chunkSize = 1; // Number of characters per chunk
 	message = message.split(' ');

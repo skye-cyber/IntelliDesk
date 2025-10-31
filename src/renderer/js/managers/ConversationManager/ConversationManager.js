@@ -3,7 +3,8 @@ import { debounceRenderKaTeX } from "../../MathBase/mathRenderer";
 import { LoopRenderCharts } from "../../diagraming/jscharting";
 import { handleDiagrams } from "../../diagraming/vizcharting";
 import { waitForElement } from "../../Utils/dom_utils";
-
+import { implementUserCopy, copyBMan, InputPurify } from "../../Utils/chatUtils";
+import { markitdown } from "../../CodeRenderer/code_renderer";
 
 export class ConversationManager {
     constructor(storagePath) {
@@ -100,8 +101,8 @@ export class ConversationManager {
             //window.debounceRenderKaTeX(null, null, true);
         });
 
-        window.implementUserCopy();
-        window.copyBMan();
+        implementUserCopy();
+        copyBMan();
         //window.addCopyListeners();
     }
 
@@ -255,7 +256,7 @@ export class ConversationManager {
 						</button>
 						</div>
 						<div id="${foldId}" class="">
-						<p style="color: #333;">${window.marked(normalizeMathDelimiters(thinkContent))}</p>
+						<p style="color: #333;">${markitdown(normalizeMathDelimiters(thinkContent))}</p>
 						</div>
 						</div>
 						` : ''}
@@ -263,7 +264,7 @@ export class ConversationManager {
 						${actualResponse ? `
 							<div  id="AIRes" class="${aiMessageId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
 							${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
-							<p class="text-white">${window.marked(normalizeMathDelimiters(actualResponse))}</p>
+							<p class="text-white">${markitdown(normalizeMathDelimiters(actualResponse))}</p>
 							<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
 								<div class="group relative max-w-fit transition-all duration-500 hover:z-50">
 									<div
@@ -364,7 +365,7 @@ export class ConversationManager {
         //const fileDataUrl = this.getFileUrl(content);
         visionMessage.innerHTML = `
                 <section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
-					<div id="AIRes" class="${visionMessageId} w-fit max-w-full lg:max-w-6xl bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg px-4 mb-6 pt-2 pb-4 w-fit max-w-full lg:max-w-6xl transition-colors duration-1000">${window.marked(normalizeMathDelimiters(textContent))}
+					<div id="AIRes" class="${visionMessageId} w-fit max-w-full lg:max-w-6xl bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg px-4 mb-6 pt-2 pb-4 w-fit max-w-full lg:max-w-6xl transition-colors duration-1000">${markitdown(normalizeMathDelimiters(textContent))}
 					</div>
 					<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
 						<div class="group relative max-w-fit transition-all duration-500 hover:z-50">

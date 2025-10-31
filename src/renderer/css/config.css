@@ -641,3 +641,51 @@ height: 2.4em; /* Adjust this value to match the height of an empty row */
 .animate-progress {
     animation: progress 4.5s ease-in-out forwards;
 }
+
+
+/* error-modal.css - Enhanced animations */
+.error-modal-visible .error-modal-overlay {
+    opacity: 1;
+    animation: fadeInOverlay 0.5s ease-out;
+}
+
+.error-modal-visible .error-modal-container {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    animation: modalSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+    0% {
+        transform: scale(0.8) translateY(-20px);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+
+/* Custom scrollbar for dark mode */
+#errorDetails::-webkit-scrollbar {
+width: 6px;
+}
+
+#errorDetails::-webkit-scrollbar-track {
+background: transparent;
+}
+
+#errorDetails::-webkit-scrollbar-thumb {
+background: linear-gradient(to bottom, #6b7280, #4b5563);
+border-radius: 3px;
+}
+
+#errorDetails::-webkit-scrollbar-thumb:hover {
+background: linear-gradient(to bottom, #4b5563, #374151);
+}

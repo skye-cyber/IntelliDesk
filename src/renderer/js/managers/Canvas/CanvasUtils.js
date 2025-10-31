@@ -52,12 +52,24 @@ export class CanvasUtil {
         }, 0)
     }
 
-    isCanvasOn(){
+    isCanvasOn() {
         const check = document.getElementById('aiCanvasToggle')?.checked
         return check
     }
 
-    updateCanvas(){
+    updateCanvas() {
         //
     }
 }
+
+export function openOnCanvas(element, id) {
+    const codeBlock = document.querySelector(`[data-value^="${id}"]`)
+    const code = codeBlock.innerHTML
+
+    //window.openCanvas()
+    document.dispatchEvent(new CustomEvent("open-canvas"))
+    waitForElement('#code-view', (el) =>  el.innerHTML = code)
+    document.getElementById("code-view").innerHTML = code
+}
+
+window.openOnCanvas = openOnCanvas;

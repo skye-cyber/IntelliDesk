@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import hljs from 'highlight.js';
-import { CanvasUtil } from "../managers/Canvas/CanvasUtils.js";
+import { CanvasUtil, openOnCanvas } from "../managers/Canvas/CanvasUtils.js";
 
 StateManager.set('processing', false);
 
@@ -129,7 +129,7 @@ renderer.code = function(code) {
         <p id="BtText">Render</p>
         </button>
         ` : ''}
-        <button id="openBtn" class="w-fit h-fit inline-flex items-center  gap-1 p-1 text-sm rounded-md border border-[rgba(0,0,0,0.06)] bg-white dark:bg-[#00779f] cursor-pointer shadow-md shadow-[rgba(16,24,40,0.06)] font-semibold text-[#0f172a] dark:text-white hover:scale-[1.1] transition-transform transition-all duration-300" aria-pressed="false" title="Open coding canvas">
+        <button onclick="window.openOnCanvas(this, '${renderButtonId}')" id="openBtn" class="w-fit h-fit inline-flex items-center  gap-1 p-1 text-sm rounded-md border border-[rgba(0,0,0,0.06)] bg-white dark:bg-[#00779f] cursor-pointer shadow-md shadow-[rgba(16,24,40,0.06)] font-semibold text-[#0f172a] dark:text-white hover:scale-[1.1] transition-transform transition-all duration-300" aria-pressed="false" title="Open coding canvas">
         <!-- simple plus icon (SVG) -->
         <svg class="inline-block w-5 h-6 mt-0.5 text-[#0f172a] dark:text-white stroke-[#0f172a] dark:stroke-white fill-[#0f172a]" dark:fill-[#5b8cff]" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="10.5" y="4" width="3" height="16" rx="1.5" class="fill-[#0f172a]" dark:fill-[#5b8cff]"></rect>
@@ -169,7 +169,7 @@ renderer.code = function(code) {
             </div>
             </section>
             <div class="p-2 border border-[#00aaff] dark:border-[#00a5ce] w-full bg-cyan-100 dark:bg-[#001c24] rounded-md rounded-t-none overflow-auto scrollbar-hide transition-colors duration-700">
-            <code data-value=${renderButtonId} class="p-2 hljs ${validLanguage} block whitespace-pre rounded-md bg-cyan-100 dark:bg-[#001c24] font-mono transition-colors duration-700 overflow-x-auto">${highlighted}</code>
+            <code data-value=${renderButtonId} class="p-2 hljs ${validLanguage} block whitespace-pre rounded-md bg-cyan-100 dark:bg-[#001c24] font-brand transition-colors duration-700 overflow-x-auto">${highlighted}</code>
             </div>
             </div>
             `

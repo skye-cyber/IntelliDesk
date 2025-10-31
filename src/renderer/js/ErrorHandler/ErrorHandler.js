@@ -474,6 +474,8 @@ export function handleRequestError(error, chatArea, userMessage, aiMessage, VS_u
             // Strip date/time if present (from your original code)
             text = text.slice(-1) === ']' ? text.slice(0, text.length - 22) : text;
             lastMessage = text
+
+            window.desk.api.popHistory()
         }
     } catch (err) {
         console.warn('Could not extract last message:', err);

@@ -64,6 +64,7 @@ const Mistarlclient = new Mistral({ apiKey: MISTRAL_API_KEY });
 export async function MistraChat(text, chatArea, modelName) {
     try {
         console.log("Reached Mistral chat", text)
+        chatutil.hide_suggestions()
 
         StateManager.set('aiMessage', );
         // Add user message to the chat interface
@@ -84,7 +85,7 @@ export async function MistraChat(text, chatArea, modelName) {
         StateManager.set('aiMessage', aiMessage)
 
         aiMessage.classList.add("flex", "justify-start", "mb-12", "overflow-wrap");
-
+        chatArea.appendChild(aiMessage)
         // Scroll to bottom
         chatutil.scrollToBottom(chatArea, true);
 
@@ -97,6 +98,8 @@ export async function MistraChat(text, chatArea, modelName) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
+        chatutil.removeLoadingAnimation()
+
         /*const stream = await Mistarlclient.chat.stream({
             model: modelName,
             messages: window.desk.api.getHistory(),
@@ -104,7 +107,7 @@ export async function MistraChat(text, chatArea, modelName) {
         });
         */
 
-        const stream = generateTextChunks(text)
+        const stream = generateTextChunks()
 
         let output = ""
 
@@ -117,7 +120,6 @@ export async function MistraChat(text, chatArea, modelName) {
         for await (const chunk of stream) {
             const choice = chunk?.data?.choices?.[0];
             if (!choice?.delta?.content) continue;
-
             const deltaContent = choice.delta.content;
             output += deltaContent;
             fullResponse += deltaContent;
@@ -149,7 +151,7 @@ export async function MistraChat(text, chatArea, modelName) {
 
                 if (!canvasutil.isCanvasOn()) window.showCanvas();
             }
-
+            console.log(actualResponse)
             // Update innerHTML with marked output
             chatutil.addChatMessage(aiMessage, isThinking, thinkContent, actualResponse, aiMessageUId, exportId, foldId)
 
@@ -183,6 +185,7 @@ export async function MistraChat(text, chatArea, modelName) {
         // render diagrams from this response
         handleDiagrams(output, 'both');
         LoopRenderCharts(output)
+        chatutil.removeLoadingAnimation()
 
 
     } catch (err) {
@@ -193,6 +196,7 @@ export async function MistraChat(text, chatArea, modelName) {
 
 export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = null, modelName) {
     const _Timer = new window.Timer;
+    chatutil.hide_suggestions()
 
     StateManager.set('processing', true);
 

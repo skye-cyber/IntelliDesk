@@ -7,6 +7,7 @@ export class ChatUtil {
         //
     }
     scrollToBottom(element, check = false) {
+        this.updateScrollButtonVisibility()
         if (check) {
             if (document.getElementById('autoScroll').checked)
                 // Use setTimeout to ensure the scroll happens after the DOM has updated
@@ -75,6 +76,7 @@ export class ChatUtil {
     addLoadingAnimation(chatArea = document.getElementById('chatArea')) {
         const loaderUUID = `loader_${Math.random().toString(30).substring(3, 9)}`;
         const loader = document.createElement('div')
+        loader.className ='fixed bottom-[10vh] left-2 z-[51]'
         loader.id = loaderUUID
         loader.innerHTML = `
         <div id="loader-parent">
@@ -101,32 +103,37 @@ export class ChatUtil {
         return { loader, loaderUUID }
     }
 
+    removeLoadingAnimation(){
+        const loader = document.getElementById('loader-parent')?.parentElement
+        if(loader?.id.startsWith("loader_")) loader?.remove()
+    }
+
     addChatMessage(container, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId = null) {
         container.classList.add("flex", "justify-start", "mb-12", "overflow-wrap");
 
         container.innerHTML = `
 			<section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
-			${isThinking || thinkContent ? `
-				<div class="think-section bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-t-lg px-4 pt-2 lg:max-w-6xl transition-colors duration-1000">
-				<div class="flex items-center justify-between">
-				<strong style="color: #007bff;">Thoughts:</strong>
-				<button class="text-sm text-gray-600 dark:text-gray-300" onclick="window.toggleFold(event, this.parentElement.nextElementSibling.id)">
-				<p class="flex">Fold
-				<svg class="mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="32" height="38" class="fold-icon">
-				<path class="fill-blue-400 dark:fill-yellow-400" d="M6 9h12l-6 6z"/>
-				<path fill="currentColor" d="M6 15h12l-6-6z"/>
-				</svg>
-				</p>
-				</button>
-				</div>
-				<div id="${foldId}" class="">
-				<p style="color: #333;">${markitdown(normalizeMathDelimiters(thinkContent))}</p>
-				</div>
-				</div>
-				` : ''}
-				${thinkContent && actualResponse ? `<p class="rounded-lg border-2 border-blue-400 dark:border-orange-400"></p>` : ""}
 				${actualResponse ? `
 					<div id="AIRes" class="${MessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
+					${isThinking || thinkContent ? `
+                        <div class="think-section bg-blue-200 text-gray-800 dark:bg-[#004a62] dark:text-white px-4 pt-2 lg:max-w-6xl transition-colors duration-1000 border border-[#005979] rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <strong class="leading-widest font-brand text-light" style="color: #007bff;">Thoughts:</strong>
+                                <button class="text-sm text-gray-600 dark:text-gray-300" onclick="window.toggleFold(event, this.parentElement.nextElementSibling.id)">
+                                <p class="flex">Fold
+                                <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="32" height="38" class="fold-icon">
+                                <path class="fill-blue-400 dark:fill-yellow-400" d="M6 9h12l-6 6z"/>
+                                <path fill="currentColor" d="M6 15h12l-6-6z"/>
+                                </svg>
+                                </p>
+                                </button>
+                                </div>
+                                <div id="${foldId}" class="">
+                                <p id="think-content" style="color: #333;">${markitdown(normalizeMathDelimiters(thinkContent))}</p>
+                            </div>
+                            ${thinkContent && actualResponse ? `<p class="w-full rounded-lg border-2 border-blue-400 dark:border-orange-400 mb-2"></p>` : ""}
+                        </div>
+                    ` : ''}
 					${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
 					<p style="color: #333;">${markitdown(normalizeMathDelimiters(actualResponse))}</p>
 					<section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
@@ -214,27 +221,28 @@ export class ChatUtil {
     addMultimodalMessage(container, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId = null) {
         container.innerHTML = `
         <section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
-        ${isThinking || thinkContent ? `
-            <div class="think-section bg-blue-200 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-t-lg px-4 pt-2 lg:max-w-6xl transition-colors duration-1000">
-            <div class="flex items-center justify-between">
-            <strong style="color: #007bff;">Thoughts:</strong>
-            <button class="text-sm text-gray-600 dark:text-gray-300" onclick="window.toggleFold(event, this.parentElement.nextElementSibling.id)">
-            <p class="flex">Fold
-            <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="32" height="38" class="fold-icon">
-            <path class="fill-blue-400 dark:fill-yellow-400" d="M6 9h12l-6 6z"/>
-            <path fill="currentColor" d="M6 15h12l-6-6z"/>
-            </svg>
-            </p>
-            </button>
-            </div>
-            <div id="${foldId}" class="">
-            <p style="color: #333;">${markitdown(normalizeMathDelimiters(thinkContent))}</p>
-            </div>
-            </div>
-            ` : ''}
-            ${thinkContent && actualResponse ? `<p class="rounded-lg border-2 border-blue-400 dark:border-orange-400"></p>` : ""}
             ${actualResponse ?
-                `<div  id="AIRes" class="${MessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-100">${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
+                `<div  id="AIRes" class="${MessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-100">
+                ${isThinking || thinkContent ? `
+                    <div class="think-section bg-blue-200 text-gray-800 dark:bg-[#004a62] dark:text-white px-4 pt-2 lg:max-w-6xl transition-colors duration-1000 border border-[#005979] rounded-lg">
+                    <div class="flex items-center justify-between">
+                    <strong class="leading-widest font-brand text-light" style="color: #007bff;">Thoughts:</strong>
+                    <button class="text-sm text-gray-600 dark:text-gray-300" onclick="window.toggleFold(event, this.parentElement.nextElementSibling.id)">
+                    <p class="flex">Fold
+                    <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" width="32" height="38" class="fold-icon">
+                    <path class="fill-blue-400 dark:fill-yellow-400" d="M6 9h12l-6 6z"/>
+                    <path fill="currentColor" d="M6 15h12l-6-6z"/>
+                    </svg>
+                    </p>
+                    </button>
+                    </div>
+                    <div id="${foldId}" class="">
+                    <p style="color: #333;">${markitdown(normalizeMathDelimiters(thinkContent))}</p>
+                    </div>
+                    ${thinkContent && actualResponse ? `<p class="w-full rounded-lg border-2 border-blue-400 dark:border-orange-400 mb-2"></p>` : ""}
+                    </div>
+                    ` : ''}
+                    ${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
                 <p style="color: #333;">${markitdown(normalizeMathDelimiters(actualResponse))}</p>
                 <section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
                 <div class="group relative max-w-fit transition-all duration-500 hover:z-50">
@@ -368,4 +376,16 @@ export class ChatUtil {
         ]
     }
 
+    hide_suggestions(){
+        document.getElementById('suggestions').classList.add('hidden')
+    }
 }
+
+function toggleFold(event, selector) {
+    const content = document.getElementById(selector);
+    if (content) {
+        content.classList.toggle('hidden');
+    }
+}
+
+window.toggleFold = toggleFold

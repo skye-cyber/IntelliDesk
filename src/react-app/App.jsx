@@ -23,11 +23,13 @@ import { APIKeysManager } from '@components/ApiManager/api.jsx';
 import { DropZone } from '@components/DropZone/dropzone.jsx'
 import { NotificationFlyer } from '@components/Notifications/Notification.jsx'
 import { ChatOptions } from '@components/Chat/ChatOptions.jsx';
+import { Notifcation } from '@components/Notification/notification';
 import '@js/MathBase/MathNormalize.js';
 import '@js/MathBase/mathRenderer.js';
 import '@js/diagraming/Utils.js'
 import '@js/diagraming/vizcharting.js'
 import '@js/diagraming/jscharting.js'
+import '@js/Notification/notification';
 
 const App = () => {
     //const { electron } = useElectron();
@@ -105,6 +107,9 @@ const App = () => {
 
                 <ErrorBoundary>
                     <NotificationFlyer isOpen={true} onToggle={null} />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                    <Notifcation isOpen={true} onToggle={null} />
                 </ErrorBoundary>
             </MainLayout>
         </ErrorBoundary>

@@ -135,7 +135,7 @@ export const ChatInterface = () => {
 const ScrollToBottomButton = ({ onClick }) => (
     <button
         id="scroll-bottom"
-        className="absolute right-[150px] bottom-0 cursor-pointer rounded-full bg-blue-200 border border-blue-400 dark:border-gray-300 dark:bg-[#222] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[40] group"
+        className="hidden fixed right-[150px] bottom-24 cursor-pointer rounded-full bg-blue-200 border border-blue-400 dark:border-gray-300 dark:bg-[#222] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
         aria-label="scroll to bottom"
         onClick={onClick}
     >

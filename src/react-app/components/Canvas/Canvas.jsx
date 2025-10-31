@@ -417,11 +417,12 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
     // Open canvas
     const openCanvas = useCallback(() => {
-        const { canvas } = refs.current
+        onToggle()
+        let { canvas } = refs.current
 
-        canvas.classList.remove('hidden');
+        canvas?.classList.remove('hidden');
         setTimeout(() => {
-            canvas.classList.remove('translate-x-[100vw]');
+            canvas?.classList.remove('translate-x-[100vw]');
             setIsCanvasOpen(true);
             AiMessagesWfitAdjust('remove');
             UserMessagesWfitAdjust("remove")
@@ -430,6 +431,13 @@ export const Canvas = ({ isOpen, onToggle }) => {
         }, 400)
     }, [setIsCanvasOpen])
 
+    useEffect(()=>{
+        document.addEventListener('open-canvas', openCanvas)
+
+        return ()=>{
+            document.removeEventListener('open-canvas', openCanvas)
+        }
+    })
     window.openCanvas = openCanvas
 
     // Hide canvas

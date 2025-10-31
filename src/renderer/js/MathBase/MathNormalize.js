@@ -2,7 +2,7 @@ export async function normaliZeMathDisplay(selector, space=true) {
     let items = null
     if (selector) {
         const target = document.querySelector(selector)
-        items = target.querySelectorAll('.katex-display')
+        items = target?.querySelectorAll('.katex-display')
     } else {
         items = document.querySelectorAll('.katex-display')
     }
@@ -21,7 +21,7 @@ export async function normaliZeMathDisplay(selector, space=true) {
 
 export async function normalizeCodeBlock(selector){
     const element = document.querySelector(selector)
-    const blocks = element.querySelectorAll('code')
+    const blocks = element?.querySelectorAll('code')
     blocks.forEach(block =>{
         const childItem = block.querySelectorAll()
         // Replace $...$ with [...]

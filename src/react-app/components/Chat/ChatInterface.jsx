@@ -3,6 +3,9 @@ import { QuickActions } from '@components/QuickActions/QuickActions';
 import { MessageList } from './MessageList';
 import { useElectron } from '@hooks/useElectron';
 import { showDropZoneModal } from '@components/DropZone/util.js'
+import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+
+const chatutil = new ChatUtil()
 
 export const ChatInterface = () => {
     const [messages, setMessages] = useState([]);
@@ -54,57 +57,35 @@ export const ChatInterface = () => {
         };
 
         const prompt = quickPrompts[action] || action;
-
-        // Function to update scroll button visibility
-        function updateScrollButtonVisibility() {
-            //console.log("Scrollable")
-            const chatArea = document.getElementById('chatArea')
-            const scrollButton = document.getElementById('scroll-bottom')
-
-            const isScrollable = chatArea.scrollHeight > chatArea.clientHeight;
-            const isAtBottom = chatArea.scrollTop + chatArea.clientHeight >= chatArea.scrollHeight;
-
-            scrollButton.classList.toggle('hidden', !(isScrollable && !isAtBottom));
-        }
-
-        useEffect(() => {
-            const chatArea = document.getElementById('chatArea')
-
-            // Attach scroll event listener to chatArea
-            chatArea.addEventListener("scroll", updateScrollButtonVisibility);
-            chatArea.addEventListener("input", updateScrollButtonVisibility);
-            window.addEventListener("resize", updateScrollButtonVisibility);
-
-            const scrollButton = document.getElementById('scroll-bottom')
-            // Scroll to the bottom when the button is clicked
-            scrollButton?.addEventListener("click", () => {
-                chatArea.scrollTo({
-                    top: chatArea.scrollHeight,
-                    behavior: "smooth",
-                });
-            });
-
-            return () => {
-                chatArea.removeEventListener('scroll', updateScrollButtonVisibility)
-                chatArea.removeEventListener('input', updateScrollButtonVisibility)
-                window.removeEventListener('resize', updateScrollButtonVisibility)
-                scrollButton.removeEventListener('click', updateScrollButtonVisibility)
-            }
-        }, [])
-
         // TODO: auto-fill the input or send directly
         console.log('Quick action:', action, prompt);
-    };
-
-    const scrollToBottom = () => {
-        if (chatAreaRef.current) {
-            chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
-        }
-    };
+    }
 
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        const chatArea = document.getElementById('chatArea')
+
+        // Attach scroll event listener to chatArea
+        chatArea.addEventListener("scroll", chatutil.updateScrollButtonVisibility);
+        chatArea.addEventListener("input", chatutil.updateScrollButtonVisibility);
+        window.addEventListener("resize", chatutil.updateScrollButtonVisibility);
+
+        const scrollButton = document.getElementById('scroll-bottom')
+        // Scroll to the bottom when the button is clicked
+        scrollButton?.addEventListener("click", () => {
+            chatArea.scrollTo({
+                top: chatArea.scrollHeight,
+                behavior: "smooth",
+            });
+        });
+
+        return () => {
+            chatArea.removeEventListener('scroll', chatutil.updateScrollButtonVisibility)
+            chatArea.removeEventListener('input', chatutil.updateScrollButtonVisibility)
+            window.removeEventListener('resize', chatutil.updateScrollButtonVisibility)
+            scrollButton.removeEventListener('click', chatutil.updateScrollButtonVisibility)
+        }
+    }, [])
+
 
     return (
         <section>
@@ -121,8 +102,6 @@ export const ChatInterface = () => {
                 {/* Messages list */}
                 <MessageList messages={messages} isLoading={isLoading} />
 
-                {/* Scroll to bottom button */}
-                <ScrollToBottomButton onClick={scrollToBottom} />
             </section>
             {/* Loading Modal */}
             <LoadingModal />
@@ -131,20 +110,6 @@ export const ChatInterface = () => {
         </section>
     );
 };
-
-const ScrollToBottomButton = ({ onClick }) => (
-    <button
-        id="scroll-bottom"
-        className="hidden fixed right-[150px] bottom-24 cursor-pointer rounded-full bg-blue-200 border border-blue-400 dark:border-gray-300 dark:bg-[#222] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
-        aria-label="scroll to bottom"
-        onClick={onClick}
-    >
-        <div className='hidden group-hover:flex gap-2 absolute left-10 text-black dark:text-white tracking-wider font-extralight font-handwriting text-xs'><span>scroll</span></div>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="icon-md text-token-text-primary dark:text-white">
-            <path fillRule="evenodd" clipRule="evenodd" d="M12 21C11.7348 21 11.4804 20.8946 11.2929 20.7071L4.29289 13.7071C3.90237 13.3166 3.90237 12.6834 4.29289 12.2929C4.68342 11.9024 5.31658 11.9024 5.70711 12.2929L11 17.5858V4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4V17.5858L18.2929 12.2929C18.6834 11.9024 19.3166 11.9024 19.7071 12.2929C20.0976 12.6834 20.0976 13.3166 19.7071 13.7071L12.7071 20.7071C12.5196 20.8946 12.2652 21 12 21Z" fill="currentColor"></path>
-        </svg>
-    </button>
-);
 
 const LoadingModal = () => (
     <div id="loadingModal" className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-[61]">

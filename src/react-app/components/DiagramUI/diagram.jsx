@@ -52,7 +52,7 @@ export const DiagramUi = ({ isOpen, onClose, content }) => {
         <div
             id="diagViewModal"
             onClick={shouldClose}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl transition-all duration-300 opacity-0 translate-x-full"
+            className="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl transition-all duration-300 opacity-0 translate-x-full"
         >
             <section
                 id="diag-modal-content"

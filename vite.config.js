@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [
+        react()
+    ],
     root: resolve(__dirname, 'src/react-app'),
     publicDir: resolve(__dirname, 'src/assets'),
     server: {
@@ -14,6 +16,8 @@ export default defineConfig({
         emptyOutDir: true,
         rollupOptions: {
             input: resolve(__dirname, 'src/react-app/index.html'),
+            plugins: [
+            ]
         },
     },
     resolve: {
@@ -30,8 +34,17 @@ export default defineConfig({
             '@js': resolve(__dirname, 'src/renderer/js'),
             '@css': resolve(__dirname, 'src/renderer/css'),
             '@fonts': resolve(__dirname, 'src/renderer/fonts'),
-
-
+            crypto: require.resolve('crypto-browserify'),
+            process: require.resolve('process/browser'),
+            fs: require.resolve('browserify-fs'),
+            buffer: require.resolve('buffer/'),
         },
     },
-})
+    define: {
+        'process.env': {}
+    },
+    optimizeDeps: {
+        include: ['buffer'],
+        //force: true
+    }
+});

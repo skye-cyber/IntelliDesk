@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import hljs from 'highlight.js';
-import { CanvasUtil, openOnCanvas } from "../managers/Canvas/CanvasUtils.js";
+import { CanvasUtil } from "../managers/Canvas/CanvasUtils.js";
 
 StateManager.set('processing', false);
 
@@ -129,7 +129,7 @@ renderer.code = function(code) {
         <p id="BtText">Render</p>
         </button>
         ` : ''}
-        <button onclick="window.openOnCanvas(this, '${renderButtonId}')" id="openBtn" class="w-fit h-fit inline-flex items-center  gap-1 p-1 text-sm rounded-md border border-[rgba(0,0,0,0.06)] bg-white dark:bg-[#00779f] cursor-pointer shadow-md shadow-[rgba(16,24,40,0.06)] font-semibold text-[#0f172a] dark:text-white hover:scale-[1.1] transition-transform transition-all duration-300" aria-pressed="false" title="Open coding canvas">
+        <button onclick="window.openInCanvas(this, '${renderButtonId}')" id="openBtn" class="w-fit h-fit inline-flex items-center  gap-1 p-1 text-sm rounded-md border border-[rgba(0,0,0,0.06)] bg-white dark:bg-[#00779f] cursor-pointer shadow-md shadow-[rgba(16,24,40,0.06)] font-semibold text-[#0f172a] dark:text-white hover:scale-[1.1] transition-transform transition-all duration-300" aria-pressed="false" title="Open coding canvas">
         <!-- simple plus icon (SVG) -->
         <svg class="inline-block w-5 h-6 mt-0.5 text-[#0f172a] dark:text-white stroke-[#0f172a] dark:stroke-white fill-[#0f172a]" dark:fill-[#5b8cff]" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect x="10.5" y="4" width="3" height="16" rx="1.5" class="fill-[#0f172a]" dark:fill-[#5b8cff]"></rect>

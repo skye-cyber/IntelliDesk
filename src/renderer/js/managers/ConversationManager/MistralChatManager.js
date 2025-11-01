@@ -9,7 +9,10 @@ import { ChatUtil } from './util';
 import { generateTextChunks } from '../../tests/AiSimulator';
 import { handleRequestError } from '../../ErrorHandler/ErrorHandler';
 import { StateManager } from '../StatesManager';
+import { waitForElement } from '../../Utils/dom_utils';
+import { ChatDisplay } from './util';
 
+const chatdisplay = new ChatDisplay()
 const chatutil = new ChatUtil()
 const canvasutil = new CanvasUtil()
 
@@ -66,7 +69,7 @@ export async function MistraChat(text, chatArea, modelName) {
         console.log("Reached Mistral chat", text)
         chatutil.hide_suggestions()
 
-        StateManager.set('aiMessage', );
+        StateManager.set('aiMessage',);
         // Add user message to the chat interface
         const userMesage = chatutil.addUserMessage(text, chatArea)
 
@@ -146,12 +149,17 @@ export async function MistraChat(text, chatArea, modelName) {
             }
 
             if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
-                codeView.innerHTML = StateManager.get('codeBuffer').code;
-                window.canvasUpdate();
+                if (!canvasutil.isCanvasOn() && !StateManager.get('isCanvasActive')) chatutil.open_canvas();
 
-                if (!canvasutil.isCanvasOn()) window.showCanvas();
+                waitForElement('#code-view', (el) => {
+                    el.innerHTML = StateManager.get('codeBuffer').code;
+                    console.log(StateManager.get('codeBuffer'))
+                    window.canvasUpdate();
+                    chatdisplay.chats_size_adjust()
+                });
+
             }
-            console.log(actualResponse)
+            //console.log(actualResponse)
             // Update innerHTML with marked output
             chatutil.addChatMessage(aiMessage, isThinking, thinkContent, actualResponse, aiMessageUId, exportId, foldId)
 
@@ -161,9 +169,9 @@ export async function MistraChat(text, chatArea, modelName) {
             // Render mathjax immediately
             debounceRenderKaTeX(`.${aiMessageUId}`, 3000, false);
         }
-        StateManager.set('processing', false);;
+        StateManager.set('processing', false);
         // solves aiMessage w-full issue
-        if (canvasutil.isCanvasOn()) window.showCanvas();
+        if (canvasutil.isCanvasOn()) window.openCanvas();
 
         //stop timer
         _Timer.trackTime("stop");
@@ -186,8 +194,7 @@ export async function MistraChat(text, chatArea, modelName) {
         handleDiagrams(output, 'both');
         LoopRenderCharts(output)
         chatutil.removeLoadingAnimation()
-
-
+        chatdisplay.chats_size_adjust()
     } catch (err) {
         handleRequestError(err, chatArea, StateManager.get('userMessage'), StateManager.get('aiMessage'))
     }
@@ -335,25 +342,30 @@ export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = n
                 actualResponse += deltaContent;
             }
 
-            if (codeBuffer && codeBuffer.code) {
-                codeView.innerHTML = codeBuffer.code;
-                window.canvasUpdate();
+            if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
+                if (!canvasutil.isCanvasOn() && !StateManager.get('isCanvasActive')) chatutil.open_canvas();
 
-                if (!canvasutil.isCanvasOn()) window.openCanvas();
+                waitForElement('#code-view', (el) => {
+                    el.innerHTML = StateManager.get('codeBuffer').code;
+                    console.log(StateManager.get('codeBuffer'))
+                    window.canvasUpdate();
+                    chatdisplay.chats_size_adjust()
+                });
             }
-
-            chatutil.addMultimodalMessage(Message, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId)
-
-            AutoScroll.checked ? chatutil.scrollToBottom(chatArea) : null;
-
-            // Debounce MathJax rendering to avoid freezing
-            debounceRenderKaTeX(`.${MessageUId}`, 3000, true);
         }
+
+        chatutil.addMultimodalMessage(Message, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId)
+
+        AutoScroll.checked ? chatutil.scrollToBottom(chatArea) : null;
+
+        // Debounce MathJax rendering to avoid freezing
+        debounceRenderKaTeX(`.${MessageUId}`, 3000, true);
+
 
         StateManager.set('processing', false);
 
         // solves aiMessage w-full issue
-        if (canvasutil.isCanvasOn()) window.openCanvas();
+        if (canvasutil.isCanvasOn() && !StateManager.get('isCanvasActive')) window.openCanvas();
 
         //stop timer
         _Timer.trackTime("stop");
@@ -373,7 +385,7 @@ export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = n
         // render diagrams fromthis response
         handleDiagrams(output, 'both');
         LoopRenderCharts(output)
-
+        chatdisplay.chats_size_adjust()
     } catch (error) {
         handleRequestError(error, StateManager.get('userMessage'), StateManager.get('aiMessage'), ["VS", fileType, fileContainerId])
     }

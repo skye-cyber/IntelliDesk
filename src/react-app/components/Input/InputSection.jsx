@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { opendiagViewModal, closediagViewModal } from '@js/diagraming/Utils.js';
 import { showDropZoneModal } from '@components/DropZone/util.js'
 import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
+import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+const chatutil = new ChatUtil()
 
 let router
 //Import Dynamically
@@ -152,7 +154,6 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
             // console.log('AI toggle clicked - letting checkbox handle');
             return; // Don't toggle canvas when AI checkbox is clicked
         } else {
-            console.log('xx')
             // Toggle the canvas for any other part of the button
             //console.log('Canvas area clicked - toggling canvas');
             onToggleCanvas(); // Your canvas toggle function
@@ -192,6 +193,11 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
             glow.classList.remove('opacity-30');
         }
     };
+
+
+    useEffect(() => {
+        chatutil.scrollToBottom(document.getElementById('chatArea'), false);
+    }, []);
 
     return (
         <div id="userInput-wrapper" className="absolute flex justify-center left-0 lg:left-auto w-full lg:items-center lg:justify-center z-30 bottom-[2%] transition-all duration-1000">
@@ -368,6 +374,23 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
                     </section>
                 </section>
             </section>
+            {/* Scroll to bottom button */}
+            <ScrollToBottomButton onClick={() => chatutil.scrollToBottom(document.getElementById('chatArea'), false)} />
         </div>
     );
 };
+
+
+const ScrollToBottomButton = ({ onClick }) => (
+    <button
+        id="scroll-bottom"
+        className="absolute fixed right-[150px] bottom-24 cursor-pointer rounded-full bg-blue-100 border border-blue-400 dark:border-gray-300 dark:bg-[#222] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
+        aria-label="scroll to bottom"
+        onClick={onClick}
+    >
+        <div className='hidden group-hover:flex gap-2 absolute left-10 text-black dark:text-white tracking-wider font-extralight font-handwriting text-xs'><span>scroll</span></div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="icon-md text-token-text-primary dark:text-white">
+            <path fillRule="evenodd" clipRule="evenodd" d="M12 21C11.7348 21 11.4804 20.8946 11.2929 20.7071L4.29289 13.7071C3.90237 13.3166 3.90237 12.6834 4.29289 12.2929C4.68342 11.9024 5.31658 11.9024 5.70711 12.2929L11 17.5858V4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4V17.5858L18.2929 12.2929C18.6834 11.9024 19.3166 11.9024 19.7071 12.2929C20.0976 12.6834 20.0976 13.3166 19.7071 13.7071L12.7071 20.7071C12.5196 20.8946 12.2652 21 12 21Z" fill="currentColor"></path>
+        </svg>
+    </button>
+);

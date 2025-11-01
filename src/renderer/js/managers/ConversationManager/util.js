@@ -6,7 +6,7 @@ export class ChatUtil {
     constructor() {
         //
     }
-    scrollToBottom(element, check = false) {
+    scrollToBottom(element = document.getElementById('chatArea'), check = false) {
         this.updateScrollButtonVisibility()
         if (check) {
             if (document.getElementById('autoScroll').checked)
@@ -37,7 +37,7 @@ export class ChatUtil {
         const userMessage = document.createElement("div");
 
         userMessage.innerHTML = `
-        <div data-id="${userMessageId}" class="${userMessageId} relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl">
+        <div id="user_message" data-id="${userMessageId}" class="${userMessageId} relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl">
         <p class="whitespace-pre-wrap break-words max-w-xl md:max-w-2xl lg:max-w-3xl">${InputPurify(text)}</p>
         <button id="${copyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80 " onclick="CopyAll('.${userMessageId}', this, true)">
         Copy
@@ -76,7 +76,7 @@ export class ChatUtil {
     addLoadingAnimation(chatArea = document.getElementById('chatArea')) {
         const loaderUUID = `loader_${Math.random().toString(30).substring(3, 9)}`;
         const loader = document.createElement('div')
-        loader.className ='fixed bottom-[10vh] left-2 z-[51]'
+        loader.className = 'fixed bottom-[10vh] left-2 z-[51]'
         loader.id = loaderUUID
         loader.innerHTML = `
         <div id="loader-parent">
@@ -103,18 +103,18 @@ export class ChatUtil {
         return { loader, loaderUUID }
     }
 
-    removeLoadingAnimation(){
+    removeLoadingAnimation() {
         const loader = document.getElementById('loader-parent')?.parentElement
-        if(loader?.id.startsWith("loader_")) loader?.remove()
+        if (loader?.id.startsWith("loader_")) loader?.remove()
     }
 
     addChatMessage(container, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId = null) {
         container.classList.add("flex", "justify-start", "mb-12", "overflow-wrap");
 
         container.innerHTML = `
-			<section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
+			<section id="ai_response" class="relative w-fit max-w-full lg:max-w-5xl mb-[2vh] p-2">
 				${actualResponse ? `
-					<div id="AIRes" class="${MessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
+					<div id="ai_response_think" class="${MessageUId} w-full bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-1000">
 					${isThinking || thinkContent ? `
                         <div class="think-section bg-blue-200 text-gray-800 dark:bg-[#004a62] dark:text-white px-4 pt-2 lg:max-w-6xl transition-colors duration-1000 border border-[#005979] rounded-lg">
                             <div class="flex items-center justify-between">
@@ -197,22 +197,77 @@ export class ChatUtil {
 						</div>
 					</section>
 					</div>
-					<div id="exportOptions-${exportId}" class="hidden block absolute bottom-10 left-0 bg-[radial-gradient(closest-side,var(--tw-gradient-stops))] from-[#009393] dark:from-[#002f42] via-[#45cece] dark:via-[#002f42] to-blue-400 dark:to-[#002f42] dark:bg-gray-800 p-2 rounded shadow-md z-50 border border-[#0055ff] dark:border-[#009fe8] transition-colors duration-1000">
-					<ul class="list-none p-0">
-					<li class="mb-2">
-					<p class="text-[#222] dark:text-blue-300 hover:text-[#8900ce] dark:hover:text-[#aaaa00] border border-blue-400/0 hover:border-[#a1a100] dark:hover:border-[#00aeff] transition-colors duration-1000 cursor-pointer" onclick="HTML2Pdf(event, '.${MessageUId}')">Export to PDF</p>
-					</li>
-					<li class="mb-2">
-					<p class="text-[#222] dark:text-blue-300 hover:text-[#8900ce] dark:hover:text-[#aaaa00] border border-blue-400/0 hover:border-[#a1a100] dark:hover:border-[#00aeff] transition-colors duration-1000 cursor-pointer" onclick="HTML2Jpg(event, '.${MessageUId}')">Export to JPG</p>
-					</li>
-					<li>
-					<p class="text-[#222] dark:text-blue-300 hover:text-[#8900ce] dark:hover:text-[#aaaa00] border border-blue-400/0 hover:border-[#a1a100] dark:hover:border-[#00aeff] transition-all duration-1000 cursor-pointer" onclick="HTML2Word(event, '.${MessageUId}')">Export to DOCX</p>
-					</li>
-					<li>
-					<p class="cursor-not-allowed text-[#222] dark:text-blue-300 hover:text-[#8900ce] dark:hover:text-[#aaaa00] border border-blue-400/0 hover:border-[#a1a100] dark:hover:border-[#00aeff] transition-all duration-1000 decoration-underline" onclick="">Word Export Advance</p>
-					</li>
-					</ul>
-					</div>
+                    <div data-action="export-menu" id="exportOptions-${exportId}" class="hidden absolute z-[10] bottom-12 left-0 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 z-50 overflow-hidden transition-all duration-300 transform origin-bottom-left">
+                        <div class="p-1">
+                            <div class="relative">
+                                <!-- Header -->
+                                <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+                                    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Export Options</p>
+                                </div>
+
+                                <!-- Export Items -->
+                                <div class="py-1">
+                                    <button onclick="HTML2Pdf(event, '.${MessageUId}')"
+                                            class="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 group">
+                                        <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
+                                            <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium">PDF Document</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">High quality</div>
+                                        </div>
+                                    </button>
+
+                                    <button onclick="HTML2Jpg(event, '.${MessageUId}')"
+                                            class="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200 group">
+                                        <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
+                                            <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium">JPEG Image</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">High resolution</div>
+                                        </div>
+                                    </button>
+
+                                    <button onclick="HTML2Word(event, '.${MessageUId}')"
+                                            class="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 group">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
+                                            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium">Word Document</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Editable format</div>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- Coming Soon Section -->
+                                <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-700">
+                                    <button class="w-full flex items-center px-3 py-2.5 text-sm text-gray-400 dark:text-gray-500 rounded-lg transition-all duration-200 cursor-not-allowed group">
+                                        <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium text-gray-400">Advanced Export</div>
+                                            <div class="text-xs text-gray-400">Coming soon</div>
+                                        </div>
+                                        <span class="ml-auto px-1.5 py-0.5 text-xs bg-gradient-to-r from-purple-400 to-pink-400 text-white rounded-full">Soon</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow indicator -->
+                        <div class="absolute -bottom-2 left-4 w-4 h-4 bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-700 transform rotate-45"></div>
+                    </div>
 			</section>`:
                 ""}
         `;
@@ -220,9 +275,9 @@ export class ChatUtil {
     }
     addMultimodalMessage(container, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId = null) {
         container.innerHTML = `
-        <section id="AIRes" class="relative w-fit w-full max-w-full lg:max-w-6xl mb-[2vh] p-2">
+        <section id="ai_response" class="relative w-fit w-full max-w-full lg:max-w-5xl mb-[2vh] p-2">
             ${actualResponse ?
-                `<div  id="AIRes" class="${MessageUId} w-fit max-w-full lg:max-w-6xl bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-100">
+                `<div  id="ai_response_think" class="${MessageUId} w-full bg-blue-200 py-4 text-gray-800 dark:bg-[#002f42] dark:text-white rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-100">
                 ${isThinking || thinkContent ? `
                     <div class="think-section bg-blue-200 text-gray-800 dark:bg-[#004a62] dark:text-white px-4 pt-2 lg:max-w-6xl transition-colors duration-1000 border border-[#005979] rounded-lg">
                     <div class="flex items-center justify-between">
@@ -304,22 +359,77 @@ export class ChatUtil {
                 </div>
                 </section>
 
-                <div id="exportOptions-${exportId}" class="hidden block absolute bottom-10 left-0 bg-[radial-gradient(closest-side,var(--tw-gradient-stops))] from-[#009393] dark:from-[#002f42] via-[#45cece] dark:via-[#002f42] to-blue-400 dark:to-[#002f42] dark:bg-gray-800 p-2 rounded shadow-md z-50 border border-[#0055ff] dark:border-[#009fe8] transition-colors duration-1000">
-                <ul class="list-none p-0">
-                <li class="mb-2">
-                <p class="text-[#222] dark:text-blue-300 hover:text-[#8900ce] dark:hover:text-[#aaaa00] border border-blue-400/0 hover:border-[#a1a100] dark:hover:border-[#00aeff] transition-colors duration-1000 cursor-pointer" onclick="HTML2Pdf(event, '.${MessageUId}')">Export to PDF</p>
-                </li>
-                <li class="mb-2">
-                <p class="text-[#222] dark:text-blue-300 hover:text-[#8900ce] dark:hover:text-[#aaaa00] border border-blue-400/0 hover:border-[#a1a100] dark:hover:border-[#00aeff] transition-colors duration-1000 cursor-pointer" onclick="HTML2Jpg(event, '.${MessageUId}')">Export to JPG</p>
-                </li>
-                <li>
-                <p class="text-[#222] dark:text-blue-300 hover:text-[#8900ce] dark:hover:text-[#aaaa00] border border-blue-400/0 hover:border-[#a1a100] dark:hover:border-[#00aeff] transition-all duration-1000 cursor-pointer" onclick="HTML2Word(event, '.${MessageUId}')">Export to DOCX</p>
-                </li>
-                <li>
-                <p class="cursor-not-allowed text-[#222] dark:text-blue-300 hover:text-[#8900ce] dark:hover:text-[#aaaa00] border border-blue-400/0 hover:border-[#a1a100] dark:hover:border-[#00aeff] transition-all duration-1000 decoration-underline" onclick="">Word Export Advance</p>
-                </li>
-                </ul>
-                </div>
+                    <div data-action="export-menu" id="exportOptions-${exportId}" class="hidden absolute z-[10] bottom-12 left-0 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 z-50 overflow-hidden transition-all duration-300 transform origin-bottom-left">
+                        <div class="p-1">
+                            <div class="relative">
+                                <!-- Header -->
+                                <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+                                    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Export Options</p>
+                                </div>
+
+                                <!-- Export Items -->
+                                <div class="py-1">
+                                    <button onclick="HTML2Pdf(event, '.${MessageUId}')"
+                                            class="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 group">
+                                        <div class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
+                                            <svg class="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium">PDF Document</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">High quality</div>
+                                        </div>
+                                    </button>
+
+                                    <button onclick="HTML2Jpg(event, '.${MessageUId}')"
+                                            class="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200 group">
+                                        <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
+                                            <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium">JPEG Image</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">High resolution</div>
+                                        </div>
+                                    </button>
+
+                                    <button onclick="HTML2Word(event, '.${MessageUId}')"
+                                            class="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 group">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
+                                            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium">Word Document</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Editable format</div>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- Coming Soon Section -->
+                                <div class="px-3 py-2 border-t border-gray-100 dark:border-gray-700">
+                                    <button class="w-full flex items-center px-3 py-2.5 text-sm text-gray-400 dark:text-gray-500 rounded-lg transition-all duration-200 cursor-not-allowed group">
+                                        <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="font-medium text-gray-400">Advanced Export</div>
+                                            <div class="text-xs text-gray-400">Coming soon</div>
+                                        </div>
+                                        <span class="ml-auto px-1.5 py-0.5 text-xs bg-gradient-to-r from-purple-400 to-pink-400 text-white rounded-full">Soon</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow indicator -->
+                        <div class="absolute -bottom-2 left-4 w-4 h-4 bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-700 transform rotate-45"></div>
+                    </div>
                 </section>`: ""}
                 `;
         return container
@@ -376,8 +486,47 @@ export class ChatUtil {
         ]
     }
 
-    hide_suggestions(){
+    hide_suggestions() {
         document.getElementById('suggestions').classList.add('hidden')
+    }
+    open_canvas(){
+        document.getElementById('ToggleCanvasBt')?.click()
+    }
+}
+
+export class ChatDisplay {
+    constructor() {
+        //
+    }
+    chats_size_adjust(task = 'scale_down') {
+        const user_chats = document.querySelectorAll('#ai_response')
+        const ai_chats = document.querySelectorAll('#user_message')
+        if (task === "scale_down") {
+            if (user_chats?.length > 0) {
+                user_chats.forEach(chat => {
+                    chat.classList.remove('lg:max-w-5xl')
+                    chat.classList.add('w-fit')
+                })
+            } else {
+                if (ai_chats?.length > 0) {
+                    chat.classList.remove('lg:max-w-5xl')
+                    chat.classList.add('w-fit')
+                }
+            }
+        }
+        else {
+            if (ai_chats?.length > 0) {
+                ai_chats.forEach(chat => {
+                    chat.classList.remove('w-fit')
+                    chat.classList.add('lg:max-w-5xl')
+                })
+            } else {
+                if (ai_chats?.length > 0) {
+                    chat.classList.remove('w-fit')
+                    chat.classList.add('lg:max-w-5xl')
+                }
+            }
+        }
     }
 }
 

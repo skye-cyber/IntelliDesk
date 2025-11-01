@@ -30,6 +30,7 @@ import '@js/diagraming/Utils.js'
 import '@js/diagraming/vizcharting.js'
 import '@js/diagraming/jscharting.js'
 import '@js/Notification/notification';
+import '@js/ChatExport/export';
 
 const App = () => {
     //const { electron } = useElectron();
@@ -85,22 +86,24 @@ const App = () => {
                         <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
                     </ErrorBoundary>
 
-                    <ErrorBoundary>
-                        <DiagramUi isOpen={true} onToggle={null} />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <Settings isOpen={true} onToggle={null} />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <StatusUI isOpen={true} onToggle={null} />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <APIKeysManager isOpen={true} onToggle={null} />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <DropZone isOpen={true} onToggle={null} />
-                    </ErrorBoundary>
+
                 </div>
+                <ErrorBoundary>
+                    <DiagramUi isOpen={true} onToggle={null} />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                    <Settings isOpen={true} onToggle={null} />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                    <StatusUI isOpen={true} onToggle={null} />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                    <APIKeysManager isOpen={true} onToggle={null} />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                    <DropZone isOpen={true} onToggle={null} />
+                </ErrorBoundary>
+
                 <ErrorBoundary>
                     <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
                 </ErrorBoundary>

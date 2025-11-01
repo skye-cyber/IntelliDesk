@@ -2,9 +2,16 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Caret } from '@js/Utils/caret.js'
 import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { ChatDisplay } from '../../../renderer/js/managers/ConversationManager/util';
+
+
+const chatdisplay = new ChatDisplay()
 
 window.openCanvas = null;
 window.canvasUpdate = null
+
+StateManager.set('isCanvasActive', false)
 
 export const Canvas = ({ isOpen, onToggle }) => {
     const [isCanvasActive, setIsCanvasActive] = useState(false);
@@ -266,7 +273,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
             codeView.style.transform = `translateX(${-targetScroll}px)`;
 
             // Update React state for UI consistency
-            setcurrentScroll(targetScroll);
+            scrollState.current.currentScroll = targetScroll;
         } else {
             // Continue animation
             scrollState.current.animationId = requestAnimationFrame(animateScroll);
@@ -387,7 +394,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
     const AiMessagesWfitAdjust = useCallback((task = 'add') => {
         //if (!isCanvasOpen) return;
         const { chatArea } = refs.current;
-        const Rlist = chatArea.querySelectorAll('#URes');
+        const Rlist = chatArea.querySelectorAll('#ai_response');
         if (!Rlist.length) return;
 
         const method = task === 'add' ? 'add' : 'remove';
@@ -419,16 +426,22 @@ export const Canvas = ({ isOpen, onToggle }) => {
     const openCanvas = useCallback(() => {
         onToggle()
         let { canvas } = refs.current
+        console.log("Open canvas")
+        const chatArea = document.getElementById('chatArea')
+        chatArea.classList.remove('max-w-[98vw]', 'p-2', 'md:p-4')
+        chatArea.classList.add('max-w-[40vw]', 'p-0', 'text-sm')
 
         canvas?.classList.remove('hidden');
         setTimeout(() => {
             canvas?.classList.remove('translate-x-[100vw]');
             setIsCanvasOpen(true);
+            StateManager.set('isCanvasActive', true)
             AiMessagesWfitAdjust('remove');
             UserMessagesWfitAdjust("remove")
             InputSectionWfitAdjust('add')
             mainLayoutAWfitAdjust('retract')
         }, 400)
+        //chatdisplay.chats_size_adjust()
     }, [setIsCanvasOpen])
 
     useEffect(()=>{
@@ -443,6 +456,10 @@ export const Canvas = ({ isOpen, onToggle }) => {
     // Hide canvas
     const hideCanvas = useCallback(() => {
         const { canvas } = refs.current;
+        //Adjust canvas width
+        const chatArea = document.getElementById('chatArea')
+        chatArea.classList.remove('max-w-[40vw]', 'p-0', 'text-sm')
+        chatArea.classList.add('max-w-[98vw]', 'p-2', 'md:p-4')
 
         canvas.classList.add('translate-x-[100vw]');
 
@@ -454,6 +471,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
             InputSectionWfitAdjust('remove')
             mainLayoutAWfitAdjust('scale')
         }, 400)
+        chatdisplay.chats_size_adjust('scale_up')
     }, [setIsCanvasOpen, onToggle])
 
 
@@ -484,7 +502,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
     }, [Caret])
 
     const handleInput = useCallback((e) => {
-        console.log('Updating hand')
+        //console.log('Updating hand')
         updateLineNumbers()
         updateHandIndicator(e)
     })
@@ -540,7 +558,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
     if (!isOpen) return null;
 
     return (
-        <section id="canvas-wrapper" className="relative hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-pink-900 min-h-[80vh] flex items-center justify-center p-2 font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-500">
+        <section id="canvas-wrapper" className=" hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-gray-900 dark:via-purple-900 dark:to-pink-900 min-h-[80vh] flex items-center justify-center p-2 font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-500">
 
             <button onClick={handleClose} className="flex justify-center items-center absolute top-2 left-0 text-xl hover:rotate-45 transform transition-transform transition-all duration-500 ease-in-out rounded-full py-[0px] px-[6px]">
                 <span>{'\u00D7'}</span>
@@ -582,7 +600,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                         {/* Code block with line numbers and code content side by side */}
                         <div id="code-block-container" className="flex flex-row h-[93vh] max-h-full overflow-auto rounded-lg rounded-t-none ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner bg-white dark:bg-zinc-950 select-text text-sm max-w-[56vw]">
                             {/* Code content scrollable container */}
-                            <div id="code-scroll-wrapper" className="flex flex-row flex-1 overflow-hidden">
+                            <div id="code-scroll-wrapper" className="flex flex-row flex-1 overflow-auto">
                                 {/* Line numbers gutter */}
                                 <pre id="line-numbers" className="line-numbers block min-h-full h-[100vh] min-w-fit max-w-12 bg-purple-100 dark:bg-slate-950 p-4 border-r border-purple-200 dark:border-purple-700 transition-colors duration-500 text-sm font-mono flex-shrink-0 bg-opacity-100"></pre>
 

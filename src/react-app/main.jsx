@@ -1,7 +1,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
-
+import '../renderer/js/polyfills/polyfills'
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('react-root')

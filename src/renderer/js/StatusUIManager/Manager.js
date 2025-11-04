@@ -315,10 +315,13 @@ export class ModalManager {
      * @returns {Promise<boolean>} Promise that resolves to true if confirmed, false if cancelled
      */
     confirm(message, title = "Confirm Action") {
+        // Clear any pre-existing confirmation dialogs
+        //document.querySelector('[id^="confirm-dialog-"')?.remove()
+
         return new Promise((resolve) => {
             const dialogHtml = `
                 <div id="${this.dialogId}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0">
+                    <div id='dialog-content' class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0">
                         <div class="p-6 border-b border-gray-200">
                             <h3 class="text-xl font-bold text-gray-900">${this.escapeHtml(title)}</h3>
                         </div>
@@ -343,7 +346,7 @@ export class ModalManager {
 
             document.body.insertAdjacentHTML("beforeend", dialogHtml);
             const dialog = document.getElementById(this.dialogId);
-            const content = dialog.querySelector(".bg-white");
+            const content = dialog.querySelector("#dialog-content");
 
             // Animate in
             setTimeout(() => {
@@ -375,7 +378,7 @@ export class ModalManager {
         const dialog = document.getElementById(dialogId);
         if (!dialog) return;
 
-        const content = dialog.querySelector(".bg-white");
+        const content = dialog.querySelector("#dialog-content");
         content.classList.remove("scale-100", "opacity-100");
         content.classList.add("scale-95", "opacity-0");
 

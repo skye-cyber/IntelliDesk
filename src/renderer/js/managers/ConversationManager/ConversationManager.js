@@ -30,7 +30,6 @@ export class ConversationManager {
         try {
             if (window.desk.api.stat(filePath)) {
                 const data = await window.desk.api.read(filePath);
-                console.log(data)
                 return [data, data[0]?.metadata?.model || 'chat']
             }
         } catch (err) {
@@ -65,22 +64,30 @@ export class ConversationManager {
 
         if (model === 'multimodal') {
             conversationData[0].chats.forEach(message => {
-                if (message.role === "user") {
-                    //console.log(message.content[0]);
-                    this.renderUserMessage(message.content.text, model);
-                } else if (message.role === "assistant") {
-                    this.renderMultimodalAIMessage(message.content.text);
+
+                if (message.content) {
+                    if (message.role === "user") {
+                        this.renderUserMessage(message.content, model);
+                    } else if (message.role === "assistant") {
+                        this.renderMultimodalAIMessage(message.content);
+                    }
                 }
                 //window.debounceRenderKaTeX(null, null, true);
             });
         }
 
         conversationData[0].chats.forEach(message => {
-            if (message.role === "user") {
-                //console.log(message.content[0]);
-                this.renderUserMessage(message.content, model);
-            } else if (message.role === "assistant") {
-                this.renderTextAIMessage(message.content);
+            const content = typeof message?.content === 'string'
+                ? message.content.trim()
+                : '';
+
+
+            if (content) {
+                if (message.role === "user") {
+                    this.renderUserMessage(content, model);
+                } else if (message.role === "assistant") {
+                    this.renderTextAIMessage(content);
+                }
             }
             //window.debounceRenderKaTeX(null, null, true);
         });
@@ -168,7 +175,8 @@ export class ConversationManager {
         } else {
             userText = content?.slice(-1) === ']' ? content?.substring(0, content?.length - 22) : content
         }
-        this.chatutil.addUserMessage(userText, undefined, fileType, fileDataUrl)
+
+        if (userText) this.chatutil.addUserMessage(userText, undefined, fileType, fileDataUrl, false)
         //this.chatdisplay.chats_size_adjust()
     }
 
@@ -196,7 +204,7 @@ export class ConversationManager {
         }
 
         this.chatutil.addChatMessage(MessageContainer, false, thinkContent, actualResponse, MessageUId, exportId, foldId)
-        this.chatutil.render_dg(userText, MessageUId)
+        this.chatutil.render_dg(actualResponse, MessageUId)
     }
 
     // Render vision-based assistant message

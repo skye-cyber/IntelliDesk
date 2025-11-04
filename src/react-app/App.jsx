@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MainLayout } from '@components/Layout/MainLayout';
 import { Header } from '@components/Header/Header';
 import { ChatInterface } from '@components/Chat/ChatInterface';
-import { InputSection } from '@components/Input/InputSection';
 import { Sidebar } from '@components/Sidebar/Sidebar';
 import { Canvas } from '@components/Canvas/Canvas';
 import { useElectron } from '@hooks/useElectron';
@@ -32,6 +31,8 @@ import '@js/diagraming/jscharting.js'
 import '@js/Notification/notification';
 import '@js/ChatExport/export';
 import '@js/Utils/keyshortcuts';
+import { StateManager } from '@js/managers/StatesManager';
+
 
 const App = () => {
     //const { electron } = useElectron();
@@ -43,9 +44,18 @@ const App = () => {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
-
     const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
 
+    useEffect(() => {
+        StateManager.set('isCanvasOpen', isCanvasOpen)
+
+        StateManager.set('toggleCanvas', toggleCanvas)
+
+        StateManager.set('toggleRecording', !toggleRecording)
+
+        StateManager.set('isRecordingOn', isRecordingOn)
+
+    }, [isCanvasOpen, isRecordingOn])
 
     return (
         <ErrorBoundary>
@@ -69,14 +79,7 @@ const App = () => {
 
                             <div className="flex-1 flex flex-col">
                                 <ErrorBoundary>
-                                    <ChatInterface />
-                                </ErrorBoundary>
-                                <ErrorBoundary>
-                                    <InputSection
-                                        onSendMessage={sendMessage}
-                                        onToggleCanvas={toggleCanvas}
-                                        onToggleRecording={toggleRecording}
-                                    />
+                                    <ChatInterface onSendMessage={sendMessage} onToggleCanvas={toggleCanvas} onToggleRecording={toggleRecording} />
                                 </ErrorBoundary>
                             </div>
                         </div>
@@ -84,7 +87,7 @@ const App = () => {
                     </div>
 
                     <ErrorBoundary>
-                        <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
+                        <Canvas isOpen={StateManager.get('onToggleCanvas')} onToggle={toggleCanvas} />
                     </ErrorBoundary>
 
 

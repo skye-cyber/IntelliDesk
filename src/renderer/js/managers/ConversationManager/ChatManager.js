@@ -44,25 +44,21 @@ export class ChatManager {
 
                 for (let [index, file] of files.entries()) {
                     if (window.desk.api.getExt(file) === '.json') {
+                        console.log(file)
                         // Cmpartibility logic for older conversations with C- and V- to denote models
-                        let conversationId
-                        let timestamp
-                        let highlight = ''
 
-                        if (file.startsWith('C-') || file.startsWith('V-')) {
-                            conversationId = window.desk.api.getBasename(file, '.json');
-                        } else {
-                            const metadata = window.desk.api.getmetadata(file)
-                            conversationId = metadata?.id || metadata?.name
-                            timestamp = metadata?.timestamp
-                            highlight = metadata?.higlight
-                        }
+                        const metadata = window.desk.api.getmetadata(file)
+                        const conversationId = metadata?.id || metadata?.name
+                        const timestamp = metadata?.timestamp
+                        const highlight = metadata?.higlight || ''
+                        const name = metadata?.name || conversationId
 
                         const conversationItem = document.createElement('div');
                         conversationItem.className = `conversation-item group`
                         conversationItem.id = "chat-item"
 
                         conversationItem.setAttribute('data-name', conversationId);
+                        conversationItem.setAttribute('data-id', name);
                         conversationItem.setAttribute('data-hightlight', highlight);
 
                         conversationItem.innerHTML = `
@@ -94,6 +90,8 @@ export class ChatManager {
                             // Prevent the default context menu
                             event.preventDefault();
                             this.currentConversationId = conversationId
+                            conversationItem.dataset.id = conversationId
+                            this.showConversationOptions()
                         });
                     } else {
                         console.log("No conversations saved!")
@@ -103,9 +101,8 @@ export class ChatManager {
             }
             return false
         } catch (err) {
-            throw(err)
-            //console.error('Error reading conversation files:', err);
-            //return false
+            console.error('Error reading conversation files:', err);
+            return false
         }
     }
 
@@ -182,6 +179,7 @@ export class ChatManager {
             chatOptionsOverlay.classList.remove('hidden');
             chatOptions.classList.remove('animate-exit');
             chatOptions.classList.add('animate-enter')
+            chatOptionsOverlay.dataset.id = this.currentConversationId
             return true
         } catch (err) {
             return false
@@ -228,42 +226,55 @@ export class ChatManager {
         }, 310)
     }
 
-    RenameConversation(name) {
-        this.showLoadingModal(`Renaming ${currentConversationId} ...`);
+    RenameConversation(name, id = null) {
+        this.showLoadingModal(`Renaming ${this.currentConversationId} ...`);
+        if (!this.currentConversationId || (id && this.currentConversationId != id)) this.currentConversationId = id
+
         try {
-            const newName = `${this.currentConversationId[0]}-${name}`;
-            const conversationItem = document.querySelector(`[data-text="${currentConversationId}"]`);
-            if (conversationItem && newName !== '') {
-                const rename = window.desk.api.Rename(storagePath, currentConversationId, newName);
+            const conversationItem = document.querySelector(`[data-id="${this.currentConversationId}"]`);
+            console.log(conversationItem, name, this.currentConversationId === id)
+            if (conversationItem && name !== '') {
+
+                const rename = window.desk.api.Rename(this.currentConversationId, name, this.storagePath);
                 if (rename) {
-                    conversationItem.textContent = newName;
-                    conversationItem.setAttribute('data-text', newName);
+                    conversationItem.dataset.name = name;
+                    conversationItem.querySelector('#chat-name').textContent = name
                 }
             }
             this.hideConversationOptions();
-            this.hideConversationOptions();
-            this.conversationManager.fetchConversations();
+            this.fetchConversations();
+            this.hideLoadingModal()
         } catch (err) {
             this.hideConversationOptions()
             console.log("Failed to rename file", err);
+            this.hideLoadingModal()
         }
     }
 
-    DeleteConversation() {
-        this.showLoadingModal(`Deleting ${currentConversationId}`);
-        const _delete = window.desk.api.deleteChat(storagePath, currentConversationId);
-        if (_delete) {
-            this.hideLoadingModal();
+    DeleteConversation(id=null) {
+        try {
+            this.showLoadingModal(`Deleting ${this.currentConversationId}`);
+            if (!this.currentConversationId || (id && this.currentConversationId != id)) this.currentConversationId = id
+
+            const _delete = window.desk.api.deleteChat(this.currentConversationId, this.storagePath);
+            if (_delete) {
+                this.hideLoadingModal();
+                this.hideConversationOptions();
+                window.showDeletionStatus("text-red-400", `Deleted ${this.currentConversationId}`);
+                console.log(`Deleted ${this.currentConversationId}`);
+            } else {
+                this.hideConversationOptions();
+            }
+            // Hide options and refresh
             this.hideConversationOptions();
-            window.showDeletionStatus("text-red-400", `Deleted ${currentConversationId}`);
-            console.log(`Deleted ${currentConversationId}`);
-        } else {
-            this.hideConversationOptions();
+            this.hideLoadingModal()
+            this.fetchConversations();
+            return _delete
+        } catch (err) {
+            this.hideConversationOptions()
+            console.log("Failed to rename file", err);
+            this.hideLoadingModal()
         }
-        // Hide options and refresh
-        this.hideConversationOptions();
-        this.conversationManager.fetchConversations();
-        return _delete
     }
 
     // Function to render a conversation from a file

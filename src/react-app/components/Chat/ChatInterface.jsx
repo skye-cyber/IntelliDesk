@@ -4,10 +4,14 @@ import { MessageList } from './MessageList';
 import { useElectron } from '@hooks/useElectron';
 import { showDropZoneModal } from '@components/DropZone/util.js'
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
+
+import { InputSection } from '@components/Input/InputSection';
+//import { StateManager } from '@js/managers/StatesManager';
 
 const chatutil = new ChatUtil()
 
-export const ChatInterface = () => {
+export const ChatInterface = (onSendMessage, onToggleCanvas, onToggleRecording) => {
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const chatAreaRef = useRef(null);
@@ -85,15 +89,23 @@ export const ChatInterface = () => {
             scrollButton.removeEventListener('click', chatutil.updateScrollButtonVisibility)
         }
     }, [])
-
+    console.log(StateManager.get('toggleCanvas'))
 
     return (
         <section>
             <section
                 id="chatArea"
                 ref={chatAreaRef}
-                className="relative bg-gray-50 dark:bg-[#0a0a1f] h-[75vh] p-2 shadow-inner shadow-gray-400 dark:shadow-none md:p-4 rounded-lg dark:shadow-gray-950 overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 max-w-[98vw] mb-[15vh]"
+                className="relative bg-gray-50 dark:bg-[#0a0a1f] h-[90vh] p-2 md:p-4 rounded-lg overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 max-w-full mb-80 border-1 border-blend-50 dark:border-blend-700"
             >
+                <ErrorBoundary>
+                    <InputSection
+                    onToggleCanvas={StateManager.get('toggleCanvas')
+                    }
+                    onToggleRecording={StateManager.set('toggleRecording')
+                    }
+                    />
+                </ErrorBoundary>
                 {/* Show quick actions when no messages */}
                 {messages.length === 0 && !isLoading && (
                     <QuickActions onActionClick={handleQuickAction} />

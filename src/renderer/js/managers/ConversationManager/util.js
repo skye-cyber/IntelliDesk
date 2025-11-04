@@ -33,7 +33,7 @@ export class ChatUtil {
     }
 
 
-    addUserMessage(text, chatArea = document.getElementById('chatArea'), fileType, fileDataUrl, fileContainerId,) {
+    addUserMessage(text, chatArea = document.getElementById('chatArea'), fileType, fileDataUrl, fileContainerId, save = true) {
         //console.log("Date time + text:", text)
         const userMessageId = `msg_${Math.random().toString(34).substring(3, 9)}`;
         const copyButtonId = `copy-button-${Math.random().toString(36).substring(5, 9)}`;
@@ -71,7 +71,7 @@ export class ChatUtil {
         // Add Timestamp to user prompt
         text = `${text} [${window.desk.api.getDateTime()} UTC]`
 
-        window.desk.api.addHistory({ role: "user", content: text });
+        if (save) window.desk.api.addHistory({ role: "user", content: text });
         //User_wfit(canvasutil..isCanvasOpen() ? 'add' : 'remove') -> handled by cnvas component
         return userMessage
     }

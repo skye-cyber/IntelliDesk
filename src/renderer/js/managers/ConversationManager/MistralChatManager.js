@@ -205,7 +205,7 @@ export async function MistraChat(text, chatArea, modelName) {
 export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = null, modelName) {
     const _Timer = new window.Timer;
     chatutil.hide_suggestions()
-
+    console.log('vision')
     StateManager.set('processing', true);
 
     console.log("Reached Mistral vision")

@@ -5,12 +5,16 @@ const Manager = new ChatManager()
 
 export const ChatOptions = ({ isOpen, onToggle }) => {
 
-    const confirmDeletion = useCallback(() => {
-        const confirmed = window.ModalManager.confirm("Are you sure you want to delete this item?", "Confirm Deletion")
-        if (confirmed) Manager.DeleteConversation()
+    const confirmDeletion = useCallback(async () => {
+        const confirmed = await window.ModalManager.confirm("Are you sure you want to delete this item?", "Confirm Deletion")
+        if (confirmed) {
+            const currentConversationId = document.getElementById('chatOptions-overlay').dataset.id
+            Manager.currentConversationId = currentConversationId
+            Manager.DeleteConversation(currentConversationId)
+        }
     })
 
-    const showtRenameModal = useCallback(() => {
+    const showRenameModal = useCallback(() => {
         const renameModal = document.getElementById('renameModal');
         const modalTitle = document.getElementById('modalTitle');
 
@@ -18,52 +22,69 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
         renameModal.classList.remove('translate-y-full')
         renameModal.classList.add('translate-y-0')
 
-        const currentConversationId = Manager._get_conversation_id()
+        const currentConversationId = document.getElementById('chatOptions-overlay').dataset.id
+        Manager.currentConversationId = currentConversationId
         if (modalTitle && currentConversationId) modalTitle.textContent = `Rename ${currentConversationId}`;
 
     })
 
     const hideRenameModal = useCallback(() => {
         const renameModal = document.getElementById('renameModal');
-        renameModal.classList.remove('translate-y-full')
-        renameModal.classList.add('translate-y-0')
+        renameModal.classList.remove('translate-y-0')
+        renameModal.classList.add('translate-y-full')
     })
 
     const rename = useCallback(() => {
         hideRenameModal()
         const newName = document.getElementById('newName').value.trim();
-        Manager().RenameConversation(newName)
+        Manager.RenameConversation(newName, document.getElementById('chatOptions-overlay').dataset.id)
         hideRenameModal()
     })
 
     useEffect(() => {
         const newNameInput = document.getElementById('newName');
 
-        newNameInput.addEventListener('keypress', (event) => {
+        const handleKeyPress = (event) => {
             event.stopPropagation();
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.shiftKey) {
                 rename();
+            } else if (event.key === 'Escape') {
+                if (document.getElementById('renameModal')?.classList.contains('translate-y-0')) {
+                    hideRenameModal()
+                } else {
+                    if(!document.querySelector('[id^="confirm-dialog-"'))
+                    Manager.hideConversationOptions()
+                }
             }
-        }, { once: true });
+        }
+        document.addEventListener('close-rename-modal', hideRenameModal);
+        newNameInput.addEventListener('keydown', handleKeyPress);
+        document.addEventListener('keydown', handleKeyPress)
+
+        return () => {
+            newNameInput.removeEventListener('keypress', handleKeyPress);
+            document.removeEventListener('close-rename', hideRenameModal);
+            document.removeEventListener('keydown', handleKeyPress)
+        }
     })
     return (
-        <div id="chatOptions-overlay" className="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 hidden w-full h-full">
+        <div id="chatOptions-overlay" className="fixed inset-0 bg-gray-900 bg-opacity-60 z-40 hidden w-full h-full max-4xl max-h-4xl">
             {/*-- Conversation options */}
-            <div id="chatOptions" className="fixed flex inset-0 items-center justify-center rounded-lg shadow-xl z-50 animate-exit">
-                <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full bg-gradient-to-r from-blue-400 to-sky-400">
+            <div id="chatOptions" className="fixed flex inset-0 items-center justify-center rounded-lg shadow-2xl z-50 animate-exit">
+                <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full border border-gray-200 backdrop-blur-sm bg-white/95">
                     <div className="text-center">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Options</h2>
-                        <section className="grid grid-rows-2 space-y-4">
-                            <div className="flex flex-row justify-center space-x-4">
-                                <button onClick={showtRenameModal} id="renameOption" className="bg-blue-800 text-white p-1 rounded-lg w-full shadow-sm transition duration-300 ease-in-out transform hover:scale-105">
-                                    Rename
+                        <h2 className="text-3xl font-bold text-gray-800 mb-8">Conversation Options</h2>
+                        <section className="space-y-6">
+                            <div className="flex flex-row justify-center gap-4">
+                                <button onClick={showRenameModal} id="renameOption" className="bg-gradient-to-br from-blue-500 to-blue-600 text-white py-3 px-6 rounded-xl w-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl hover:from-blue-600 hover:to-blue-700 active:scale-95 font-semibold text-lg">
+                                    ✏️ Rename
                                 </button>
-                                <button onClick={confirmDeletion} id="DeleteOption" className="bg-red-500 text-white p-2 rounded-lg w-full shadow-sm transition duration-300 ease-in-out transform hover:scale-105">
-                                    Delete
+                                <button onClick={confirmDeletion} id="DeleteOption" className="bg-gradient-to-br from-red-500 to-red-600 text-white py-3 px-6 rounded-xl w-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-xl hover:from-red-600 hover:to-red-700 active:scale-95 font-semibold text-lg">
+                                    🗑️ Delete
                                 </button>
                             </div>
-                            <div className="items-center">
-                                <button onClick={() => ChatManager.hideConversationOptions()} id="renameOptionsBt" className="bg-gray-300 text-gray-700 mt-4 p-3 rounded-lg w-fit shadow-sm transition duration-300 ease-in-out transform hover:scale-105">
+                            <div className="items-center pt-2">
+                                <button onClick={() => Manager.hideConversationOptions()} id="renameOptionsBt" className="bg-gray-100 text-gray-700 py-3 px-8 rounded-xl w-fit shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:bg-gray-200 hover:shadow-lg active:scale-95 font-medium text-lg border border-gray-300">
                                     Cancel
                                 </button>
                             </div>
@@ -72,9 +93,11 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
                 </div>
             </div>
 
-
             {/*--Conversation Rename modal-*/}
-            <div id="renameModal" className="fixed inset-0 z-50 flex translate-y-full items-center justify-center bg-black bg-opacity-40 transform transition-transform duration-700 ease-in-out">
+            <div
+                onClick={(e) => {
+                    if (e.traget == e.currentTarget) hideRenameModal()
+                }} id="renameModal" className="fixed inset-0 z-50 flex translate-y-full items-center justify-center bg-black bg-opacity-40 transform transition-transform duration-700 ease-in-out">
                 <div className="bg-white p-6 rounded-lg shadow-lg">
                     <h3 id="modalTitle" className="text-2xl font-bold text-gray-800 mb-4"></h3>
                     <div className="mb-4">

@@ -15,7 +15,7 @@ import('@js/managers/router.js').then(({ Router }) => {
 })
 
 
-export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording }) => {
+export const InputSection = ({ onToggleCanvas, onToggleRecording }) => {
     // State management for the toggle
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [isAIActive, setIsAIActive] = useState(false);
@@ -156,7 +156,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
         } else {
             // Toggle the canvas for any other part of the button
             //console.log('Canvas area clicked - toggling canvas');
-            onToggleCanvas(); // Your canvas toggle function
+            onToggleCanvas(); // canvas toggle function
         }
     }, [onToggleCanvas]); // Add dependencies
 
@@ -198,7 +198,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
     useEffect(() => {
         chatutil.scrollToBottom(document.getElementById('chatArea'), false);
     }, []);
-
+    console.log(typeof(onToggleCanvas))
     return (
         <div id="userInput-wrapper" className="absolute flex justify-center left-0 lg:left-auto w-full lg:items-center lg:justify-center z-30 bottom-[2%] transition-all duration-1000">
             <section className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-700">
@@ -261,7 +261,7 @@ export const InputSection = ({ onSendMessage, onToggleCanvas, onToggleRecording 
 
                             {/* Preview Button */}
                             <button id="previewBtn"
-                                className="hidden xs:flex h-8 min-w-8 items-center justify-center rounded-full border p-2 text-[13px] font-medium
+                                className="hidden h-8 min-w-8 items-center justify-center rounded-full border p-2 text-[13px] font-medium
                                     border-sky-900 bg-blue-100 hover:bg-sky-300 dark:border-[#aa55ff] dark:bg-[#171717] dark:hover:bg-[#225]
                                     text-gray-900 dark:text-white transition-colors duration-300"
                                 aria-pressed="false"

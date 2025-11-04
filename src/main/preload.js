@@ -62,6 +62,8 @@ const api = {
             // Remove system instructions before saving
             if (data[0].chats[0].role === 'system') data[0].chats.shift()
 
+            data = api.clean(data)
+
             data = JSON.stringify(data, null, 2)
 
             fs.writeFileSync(path, data);
@@ -104,7 +106,7 @@ const api = {
     joinPath: (node, child) => {
         return path.join(node, child);
     },
-    Rename: (base_dir, id, name) => {
+    Rename: (id, name, base_dir=conversation_root) => {
         try {
             fs.renameSync(path.join(base_dir, `${id}.json`), path.join(base_dir, `${name}.json`))
             return true
@@ -113,7 +115,7 @@ const api = {
             return false
         }
     },
-    deleteChat: (base_dir, id) => {
+    deleteChat: (id, base_dir=conversation_root) => {
         try {
             const file = path.join(base_dir, `${id}.json`)
             if (fs.statSync(file)) {
@@ -130,7 +132,6 @@ const api = {
         }
     },
     addHistory: (item) => {
-        console.log(ConversationHistory)
         ConversationHistory[0].chats.push(item); // Modify the array
         if (!ConversationHistory[0].metadata.higlight) {
             ConversationHistory[0].metadata.higlight = item?.content.slice(0, 15)
@@ -139,7 +140,7 @@ const api = {
         api.saveConversation(ConversationHistory)
         //DEPRECATED
         ipcRenderer.send('desk.api-update-chat', ConversationHistory); // Notify other processes
-        console.log("Saved conversation, size:", ConversationHistory[0].chats.length);
+        //console.log("Saved conversation, size:", ConversationHistory[0].chats.length);
     },
     getHistory: () => {
         return ConversationHistory;
@@ -147,16 +148,68 @@ const api = {
     popHistory: () => {
         ConversationHistory[0].chats.pop();
     },
+    getModel: () => {
+        return ConversationHistory[0].metadata.model
+    },
+    clean: (chats) => {
+        return chats
+            .map(chat => {
+                const cleaned_chats = chat.chats
+                    .map(item => {
+                        let content = item?.content;
+
+                        // Handle array-type content
+                        if (Array.isArray(content)) {
+                            content = content
+                                .map(part => {
+                                    let text = part?.text || '';
+
+                                    // Apply your slice rule
+                                    if (text.slice(-1) === ']') {
+                                        text = text.substring(0, text.length - 22);
+                                    }
+
+                                    text = text.trim();
+                                    return text ? { type: part?.type || 'text', text } : null;
+                                })
+                                .filter(Boolean);
+                        }
+
+                        // Handle string-type content
+                        else if (typeof content === 'string') {
+                            if (content.slice(-1) === ']') {
+                                content = content.substring(0, content.length - 22);
+                            }
+                            content = content.trim();
+                        }
+
+                        // Invalid or empty content
+                        else {
+                            content = '';
+                        }
+
+                        // Skip empty entries
+                        const isEmpty =
+                            (Array.isArray(content) && content.length === 0) ||
+                            (typeof content === 'string' && !content);
+
+                        if (isEmpty) return null;
+
+                        return { role: item.role, content };
+                    })
+                    .filter(Boolean); // remove nulls
+
+                // Skip chats with no messages
+                if (!cleaned_chats.length) return null;
+
+                return { ...chat, chats: cleaned_chats };
+            })
+            .filter(Boolean); // remove empty chat objects
+    },
     getmetadata: (file) => {
         const fpath = path.join(conversation_root, file)
         if (!api.stat(fpath)) return;
         return JSON.parse(fs.readFileSync(fpath, 'utf-8'))[0]?.metadata
-    },
-    setConversation: (data, id) => {
-        if (data[0].chats[0]?.role !== 'system') data[0].chats.unshift({ role: 'system', content: system_command })
-
-        ConversationHistory = data;
-        ConversationId = id ? id : data[0].metadata.id;
     },
     clearAllImages: (history) => {
         // Convert history to array and process each message
@@ -246,6 +299,13 @@ const api = {
     },
     setConversationId: (id) => {
         ConversationId = id;
+    },
+    setConversation: (data, id) => {
+        //api.saveConversation(data, data[0].metadata.id)
+
+        if (data[0].chats[0]?.role !== 'system') data[0].chats.unshift({ role: 'system', content: system_command })
+        ConversationHistory = data;
+        ConversationId = id ? id : data[0].metadata.id;
     },
     send: (channel, data) => {
         // List of valid channels

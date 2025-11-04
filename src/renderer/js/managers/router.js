@@ -63,9 +63,6 @@ export class Router {
         const text = event.detail.text;
         const fileType = event.detail.fileType
 
-        // Define the set of models that should use MistraVision
-        const mistralModels = ["pixtral-12b-2409", "pixtral-large-2411", "mistral-small-latest"];
-
         //switch to vision model
         const res = await this.switchToVision()
 
@@ -110,7 +107,7 @@ export class Router {
         if (StateManager.get('processing') === true) return;
         const model = this.getModelValue();
 
-        console.log("✅Reached Target requestRouter:")
+        // console.log("✅Reached Target requestRouter:")
 
         //Intercept image generation
         if (StateManager.get('imageGen', true)
@@ -120,7 +117,7 @@ export class Router {
             return
         }
         //console.log("DataClass:", dataClass); // This will log the value of the data-avalue attribute
-        else if (ms_models.includes(model)) {
+        else if (ms_models.includes(model) || window.desk.api.getModel()==='multimodal') {
             this.routeToMistral(text, chatArea, model);
         } else {
             this.routeToHf(text, chatArea);

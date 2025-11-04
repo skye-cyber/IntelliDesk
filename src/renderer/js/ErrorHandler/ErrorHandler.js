@@ -463,7 +463,8 @@ export function handleRequestError(error, chatArea, userMessage, aiMessage, VS_u
 
     try {
         const conversationHistory = window.desk.api.getHistory();
-        const lastEntry = conversationHistory[0].chats.slice(-1)[0];
+        const lastEntry = conversationHistory[0]?.chats?.slice(-1)[0];
+
         if (lastEntry && (lastEntry.role !== 'system')) {
             lastMessage = lastEntry.content;
             text = typeof lastMessage === 'string' ? lastMessage : lastMessage.text ||

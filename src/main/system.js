@@ -126,7 +126,7 @@ class command {
                 - ${this.profile}`
                 :
                 ''}
-        `
+        `.trim()
     }
 }
 

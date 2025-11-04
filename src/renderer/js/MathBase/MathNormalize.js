@@ -45,7 +45,7 @@ export function normalizeMathDelimiters(text) {
     // 1) extract all ```…``` blocks and replace with placeholders
     const codeBlocks = [];
     const placeholder = (_match, idx) => `@@CODEBLOCK${idx}@@`;
-    text = text.replace(/```[\s\S]*?```/g, match => {
+    text = text?.replace(/```[\s\S]*?```/g, match => {
         const i = codeBlocks.push(match) - 1;
         return `@@CODEBLOCK${i}@@`;
     });

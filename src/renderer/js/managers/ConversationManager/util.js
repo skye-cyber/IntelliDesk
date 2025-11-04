@@ -1,6 +1,9 @@
 import { implementUserCopy, InputPurify } from "../../Utils/chatUtils";
 import { markitdown } from '../../CodeRenderer/code_renderer';
-import { normalizeMathDelimiters } from '../../MathBase/MathNormalize';
+import { normaliZeMathDisplay, normalizeMathDelimiters } from "../../MathBase/MathNormalize";
+import { debounceRenderKaTeX } from "../../MathBase/mathRenderer";
+import { LoopRenderCharts } from "../../diagraming/jscharting";
+import { handleDiagrams } from "../../diagraming/vizcharting";
 
 export class ChatUtil {
     constructor() {
@@ -68,7 +71,7 @@ export class ChatUtil {
         // Add Timestamp to user prompt
         text = `${text} [${window.desk.api.getDateTime()} UTC]`
 
-        //window.desk.api.addHistory({ role: "user", content: text });
+        window.desk.api.addHistory({ role: "user", content: text });
         //User_wfit(canvasutil..isCanvasOpen() ? 'add' : 'remove') -> handled by cnvas component
         return userMessage
     }
@@ -106,6 +109,14 @@ export class ChatUtil {
     removeLoadingAnimation() {
         const loader = document.getElementById('loader-parent')?.parentElement
         if (loader?.id.startsWith("loader_")) loader?.remove()
+    }
+
+    render_dg(response, container_selector, scope = 'all') {
+        // render diagrams fromthis response
+        handleDiagrams(response, scope);
+        LoopRenderCharts(response)
+        debounceRenderKaTeX(`.${container_selector}`, null, true);
+        normaliZeMathDisplay(`.${container_selector}`)
     }
 
     addChatMessage(container, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId = null) {
@@ -271,6 +282,7 @@ export class ChatUtil {
 			</section>`:
                 ""}
         `;
+
         return container
     }
     addMultimodalMessage(container, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId = null) {
@@ -487,9 +499,9 @@ export class ChatUtil {
     }
 
     hide_suggestions() {
-        document.getElementById('suggestions').classList.add('hidden')
+        document.getElementById('suggestions')?.classList?.add('hidden')
     }
-    open_canvas(){
+    open_canvas() {
         document.getElementById('ToggleCanvasBt')?.click()
     }
 }
@@ -504,26 +516,31 @@ export class ChatDisplay {
         if (task === "scale_down") {
             if (user_chats?.length > 0) {
                 user_chats.forEach(chat => {
-                    chat.classList.remove('lg:max-w-5xl')
-                    chat.classList.add('w-fit')
+                    chat?.classList?.remove('lg:max-w-5xl')
+                    chat?.classList?.add('w-fit')
                 })
             } else {
                 if (ai_chats?.length > 0) {
-                    chat.classList.remove('lg:max-w-5xl')
-                    chat.classList.add('w-fit')
+                    user_chats.forEach(chat => {
+
+                        chat?.classList?.remove('lg:max-w-5xl')
+                        chat?.classList?.add('w-fit')
+                    })
                 }
             }
         }
         else {
             if (ai_chats?.length > 0) {
                 ai_chats.forEach(chat => {
-                    chat.classList.remove('w-fit')
-                    chat.classList.add('lg:max-w-5xl')
+                    chat?.classList?.remove('w-fit')
+                    chat?.classList?.add('lg:max-w-5xl')
                 })
             } else {
                 if (ai_chats?.length > 0) {
-                    chat.classList.remove('w-fit')
-                    chat.classList.add('lg:max-w-5xl')
+                    user_chats.forEach(chat => {
+                        chat?.classList?.remove('w-fit')
+                        chat?.classList?.add('lg:max-w-5xl')
+                    })
                 }
             }
         }

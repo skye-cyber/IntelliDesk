@@ -47,18 +47,23 @@ export class ChatManager {
                         // Cmpartibility logic for older conversations with C- and V- to denote models
                         let conversationId
                         let timestamp
-                        if (file.startsWith('C-') || file.startsWith('C-')) {
+                        let highlight = ''
+
+                        if (file.startsWith('C-') || file.startsWith('V-')) {
                             conversationId = window.desk.api.getBasename(file, '.json');
                         } else {
                             const metadata = window.desk.api.getmetadata(file)
                             conversationId = metadata?.id || metadata?.name
                             timestamp = metadata?.timestamp
+                            highlight = metadata?.higlight
                         }
 
                         const conversationItem = document.createElement('div');
                         conversationItem.className = `conversation-item group`
+                        conversationItem.id = "chat-item"
 
-                        conversationItem.setAttribute('data-text', conversationId);
+                        conversationItem.setAttribute('data-name', conversationId);
+                        conversationItem.setAttribute('data-hightlight', highlight);
 
                         conversationItem.innerHTML = `
                         <div class="flex items-center space-x-3 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 cursor-pointer transition-all duration-200">
@@ -70,12 +75,12 @@ export class ChatManager {
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between">
-                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                    <h3 id="chat-name" class="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                         ${conversationId}
                                     </h3>
                                     <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">${this.formatRelativeTime(timestamp || conversationId)}</span>
                                 </div>
-                                <p class="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
+                                <p id="chat-highlight" class="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
                                     Working on the new interface...
                                 </p>
                             </div>
@@ -142,44 +147,11 @@ export class ChatManager {
         return `${years}y`;
     }
 
+    /**
+     * DEPRECATED In favour of preload handler via api
+     */
     setupIPCRecievers() {
-        // Listen for updates messages from ipc for Chat models and update the history files
-        window.desk.api.receive('fromMain-ToChat', (data) => {
-            let Chat = data
-            try {
-                let conversationId = window.desk.api.getConversationId() || window.desk.api.getNewChatUUId();
-                console.log('ChatUpdated::');
-                if (Chat.length > 1) {
-                    this.conversationManager.saveConversation(Chat, conversationId);
-                    console.log("Saved conversation, size:", Chat.length);
-                }
-            } catch (err) {
-                console.log("Outer loop error:", err);
-            }
-
-        });
-
-
-        // Listen for updates messages from ipc for Vision models and update the history files
-        window.desk.api.receive('fromMain-ToVision', (data) => {
-            try {
-                let VChat = data
-                //console.log(JSON.stringify(VChat));
-                let VconversationId = window.desk.api.getConversationId() || window.desk.api.getNewVisionUUId()
-                console.log("VChatUpdated::");
-                if (VChat && VChat.length > 1) {
-                    this.conversationManager.saveConversation(VChat, VconversationId);
-                    console.log("Saved V conversation, size:", VChat.length);
-                } else if (typeof VChat === 'object' && Object.keys(VChat).length > 1) {
-                    this.conversationManager.saveConversation(VChat, VconversationId);
-                    console.log("Saved V conversation, size length", VChat.length);
-                } else {
-                    console.log("VChat is not an array or object with more than one entry.");
-                }
-            } catch (err) {
-                console.error("Error in VChatUpdated handler:", err);
-            }
-        });
+        // DEPRECATED:
     }
 
     async checkAndCreateDirectory() {
@@ -200,7 +172,7 @@ export class ChatManager {
 
     updateActiveConversation(conversationId) {
         this.currentConversationId = conversationId;
-        this.showConversationOptions();
+        //this.showConversationOptions();
     }
 
     showConversationOptions() {
@@ -307,8 +279,8 @@ export class ChatManager {
         const [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
         //console.log(conversationData, model)
         if (conversationData) {
-            window.desk.api.setConversationId(conversationId);  //Set global conversation id to the current conversation id
-            //console.log(conversationData)
+            window.desk.api.setConversation(conversationData, conversationId);  //Set global conversation id to the current conversation id
+            //console.log('set:', conversationData)
             this.conversationManager.renderConversation(conversationData, model);
         } else {
             window.ModalManager.showMessage(`Conversation ${conversationId} not found.`, 'warning');

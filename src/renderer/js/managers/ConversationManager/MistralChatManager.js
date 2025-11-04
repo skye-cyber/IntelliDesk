@@ -69,7 +69,6 @@ export async function MistraChat(text, chatArea, modelName) {
         console.log("Reached Mistral chat", text)
         chatutil.hide_suggestions()
 
-        StateManager.set('aiMessage',);
         // Add user message to the chat interface
         const userMesage = chatutil.addUserMessage(text, chatArea)
 
@@ -85,6 +84,8 @@ export async function MistraChat(text, chatArea, modelName) {
         const aiMessageUId = `msg_${Math.random().toString(30).substring(3, 9)}`;
 
         const aiMessage = document.createElement("div")
+        StateManager.set('PrevaiMessage', StateManager.get('aiMessage')
+        )
         StateManager.set('aiMessage', aiMessage)
 
         aiMessage.classList.add("flex", "justify-start", "mb-12", "overflow-wrap");
@@ -159,6 +160,11 @@ export async function MistraChat(text, chatArea, modelName) {
                 });
 
             }
+
+            if(actualResponse.startsWith('<continue>')){
+                StateManager.set('aiMessage', StateManager.set('PrevaiMessage')
+                )
+            }
             //console.log(actualResponse)
             // Update innerHTML with marked output
             chatutil.addChatMessage(aiMessage, isThinking, thinkContent, actualResponse, aiMessageUId, exportId, foldId)
@@ -179,20 +185,15 @@ export async function MistraChat(text, chatArea, modelName) {
         // Reset send button appearance
         HandleProcessingEventChanges("hide")
 
-        // Render katex immediately
-        debounceRenderKaTeX(`.${aiMessageUId}`, null, true);
-        normaliZeMathDisplay(`.${aiMessageUId}`)
-
         // normalize canvas
         canvasutil.NormalizeCanvasCode();
 
         // Store conversation history
-        //window.desk.api.addHistory({ role: "assistant", content: output });
+        window.desk.api.addHistory({ role: "assistant", content: output });
 
-        //console.log(actualResponse, fullResponse, output)
-        // render diagrams from this response
-        handleDiagrams(output, 'both');
-        LoopRenderCharts(output)
+        // Render diagrams
+        chatutil.render_dg(output, aiMessageUId)
+
         chatutil.removeLoadingAnimation()
         chatdisplay.chats_size_adjust()
     } catch (err) {
@@ -376,15 +377,11 @@ export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = n
         // normalize canvas
         canvasutil.NormalizeCanvasCode(document.getElementById('code-view'));
 
-        // Render katex immediately
-        debounceRenderKaTeX(`.${MessageUId}`, null, true);
-        normaliZeMathDisplay(`.${MessageUId}`)
-
         //window.desk.api.addHistory({ role: "assistant", content: [{ type: "text", text: output }] });
 
-        // render diagrams fromthis response
-        handleDiagrams(output, 'both');
-        LoopRenderCharts(output)
+        // render diagrams from this response
+        chatutil.render_dg(output, MessageUId)
+
         chatdisplay.chats_size_adjust()
     } catch (error) {
         handleRequestError(error, StateManager.get('userMessage'), StateManager.get('aiMessage'), ["VS", fileType, fileContainerId])

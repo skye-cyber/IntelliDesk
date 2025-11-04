@@ -30,8 +30,9 @@ let ConversationHistory = [
         metadata: {
             model: 'chat',
             name: '',
-            id: '',
-            timestamp: getformatDateTime()
+            id: ConversationId,
+            timestamp: getformatDateTime(),
+            higlight: ''
         },
         chats: []
     }
@@ -74,8 +75,8 @@ const api = {
         try {
             let data = JSON.parse(fs.readFileSync(path, 'utf-8'));
             // Add compartibility feature to maintain conversations instegrity!
-            if (data[0]?.chats[0].role !== "system") {
-                data[0].chats[0].content = system_command;
+            if (data[0]?.chats[0].role === "system") {
+                data[0].chats.shift()
             }
             return data
         } catch (err) {
@@ -129,8 +130,16 @@ const api = {
         }
     },
     addHistory: (item) => {
+        console.log(ConversationHistory)
         ConversationHistory[0].chats.push(item); // Modify the array
+        if (!ConversationHistory[0].metadata.higlight) {
+            ConversationHistory[0].metadata.higlight = item?.content.slice(0, 15)
+        }
+        // Save to file
+        api.saveConversation(ConversationHistory)
+        //DEPRECATED
         ipcRenderer.send('desk.api-update-chat', ConversationHistory); // Notify other processes
+        console.log("Saved conversation, size:", ConversationHistory[0].chats.length);
     },
     getHistory: () => {
         return ConversationHistory;
@@ -142,6 +151,12 @@ const api = {
         const fpath = path.join(conversation_root, file)
         if (!api.stat(fpath)) return;
         return JSON.parse(fs.readFileSync(fpath, 'utf-8'))[0]?.metadata
+    },
+    setConversation: (data, id) => {
+        if (data[0].chats[0]?.role !== 'system') data[0].chats.unshift({ role: 'system', content: system_command })
+
+        ConversationHistory = data;
+        ConversationId = id ? id : data[0].metadata.id;
     },
     clearAllImages: (history) => {
         // Convert history to array and process each message
@@ -193,13 +208,38 @@ const api = {
         return cleanedHistory;
     },
     CreateNew: (conversation, model) => {
+        if (!ConversationId) ConversationId = api.generateUUID()
         ConversationHistory[0].chats = conversation
         ConversationHistory[0].metadata =
         {
             model: model,
-            id: `${ConversationId}`,
+            id: ConversationId,
             timestamp: getformatDateTime()
         }
+        api.saveConversation(ConversationHistory)
+    },
+    saveConversation: async (conversationData, conversationId = ConversationId) => {
+        const filePath = `${conversation_root}/${conversationId}.json`;
+        //console.log(JSON.stringify(conversationData))
+        try {
+            //console.log("Saving: " + conversationId + filePath)
+            await api.write(filePath, conversationData);
+            return filePath
+        } catch (err) {
+            console.error('Error saving conversation:', err);
+        }
+    },
+    generateUUID: () => {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID(); // ✅ Modern secure UUID (v4)
+        }
+
+        // 🧩 Fallback for older browsers or runtimes
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     },
     getConversationId: () => {
         return ConversationId;
@@ -449,20 +489,18 @@ contextBridge.exposeInMainWorld('desk', {
 document.addEventListener('DOMContentLoaded', function() {
     //initialize conversation histories when is ready/loaded
     ConversationHistory[0].chats = [{ role: "system", content: system_command }]; // Define your array here
+    ConversationId = api.generateUUID()
 
-    ConversationId = ""; //Reset id on DomLoading so that new one is generated once interraction starts to avoid resusing the previous
-    const formattedDateTime = getformatDateTime();
-    ConversationId = `${formattedDateTime}`
-
+    ConversationHistory[0].metadata.id = ConversationId
 })
 
 document.addEventListener('NewConversationOpened', function() {
-    //console.log("NewConversationOpened Event Recieved")
-    ConversationId = ""; //Reset id on DomLoading so that new one is genearted once interraction starts to avoid resusing the previous
-    const formattedDateTime = getformatDateTime();
-    ConversationId = `${formattedDateTime}`
+    console.log("NewConversationOpened Event Recieved")
+    ConversationId = api.generateUUID()
     ConversationHistory[1].chats = [{ role: "system", content: [{ type: "text", text: system_command }] }]
-    //console.log(ConversationHistory)
+    ConversationHistory[0].metadata.id = ConversationId
+
+    console.log(ConversationHistory)
 })
 
 

@@ -276,6 +276,12 @@ export const Settings = ({ isOpen, onToggle }) => {
         }
     }, [settings])
 
+    useEffect(()=>{
+        document.addEventListener('close-settings', CloseSettings);
+        return () => {
+            document.removeEventListener('close-settings', CloseSettings);
+        }
+    },[CloseSettings])
     return (
         <div onClick={shouldClose} id="settingsModal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-700 hidden translate-x-full">
             {/* Modal Content */}

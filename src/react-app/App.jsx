@@ -31,6 +31,7 @@ import '@js/diagraming/vizcharting.js'
 import '@js/diagraming/jscharting.js'
 import '@js/Notification/notification';
 import '@js/ChatExport/export';
+import '@js/Utils/keyshortcuts';
 
 const App = () => {
     //const { electron } = useElectron();

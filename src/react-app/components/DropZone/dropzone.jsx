@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { CloseDropZone, openPreview, closePreview, handleFiles, HandleFileSubmit } from '@components/DropZone/util.js'
 
 export const DropZone = ({ isOpen, onToggle }) => {
@@ -56,6 +56,14 @@ export const DropZone = ({ isOpen, onToggle }) => {
         if (e.target.id === 'previewModal') closePreview();
     })
 
+    const handleEscape = useCallback((e)=>{
+        if(e.key==='Escape' && !e.shiftKey) CloseDropZone();
+    });
+
+    useEffect(()=>{
+        document.addEventListener('keydown', handleEscape)
+        return () => document.removeEventListener('keydown', handleEscape)
+    })
     return (
         <section>
             {/* Main Dropzone Modal */}

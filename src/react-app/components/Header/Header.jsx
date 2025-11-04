@@ -35,8 +35,12 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
             if (e.key === 'Escape' && isModelDropdownOpen) hideSelectorModal();
         };
         document.addEventListener('keydown', handleEscape);
-        return () => document.removeEventListener('keydown', handleEscape);
-    }, [isModelDropdownOpen, hideSelectorModal]);
+        document.addEventListener('open-settings', OpenSettings);
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.removeEventListener('open-settings', OpenSettings);
+        }
+    }, [isModelDropdownOpen, hideSelectorModal, OpenSettings]);
 
     return (
         <section>

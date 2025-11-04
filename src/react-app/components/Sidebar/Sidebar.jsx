@@ -6,7 +6,8 @@ const Manager = new ChatManager()
 export const Sidebar = ({ isOpen, onToggle }) => {
 
     const refs = useRef({
-        isOpen: null
+        isOpen: null,
+        conversations: []
     })
 
     useEffect(() => {
@@ -22,6 +23,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         setTimeout(() => {
             panel?.classList.remove('-translate-x-[100vw]')
             panel?.classList.add('translate-x-0')
+            refs.current.conversations = document.querySelectorAll('#chat-item')
         })
     }
     function hidePanel() {
@@ -45,17 +47,66 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         if (document.getElementById('conversations')?.contains(e.target)) hidePanel();
     })
 
+    const ShowsearchInput = useCallback(() => {
+        document.getElementById('searchInput')?.classList.remove('hidden')
+        document.getElementById('searchInput')?.focus()
+        document.getElementById('search-chats')?.classList.add('hidden')
+        document.getElementById('recent-chats')?.classList.add('hidden')
+    })
+    const HidesearchInput = useCallback(() => {
+        document.getElementById('searchInput')?.classList.add('hidden')
+        document.getElementById('search-chats')?.classList.remove('hidden')
+        document.getElementById('recent-chats')?.classList.remove('hidden')
+    })
+
+    const searchChats = useCallback((e) => {
+        const value = e.target.value.trim().toLowerCase();
+        if (!value) return;
+
+        const parts = value.split(/\s+/);
+        const conversations =
+        refs.current?.length ? refs.current : document.querySelectorAll('#chat-item');
+
+        if (!conversations?.length) return;
+
+        for (const chat of conversations) {
+            const name = chat.dataset?.name?.toLowerCase() || "";
+            const highlight = chat.dataset?.highlight?.toLowerCase() || "";
+
+            const match = parts.some(
+                (part) => name.includes(part) || highlight.includes(part)
+            );
+
+            chat.classList.toggle('hidden', !match);
+        }
+    }, []);
+
     useEffect(() => {
         const handleEscape = (e) => {
-            if (e.key === 'Escape' && isOpen) hidePanel();
+            if (e.key === 'Escape') {
+                if (isOpen && document.getElementById('searchInput').classList.contains('hidden')) hidePanel();
+                HidesearchInput()
+            }
         };
         const handleClick = (e) => {
-            if(!document.getElementById('conversationPane')?.contains(e.target) && isOpen) hidePanel();
+            if (!document.getElementById('conversationPane')?.contains(e.target) && isOpen) hidePanel();
         }
+        const searchinput = document.getElementById('searchInput');
+
         document.addEventListener('keydown', handleEscape);
-        document.addEventListener('click', handleClick)
-        return () => document.removeEventListener('keydown', handleEscape);
-    }, [isOpen, hidePanel]);
+        document.addEventListener('click', handleClick);
+        document.addEventListener('close-panel', hidePanel);
+        document.addEventListener('open-panel', showPanel);
+        searchinput?.addEventListener('input', searchChats)
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.removeEventListener('close-panel', hidePanel);
+            document.removeEventListener('open-panel', showPanel);
+            searchinput?.removeEventListener('input', searchChats);
+        }
+    }, [isOpen, hidePanel, showPanel]);
+
 
     if (!isOpen) return null;
 
@@ -66,21 +117,32 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             className="fixed top-0 left-0 h-screen w-80 max-w-[85vw] bg-gradient-to-b from-slate-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/95 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 shadow-2xl transform transition-transform -translate-x-[100vw] transition-all duration-500 ease-out z-40 overflow-hidden"
         >
             {/* Header Section */}
-            <section className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 p-4">
+            <section className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 p-1">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-blue-500/0 rounded-lg flex items-center justify-center dark:shadow-lg cursor-pointer group transition-all duration-300">
+                            <svg className="w-8 h-8 text-gray-600 dark:text-white group-hover:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                            <svg onClick={() => document.getElementById('togglePane')?.click()} title="close panel" aria-label="close panel" className="hidden group-hover:flex h-8 w-8 fill-primary-300 dark:fill-white cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                <path d="M96 160C96 124.7 124.7 96 160 96L480 96C515.3 96 544 124.7 544 160L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 160zM160 224L160 480L288 480L288 224L160 224zM480 224L352 224L352 480L480 480L480 224z" />
                             </svg>
                         </div>
                         <div>
+
                             <h2 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
                                 Conversations
                             </h2>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            <p id='recent-chats' className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                 Recent chats
                             </p>
+                            <input
+                                id="searchInput"
+                                type="text"
+                                autoFocus
+                                placeholder="Search..."
+                                className="hidden w-full px-1 py-1 bg-indigo-950/40 dark:bg-[#001115] rounded-lg text-white text-sm placeholder-gray-100/90 dark:placeholder-primary-100 dark:text-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400 border border-indigo-950 dark:border-[#00d4ff] transition-all duration-300"
+                            />
                         </div>
                     </div>
 
@@ -88,6 +150,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                     <div className="flex items-center space-x-2">
                         {/* Search Button */}
                         <button
+                            onClick={ShowsearchInput}
                             id="search-chats"
                             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 group"
                             title="Search conversations"
@@ -130,19 +193,19 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             {/* Conversations List */}
             <div id="conversations" className="h-[calc(100vh-120px)] overflow-y-auto py-2 px-3 space-y-1">
                 {/* Sample Conversation Items */}
-                <div className="hidden conversation-item group ">
+                <div id="chat-item-x" className="hidden conversation-item group ">
                     <div className="flex items-center space-x-3 p-3 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-700/50 cursor-pointer transition-all duration-200 active:scale-95">
                         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-md">
                             <span className="text-white font-semibold text-sm">AI</span>
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                <h3 id="chat-name" className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                     Project Discussion
                                 </h3>
                                 <span className="text-xs text-gray-500 dark:text-gray-400">2h</span>
                             </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
+                            <p id="chat-highlight" className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
                                 Let's work on the new features...
                             </p>
                         </div>
@@ -150,7 +213,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </div>
 
                 {/* Active Conversation */}
-                <div className="hidden conversation-item group">
+                <div id="chat-item-x" className="hidden conversation-item group">
                     <div className="flex items-center space-x-3 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 cursor-pointer transition-all duration-200">
                         <div className="relative flex-shrink-0">
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-md">
@@ -160,12 +223,12 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                <h3 id="chat-name" className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                     Design Review
                                 </h3>
                                 <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Now</span>
                             </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
+                            <p id="chat-highlight" className="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
                                 Working on the new interface...
                             </p>
                         </div>

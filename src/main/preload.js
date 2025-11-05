@@ -385,7 +385,7 @@ const api = {
             const prefPath = path.join(os.homedir(), '.IntelliDesk/.config');
             try {
                 fs.mkdirSync(prefPath, { recursive: true });
-                console.log(`Directory created: ${prefPath}`);
+                //console.log(`Directory created: ${prefPath}`);
             } catch (error) {
                 console.error(`Error creating directory: ${error.message}`);
             }

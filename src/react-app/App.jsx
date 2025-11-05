@@ -4,7 +4,6 @@ import { Header } from '@components/Header/Header';
 import { ChatInterface } from '@components/Chat/ChatInterface';
 import { Sidebar } from '@components/Sidebar/Sidebar';
 import { Canvas } from '@components/Canvas/Canvas';
-import { useElectron } from '@hooks/useElectron';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import '@js/katex/katex.min.js';
 import '@js/katex/contrib/auto-render.min.js';
@@ -31,7 +30,7 @@ import '@js/diagraming/jscharting.js'
 import '@js/Notification/notification';
 import '@js/ChatExport/export';
 import '@js/Utils/keyshortcuts';
-import { StateManager } from '@js/managers/StatesManager';
+//import { StateManager } from '@js/managers/StatesManager';
 
 
 const App = () => {
@@ -39,14 +38,14 @@ const App = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
-    const { sendMessage } = useElectron();
     const [isRecordingOn, setIsRecordingOn] = useState(false);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
     const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
 
-    useEffect(() => {
+    /*
+     * useEffect(() => {
         StateManager.set('isCanvasOpen', isCanvasOpen)
 
         StateManager.set('toggleCanvas', toggleCanvas)
@@ -56,12 +55,19 @@ const App = () => {
         StateManager.set('isRecordingOn', isRecordingOn)
 
     }, [isCanvasOpen, isRecordingOn])
+    */
 
     return (
         <ErrorBoundary>
             <MainLayout>
                 <div className='flex flex-1 overflow-hidden w-full'>
-                    <div id="mainLayoutA" className='w-full'>
+                    <ErrorBoundary>
+                        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
+                        <ChatOptions isOpen={true} onToggle={null} />
+                    </ErrorBoundary>
+                    <div id="mainLayoutA" className='w-full transition-all duration-700'>
                         <ErrorBoundary>
                             <Header
                                 onToggleSidebar={toggleSidebar}
@@ -69,28 +75,19 @@ const App = () => {
                                 onModelChange={setSelectedModel}
                             />
                         </ErrorBoundary>
-                        <div className="flex flex-1 overflow-hidden">
+                        <div className="flex-1 flex flex-col">
                             <ErrorBoundary>
-                                <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+                                <ChatInterface
+                                    isCanvasOpen={isCanvasOpen}
+                                    onToggleCanvas={toggleCanvas}
+                                    onToggleRecording={toggleRecording} />
                             </ErrorBoundary>
-                            <ErrorBoundary>
-                                <ChatOptions isOpen={true} onToggle={null} />
-                            </ErrorBoundary>
-
-                            <div className="flex-1 flex flex-col">
-                                <ErrorBoundary>
-                                    <ChatInterface onSendMessage={sendMessage} onToggleCanvas={toggleCanvas} onToggleRecording={toggleRecording} />
-                                </ErrorBoundary>
-                            </div>
                         </div>
 
                     </div>
-
                     <ErrorBoundary>
-                        <Canvas isOpen={StateManager.get('onToggleCanvas')} onToggle={toggleCanvas} />
+                        <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
                     </ErrorBoundary>
-
-
                 </div>
                 <ErrorBoundary>
                     <DiagramUi isOpen={true} onToggle={null} />

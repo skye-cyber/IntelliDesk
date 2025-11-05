@@ -10,7 +10,7 @@ export class Caret {
         this.codeViewRect
         this.containerRect
         this.offsetX = 58;
-        this.offsetY = 100;
+        this.offsetY = 35;
         this.rect
     }
 

@@ -249,7 +249,7 @@ export const Recording = ({ isOpen, onToggle }) => {
     }, [])
 
     async function loadApiKey() {
-        const key = await window.api.getKeys('huggingfacex');
+        const key = await window.desk.api2.getKeys('huggingfacex');
         setHf_API_KEY(key.huggingfaceKey); // Assign to global variable
     }
     async function autoSpeech(data) {

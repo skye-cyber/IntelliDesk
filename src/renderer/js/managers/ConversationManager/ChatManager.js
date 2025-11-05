@@ -232,7 +232,6 @@ export class ChatManager {
 
         try {
             const conversationItem = document.querySelector(`[data-id="${this.currentConversationId}"]`);
-            console.log(conversationItem, name, this.currentConversationId === id)
             if (conversationItem && name !== '') {
 
                 const rename = window.desk.api.Rename(this.currentConversationId, name, this.storagePath);

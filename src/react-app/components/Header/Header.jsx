@@ -44,18 +44,18 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
 
     return (
         <section>
-            <header className="space-b-2 my-2 z-[60] transform transition-transform transition-all duration-500">
+            <header className="space-b-2 my-2 z-[10] transform transition-transform transition-all duration-500 border-b">
                 <div className="flex justify-between">
                     <section className="flex justify-start">
                         {/* Toggle Button */}
-                        <section className="flex items-center relative mr-14">
+                        <section className="flex xs:hidden flex items-center relative mr-14">
                             <button
                                 id="togglePane"
                                 title="View Chats"
-                                className="absolute z-5 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-700"
+                                className="absolute z-5 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-700"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onToggleSidebar()
+                                    document.dispatchEvent(new CustomEvent('toggle-panel'))
                                 }}
                             >
                                 <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

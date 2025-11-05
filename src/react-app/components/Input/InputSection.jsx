@@ -3,6 +3,7 @@ import { opendiagViewModal, closediagViewModal } from '@js/diagraming/Utils.js';
 import { showDropZoneModal } from '@components/DropZone/util.js'
 import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
 const chatutil = new ChatUtil()
 
 let router
@@ -15,9 +16,8 @@ import('@js/managers/router.js').then(({ Router }) => {
 })
 
 
-export const InputSection = ({ onToggleCanvas, onToggleRecording }) => {
+export const InputSection = ({isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
     // State management for the toggle
-    const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [isAIActive, setIsAIActive] = useState(false);
     const [inputValue, setInputValue] = useState('');
 
@@ -111,29 +111,6 @@ export const InputSection = ({ onToggleCanvas, onToggleRecording }) => {
         };
     }, [handleSend]); // Add handleSend to dependencies if it's defined outside
 
-    /*
-     * const onToggleCanvas = () => {
-        const newState = !isCanvasOpen;
-        setIsCanvasOpen(newState);
-
-        // Toggle icons
-        const plusIcon = document.getElementById('plusIcon');
-        const closeIcon = document.getElementById('closeIcon');
-        const button = document.getElementById('ToggleCanvasBt');
-
-        if (newState) {
-            plusIcon.classList.add('hidden');
-            closeIcon.classList.remove('hidden');
-            button.setAttribute('aria-pressed', 'true');
-            button.classList.add('border-blue-500', 'dark:border-teal-400');
-        } else {
-            plusIcon.classList.remove('hidden');
-            closeIcon.classList.add('hidden');
-            button.setAttribute('aria-pressed', 'false');
-            button.classList.remove('border-blue-500', 'dark:border-teal-400');
-        }
-    };
-    */
 
     const shouldToggleCanvas = useCallback((event) => {
         //if (!event) return;
@@ -157,6 +134,7 @@ export const InputSection = ({ onToggleCanvas, onToggleRecording }) => {
             // Toggle the canvas for any other part of the button
             //console.log('Canvas area clicked - toggling canvas');
             onToggleCanvas(); // canvas toggle function
+            StateManager.set('i-isCanvasOpen', isCanvasOpen)
         }
     }, [onToggleCanvas]); // Add dependencies
 
@@ -198,10 +176,10 @@ export const InputSection = ({ onToggleCanvas, onToggleRecording }) => {
     useEffect(() => {
         chatutil.scrollToBottom(document.getElementById('chatArea'), false);
     }, []);
-    console.log(typeof(onToggleCanvas))
+
     return (
         <div id="userInput-wrapper" className="absolute flex justify-center left-0 lg:left-auto w-full lg:items-center lg:justify-center z-30 bottom-[2%] transition-all duration-1000">
-            <section className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-700">
+            <section className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-500">
                 {/* Custom input field */}
                 <div id="userInput"
                     contentEditable="true"

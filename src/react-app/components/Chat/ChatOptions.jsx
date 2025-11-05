@@ -46,7 +46,7 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
 
         const handleKeyPress = (event) => {
             event.stopPropagation();
-            if (event.key === 'Enter' && !event.shiftKey) {
+            if (event.key === 'Enter' && !event.shiftKey && document.getElementById('renameModal')?.classList?.contains('translate-y-0')) {
                 rename();
             } else if (event.key === 'Escape') {
                 if (document.getElementById('renameModal')?.classList.contains('translate-y-0')) {

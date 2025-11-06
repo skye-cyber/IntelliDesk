@@ -10,13 +10,14 @@ let schema = [
             model: 'chat',
             name: '',
             id: '',
-            timestamp: ''
+            timestamp: '',
+            highlight: ''
         },
         chats: []
     }
 ]
 
-async function listFiles() {
+async function transformFn() {
     try {
         const files = await fs.readdir(dpath);
         for (const file of files) {
@@ -29,9 +30,14 @@ async function listFiles() {
                 model: file.startsWith('C') ? 'chat' : 'multimodal',
                 name: name,
                 id: name,
-                timestamp: name.slice(2).includes('-') ? name : ''
+                timestamp: name.slice(2).includes('-') ? name : '',
+                highlight: content[0].content.slice(0, 15),
             }
-            await fs.writeFile(filePath, JSON.stringify(schema))
+            console.log(schema)
+            setTimeout(()=>{
+                //
+            }, 5000)
+            //await fs.writeFile(filePath, JSON.stringify(schema))
         }
 
         //console.log('Directory contents:', files);
@@ -40,4 +46,4 @@ async function listFiles() {
     }
 }
 
-listFiles()
+transformFn()

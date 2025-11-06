@@ -3,6 +3,10 @@ import { ConversationManager } from './ConversationManager.js'
 
 //InputPurify = window.InputPurify;
 
+function colorMap() {
+    //
+}
+
 export class ChatManager {
     constructor() {
         this.currentConversationId;
@@ -35,7 +39,7 @@ export class ChatManager {
     async fetchConversations(conversationsPanel) {
         if (!conversationsPanel) return false;
         try {
-            const files = await window.desk.api.readDir(this.storagePath);
+            let files = await window.desk.api.readDir(this.storagePath);
             if (files.length > 0) {
                 // Hide only if there are files/conversation items
                 document.getElementById('empty-conversations').classList.add('hidden');
@@ -44,13 +48,15 @@ export class ChatManager {
 
                 for (let [index, file] of files.entries()) {
                     if (window.desk.api.getExt(file) === '.json') {
-                        console.log(file)
                         // Cmpartibility logic for older conversations with C- and V- to denote models
 
                         const metadata = window.desk.api.getmetadata(file)
-                        const conversationId = metadata?.id || metadata?.name
+
+                        if (!typeof (metadata) === 'object') continue
+
+                        const conversationId = metadata?.id
                         const timestamp = metadata?.timestamp
-                        const highlight = metadata?.higlight || ''
+                        const highlight = metadata?.highlight || ''
                         const name = metadata?.name || conversationId
 
                         const conversationItem = document.createElement('div');
@@ -74,10 +80,10 @@ export class ChatManager {
                                     <h3 id="chat-name" class="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                         ${conversationId}
                                     </h3>
-                                    <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">${this.formatRelativeTime(timestamp || conversationId)}</span>
+                                    <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">${this.formatRelativeTime(timestamp)}</span>
                                 </div>
                                 <p id="chat-highlight" class="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
-                                    Working on the new interface...
+                                    ${highlight}
                                 </p>
                             </div>
                         </div>`
@@ -91,12 +97,13 @@ export class ChatManager {
                             event.preventDefault();
                             this.currentConversationId = conversationId
                             conversationItem.dataset.id = conversationId
-                            this.showConversationOptions()
+                            this.showConversationOptions(event)
                         });
                     } else {
                         console.log("No conversations saved!")
                     }
                 }
+                files = null
                 return true
             }
             return false
@@ -107,17 +114,26 @@ export class ChatManager {
     }
 
     /**
-     * Converts a timestamp like "C-24-12-21-10-43-39"
+     * Converts a timestamp like "24-12-21-10-43-39"
      * into a short relative time like "10min", "2h", "3d", etc.
      */
     formatRelativeTime(code) {
-        if (!code || !code.startsWith("C-")) return "Invalid";
+        const datePattern = /^\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/;
+        if (!code) return 'invalid';
+
+        if (code.toLocaleLowerCase().startsWith("v-") || code.toLocaleLowerCase().startsWith("v-")) {
+            if (!datePattern.test(code.slice(2))) {
+                return "Invalid";
+            }
+            code = code.slice(2)
+        }
 
         const parts = code.split("-");
-        if (parts.length < 7) return "Invalid";
 
-        const [_, yy, MM, dd, hh, mm, ss] = parts.map(Number);
-        const fullYear = 2000 + yy; // adjust if your years start from 2000
+        if (parts.length < 6) return "Invalid";
+
+        const [yy, MM, dd, hh, mm, ss] = parts.map(Number);
+        const fullYear = 2000 + yy; // years starting from 2024
 
         // Construct date (assume UTC)
         const date = new Date(fullYear, MM - 1, dd, hh, mm, ss);
@@ -141,6 +157,7 @@ export class ChatManager {
         if (months < 12) return `${months}m`;
 
         const years = Math.floor(months / 12);
+
         return `${years}y`;
     }
 
@@ -172,17 +189,46 @@ export class ChatManager {
         //this.showConversationOptions();
     }
 
-    showConversationOptions() {
+    showConversationOptions(event) {
         try {
+            //event.preventDefault();
+
             const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
             const chatOptions = document.getElementById('chatOptions');
+
+            // Store conversation ID and position
+            this.currentConversationId = this.conversationId;
+            this.currentPosition = { x: event.clientX, y: event.clientY };
+
+            // Position the tooltip near cursor
+            const rect = chatOptions.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            // Adjust position to keep within viewport
+            let posX = event.clientX;
+            let posY = event.clientY;
+
+            if (posX + rect.width > viewportWidth) {
+                posX = viewportWidth - rect.width - 10;
+            }
+
+            if (posY + rect.height > viewportHeight) {
+                posY = viewportHeight - rect.height - 10;
+            }
+
+            chatOptions.style.left = `${posX}px`;
+            chatOptions.style.top = `${posY}px`;
+
+            // Show tooltip with animation
             chatOptionsOverlay.classList.remove('hidden');
             chatOptions.classList.remove('animate-exit');
-            chatOptions.classList.add('animate-enter')
-            chatOptionsOverlay.dataset.id = this.currentConversationId
-            return true
+            chatOptions.classList.add('animate-enter');
+
+            return true;
         } catch (err) {
-            return false
+            console.error('Error showing conversation options:', err);
+            return false;
         }
     }
 
@@ -190,14 +236,18 @@ export class ChatManager {
         try {
             const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
             const chatOptions = document.getElementById('chatOptions');
-            chatOptions.classList.remove('animate-enter')
+
+            chatOptions.classList.remove('animate-enter');
             chatOptions.classList.add('animate-exit');
+
             setTimeout(() => {
                 chatOptionsOverlay.classList.add('hidden');
-            }, 310)
-            return true
+            }, 200);
+
+            return true;
         } catch (err) {
-            return false
+            console.error('Error hiding conversation options:', err);
+            return false;
         }
     }
 
@@ -250,7 +300,7 @@ export class ChatManager {
         }
     }
 
-    DeleteConversation(id=null) {
+    DeleteConversation(id = null) {
         try {
             this.showLoadingModal(`Deleting ${this.currentConversationId}`);
             if (!this.currentConversationId || (id && this.currentConversationId != id)) this.currentConversationId = id
@@ -278,23 +328,30 @@ export class ChatManager {
 
     // Function to render a conversation from a file
     async renderConversationFromFile(item, conversationId) {
+        this.showLoadingModal('Preapring conversation')
         // Remove animation from previous item as it active item is changing
         if (this.activeItem) {
             this.activeItem.classList.remove('animate-heartpulse');
             this.activeItem.querySelector('#active-dot').classList.add('hidden')
         }
         this.activeItem = item;
+
         item.classList.add('animate-heartpulse-slow');
         item.querySelector('#active-dot').classList.remove('hidden')
-        const [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
-        //console.log(conversationData, model)
+
+        let [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
+
         if (conversationData) {
-            window.desk.api.setConversation(conversationData, conversationId);  //Set global conversation id to the current conversation id
-            //console.log('set:', conversationData)
+            window.desk.api.setConversation(conversationData, conversationId);  //Set global
             this.conversationManager.renderConversation(conversationData, model);
+
+            //Clear
+            conversationData = null;
+            model = null
         } else {
             window.ModalManager.showMessage(`Conversation ${conversationId} not found.`, 'warning');
         }
+        this.hideLoadingModal()
     }
 }
 

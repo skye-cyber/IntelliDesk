@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { MainLayout } from '@components/Layout/MainLayout';
 import { Header } from '@components/Header/Header';
 import { ChatInterface } from '@components/Chat/ChatInterface';
@@ -20,7 +20,6 @@ import '@js/StatusUIManager/Manager.js'
 import { APIKeysManager } from '@components/ApiManager/api.jsx';
 import { DropZone } from '@components/DropZone/dropzone.jsx'
 import { NotificationFlyer } from '@components/Notifications/Notification.jsx'
-import { ChatOptions } from '@components/Chat/ChatOptions.jsx';
 import { Notifcation } from '@components/Notification/notification';
 import '@js/MathBase/MathNormalize.js';
 import '@js/MathBase/mathRenderer.js';
@@ -60,22 +59,19 @@ const App = () => {
     return (
         <ErrorBoundary>
             <MainLayout>
-                <div className='flex flex-1 overflow-hidden w-full'>
-                    <ErrorBoundary>
-                        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        <ChatOptions isOpen={true} onToggle={null} />
-                    </ErrorBoundary>
-                    <div id="mainLayoutA" className='w-full transition-all duration-700'>
+                <div className='flex flex-1 overflow-hidden max-w-full'>
+                    <div className='flex flex-shrink'>
                         <ErrorBoundary>
-                            <Header
-                                onToggleSidebar={toggleSidebar}
-                                selectedModel={selectedModel}
-                                onModelChange={setSelectedModel}
-                            />
+                            <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
                         </ErrorBoundary>
-                        <div className="flex-1 flex flex-col">
+                        <div id="main-container-center" className='block h-[90vh] w-[96vw]'>
+                            <ErrorBoundary>
+                                <Header
+                                    onToggleSidebar={toggleSidebar}
+                                    selectedModel={selectedModel}
+                                    onModelChange={setSelectedModel}
+                                />
+                            </ErrorBoundary>
                             <ErrorBoundary>
                                 <ChatInterface
                                     isCanvasOpen={isCanvasOpen}
@@ -83,7 +79,6 @@ const App = () => {
                                     onToggleRecording={toggleRecording} />
                             </ErrorBoundary>
                         </div>
-
                     </div>
                     <ErrorBoundary>
                         <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />

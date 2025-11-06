@@ -3,10 +3,11 @@ import { Caret } from '@js/Utils/caret.js'
 import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 import { StateManager } from '@js/managers/StatesManager';
-import { ChatDisplay } from '@js/managers/ConversationManager/util';
+//import { ChatDisplay } from '@js/managers/ConversationManager/util';
 import { Editor } from './editor';
+import { waitForElement } from '../../../renderer/js/Utils/dom_utils';
 
-const chatdisplay = new ChatDisplay()
+//const chatdisplay = new ChatDisplay()
 
 window.openCanvas = null;
 window.canvasUpdate = null
@@ -473,8 +474,16 @@ export const Canvas = ({ isOpen, onToggle }) => {
             InputSectionWfitAdjust('add')
             mainLayoutAWfitAdjust('retract')
         }, 400)
-        //chatdisplay.chats_size_adjust()
+        waitForElement('#main-container-center', (container) => {
+            (container.classList.contains('w-[96vw]')) ? container.classList.replace('w-[96vw]', 'w-[50vw]') : container.classList.replace('w-[75vw]', 'w-[50vw]');
+        });
+
+        //Adjust main interface width for max space usage
+        waitForElement('#chatArea-wrapper', (container) => {
+            container.classList.replace('w-[70%]', 'w-[100%]')
+        });
     }, [setIsCanvasOpen])
+
 
     useEffect(() => {
         document.addEventListener('open-canvas', openCanvas)
@@ -503,7 +512,15 @@ export const Canvas = ({ isOpen, onToggle }) => {
             InputSectionWfitAdjust('remove')
             mainLayoutAWfitAdjust('scale')
         }, 400)
-        chatdisplay.chats_size_adjust('scale_up')
+
+        waitForElement('#main-container-center', (container) => {
+            (container.classList.contains('w-[50vw]')) ? container.classList.replace('w-[50vw]', 'w-[96vw]') : '';
+        });
+
+        // Re-Adjust main interface width to normal
+        waitForElement('#chatArea-wrapper', (container) => {
+            container.classList.replace('w-[100%]', 'w-[70%]')
+        });
     }, [setIsCanvasOpen, onToggle])
 
 

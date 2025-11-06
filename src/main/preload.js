@@ -15,10 +15,11 @@ contextBridge.exposeInMainWorld('global', window);
 try {
     const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json')
     if (fs.statfsSync(_fpath)) {
-        var profile = JSON.parse(fs.readFileSync(_fpath, 'utf-8')).data.preference
+        const rprofile = fs.readFileSync(_fpath, 'utf-8')
+        var profile = rprofile ? JSON.parse(rprofile)?.data?.preference : ''
     }
 } catch (err) {
-    //console.log(err)
+    if (!profile) profile = ''
 }
 
 const conversation_root = path.join(os.homedir(), '.IntelliDesk/.store')
@@ -32,7 +33,7 @@ let ConversationHistory = [
             name: '',
             id: ConversationId,
             timestamp: getformatDateTime(),
-            higlight: ''
+            highlight: ''
         },
         chats: []
     }
@@ -73,14 +74,17 @@ const api = {
             return false;
         }
     },
-    read: async (path) => {
+    read: async (fpath) => {
         try {
-            let data = JSON.parse(fs.readFileSync(path, 'utf-8'));
+            if (!fpath) return false
+            const rdata = fs.readFileSync(fpath, 'utf-8')
+            let jdata = rdata ? JSON.parse(rdata) : '';
+
             // Add compartibility feature to maintain conversations instegrity!
-            if (data[0]?.chats[0].role === "system") {
-                data[0].chats.shift()
+            if (jdata[0]?.chats[0].role === "system") {
+                jdata[0].chats.shift()
             }
-            return data
+            return jdata
         } catch (err) {
             console.log(err);
             return false;
@@ -106,7 +110,7 @@ const api = {
     joinPath: (node, child) => {
         return path.join(node, child);
     },
-    Rename: (id, name, base_dir=conversation_root) => {
+    Rename: (id, name, base_dir = conversation_root) => {
         try {
             fs.renameSync(path.join(base_dir, `${id}.json`), path.join(base_dir, `${name}.json`))
             return true
@@ -115,7 +119,7 @@ const api = {
             return false
         }
     },
-    deleteChat: (id, base_dir=conversation_root) => {
+    deleteChat: (id, base_dir = conversation_root) => {
         try {
             const file = path.join(base_dir, `${id}.json`)
             if (fs.statSync(file)) {
@@ -133,8 +137,8 @@ const api = {
     },
     addHistory: (item) => {
         ConversationHistory[0].chats.push(item); // Modify the array
-        if (!ConversationHistory[0].metadata.higlight) {
-            ConversationHistory[0].metadata.higlight = item?.content.slice(0, 15)
+        if (!ConversationHistory[0].metadata.highlight) {
+            ConversationHistory[0].metadata.highlight = item?.content.slice(0, 15)
         }
         // Save to file
         api.saveConversation(ConversationHistory)
@@ -207,9 +211,14 @@ const api = {
             .filter(Boolean); // remove empty chat objects
     },
     getmetadata: (file) => {
-        const fpath = path.join(conversation_root, file)
-        if (!api.stat(fpath)) return;
-        return JSON.parse(fs.readFileSync(fpath, 'utf-8'))[0]?.metadata
+        try {
+            const fpath = path.join(conversation_root, file)
+            if (!api.stat(fpath)) return;
+            const rdata = fs.readFileSync(fpath, 'utf-8')
+            return rdata ? JSON.parse(rdata)[0]?.metadata : ''
+        } catch (err) {
+            return false
+        }
     },
     clearAllImages: (history) => {
         // Convert history to array and process each message

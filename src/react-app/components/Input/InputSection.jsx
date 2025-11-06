@@ -178,7 +178,7 @@ export const InputSection = ({isCanvasOpen, onToggleCanvas, onToggleRecording })
     }, []);
 
     return (
-        <div id="userInput-wrapper" className="absolute flex justify-center left-0 lg:left-auto w-full lg:items-center lg:justify-center z-30 bottom-[2%] transition-all duration-1000">
+        <div id="userInput-wrapper" className="sticky flex justify-center w-full lg:items-center lg:justify-center z-30 bottom-[0.5%] transition-all duration-1000">
             <section className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-500">
                 {/* Custom input field */}
                 <div id="userInput"

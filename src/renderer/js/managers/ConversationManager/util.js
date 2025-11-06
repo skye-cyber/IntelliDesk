@@ -4,6 +4,7 @@ import { normaliZeMathDisplay, normalizeMathDelimiters } from "../../MathBase/Ma
 import { debounceRenderKaTeX } from "../../MathBase/mathRenderer";
 import { LoopRenderCharts } from "../../diagraming/jscharting";
 import { handleDiagrams } from "../../diagraming/vizcharting";
+import { waitForElement } from "../../Utils/dom_utils";
 
 export class ChatUtil {
     constructor() {
@@ -24,12 +25,12 @@ export class ChatUtil {
     updateScrollButtonVisibility() {
         //console.log("Scrollable")
         const chatArea = document.getElementById('chatArea')
-        const scrollButton = document.getElementById('scroll-bottom')
+        //const scrollButton = document.getElementById('scroll-bottom')
 
         const isScrollable = chatArea.scrollHeight > chatArea.clientHeight;
         const isAtBottom = chatArea.scrollTop + chatArea.clientHeight >= chatArea.scrollHeight;
 
-        scrollButton.classList.toggle('hidden', !(isScrollable && !isAtBottom));
+        waitForElement('#scroll-bottom',(el)=>el.classList.toggle('hidden', !(isScrollable && !isAtBottom)));
     }
 
 

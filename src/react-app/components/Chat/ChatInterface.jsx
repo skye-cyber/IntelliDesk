@@ -91,12 +91,22 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
     }, [])
 
     return (
-        <section id='chat-container' className='mx-24'>
-            <section
-                id="chatArea"
-                ref={chatAreaRef}
-                className="relative bg-white dark:bg-[#0a0a1f] h-[90vh] p-2 md:p-4 rounded-lg overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-1000 max-w-full mb-80 border-1 border-blend-50 dark:border-blend-700"
-            >
+        <section id='chat-container' className='flex justify-center h-full w-full border'>
+            <div id="chatArea-wrapper" className='h-full w-[70%]'>
+                <section
+                    id="chatArea"
+                    ref={chatAreaRef}
+                    className="relative bg-white dark:bg-[#0a0a1f] h-full p-2 md:px-4 pb-16 rounded-lg overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-700 w-full border-1 border-blend-50 dark:border-blend-700  border"
+                >
+                    {/* Show quick actions when no messages */}
+                    {messages.length === 0 && !isLoading && (
+                        <QuickActions onActionClick={handleQuickAction} />
+                    )}
+
+                    {/* Messages list */}
+                    <MessageList messages={messages} isLoading={isLoading} />
+
+                </section>
                 <ErrorBoundary>
                     <InputSection
                         isCanvasOpen={isCanvasOpen}
@@ -104,19 +114,11 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                         onToggleRecording={onToggleRecording}
                     />
                 </ErrorBoundary>
-                {/* Show quick actions when no messages */}
-                {messages.length === 0 && !isLoading && (
-                    <QuickActions onActionClick={handleQuickAction} />
-                )}
-
-                {/* Messages list */}
-                <MessageList messages={messages} isLoading={isLoading} />
-
-            </section>
-            {/* Loading Modal */}
-            <LoadingModal />
-            {/* Copy Feedback Modal */}
-            <CopyFeedbackModal />
+                {/* Loading Modal */}
+                <LoadingModal />
+                {/* Copy Feedback Modal */}
+                <CopyFeedbackModal />
+            </div>
         </section>
     );
 };

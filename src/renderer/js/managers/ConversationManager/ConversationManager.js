@@ -12,7 +12,10 @@ export class ConversationManager {
         waitForElement('#chatArea', (el) => this.chatArea = el)
     }
 
-    // Save conversation to a JSON file
+    /**
+     * DEPRECATED: In favour of main process events
+     * Save conversation to a JSON file
+    */
     async saveConversation(conversationData, conversationId) {
         const filePath = `${this.storagePath}/${conversationId}.json`;
         //console.log(JSON.stringify(conversationData))
@@ -30,6 +33,7 @@ export class ConversationManager {
         try {
             if (window.desk.api.stat(filePath)) {
                 const data = await window.desk.api.read(filePath);
+
                 return [data, data[0]?.metadata?.model || 'chat']
             }
         } catch (err) {
@@ -96,6 +100,9 @@ export class ConversationManager {
         copyBMan();
         //window.addCopyListeners();
         this.chatdisplay.chats_size_adjust()
+
+        // force gc
+        conversationData = null
     }
 
     // Get file type from message content

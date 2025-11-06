@@ -43,19 +43,6 @@ const App = () => {
     const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
     const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
 
-    /*
-     * useEffect(() => {
-        StateManager.set('isCanvasOpen', isCanvasOpen)
-
-        StateManager.set('toggleCanvas', toggleCanvas)
-
-        StateManager.set('toggleRecording', !toggleRecording)
-
-        StateManager.set('isRecordingOn', isRecordingOn)
-
-    }, [isCanvasOpen, isRecordingOn])
-    */
-
     return (
         <ErrorBoundary>
             <MainLayout>

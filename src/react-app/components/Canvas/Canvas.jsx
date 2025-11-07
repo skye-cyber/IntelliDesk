@@ -413,14 +413,16 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
     const mainLayoutAWfitAdjust = useCallback((task = 'scale') => {
         const { mainLayoutA } = refs.current
-
-        if (task === "scale") {
+        return
+        /*
+         * if (task === "scale") {
             mainLayoutA.classList.remove('w-[40vw]');
             mainLayoutA.classList.add('w-full');
         } else {
             mainLayoutA.classList.remove('w-full');
             mainLayoutA.classList.add('w-[40vw]');
         }
+        */
     }, [])
 
     const AiMessagesWfitAdjust = useCallback((task = 'add') => {
@@ -460,27 +462,28 @@ export const Canvas = ({ isOpen, onToggle }) => {
         //onToggle()
 
         let { canvas } = refs.current
-        const chatArea = document.getElementById('chatArea')
-        chatArea.classList.remove('max-w-[98vw]', 'p-2', 'md:p-4')
-        chatArea.classList.add('max-w-[40vw]', 'p-0', 'text-sm')
 
         canvas?.classList.remove('hidden');
         setTimeout(() => {
             canvas?.classList.remove('translate-x-[100vw]');
             setIsCanvasOpen(true);
             StateManager.set('isCanvasActive', true)
-            AiMessagesWfitAdjust('remove');
-            UserMessagesWfitAdjust("remove")
+            //AiMessagesWfitAdjust('remove');
+            //UserMessagesWfitAdjust("remove")
             InputSectionWfitAdjust('add')
-            mainLayoutAWfitAdjust('retract')
+            //mainLayoutAWfitAdjust('retract')
         }, 400)
         waitForElement('#main-container-center', (container) => {
-            (container.classList.contains('w-[96vw]')) ? container.classList.replace('w-[96vw]', 'w-[50vw]') : container.classList.replace('w-[75vw]', 'w-[50vw]');
+            if (container.classList.contains('md:w-[96vw]')) {
+                container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]')
+                container.classList.add('w-[50vw]')
+            }
         });
 
         //Adjust main interface width for max space usage
         waitForElement('#chatArea-wrapper', (container) => {
-            container.classList.replace('w-[70%]', 'w-[100%]')
+            container.classList.remove('md:w-[80%]', 'lg:w-[70%]', 'xl:w-[60%]')
+            //container.classList.add('w-[100%]')
         });
     }, [setIsCanvasOpen])
 
@@ -497,29 +500,27 @@ export const Canvas = ({ isOpen, onToggle }) => {
     // Hide canvas
     const hideCanvas = useCallback(() => {
         const { canvas } = refs.current;
-        //Adjust canvas width
-        const chatArea = document.getElementById('chatArea')
-        chatArea.classList.remove('max-w-[40vw]', 'p-0', 'text-sm')
-        chatArea.classList.add('max-w-[98vw]', 'p-2', 'md:p-4')
-
-        canvas.classList.add('translate-x-[100vw]');
 
         setTimeout(() => {
             canvas.classList.add('hidden');
             setIsCanvasOpen(false);
-            AiMessagesWfitAdjust('add');
-            UserMessagesWfitAdjust("remove")
+            //AiMessagesWfitAdjust('add');
+            //UserMessagesWfitAdjust("remove")
             InputSectionWfitAdjust('remove')
-            mainLayoutAWfitAdjust('scale')
+            //mainLayoutAWfitAdjust('scale')
         }, 400)
 
         waitForElement('#main-container-center', (container) => {
-            (container.classList.contains('w-[50vw]')) ? container.classList.replace('w-[50vw]', 'w-[96vw]') : '';
+            if (container.classList.contains('w-[50vw]')) {
+                container.classList.remove('w-[50vw]')
+                container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]')
+            }
         });
 
         // Re-Adjust main interface width to normal
         waitForElement('#chatArea-wrapper', (container) => {
-            container.classList.replace('w-[100%]', 'w-[70%]')
+            //container.classList.remove('w-[100%]')
+            container.classList.add('md:w-[80%]', 'lg:w-[70%]', 'xl:w-[60%]')
         });
     }, [setIsCanvasOpen, onToggle])
 
@@ -553,7 +554,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
     if (!isOpen) return null;
 
     return (
-        <section id="canvas-wrapper" className="hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-secondary-900 dark:via-blend-900 dark:to-accent-900 h-[100vh] flex items-center justify-center font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-500 p-0.5">
+        <section id="canvas-wrapper" className="hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-secondary-900 dark:via-blend-900 dark:to-accent-900 h-[100vh] flex items-center justify-center font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-700 ease-in-out p-0.5">
 
             <div aria-label="AI code canvas container" className="mt-0! w-full max-w-5xl bg-white dark:bg-primary-800 rounded-3xl shadow-xl flex flex-col h-full overflow-hidden ring-1 ring-purple-200 dark:ring-purple-700">
                 {/* Header with title and theme toggle */}

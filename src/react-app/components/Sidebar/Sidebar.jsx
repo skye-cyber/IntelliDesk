@@ -22,11 +22,14 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         onToggle();
         waitForElement('#conversationPane', (panel) => {
             panel.querySelectorAll('.verbose-hide').forEach(el => el.classList.remove('hidden'));
-            panel.classList.replace('w-[4vw]', 'w-[25vw]')
+            panel.classList.remove('w-[40px]', 'md:w-[4vw]')
+            panel.classList.add('fixed', 'z-[41]', 'left-0', 'top-0', 'w-[250px]', 'md:relative', 'md:top-auto', 'md:left-auto', 'md:w-[25vw]', 'lg:w-[20vw]', 'md:block')
 
             waitForElement('#main-container-center', (container) => {
-                if (container.classList.contains('w-[96vw]')) {
-                    container.classList.replace('w-[96vw]', 'w-[75vw]');
+                if (container.classList.contains('md:w-[96vw]')) {
+                    //container.classList.replace('w-[96vw]', 'w-[75vw]');
+                    container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]')
+                    container.classList.add('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]');
                 }
 
             });
@@ -36,11 +39,13 @@ export const Sidebar = ({ isOpen, onToggle }) => {
     const hidePanel = useCallback(() => {
         waitForElement('#conversationPane', (panel) => {
             panel.querySelectorAll('.verbose-hide').forEach(el => el.classList.add('hidden'));
-            panel.classList.replace('w-[25vw]', 'w-[4vw]')
+            panel.classList.remove('fixed', 'z-[41]', 'left-0', 'top-0', 'w-[300px]', 'lg:relative', 'lg:top-auto', 'md:left-auto', 'md:w-[25vw]', 'lg:w-[20vw]', 'md:block')
+            panel.classList.add('w-[40px]', 'md:w-[4vw]')
 
             waitForElement('#main-container-center', (container) => {
-                if (container.classList.contains('w-[75vw]')) {
-                    container.classList.replace('w-[75vw]', 'w-[96vw]');
+                if (container.classList.contains('w-[100vw]')) {
+                    container.classList.remove('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
+                    container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]');
                 }
             });
         });
@@ -142,7 +147,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         <div
             id="conversationPane"
             onClick={shouldClosePanel}
-            className="h-screen w-[4vw] bg-gradient-to-b from-slate-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/95 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-500 ease-out overflow-hidden"
+            className="h-screen w-[40px] md:w-[4vw] bg-gradient-to-b from-slate-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/95 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-700 ease-in-out overflow-hidden"
         >
             {/* Header Section */}
             <section className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 p-1">
@@ -231,7 +236,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </h2>
             </div>
             {/* Conversations List */}
-            <div id="conversations" className="verbose-hide hidden h-[64vh] overflow-y-auto py-2 px-3 space-y-1">
+            <div id="conversations" className="verbose-hide hidden h-[64vh] overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out">
                 {/* Empty State */}
                 <div id="empty-conversations" className="flex-col items-center justify-center py-12 px-4 text-center">
                     <div className='flex w-full flex items-center justify-center'>

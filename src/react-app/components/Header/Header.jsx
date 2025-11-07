@@ -44,7 +44,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
 
     return (
         <section id="header" className='w-full'>
-            <header className="space-b-1 my-2 z-[10] transform transition-transform transition-all duration-500 border-b">
+            <header className="space-b-1 my-2 z-[10] transform transition-transform transition-all duration-500">
                 <div className="flex justify-between">
                     <section className="flex justify-start">
                         {/* Toggle Button */}

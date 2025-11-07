@@ -91,12 +91,12 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
     }, [])
 
     return (
-        <section id='chat-container' className='flex justify-center h-full w-full border'>
-            <div id="chatArea-wrapper" className='h-full w-[70%]'>
+        <section id='chat-container' className='flex justify-center h-full w-full transform transition-all duration-700 ease-in-out'>
+            <div id="chatArea-wrapper" className='h-full w-[100%] md:w-[80%] lg:w-[70%] xl:w-[60%]'>
                 <section
                     id="chatArea"
                     ref={chatAreaRef}
-                    className="relative bg-white dark:bg-[#0a0a1f] h-full p-2 md:px-4 pb-16 rounded-lg overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-700 w-full border-1 border-blend-50 dark:border-blend-700  border"
+                    className="relative bg-white dark:bg-[#0a0a1f] h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-700 w-full border-1 border-blend-50 dark:border-blend-700  border"
                 >
                     {/* Show quick actions when no messages */}
                     {messages.length === 0 && !isLoading && (

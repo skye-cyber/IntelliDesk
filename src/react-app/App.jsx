@@ -51,7 +51,7 @@ const App = () => {
                         <ErrorBoundary>
                             <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
                         </ErrorBoundary>
-                        <div id="main-container-center" className='block h-[90vh] w-[96vw]'>
+                        <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
                             <ErrorBoundary>
                                 <Header
                                     onToggleSidebar={toggleSidebar}

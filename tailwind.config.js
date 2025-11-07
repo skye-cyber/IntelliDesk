@@ -14,16 +14,45 @@ module.exports = {
             xl: '1280px',
             '2xl': '1536px',
         },
-
         fontFamily: {
-            display: ['Source Serif Pro', 'Georgia', 'serif'],
-            body: ['Synonym', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'], // Adding JetBrains Mono for monospaced text
-            brand: ['Poppins', 'sans-serif'],
-            handwriting: ['"Dancing Script"', 'cursive'],
+            display: ['Source Serif Pro', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+            body: ['Synonym', 'Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+            brand: ['Poppins', 'Montserrat', 'SF Pro Display', 'system-ui', 'sans-serif'],
+            handwriting: ['Dancing Script', 'Pacifico', 'Caveat', 'cursive'],
+            serif: ['Source Serif Pro', 'Merriweather', 'Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+            sans: ['Synonym', 'Inter', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+            modern: ['Poppins', 'Montserrat', 'SF Pro Display', 'Outfit', 'sans-serif'],
+            elegant: ['Playfair Display', 'Cormorant Garamond', 'Georgia', 'serif'],
+            condensed: ['Roboto Condensed', 'Oswald', 'Arial Narrow', 'sans-serif-condensed'],
+            code: ['JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Source Code Pro', 'Monaco', 'Consolas', 'monospace'],
         },
 
         extend: {
+            boxShadow: {
+                'balanced-sm': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                'balanced': '0 2px 6px 0 rgba(0, 0, 0, 0.1), 0 1px 3px 0 rgba(0, 0, 0, 0.08)',
+                'balanced-md': '0 4px 12px 0 rgba(0, 0, 0, 0.1), 0 2px 6px 0 rgba(0, 0, 0, 0.08)',
+                'balanced-lg': '0 8px 24px 0 rgba(0, 0, 0, 0.1), 0 4px 12px 0 rgba(0, 0, 0, 0.08)',
+                'balanced-xl': '0 12px 36px 0 rgba(0, 0, 0, 0.1), 0 6px 18px 0 rgba(0, 0, 0, 0.08)',
+                'balanced-2xl': '0 24px 48px 0 rgba(0, 0, 0, 0.1), 0 12px 24px 0 rgba(0, 0, 0, 0.08)',
+
+                // Even more balanced (centered)
+                'centered-sm': '0 0 3px 0 rgba(0, 0, 0, 0.1)',
+                'centered': '0 0 6px 0 rgba(0, 0, 0, 0.1)',
+                'centered-md': '0 0 12px 0 rgba(0, 0, 0, 0.1)',
+                'centered-lg': '0 0 24px 0 rgba(0, 0, 0, 0.1)',
+                'centered-xl': '0 0 36px 0 rgba(0, 0, 0, 0.15)',
+
+                // Soft balanced shadows
+                'soft': '0 2px 8px rgba(0, 0, 0, 0.08)',
+                'soft-md': '0 4px 16px rgba(0, 0, 0, 0.08)',
+                'soft-lg': '0 8px 32px rgba(0, 0, 0, 0.1)',
+
+                // For your message component specifically
+                'message': '0 2px 8px rgba(0, 0, 0, 0.1)',
+                'message-hover': '0 4px 16px rgba(0, 0, 0, 0.12)',
+            },
             colors: {
                 primary: {
                     50: '#5252ff',
@@ -81,22 +110,6 @@ module.exports = {
             transitionTimingFunction: {
                 'in-expo': 'cubic-bezier(0.95, 0.05, 0.795, 0.035)',
                 'out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
-            },
-            boxShadow: {
-                glow: '0 0 20px #00d8ff',
-                thumb: '0 0 10px #00d8ff',
-                thumbHover: '0 0 15px #00ffe7',
-                'green-super': '0 0 18px rgba(0, 255, 0, 255)',
-                'green-deep': '0 0 20px rgba(34, 197, 94, 0.7)',
-                'green-medium': '0 0 12px rgba(34, 197, 94, 0.5)',
-                'green-light': '0 0 6px rgba(34, 197, 94, 0.3)',
-                'blue-deep': '0 0 20px rgba(59, 130, 246, 0.7)',
-                'blue-medium': '0 0 12px rgba(59, 130, 246, 0.5)',
-                'custom': '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
-                'blue-light': '0 0 6px rgba(59, 130, 246, 0.3)',
-                'pink-deep': '0 0 20px rgba(236, 72, 153, 0.7)',
-                'pink-medium': '0 0 12px rgba(236, 72, 153, 0.5)',
-                'pink-light': '0 0 6px rgba(236, 72, 153, 0.3)',
             },
             fontSize: {
                 'h1': '36', // Adjust as needed
@@ -187,5 +200,28 @@ module.exports = {
           'gradient-secondary': '#00ffcc',
         },*/
     },
-    plugins: [],
+    plugins: [
+        function({ addComponents }) {
+            addComponents({
+                '.gradient-neon': {
+                    border: '2px solid transparent',
+                    backgroundClip: 'padding-box, border-box',
+                    backgroundOrigin: 'border-box',
+                    backgroundImage: `
+                    linear-gradient(to bottom right, hsl(0, 0%, 100%, 1), hsl(0, 0%, 100%, 1)),
+                          linear-gradient(135deg, rgba(255, 0, 255, 0.8) 0%, rgba(0, 0, 255, 0.6) 50%, rgba(0, 255, 255, 0.67) 100%)
+                          `,
+                },
+                '.gradient-neon-dark': {
+                    border: '2px solid transparent',
+                    backgroundClip: 'padding-box, border-box',
+                    backgroundOrigin: 'border-box',
+                    backgroundImage: `
+                    linear-gradient(to bottom right, hsl(0, 0%, 15%, 0.9), hsl(0, 0%, 15%, 0.9)),
+                          linear-gradient(135deg, rgba(255, 0, 255, 0.67) 0%, rgba(0, 0, 255, 0.6) 50%, rgba(0, 255, 255, 0.67) 100%)
+                          `,
+                }
+            })
+        },
+    ],
 };

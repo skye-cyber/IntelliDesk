@@ -5,9 +5,9 @@ export async function displayStatus(message=null, type='success'){
         const mesSection = type==='success' ? document.getElementById('SuccessMsg-GN') : document.getElementById('error-message-GN');
         mesSection.textContent = message;
     }
-    modal.classList.remove('hidden');
-    box.classList.remove('animate-exit');
-    box.classList.add('animate-enter')
+    modal?.classList.remove('hidden');
+    box?.classList.remove('animate-exit');
+    box?.classList.add('animate-enter')
     return true
 }
 
@@ -15,10 +15,10 @@ export async function hideStatus(type){
     const modal = type==='success' ? document.getElementById('success-modal-GN') : document.getElementById('errorModal-GN');
     const box = type==='success' ? document.getElementById('successBoxBody-GN') : document.getElementById('errorModal-GN');
 
-    box.classList.remove('animate-enter')
-    box.classList.add('animate-exit');
+    box?.classList.remove('animate-enter')
+    box?.classList.add('animate-exit');
     setTimeout( ()=> {
-        modal.classList.add('hidden');
+        modal?.classList.add('hidden');
     }, 310)
     return true
 }

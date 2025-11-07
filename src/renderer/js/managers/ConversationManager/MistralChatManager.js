@@ -1,16 +1,11 @@
 import { Mistral } from '@mistralai/mistralai';
-import { normaliZeMathDisplay } from '../../MathBase/MathNormalize';
 import { HandleProcessingEventChanges } from "../../Utils/chatUtils";
-import { LoopRenderCharts } from "../../diagraming/jscharting";
-import { handleDiagrams } from "../../diagraming/vizcharting";
-import { debounceRenderKaTeX } from '../../MathBase/mathRenderer';
 import { CanvasUtil } from '../Canvas/CanvasUtils';
-import { ChatUtil } from './util';
+import { ChatUtil, ChatDisplay } from './util';
 import { generateTextChunks } from '../../tests/AiSimulator';
 import { handleRequestError } from '../../ErrorHandler/ErrorHandler';
 import { StateManager } from '../StatesManager';
 import { waitForElement } from '../../Utils/dom_utils';
-import { ChatDisplay } from './util';
 
 const chatdisplay = new ChatDisplay()
 const chatutil = new ChatUtil()

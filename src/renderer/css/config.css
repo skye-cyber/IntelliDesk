@@ -20,14 +20,6 @@
     font-style: normal;
 }
 
-@font-face {
-    font-family: 'JetBrains Mono';
-    src: url('../fonts/JetBrains/webfonts/JetBrainsMono-Regular.woff2') format('woff2'),
-    url('../fonts/JetBrains/webfonts/JetBrainsMono-Bold.woff2') format('woff2');
-    font-weight: 700;
-    font-style: normal;
-}
-
 /* global.css or within a Tailwind plugin */
 @layer utilities {
     h1, h2, h3, h4, h5, h6  {
@@ -678,4 +670,11 @@ border-radius: 3px;
 
 #errorDetails::-webkit-scrollbar-thumb:hover {
 background: linear-gradient(to bottom, #4b5563, #374151);
+}
+
+.gradient-neon{
+    border: 2px solid rgba(255,85,0,0);
+    background-clip: padding-box, border-box;
+    background-origin: border-box;
+    background-image: linear-gradient(to bottom right, hsl(0 0% 100% 0.8), hsl(0 0% 100% 0.8)), linear-gradient(135deg, rgba(255,0,255,170) 0%, rgba(0,0,255,85) 50%, rgba(0,255,255,170) 100%);
 }

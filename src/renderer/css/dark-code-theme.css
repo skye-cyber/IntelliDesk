@@ -1,10 +1,11 @@
-.hljs {
-    /*background: #001c24;
-    color: #e0e6f1;*/
+/*
+ * .hljs {
+    background: #001c24;
+    color: #e0e6f1;
     border-left: 2px solid #00aaff;
     border-radius: 0 8px 8px 0;
 }
-
+*/
 .hljs-keyword {
     color: #ff79c6;
     font-weight: 600;

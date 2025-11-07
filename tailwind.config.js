@@ -5,10 +5,11 @@ module.exports = {
     //content: ['loading.html'],
     theme: {
         screens: {
-            '2xs': '300px',
-            xs: '400px',
-            sm: '640px',
+            sxs: '256px',
+            xs: '384px',
+            sm: '512px',
             md: '768px',
+            sd: '896px',
             lg: '1024px',
             xl: '1280px',
             '2xl': '1536px',

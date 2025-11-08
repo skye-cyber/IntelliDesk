@@ -187,7 +187,7 @@ export async function MistraChat(text, chatArea, modelName) {
         window.desk.api.addHistory({ role: "assistant", content: output });
 
         // Render diagrams
-        chatutil.render_dg(output, aiMessageUId)
+        chatutil.render_math(aiMessageUId)
 
         chatutil.removeLoadingAnimation()
         chatdisplay.chats_size_adjust()
@@ -375,7 +375,7 @@ export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = n
         //window.desk.api.addHistory({ role: "assistant", content: [{ type: "text", text: output }] });
 
         // render diagrams from this response
-        chatutil.render_dg(output, MessageUId)
+        chatutil.render_math(MessageUId)
 
         chatdisplay.chats_size_adjust()
     } catch (error) {

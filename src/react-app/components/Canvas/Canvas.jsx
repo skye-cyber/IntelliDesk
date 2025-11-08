@@ -554,11 +554,11 @@ export const Canvas = ({ isOpen, onToggle }) => {
     if (!isOpen) return null;
 
     return (
-        <section id="canvas-wrapper" className="hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-secondary-900 dark:via-blend-900 dark:to-accent-900 h-[100vh] flex items-center justify-center font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500 rounded transform transition-transform transition-all duration-700 ease-in-out p-0.5">
+        <section id="canvas-wrapper" className="hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-secondary-900 dark:via-blend-900 dark:to-accent-900 h-[100vh] flex items-center justify-center font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500/0 rounded-xl rounded-b-none transform transition-transform transition-all duration-700 ease-in-out p-0.5">
 
-            <div aria-label="AI code canvas container" className="mt-0! w-full max-w-5xl bg-white dark:bg-primary-800 rounded-3xl shadow-xl flex flex-col h-full overflow-hidden ring-1 ring-purple-200 dark:ring-purple-700">
+            <div aria-label="AI code canvas container" className="mt-0! w-full max-w-5xl bg-white dark:bg-primary-800 rounded-xl shadow-xl rounded-b-none flex flex-col h-full overflow-hidden ring-1 ring-purple-200 dark:ring-purple-700">
                 {/* Header with title and theme toggle */}
-                <header className="flex items-center justify-between px-2 py-1 border-b border-purple-200 dark:border-purple-700 select-none transition-colors duration-500">
+                <header className="flex items-center justify-between px-0.5 xl:px-2 py-1 border-b border-purple-200 dark:border-purple-700 select-none transition-colors duration-500">
 
                     <div className='group relative'>
                         <button onClick={handleClose} className="flex justify-center items-center py-[0px] px-[2px] cursor-w-resize group">
@@ -570,30 +570,30 @@ export const Canvas = ({ isOpen, onToggle }) => {
                         <span data-action='arial-title' className='absolute -bottom-10 -left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-xs font-semibold text-primary-950 dark:text-white bg-primary-100 dark:bg-zinc-700 rounded-xl p-1 w-fit max-18 whitespace-pre font-handwriting'>Close Canvas</span>
                     </div>
 
-                    <h2 className="text-xl font-semibold text-purple-900 dark:text-purple-200">Canvas</h2>
+                    <h2 className="hidden xl:flex text-xl font-semibold text-purple-900 dark:text-purple-200">Canvas</h2>
 
                     <p className="h-full flex justify-center items-center mx-[2vw] text-sm font-normal text-black dark:text-white">Lines:&nbsp;<span id="line-counter" className="text-slate-900 dark:text-gray-100"></span></p>
 
                     {/* Buttons row */}
-                    <div className="flex justify-end gap-4 mr-1 select-none transform transition-transform transition-all duration-500 ease-in-out transition-colors duration-500">
+                    <div className="flex justify-end gap-1 lg:gap-2 xl:gap-4 mr-1 select-none transform transition-transform transition-all duration-500 ease-in-out transition-colors duration-500">
                         <button
                             onClick={handleCodeView}
                             id="btn-code"
-                            className="flex items-center gap-1 px-3 py-1 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 font-normal text-md text-sm" title="Show Code">
+                            className="flex items-center gap-1 px-0 xs:p-0.5 md:px-3 py-1 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 font-normal text-md text-sm" title="Show Code">
                             &lt;/&gt; Code
                         </button>
 
                         <button
                             onClick={handlePreviewView}
                             id="btn-preview"
-                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-700 shadow-sm transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm" title="Show Preview">
+                            className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-700 shadow-sm transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm" title="Show Preview">
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4h12v12H4z" /></svg>
                             Preview
                         </button>
                         <button
                             onClick={handleCopy}
                             id="btn-copy"
-                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500 text-white hover:bg-green-600 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-green-400 transform transition-transform transition-all duration-500 ease-in-out text-sm" title="Copy Code">
+                            className="hidden sm:flex items-center gap-2 px-0 xs:p-0.5 md:px-3 xs:py-1 rounded-full bg-green-500 text-white hover:bg-green-600 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-green-400 transform transition-transform transition-all duration-500 ease-in-out text-sm" title="Copy Code">
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h6a2 2 0 012 2v2" /><rect x="8" y="8" width="8" height="8" rx="2" /></svg>
                             Copy
                         </button>
@@ -619,7 +619,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                 {/* Main AI canvas content */}
                 <section className="flex-1 overflow-hidden w-full p-0 space-y-0 h-full overflow-hiden">
                     {/* Code block with line numbers and code content side by side */}
-                    <div id="code-block-container" className="flex flex-row h-full overflow-hidden rounded-lg ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner bg-white dark:bg-zinc-950 select-text text-sm max-w-full">
+                    <div id="code-block-container" className="flex flex-row h-full overflow-hidden ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner bg-white dark:bg-zinc-950 select-text text-sm max-w-full">
                         {/* Line numbers gutter */}
                         <pre id="line-numbers"
                             onScroll={syncScroll}
@@ -631,12 +631,11 @@ export const Canvas = ({ isOpen, onToggle }) => {
                             <pre id="code-view"
                                 tabIndex="0"
                                 aria-label="Code editor view"
-                                className="relative flex-1 h-auto h-full whitespace-pre-wrap leading-[1.5rem] text-sm font-mono transform transition-tranform duration-100 focus:ring-none focus:outline-none cursor-pen overflow-auto border-l border-primary-400"
+                                className="relative flex-1 h-auto h-full whitespace-pre-wrap leading-[1.5rem] text-sm font-mono transform transition-tranform duration-100 focus:ring-none focus:outline-none cursor-pen overflow-auto scrollbar-custom border-l border-primary-400"
                                 contentEditable="true"
                                 spellCheck="false"
                                 onScroll={syncScroll}
                                 onClick={(e) => { updateHandIndicator(e); updateLineNumbers(e); }}
-                                onInput={(e) => { updateHandIndicator(e); updateLineNumbers(e); }}
                                 onWheel={handleWheelScroll}
                             >
                             </pre>
@@ -718,7 +717,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                     </div>
 
                     {/* Preview block */}
-                    <div id="preview-view" tabIndex="0" aria-label="Preview output" className="hidden bg-white dark:bg-purple-800 rounded-lg p-6 ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner h-[88vh] overflow-auto text-purple-900 dark:text-purple-200 font-sans text-base whitespace-pre-wrap transition-colors duration-500">
+                    <div id="preview-view" tabIndex="0" aria-label="Preview output" className="hidden bg-white dark:bg-primary-800 h-full p-6 ring-2 ring-purple-300 dark:ring-purple-700 shadow-inner h-[88vh] overflow-auto text-purple-900 dark:text-purple-200 font-sans text-base whitespace-pre-wrap transition-colors duration-500">
                         Hello, IntelliDesk Canvas!
                     </div>
                 </section>

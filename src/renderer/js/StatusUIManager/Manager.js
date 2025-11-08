@@ -219,7 +219,7 @@ export class ModalManager {
         const loadingModal = document.getElementById('loadingModal')
         const modalMainBox = document.getElementById('modalMainBox')
         const msg = document.getElementById('loadingMSG')
-        console.log(loadingModal, modalMainBox, msg)
+
         loadingModal.classList.remove('hidden')
         modalMainBox.classList.remove('animate-exit')
         modalMainBox.classList.add('animate-enter')
@@ -251,7 +251,7 @@ export class ModalManager {
         const originalContent = element.innerHTML;
         const isButton = element.tagName === "BUTTON";
 
-        element.classList.add('fixed', 'z-[99]')
+        //element.classList.add('fixed', 'z-[99]')
         element.innerHTML = `
         <div class="flex items-center justify-center space-x-2">
         <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin-50"></div>

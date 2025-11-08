@@ -303,8 +303,8 @@ async function routeToHf(text) {
 			window.desk.api.addHistory({ role: "assistant", content: fullResponse });
 
 			// render diagrams fromthis response
-			window.handleDiagrams(actualResponse, 'both');
-			window.LoopRenderCharts(actualResponse)
+			window.diagram_interpreter(actualResponse, 'both');
+			window.ChartsInterpreter(actualResponse)
 
 		} catch (error) {
 			console.log(error)
@@ -557,8 +557,8 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 		//console.log("Final VisionHistory:", JSON.stringify(VisionHistory, null, 2));
 
 		// render diagrams from this response
-		window.handleDiagrams(visionMs, 'both');
-		window.LoopRenderCharts(visionMs);
+		window.diagram_interpreter(visionMs, 'both');
+		window.ChartsInterpreter(visionMs);
 
 	} catch (error) {
 		window.handleRequestError(error, userMessage, VisionMessage, ["VS", fileType, fileContainerId])

@@ -2,13 +2,14 @@ import { implementUserCopy, InputPurify } from "../../Utils/chatUtils";
 import { markitdown } from '../../CodeRenderer/code_renderer';
 import { normaliZeMathDisplay, normalizeMathDelimiters } from "../../MathBase/MathNormalize";
 import { debounceRenderKaTeX } from "../../MathBase/mathRenderer";
-import { LoopRenderCharts } from "../../diagraming/jscharting";
-import { handleDiagrams } from "../../diagraming/vizcharting";
+import { interpret } from "../../diagraming/jscharting";
+import { dot_interpreter } from "../../diagraming/vizcharting";
 import { waitForElement } from "../../Utils/dom_utils";
 
 export class ChatUtil {
     constructor() {
-        //
+        this.diagram_interpreter = dot_interpreter
+        this.diagram_interpreter = interpret
     }
     scrollToBottom(element = document.getElementById('chatArea'), check = false) {
         this.updateScrollButtonVisibility()
@@ -34,7 +35,11 @@ export class ChatUtil {
     }
 
 
-    addUserMessage(text, chatArea = document.getElementById('chatArea'), fileType, fileDataUrl, fileContainerId, save = true) {
+    addUserMessage(text, chatArea, fileType, fileDataUrl, save = true) {
+        if (!chatArea) chatArea = document.getElementById('chatArea')
+
+        if (!chatArea) return window.ModalManager.showMessage('Could not retrieve chatArea container', 'error')
+
         const userMessageId = `msg_${Math.random().toString(36).substring(2, 9)}`;
         const copyButtonId = `copy-button-${Math.random().toString(36).substring(2, 6)}`;
         const cloneButtonId = `clone-${Math.random().toString(36).substring(2, 6)}`;
@@ -150,12 +155,15 @@ export class ChatUtil {
         if (loader?.id.startsWith("loader_")) loader?.remove()
     }
 
-    render_dg(response, container_selector, scope = 'all') {
+    render_dg(input, scope = 'all') {
         // render diagrams fromthis response
-        handleDiagrams(response, scope);
-        LoopRenderCharts(response)
-        debounceRenderKaTeX(`.${container_selector}`, null, true);
-        normaliZeMathDisplay(`.${container_selector}`)
+        if (['dg', 'all'].includes(scope)) this.diagram_interpreter(input, scope);
+        if (['charts', 'all'].includes(scope)) this.diagram_interpreter(input)
+    }
+
+    render_math(container_selector, scope = 'all') {
+        if (['math', 'all'].includes(scope)) debounceRenderKaTeX(`.${container_selector}`, null, true);
+        if (['norm', 'all'].includes(scope)) normaliZeMathDisplay(`.${container_selector}`)
     }
 
     addChatMessage(container, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId = null) {
@@ -316,6 +324,7 @@ export class ChatUtil {
         return container
     }
     addMultimodalMessage(container, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId = null) {
+
         container.innerHTML = `
 			<section id="ai_response" class="relative w-fit max-w-full lg:max-w-5xl mb-[2vh] p-2">
 				${actualResponse ? `
@@ -339,74 +348,66 @@ export class ChatUtil {
                             ${thinkContent && actualResponse ? `<p class="w-full rounded-lg border-2 border-blue-400 dark:border-orange-400 mb-2"></p>` : ""}
                         </div>
                     ` : ''}
-                    ${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
-                <p style="color: #333;">${markitdown(normalizeMathDelimiters(actualResponse))}</p>
-                <section class="options absolute bottom-2 flex mt-6 space-x-4 cursor-pointer">
-                <div class="group relative max-w-fit transition-all duration-500 hover:z-50">
-                <div
-                role="button"
-                id="${exportId}"
-                aria-expanded="false"
-                onclick="window.toggleExportOptions(this);"
-                class="relative overflow-hidden bg-[white]/80 backdrop-blur-md transition-all duration-700 hover:bg-white hover:shadow-lg hover:shadow-blue-500/10 dark:bg-[#5500ff]/80 dark:hover:bg-[#00aa00]/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/50 rounded-full"
-                style="border: 2px solid rgba(255,85,0,0); background-clip: padding-box, border-box; background-origin: border-box; background-image: linear-gradient(to bottom right, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.8)), linear-gradient(135deg, rgba(255,0,255,170) 0%, rgba(0,0,255,85) 50%, rgba(0,255,255,170) 100%);"
-                >
-                <div class="flex items-center space-x-2 px-4 py-1">
-                <div class="relative h-6 w-6">
-                <svg
-                class="absolute inset-0 h-full w-full fill-current text-blue-600 transition-all duration-700 group-hover:rotate-90 group-hover:scale-110 group-hover:text-blue-500 dark:text-[#00aaff] dark:group-hover:text-sky-800"
-                viewBox="0 0 24 24"
-                style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1))"
-                >
-                <path
-                d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                class="origin-center transition-transform duration-500"
-                />
-                </svg>
-                </div>
-                <span class="bg-gradient-to-r from-blue-700 to-[#550000] bg-clip-text text-sm font-semibold text-transparent transition-all duration-700 group-hover:from-blue-600 group-hover:to-blue-400 dark:from-blue-600 dark:to-[#00007f] dark:group-hover:from-sky-700 dark:group-hover:to-[#984fff]">
-                Export
-                </span>
-                </div>
+					${actualResponse && thinkContent ? `<strong class="text-[#28a745]">Response:</strong>` : ''}
+					<p style="color: #333;">${markitdown(normalizeMathDelimiters(actualResponse))}</p>
+                        <section class="options absolute bottom-2 flex mt-6 space-x-2 cursor-pointer">
+                            <div class="group relative max-w-fit transition-all duration-300 hover:z-50">
+                                <div
+                                    role="button"
+                                    id="${exportId}"
+                                    aria-expanded="false"
+                                    onclick="window.toggleExportOptions(this);"
+                                    aria-label="Export"
+                                    class="relative overflow-hidden bg-white/80 backdrop-blur-md transition-all duration-700 hover:bg-white hover:shadow-lg hover:shadow-blue-500/10 dark:bg-[#5500ff]/80 dark:hover:bg-[#00aa00]/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/50 rounded-full"
+                                    style="border: 2px solid rgba(255,85,0,0); background-clip: padding-box, border-box; background-origin: border-box; background-image: linear-gradient(to bottom right, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.8)), linear-gradient(135deg, rgba(255,0,255,170) 0%, rgba(0,0,255,85) 50%, rgba(0,255,255,170) 100%);"
+                                >
+                                    <div class="flex items-center space-x-0.5 px-1 py-0.5">
+                                        <div class="relative h-6 w-6">
+                                            <svg class="absolute inset-0 h-full w-full fill-current text-blue-600 transition-all duration-700 group-hover:rotate-90 group-hover:scale-110 group-hover:text-blue-500 dark:text-[#00aaff] dark:group-hover:text-sky-800"
+                                            viewBox="0 0 24 24"
+                                            style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
+                                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" class="origin-center transition-transform duration-300"/>
+                                            </svg>
+                                        </div>
+                                        <span class="bg-gradient-to-r from-blue-700 to-[#550000] bg-clip-text text-sm font-semibold text-transparent transition-all duration-500 group-hover:from-blue-600 group-hover:to-blue-400 dark:from-blue-600 dark:to-[#00007f] dark:group-hover:from-sky-700 dark:group-hover:to-[#984fff]">
+                                            Export
+                                        </span>
+                                    </div>
 
-                <!-- Gradient border overlay -->
-                <div class="absolute inset-0 -z-10 rounded-[12px] bg-gradient-to-br from-blue-400/20 via-purple-400/10 to-blue-400/20 opacity-60 dark:from-blue-400/15 dark:via-purple-400/10 dark:to-blue-400/15"></div>
-                </div>
+                                    <!-- Gradient border overlay -->
+                                    <div class="absolute inset-0 -z-10 rounded-[12px] bg-gradient-to-br from-blue-400/20 via-purple-400/10 to-blue-400/20 opacity-60 dark:from-blue-400/15 dark:via-purple-400/10 dark:to-blue-400/15"></div>
+                                </div>
 
-                <!-- Hover enhancement effect -->
-                <div class="absolute -inset-2 -z-10 rounded-xl bg-blue-500/10 blur-xl transition-opacity duration-500 group-hover:opacity-100 dark:bg-blue-400/15"></div>
-                </div>
-                <div class="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onclick="CopyAll('.${MessageUId}');">
-                <svg
-                class="w-5 md:w-6 h-5 md:h-6 mt-1 transition-transform duration-300 ease-in-out hover:scale-110 cursor-pointer"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                >
-                <defs>
-                <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color: #FF4081; stop-opacity: 100" />
-                <stop offset="100%" style="stop-color: #4a1dff; stop-opacity: 1" />
-                </linearGradient>
-                </defs>
-                <g clip-path="url(#clip0)">
-                <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
-                fill="url(#gradient1)"
-                />
-                </g>
-                </svg>
-                </div>
-                </section>
+                                <!-- Hover enhancement effect -->
+                                <div class="absolute -inset-2 -z-10 rounded-xl bg-blue-500/10 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-blue-400/15"></div>
+                            </div>
+                            <div class="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onclick="CopyAll('.${MessageUId}');">
+                                <svg class="w-5 md:w-6 h-5 md:h-6 transition-transform duration-200 ease-in-out hover:scale-110 cursor-pointer" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color: #FF4081; stop-opacity: 100" />
+                                            <stop offset="100%" style="stop-color: #4a1dff; stop-opacity: 1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <g clip-path="url(#clip0)">
+                                        <path
+                                            fill-rule="evenodd"
+                                            clip-rule="evenodd"
+                                            d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
+                                            fill="url(#gradient1)"
+                                        />
+                                    </g>
+                                </svg>
+                            </div>
+                        </section>
+					</div>
 
                     <div data-action="export-menu" id="exportOptions-${exportId}" class="hidden absolute z-[10] bottom-12 left-0 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 z-50 overflow-hidden transition-all duration-300 transform origin-bottom-left">
                         <div class="p-1">
                             <div class="relative">
                                 <!-- Header -->
                                 <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
-                                    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Export Options</p>
+                                    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-tight">Export Options</p>
                                 </div>
 
                                 <!-- Export Items -->
@@ -472,8 +473,9 @@ export class ChatUtil {
                         <!-- Arrow indicator -->
                         <div class="absolute -bottom-2 left-4 w-4 h-4 bg-white dark:bg-gray-800 border-r border-b border-gray-200 dark:border-gray-700 transform rotate-45"></div>
                     </div>
-                </section>`: ""}
-                `;
+			</section>`:
+                ""}
+        `;
         return container
     }
     get_models() {

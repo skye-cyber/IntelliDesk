@@ -53,30 +53,22 @@ renderer.code = function(code) {
     // Generate unique ID for the copy button
     const copyButtonId = `copy-button-${Math.random().toString(36).substring(2, 9)}`;
     const renderButtonId = `render-button-${Math.random().toString(36).substring(2, 9)}`;
-    const openInCanvas = `open-canvas-${Math.random().toString(36).substring(2, 9)}`;
+    const openInCanvasId = `open-canvas-${Math.random().toString(36).substring(2, 9)}`;
     const downloadButtonId = `download-${Math.random().toString(36).substring(2, 9)}`;
+    const codeBlockId = `code-block-${Math.random().toString(36).substring(2, 9)}`;
 
-    function get_dg_renderFn() {
-        const mapper = {
-            'dot-draw': `window.handleDiagrams(this, 'dot', isPlainCode=true, trigger='click')`,
-            'dot': `window.handleDiagrams(this, 'dot', isPlainCode=true, trigger='click')`,
-            'json-draw': `window.handleDiagrams(this, 'json'}', isPlainCode=true, trigger='click')`,
-            'json-chart': `window.LoopRenderCharts(this, type='code', trigger='click')`
-        }
-        return dgLang ? mapper[dgLang] : validLanguage === 'dot' ? mapper[validLanguage] : ''
-    }
+    function get_render_fn() {
+        if (['dot-draw', 'dot'].includes(validLanguage)) return `window.dot_interpreter.diagram_interpreter('#${codeBlockId}', 'dot', false, 'click')`
 
-    function get_render_fn(){
-        if(validLanguage === 'dot'){
-            return get_dg_renderFn()
-        } else if(['html', 'svg'].includes(validLanguage)){
-            return `window.renderHtml(this)`
-        }
+        if (['json-draw', 'json-chart'].includes(validLanguage)) return `chart_interpret.ChartsInterpreter('#${codeBlockId}', 'json', true, 'click')`
+
+        if (['html', 'svg'].includes(validLanguage)) return `window.html_preview(this, '#${codeBlockId}')`
+        return null
     }
 
     if (canvasutil.isCanvasOn()) {
         //increament code buffer
-        StateManager.set('codeBuffer', { lang: validLanguage, code: `<code id="${validLanguage}" data-value=${renderButtonId} class="hljs ${validLanguage} block whitespace-pre w-full rounded-md bg-none font-mono transition-colors duration-500">${highlighted}</code>` })
+        StateManager.set('codeBuffer', { lang: validLanguage, code: `<code id="${validLanguage}" data-value=${codeBlockId} id="${codeBlockId}" class="hljs ${validLanguage} block whitespace-pre w-full rounded-md bg-none font-code transition-colors duration-500">${highlighted}</code>` })
 
         /*
          * return `
@@ -122,7 +114,7 @@ renderer.code = function(code) {
             ${validLanguage}
             </p>
             <div class="flex justify-between items-center space-x-2">
-                <button onclick="window.openInCanvas(this, '${openInCanvas}')" id="openBtn" class="flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700" aria-pressed="false" title="Open coding canvas">
+                <button id="${openInCanvasId}" onclick="window.openInCanvas(this, '${codeBlockId}')" id="openBtn" class="flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700" aria-pressed="false" title="Open coding canvas">
                     <!-- simple plus icon (SVG) -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mt-0.5" fill="currentColor" viewBox="0 0 640 640">
                         <path d="M392.8 65.2C375.8 60.3 358.1 70.2 353.2 87.2L225.2 535.2C220.3 552.2 230.2 569.9 247.2 574.8C264.2 579.7 281.9 569.8 286.8 552.8L414.8 104.8C419.7 87.8 409.8 70.1 392.8 65.2zM457.4 201.3C444.9 213.8 444.9 234.1 457.4 246.6L530.8 320L457.4 393.4C444.9 405.9 444.9 426.2 457.4 438.7C469.9 451.2 490.2 451.2 502.7 438.7L598.7 342.7C611.2 330.2 611.2 309.9 598.7 297.4L502.7 201.4C490.2 188.9 469.9 188.9 457.4 201.4zM182.7 201.3C170.2 188.8 149.9 188.8 137.4 201.3L41.4 297.3C28.9 309.8 28.9 330.1 41.4 342.6L137.4 438.6C149.9 451.1 170.2 451.1 182.7 438.6C195.2 426.1 195.2 405.8 182.7 393.3L109.3 320L182.6 246.6C195.1 234.1 195.1 213.8 182.6 201.3z"/>
@@ -145,7 +137,7 @@ renderer.code = function(code) {
                     </svg>
                     <p id="BtText">Download</p>
                 </button>
-                ${(get_render_fn() || 1===1) ? `
+                ${['dot', 'dot-draw', 'json-draw', 'json-chart', 'svg', 'html'].includes(validLanguage) ? `
                 <button id="${renderButtonId}" onclick="${get_render_fn()}" class="run-button flex items-center gap-0.5 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer hover:bg-zinc-400 p-1 transform transition-all duration-700">
                     <!-- Network / Diagram Icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 640 640">
@@ -155,7 +147,7 @@ renderer.code = function(code) {
                 ` : ''}
             </div>
         </section>
-        <code data-value=${renderButtonId} class="hljs ${validLanguage} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-[#ffffff] border border-white shadow-balanced block whitespace-pre font-code text-sm  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none">${highlighted}</code>
+        <code data-value=${codeBlockId} id="${codeBlockId}" class="hljs ${validLanguage} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-[#ffffff] border border-white shadow-balanced block whitespace-pre font-code text-sm  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none">${highlighted}</code>
     </div>
             `
 };

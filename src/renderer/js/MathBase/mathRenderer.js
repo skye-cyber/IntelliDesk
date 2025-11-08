@@ -29,7 +29,7 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
                 ],
                 throwOnError: false,
             });
-            console.log('KaTeX rendering complete for', selector);
+            //console.log('KaTeX rendering complete for', selector);
         } else {
             console.error('KaTeX auto-render extension not loaded.');
         }

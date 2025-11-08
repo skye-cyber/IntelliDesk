@@ -236,7 +236,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </h2>
             </div>
             {/* Conversations List */}
-            <div id="conversations" className="verbose-hide hidden h-[64vh] overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out">
+            <div id="conversations" className="verbose-hide hidden h-[64vh] overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth">
                 {/* Empty State */}
                 <div id="empty-conversations" className="flex-col items-center justify-center py-12 px-4 text-center">
                     <div className='flex w-full flex items-center justify-center'>

@@ -99,7 +99,7 @@ export class ConversationManager {
         implementUserCopy();
         copyBMan();
         //window.addCopyListeners();
-        this.chatdisplay.chats_size_adjust()
+        //this.chatdisplay.chats_size_adjust()
 
         // force gc
         conversationData = null
@@ -123,12 +123,12 @@ export class ConversationManager {
             }
 
             // If no valid file type is found, log and return null
-            console.log('No file attachment!');
+            //console.log('No file attachment!');
             return null;
 
         } catch (error) {
             if (error.name === "TypeError") {
-                console.log('No file attachment!');
+                //console.log('No file attachment!');
             } else {
                 console.error("Error determining file type:", error.name);
             }
@@ -183,7 +183,7 @@ export class ConversationManager {
             userText = content?.slice(-1) === ']' ? content?.substring(0, content?.length - 22) : content
         }
 
-        if (userText) this.chatutil.addUserMessage(userText, undefined, fileType, fileDataUrl, false)
+        if (userText) this.chatutil.addUserMessage(userText, null, fileType, fileDataUrl, false)
         //this.chatdisplay.chats_size_adjust()
     }
 
@@ -211,7 +211,7 @@ export class ConversationManager {
         }
 
         this.chatutil.addChatMessage(MessageContainer, false, thinkContent, actualResponse, MessageUId, exportId, foldId)
-        this.chatutil.render_dg(actualResponse, MessageUId)
+        this.chatutil.render_math(MessageUId)
     }
 
     // Render vision-based assistant message
@@ -229,7 +229,7 @@ export class ConversationManager {
         this.chatutil.addMultimodalMessage(MessageContainer, false, null, textContent, MessageUId, exportId)
 
         // render diagrams from this response
-        this.chatutil.render_dg()
+        this.chatutil.render_math(MessageUId)
     }
 }
 

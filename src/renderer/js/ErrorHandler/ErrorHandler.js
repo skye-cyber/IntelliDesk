@@ -223,6 +223,7 @@ export class RequestErrorHandler {
             status: error.status,
             timestamp: new Date().toISOString(),
             origin: this.getErrorOrigin(error),
+            traceback: error.stack,
         };
 
         return this.styleErrorDetails(errorData);
@@ -239,6 +240,7 @@ export class RequestErrorHandler {
             message: 'color: #dc2626;', // Red-600
             timestamp: 'color: #7c3aed;', // Violet
             errorType: 'color: #ea580c;', // Orange
+            traceback: 'color: white;',
         };
 
         const jsonString = JSON.stringify(errorData, null, 2);

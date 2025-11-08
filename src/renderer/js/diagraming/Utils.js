@@ -35,8 +35,13 @@ export function closediagViewModal() {
 
 
 export async function exportSvgToPng(svgElementId, outputFileName = `${svgElementId}.png`) {
+    let button_content = null
+    let export_button = document.querySelector(`[data-value^=${svgElementId}]`)
+    if (export_button) button_content = window.ModalManager.showLoading(export_button, 'exporting')
+
     try {
-        console.log('Exporting:', svgElementId)
+
+        //console.log('Exporting:', svgElementId)
         const parentDiv = document.getElementById(svgElementId);
         const svgElement = parentDiv.querySelector('svg');
 
@@ -46,9 +51,6 @@ export async function exportSvgToPng(svgElementId, outputFileName = `${svgElemen
             alert("No diagram found to export.");
         }
         const svgData = new XMLSerializer().serializeToString(svgElement);
-
-        //show loading status
-        await window.HandleLoading(task = 'show', 'Exporting diagram to png...');
 
         // Create a canvas
         const canvas = document.createElement("canvas");
@@ -102,31 +104,23 @@ export async function exportSvgToPng(svgElementId, outputFileName = `${svgElemen
             });
         }
 
-
-        console.log(result)
-
-        //  hide loading on completion
-        result ? await window.HandleLoading(task = 'hide') : '';
-
         // Show success modal on success
         if (result === true) {
-            await window.displayStatus(message = `Export successful: name=${outputFileName}`, type = 'success');
+            window.ModalManager.showMessage(`Export successful: name=${outputFileName}`, 'success');
 
-            // hide sucess message after 4 seconds
-            setTimeout(async () => {
-                await window.hideStatus(type = 'success')
-            }, 5000);
         } else {
-            await window.HandleLoading(task = 'hide')
-            await window.displayStatus(message = 'Error saving image', type = 'error');
+            window.ModalManager.showMessage('Error saving image', 'error');
         }
     } catch (err) {
         console.error(err);
-        await window.displayStatus(message = err, type = 'error');
+        window.ModalManager.showMessage(err, 'error');
+    }
+    finally {
+        //window.ModalManager.hideLoader()
+        if (export_button) window.ModalManager.hideLoading(export_button, button_content)
     }
 }
 
-//opendiagViewModal();
-window.opendiagViewModal = opendiagViewModal;
+
 window.closediagViewModal = closediagViewModal;
 window.exportSvgToPng = exportSvgToPng;

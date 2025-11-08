@@ -8,8 +8,7 @@ import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import '@js/katex/katex.min.js';
 import '@js/katex/contrib/auto-render.min.js';
 import '@css/styles.css';
-import '@css/dark-code-theme.css'
-import '@css/light-code-theme.css'
+import '@css/code-theme.css'
 import { Recording } from '@components/RecordingUI/Recording';
 import '@js/Timer/timer.js'
 import { DiagramUi } from '@components/DiagramUI/diagram.jsx'
@@ -29,8 +28,8 @@ import '@js/diagraming/jscharting.js'
 import '@js/Notification/notification';
 import '@js/ChatExport/export';
 import '@js/Utils/keyshortcuts';
-//import { StateManager } from '@js/managers/StatesManager';
-
+import { PortalContainer } from './PortalContainer';
+import '../renderer/js/react-portal-bridge';
 
 const App = () => {
     //const { electron } = useElectron();
@@ -98,7 +97,11 @@ const App = () => {
                     <Notifcation isOpen={true} onToggle={null} />
                 </ErrorBoundary>
             </MainLayout>
-        </ErrorBoundary>
+            {/* Portal container for vanilla JS components */}
+            <ErrorBoundary>
+                <PortalContainer />
+            </ErrorBoundary>
+        </ErrorBoundary >
     );
 };
 

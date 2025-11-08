@@ -58,6 +58,16 @@ export class CanvasUtil {
         return check
     }
 
+    isCanvasOpen(){
+        const wrapper = document.getElementById('canvas-wrapper')
+        if(!wrapper) return false
+
+        if(wrapper.classList.contains('hidden')){
+            return false
+        }
+        return true
+    }
+
     updateCanvas() {
         //
     }
@@ -67,7 +77,9 @@ export function openInCanvas(element, id) {
     const codeBlock = document.querySelector(`[data-value^="${id}"]`)
     const code = codeBlock?.innerHTML
     const chatdisplay = new ChatDisplay()
-    document.getElementById('ToggleCanvasBt')?.click()
+
+    if (!new CanvasUtil().isCanvasOpen()) document.getElementById('ToggleCanvasBt')?.click()
+
     waitForElement('#code-view', (el) => {
         el.innerHTML = code
         chatdisplay.chats_size_adjust()

@@ -11,7 +11,7 @@ export const useElectron = (callbacks = {}) => {
     // Check if we're running in Electron
     useEffect(() => {
         setIsElectron(!!window.desk.api2);
-        console.log('Electron API available:', !!window.desk.api2);
+        //console.log('Electron API available:', !!window.desk.api2);
     }, []);
 
     // Get app version

@@ -218,7 +218,7 @@ module.exports = {
                     backgroundOrigin: 'border-box',
                     backgroundImage: `
                     linear-gradient(to bottom right, hsl(0, 0%, 15%, 0.9), hsl(0, 0%, 15%, 0.9)),
-                          linear-gradient(135deg, rgba(255, 0, 255, 0.67) 0%, rgba(0, 0, 255, 0.6) 50%, rgba(0, 255, 255, 0.67) 100%)
+                          linear-gradient(135deg, rgba(255, 0, 255, 0.67) 0%, rgba(0, 0, 255, 0.6) 50%, rgba(0, 255, 255, 0.8) 100%)
                           `,
                 }
             })

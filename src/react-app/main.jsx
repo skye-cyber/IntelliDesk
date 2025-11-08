@@ -14,5 +14,5 @@ document.addEventListener('DOMContentLoaded', () => {
   const root = createRoot(container)
   root.render(<App />)
 
-  console.log('React app mounted successfully!')
+  //console.log('React app mounted successfully!')
 })

@@ -1,7 +1,7 @@
 export class Editor {
-    constructor(editorElement, callbacks=[]) {
+    constructor(editorElement, callbacks = []) {
         this.editor = editorElement;
-        this.callbacks=callbacks
+        this.callbacks = callbacks
         this.init();
     }
 
@@ -25,7 +25,7 @@ export class Editor {
                 this.insertNewBlock();
             }
         }
-        for(let callback of this.callbacks){
+        for (let callback of this.callbacks) {
             callback(event)
         }
     }
@@ -118,7 +118,7 @@ export class Editor {
         return null;
     }
 
-    handleInput() {
+    handleInput(event) {
         // Clean up empty blocks
         const blocks = this.editor.querySelectorAll('div, p');
         blocks.forEach(block => {
@@ -126,5 +126,8 @@ export class Editor {
                 block.innerHTML = '<br>';
             }
         });
+        for (let callback of this.callbacks) {
+            callback(event)
+        }
     }
 }

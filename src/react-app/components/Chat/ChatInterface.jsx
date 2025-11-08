@@ -96,7 +96,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                 <section
                     id="chatArea"
                     ref={chatAreaRef}
-                    className="relative bg-white dark:bg-primary-900 h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden space-y-4 transition-colors duration-700 w-full border-1 border-blend-50 dark:border-blend-700  border"
+                    className="relative bg-white dark:bg-primary-900 h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 w-full border-1 border-blend-50 dark:border-blend-700"
                 >
                     {/* Show quick actions when no messages */}
                     {messages.length === 0 && !isLoading && (
@@ -124,7 +124,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
 };
 
 const LoadingModal = () => (
-    <div id="loadingModal" className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-[61]">
+    <div id="loadingModal" className="fixed z-70 inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div id="modalMainBox" className="bg-white p-6 rounded-lg shadow-lg flex gap-1 items-center animate-exit transition-all duration-1000">
             <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             <p id="loadingMSG" className="mt-3 text-gray-700">Processing, please wait...</p>

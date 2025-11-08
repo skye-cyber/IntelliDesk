@@ -66,6 +66,7 @@ const api = {
             data = api.clean(data)
 
             data = JSON.stringify(data, null, 2)
+            //console.log("Write data to file")
 
             fs.writeFileSync(path, data);
             return true;

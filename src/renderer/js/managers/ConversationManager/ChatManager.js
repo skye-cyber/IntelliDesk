@@ -251,7 +251,7 @@ export class ChatManager {
         }
     }
 
-    showLoadingModal(message = null) {
+    async showLoadingModal(message = null) {
 
         const loadingModal = document.getElementById('loadingModal');
         const modalMainBox = document.getElementById('modalMainBox');
@@ -266,7 +266,7 @@ export class ChatManager {
 
     }
 
-    hideLoadingModal() {
+    async hideLoadingModal() {
         const loadingModal = document.getElementById('loadingModal');
         const modalMainBox = document.getElementById('modalMainBox');
         modalMainBox.classList.remove('animate-enter')
@@ -276,8 +276,8 @@ export class ChatManager {
         }, 310)
     }
 
-    RenameConversation(name, id = null) {
-        this.showLoadingModal(`Renaming ${this.currentConversationId} ...`);
+    async RenameConversation(name, id = null) {
+        await this.showLoadingModal(`Renaming ${this.currentConversationId} ...`);
         if (!this.currentConversationId || (id && this.currentConversationId != id)) this.currentConversationId = id
 
         try {
@@ -292,22 +292,22 @@ export class ChatManager {
             }
             this.hideConversationOptions();
             this.fetchConversations();
-            this.hideLoadingModal()
+            await this.hideLoadingModal()
         } catch (err) {
             this.hideConversationOptions()
             console.log("Failed to rename file", err);
-            this.hideLoadingModal()
+            await this.hideLoadingModal()
         }
     }
 
-    DeleteConversation(id = null) {
+    async DeleteConversation(id = null) {
         try {
             this.showLoadingModal(`Deleting ${this.currentConversationId}`);
             if (!this.currentConversationId || (id && this.currentConversationId != id)) this.currentConversationId = id
 
             const _delete = window.desk.api.deleteChat(this.currentConversationId, this.storagePath);
             if (_delete) {
-                this.hideLoadingModal();
+                await this.hideLoadingModal();
                 this.hideConversationOptions();
                 window.showDeletionStatus("text-red-400", `Deleted ${this.currentConversationId}`);
                 console.log(`Deleted ${this.currentConversationId}`);
@@ -316,42 +316,55 @@ export class ChatManager {
             }
             // Hide options and refresh
             this.hideConversationOptions();
-            this.hideLoadingModal()
+            await this.hideLoadingModal()
             this.fetchConversations();
             return _delete
         } catch (err) {
             this.hideConversationOptions()
             console.log("Failed to rename file", err);
-            this.hideLoadingModal()
+            await this.hideLoadingModal()
         }
     }
 
     // Function to render a conversation from a file
+    // Function to render a conversation from a file
     async renderConversationFromFile(item, conversationId) {
-        this.showLoadingModal('Preapring conversation')
-        // Remove animation from previous item as it active item is changing
-        if (this.activeItem) {
-            this.activeItem.classList.remove('animate-heartpulse');
-            this.activeItem.querySelector('#active-dot').classList.add('hidden')
+        // Show loading modal immediately without awaiting
+        this.showLoadingModal('Preparing conversation');
+
+        // Use requestAnimationFrame to ensure the modal has a chance to render
+        await new Promise(resolve => requestAnimationFrame(resolve));
+
+        try {
+            // Remove animation from previous item as the active item is changing
+            if (this.activeItem) {
+                this.activeItem.classList.remove('animate-heartpulse');
+                this.activeItem.querySelector('#active-dot').classList.add('hidden');
+            }
+            this.activeItem = item;
+
+            item.classList.add('animate-heartpulse-slow');
+            item.querySelector('#active-dot').classList.remove('hidden');
+
+            let [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
+
+            if (conversationData) {
+                window.desk.api.setConversation(conversationData, conversationId);  // Set global
+                this.conversationManager.renderConversation(conversationData, model);
+
+                // Clear references
+                conversationData = null;
+                model = null;
+            } else {
+                window.ModalManager.showMessage(`Conversation ${conversationId} not found.`, 'warning');
+            }
+        } catch (error) {
+            console.error('Error loading conversation:', error);
+            window.ModalManager.showMessage('Failed to load conversation', 'error');
+        } finally {
+            // Always hide the loading modal
+            await this.hideLoadingModal();
         }
-        this.activeItem = item;
-
-        item.classList.add('animate-heartpulse-slow');
-        item.querySelector('#active-dot').classList.remove('hidden')
-
-        let [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
-
-        if (conversationData) {
-            window.desk.api.setConversation(conversationData, conversationId);  //Set global
-            this.conversationManager.renderConversation(conversationData, model);
-
-            //Clear
-            conversationData = null;
-            model = null
-        } else {
-            window.ModalManager.showMessage(`Conversation ${conversationId} not found.`, 'warning');
-        }
-        this.hideLoadingModal()
     }
 }
 

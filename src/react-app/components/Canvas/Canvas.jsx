@@ -634,6 +634,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                                 className="relative flex-1 h-auto h-full whitespace-pre-wrap leading-[1.5rem] text-sm font-mono transform transition-tranform duration-100 focus:ring-none focus:outline-none cursor-pen overflow-auto scrollbar-custom border-l border-primary-400"
                                 contentEditable="true"
                                 spellCheck="false"
+                                data-portal-container="code_canvas"
                                 onScroll={syncScroll}
                                 onClick={(e) => { updateHandIndicator(e); updateLineNumbers(e); }}
                                 onWheel={handleWheelScroll}

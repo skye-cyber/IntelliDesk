@@ -119,6 +119,8 @@ class StreamingPortalBridge {
 
     // Update an existing streaming portal
     updateStreamingPortal(portalId, newProps) {
+        //console.log("Update portal", portalId, newProps)
+
         const event = new CustomEvent('react-portal-stream-update', {
             detail: { portalId, props: newProps }
         });
@@ -135,6 +137,7 @@ class StreamingPortalBridge {
 
     // Close a streaming portal
     closeStreamingPortal(portalId) {
+        console.log("Create portal", portalId)
         const event = new CustomEvent('react-portal-stream-close', {
             detail: { portalId }
         });

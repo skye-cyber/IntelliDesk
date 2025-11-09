@@ -6,6 +6,7 @@ import { generateTextChunks } from '../../tests/AiSimulator';
 import { handleRequestError } from '../../ErrorHandler/ErrorHandler';
 import { StateManager } from '../StatesManager';
 import { waitForElement } from '../../Utils/dom_utils';
+import { GenerateId } from '../../../../react-app/components/ConversationRenderer/Renderer';
 
 const chatdisplay = new ChatDisplay()
 const chatutil = new ChatUtil()
@@ -26,11 +27,7 @@ Object.defineProperty(window, "codeBuffer", {
         codeBuffer = value;
     }
 });
-*/
 
-StateManager.set('userMessage', null)
-StateManager.set('aiMessage', null)
-/*
 Object.defineProperty(window, "userMessage", {
     get() {
         return userMessage;
@@ -49,6 +46,9 @@ Object.defineProperty(window, "aiMessage", {
     }
 });
 */
+StateManager.set('user_message_pid', null)
+StateManager.set('ai_message_pid', null)
+
 async function loadApiKey() {
     const key = await window.desk.api2.getKeys('mistral');
     MISTRAL_API_KEY = key.mistralKey; // Assign to global variable
@@ -64,8 +64,9 @@ export async function MistraChat(text, modelName) {
         console.log("Reached Mistral chat", text)
         chatutil.hide_suggestions()
 
-        // Add user message to the chat interface
-        //const userMesage = chatutil.addUserMessage(text, chatArea)
+        const message_id = GenerateId('ai-msg');
+        const export_id = GenerateId('export')
+        const fold_id = GenerateId('fold')
 
         const user_message_pid = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, fil_type: null, file_data_url: null, save: true })
 
@@ -147,7 +148,6 @@ export async function MistraChat(text, modelName) {
 
                 waitForElement('#code-view', (el) => {
                     el.innerHTML = StateManager.get('codeBuffer').code;
-                    console.log(StateManager.get('codeBuffer'))
                     window.canvasUpdate();
                 });
 
@@ -158,11 +158,11 @@ export async function MistraChat(text, modelName) {
                 StateManager.set('ai_message_pid', message_pid)
             }
 
-            window.streamingPortalBridge.updateStreamingPortal(message_pid, { actual_response: actualResponse, isThinking: isThinking, think_content: thinkContent });
+            window.streamingPortalBridge.updateStreamingPortal(message_pid, { actual_response: actualResponse, isThinking: isThinking, think_content: thinkContent, message_id: message_id, export_id: export_id, fold_id: fold_id });
 
 
             // Scroll to bottom
-            chatutil.scrollToBottom(chatArea, true);
+            chatutil.scrollToBottom(chatArea, true, 0);
 
             // Render mathjax immediately
             // chatutil.render_math(`.${aiMessageUId}`, 3000)
@@ -201,6 +201,10 @@ export async function MistraMultimodal(text, fileType, fileDataUrl = null, model
     chatutil.hide_suggestions()
     console.log('vision')
     StateManager.set('processing', true);
+
+    const message_id = GenerateId('ai-msg');
+    const export_id = GenerateId('export')
+    const fold_id = GenerateId('fold')
 
     console.log("Reached Mistral vision")
 
@@ -333,7 +337,6 @@ export async function MistraMultimodal(text, fileType, fileDataUrl = null, model
 
                 waitForElement('#code-view', (el) => {
                     el.innerHTML = StateManager.get('codeBuffer').code;
-                    console.log(StateManager.get('codeBuffer'))
                     window.canvasUpdate();
                 });
             }
@@ -347,10 +350,10 @@ export async function MistraMultimodal(text, fileType, fileDataUrl = null, model
                 StateManager.set('ai_message_pid', message_pid)
             }
 
-            window.streamingPortalBridge.updateStreamingPortal(message_pid, { actual_response: actualResponse, isThinking: isThinking, think_content: thinkContent });
+            window.streamingPortalBridge.updateStreamingPortal(message_pid, { actual_response: actualResponse, isThinking: isThinking, think_content: thinkContent, message_id: message_id, export_id: export_id, fold_id: fold_id });
 
             // Scroll to bottom
-            chatutil.scrollToBottom(chatArea, true);
+            chatutil.scrollToBottom(chatArea, true, 0);
         }
 
         StateManager.set('processing', false);

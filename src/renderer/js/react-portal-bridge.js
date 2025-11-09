@@ -80,4 +80,77 @@ class ReactPortalBridge {
     }
 }
 
+class StreamingPortalBridge {
+    constructor() {
+        this.portals = new Map();
+        this.streamingPortals = new Map(); // Special registry for streaming components
+    }
+
+    // Register a component that supports streaming
+    registerStreamingComponent(componentName, Component) {
+        this.streamingPortals.set(componentName, Component);
+    }
+
+    // Create a streaming portal that can be updated
+    createStreamingPortal(componentType, containerId, initialProps = {}) {
+        const portalId = `stream-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        const streamController = {
+            id: portalId,
+            update: (newProps) => this.updateStreamingPortal(portalId, newProps),
+            close: () => this.closeStreamingPortal(portalId),
+            append: (data) => this.appendToStreamingPortal(portalId, data)
+        };
+
+        // Initial render
+        const event = new CustomEvent('react-portal-stream-create', {
+            detail: {
+                portalId,
+                componentType,
+                containerId,
+                props: initialProps,
+                controller: streamController
+            }
+        });
+        document.dispatchEvent(event);
+
+        return streamController;
+    }
+
+    // Update an existing streaming portal
+    updateStreamingPortal(portalId, newProps) {
+        const event = new CustomEvent('react-portal-stream-update', {
+            detail: { portalId, props: newProps }
+        });
+        document.dispatchEvent(event);
+    }
+
+    // Append data to a streaming portal (for chat messages, etc.)
+    appendToStreamingPortal(portalId, data) {
+        const event = new CustomEvent('react-portal-stream-append', {
+            detail: { portalId, data }
+        });
+        document.dispatchEvent(event);
+    }
+
+    // Close a streaming portal
+    closeStreamingPortal(portalId) {
+        const event = new CustomEvent('react-portal-stream-close', {
+            detail: { portalId }
+        });
+        document.dispatchEvent(event);
+    }
+
+    // Batch update multiple portals
+    batchUpdate(updates) {
+        const event = new CustomEvent('react-portal-batch-update', {
+            detail: { updates }
+        });
+        document.dispatchEvent(event);
+    }
+}
+
 window.reactPortalBridge = new ReactPortalBridge();
+
+window.streamingPortalBridge = new StreamingPortalBridge();
+

@@ -459,7 +459,7 @@ export class RequestErrorHandler {
 // Singleton instance for global use
 export const requestErrorHandler = new RequestErrorHandler();
 
-export function handleRequestError(error, chatArea, userMessage, aiMessage, VS_url = null) {
+export function handleRequestError(error, user_message_pid, ai_message_pid, VS_url = null) {
     // Extract the message content before creating context
     let lastMessage, text;
 
@@ -485,8 +485,7 @@ export function handleRequestError(error, chatArea, userMessage, aiMessage, VS_u
     }
 
     const context = {
-        chatArea,
-        userMessage,
+        user_message_pid,
         aiMessage,
         VS_url,
         text,           // Add extracted text
@@ -503,14 +502,16 @@ export function handleRequestError(error, chatArea, userMessage, aiMessage, VS_u
         context = StateManager.get('retry-context')
         //console.log("Retry callback executed with context:", context);
 
-        userMessage?.remove();
-        if (aiMessage) aiMessage.remove();
+        //userMessage?.remove();
+        window.reactPortalBridge.closeComponent(user_message_pid)
+
+        if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
 
         if (context.VS_url) {
-            router.routeToMistral(context.text, context.chatArea, window.currentModel, context.VS_url[1], context.fileDataUrl);
+            router.routeToMistral(context.text, window.currentModel, context.VS_url[1], context.fileDataUrl);
         } else {
             // Use the extracted lastMessage
-            router.requestRouter(context.lastMessage?.trim(), context.chatArea);
+            router.requestRouter(context.lastMessage?.trim());
         }
     });
 

@@ -59,32 +59,32 @@ await loadApiKey()
 const Mistarlclient = new Mistral({ apiKey: MISTRAL_API_KEY });
 
 
-export async function MistraChat(text, chatArea, modelName) {
+export async function MistraChat(text, modelName) {
     try {
         console.log("Reached Mistral chat", text)
         chatutil.hide_suggestions()
 
         // Add user message to the chat interface
-        const userMesage = chatutil.addUserMessage(text, chatArea)
+        //const userMesage = chatutil.addUserMessage(text, chatArea)
 
-        StateManager.set('userMessage', userMesage)
+        const user_message_pid = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, fil_type: null, file_data_url: null, save: true })
+
+        StateManager.set('user_message_pid', user_message_pid)
 
         // Add loading animation
-        const { loader, lid } = chatutil.addLoadingAnimation(chatArea);
+        //const { loader, lid } = chatutil.addLoadingAnimation(chatArea);
 
-        StateManager.set('loader-element-id', lid)
+        const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea')
 
-        const foldId = `think-content-${Math.random().toString(33).substring(3, 9)}`;
-        const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
-        const aiMessageUId = `msg_${Math.random().toString(30).substring(3, 9)}`;
+        StateManager.set('loader-element-id', loader_id)
 
-        const aiMessage = document.createElement("div")
-        StateManager.set('PrevaiMessage', StateManager.get('aiMessage')
-        )
-        StateManager.set('aiMessage', aiMessage)
+        StateManager.set('prev_ai_message_pid', StateManager.get('ai_message_pid'))
 
-        aiMessage.classList.add("flex", "justify-start", "mb-12", "overflow-wrap");
-        chatArea.appendChild(aiMessage)
+        let message_pid = window.streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea')
+
+
+        StateManager.set('ai_message_pid', message_pid)
+
         // Scroll to bottom
         chatutil.scrollToBottom(chatArea, true);
 
@@ -96,8 +96,6 @@ export async function MistraChat(text, chatArea, modelName) {
 
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
-
-        chatutil.removeLoadingAnimation()
 
         /*const stream = await Mistarlclient.chat.stream({
             model: modelName,
@@ -145,34 +143,38 @@ export async function MistraChat(text, chatArea, modelName) {
             }
 
             if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
-                if (!canvasutil.isCanvasOn() && !StateManager.get('isCanvasActive')) chatutil.open_canvas();
+                if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
 
                 waitForElement('#code-view', (el) => {
                     el.innerHTML = StateManager.get('codeBuffer').code;
                     console.log(StateManager.get('codeBuffer'))
                     window.canvasUpdate();
-                    chatdisplay.chats_size_adjust()
                 });
 
             }
 
-            if(actualResponse.startsWith('<continue>')){
-                StateManager.set('aiMessage', StateManager.set('PrevaiMessage')
-                )
+            if (actualResponse.startsWith('<continued>')) {
+                message_pid = StateManager.get('prev_ai_message_pid')
+                StateManager.set('ai_message_pid', message_pid)
             }
-            //console.log(actualResponse)
-            // Update innerHTML with marked output
-            chatutil.addChatMessage(aiMessage, isThinking, thinkContent, actualResponse, aiMessageUId, exportId, foldId)
+
+            window.streamingPortalBridge.updateStreamingPortal(message_pid, { actual_response: actualResponse, isThinking: isThinking, think_content: thinkContent });
+
 
             // Scroll to bottom
             chatutil.scrollToBottom(chatArea, true);
 
             // Render mathjax immediately
-            debounceRenderKaTeX(`.${aiMessageUId}`, 3000, false);
+            // chatutil.render_math(`.${aiMessageUId}`, 3000)
         }
+
         StateManager.set('processing', false);
-        // solves aiMessage w-full issue
-        if (canvasutil.isCanvasOn()) window.openCanvas();
+
+        if (canvasutil.isCanvasOn()) {
+            if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();
+            // normalize canvas
+            canvasutil.NormalizeCanvasCode();
+        }
 
         //stop timer
         _Timer.trackTime("stop");
@@ -180,24 +182,21 @@ export async function MistraChat(text, chatArea, modelName) {
         // Reset send button appearance
         HandleProcessingEventChanges("hide")
 
-        // normalize canvas
-        canvasutil.NormalizeCanvasCode();
-
         // Store conversation history
-        window.desk.api.addHistory({ role: "assistant", content: output });
+        //window.desk.api.addHistory({ role: "assistant", content: output });
 
         // Render diagrams
-        chatutil.render_math(aiMessageUId)
+        //chatutil.render_math(`.${aiMessageUId}`)
 
-        chatutil.removeLoadingAnimation()
-        chatdisplay.chats_size_adjust()
+        window.reactPortalBridge.closeComponent(loader_id)
     } catch (err) {
-        handleRequestError(err, chatArea, StateManager.get('userMessage'), StateManager.get('aiMessage'))
+        window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
+        handleRequestError(err, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'))
     }
 }
 
 
-export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = null, modelName) {
+export async function MistraMultimodal(text, fileType, fileDataUrl = null, modelName) {
     const _Timer = new window.Timer;
     chatutil.hide_suggestions()
     console.log('vision')
@@ -205,21 +204,21 @@ export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = n
 
     console.log("Reached Mistral vision")
 
-    const fileContainerId = `FCont_${Math.random().toString(35).substring(2, 8)}`;
-
-    StateManager.set('aiMessage', null, document.createElement("div"));
-
-    let Message = StateManager.get("aiMessage")
+    let message_pid = window.streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea')
+    StateManager.set("ai_message_pid", message_pid)
 
     // Add user message to the chat interface
-    chatutil.addUserMessage(text, chatArea, fileType, fileDataUrl, fileContainerId)
+    //chatutil.addUserMessage(text, chatArea, fileType, fileDataUrl, fileContainerId)
 
+    const user_message_pid = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, fil_type: fileType, file_data_url: fileDataUrl, save: true })
 
-    // Add loading animation
-    chatutil.addLoadingAnimation(Message);
+    StateManager.set('user_message_pid', user_message_pid)
 
-    // Scroll to bottom
-    chatutil.scrollToBottom(chatArea, true);
+    const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea')
+
+    StateManager.set('loader-element-id', loader_id)
+
+    StateManager.set('prev_ai_message_pid', StateManager.get('ai_message_pid'))
 
     //Add Timestamp
     text = `${text} [${window.desk.api.getDateTime()} UTC]`
@@ -279,15 +278,6 @@ export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = n
         content: userContent,
     });*/
 
-    const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
-    const MessageUId = `msg_${Math.random().toString(30).substring(3, 9)}`;
-    VisionMessage.classList.add("flex", "justify-start", "mb-12", "overflow-wrap");
-    chatArea.appendChild(MultimodalMessage);
-    const foldId = `think-content-${Math.random().toString(33).substring(3, 9)}`;
-
-    // Add loading animation
-    chatutil.addLoadingAnimation()
-
     try {
         const visionstream = generateTextChunks(text)
         /* await Mistarlclient.chat.stream({
@@ -339,29 +329,37 @@ export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = n
             }
 
             if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
-                if (!canvasutil.isCanvasOn() && !StateManager.get('isCanvasActive')) chatutil.open_canvas();
+                if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
 
                 waitForElement('#code-view', (el) => {
                     el.innerHTML = StateManager.get('codeBuffer').code;
                     console.log(StateManager.get('codeBuffer'))
                     window.canvasUpdate();
-                    chatdisplay.chats_size_adjust()
                 });
             }
+
+            // Render diagrams
+            //chatutil.render_math(`.${aiMessageUId}`)
+
+
+            if (actualResponse.startsWith('<continued>')) {
+                message_pid = StateManager.get('prev_ai_message_pid')
+                StateManager.set('ai_message_pid', message_pid)
+            }
+
+            window.streamingPortalBridge.updateStreamingPortal(message_pid, { actual_response: actualResponse, isThinking: isThinking, think_content: thinkContent });
+
+            // Scroll to bottom
+            chatutil.scrollToBottom(chatArea, true);
         }
-
-        chatutil.addMultimodalMessage(Message, isThinking, thinkContent, actualResponse, MessageUId, exportId, foldId)
-
-        AutoScroll.checked ? chatutil.scrollToBottom(chatArea) : null;
-
-        // Debounce MathJax rendering to avoid freezing
-        debounceRenderKaTeX(`.${MessageUId}`, 3000, true);
-
 
         StateManager.set('processing', false);
 
-        // solves aiMessage w-full issue
-        if (canvasutil.isCanvasOn() && !StateManager.get('isCanvasActive')) window.openCanvas();
+        if (canvasutil.isCanvasOn()) {
+            if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();
+            // normalize canvas
+            canvasutil.NormalizeCanvasCode();
+        }
 
         //stop timer
         _Timer.trackTime("stop");
@@ -369,16 +367,15 @@ export async function MistraMultimodal(text, chatArea, fileType, fileDataUrl = n
         // Reset send button appearance
         HandleProcessingEventChanges('hide')
 
-        // normalize canvas
-        canvasutil.NormalizeCanvasCode(document.getElementById('code-view'));
-
         //window.desk.api.addHistory({ role: "assistant", content: [{ type: "text", text: output }] });
 
         // render diagrams from this response
-        chatutil.render_math(MessageUId)
+        //chatutil.render_math(`.${aiMessageUId}`)
 
-        chatdisplay.chats_size_adjust()
+        window.reactPortalBridge.closeComponent(loader_id)
+
     } catch (error) {
-        handleRequestError(error, StateManager.get('userMessage'), StateManager.get('aiMessage'), ["VS", fileType, fileContainerId])
+        window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
+        handleRequestError(err, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'), ["VS", fileType, fileDataUrl])
     }
 }

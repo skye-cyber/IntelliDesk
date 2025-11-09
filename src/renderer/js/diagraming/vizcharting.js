@@ -6,10 +6,6 @@ import { opendiagViewModal } from './Utils';
 import { displayStatus } from '../StatusUIManager/SimpleManager';
 
 
-waitForElement('#diag-modal-content', (el) => {
-    window.reactPortalBridge.registerContainer('diagram_canvas', el);
-})
-
 export class DotInterPreter {
     constructor() {
 

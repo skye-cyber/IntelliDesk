@@ -57,7 +57,7 @@ export class Router {
         }
     }
 
-    async chooseRoute(event, chatArea=document.getElementById('chatArea')) {
+    async chooseRoute(event) {
         //document.querySelector(`[data-value="mistral-small-latest"]`).click();
         const fileDataUrl = event.detail.fileDataUrl;
         const text = event.detail.text;
@@ -73,19 +73,19 @@ export class Router {
         }
 
         if (ms_models.includes(modelName)) {
-            MistraMultimodal(text, chatArea, fileType, fileDataUrl, modelName);
+            MistraMultimodal(text, fileType, fileDataUrl, modelName);
         } else {
             //window.VisionChat(text, chatArea, fileType, fileDataUrl, null);
         }
     }
 
-    routeToMistral(text, chatArea, modelName = null, VS_url = null, fileDataUrl = null) {
+    routeToMistral(text, modelName = null, VS_url = null, fileDataUrl = null) {
         if(!text) window.ModalManager.showMessage("No text provided", "error")
 
         if (["pixtral-12b-2409", "pixtral-large-2411", "mistral-small-latest"].includes(modelName) || VS_url) {
-            return MistraMultimodal(text, chatArea, VS_url, fileDataUrl, modelName)
+            return MistraMultimodal(text, VS_url, fileDataUrl, modelName)
         }
-        MistraChat(text, chatArea, modelName)
+        MistraChat(text, modelName)
     }
 
     /**
@@ -99,7 +99,7 @@ export class Router {
      * Classify the input text by checking the current model category and
      * then route to the appropriate function.
      */
-    requestRouter(text, chatArea=document.getElementById('chatArea')) {
+    requestRouter(text) {
         if(!text) window.ModalManager.showMessage("No text provided", "error")
         // clear buffer initialy
         StateManager.set('codeBuffer', null);
@@ -118,9 +118,9 @@ export class Router {
         }
         //console.log("DataClass:", dataClass); // This will log the value of the data-avalue attribute
         else if (ms_models.includes(model) || window.desk.api.getModel()==='multimodal') {
-            this.routeToMistral(text, chatArea, model);
+            this.routeToMistral(text, model);
         } else {
-            this.routeToHf(text, chatArea);
+            this.routeToHf(text);
 
         }// else {
         //    console.warn("⚠️Unrecognized dataClass from the selected model!")

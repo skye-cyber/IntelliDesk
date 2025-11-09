@@ -68,7 +68,7 @@ export function implementUserCopy() {
 }
 
 // Copy function for the whole text block/aiMessage
-export function CopyAll(UId, bt = null, html = false) {
+export function CopyMessage(UId, bt = null, html = false) {
     //console.log(UId)
     const textBlock = document.querySelector(UId);
     //console.log(textBlock)
@@ -289,29 +289,12 @@ export function addImageGenClickListener(el) {
     });
 }
 
-export function setutilityScriptisSet() {
-    const scripts = document.getElementsByTagName('script');
-    let exists = false;
-    for (let script of scripts) {
-        if (script.src.includes('packed_utility.js')) {
-            console.log("Utility script already exits. Not adding"); // Logs the matching script element
-            exists = true
-            return exists
-        }
-    }
-    console.log("Utility missing. Adding");
-    // Sending a message to the main process if script does not exist already
-    window.desk.api.send('dispatch-to-main-process', { message: 'set-Utitility-Script' })
-    return exists
-}
-
-window.CopyAll = CopyAll
+window.CopyMessage = CopyMessage
 window.copyBMan = copyBMan
 window.InputPurify = InputPurify
 window.showCopyModal = showCopyModal
 window.handleCodeCopy = handleCodeCopy;
 window.showDeletionStatus = showCopyModal
 window.implementUserCopy = implementUserCopy
-window.setutilityScriptisSet = setutilityScriptisSet
 window.removeFirstConversationPairs = removeFirstConversationPairs
 window.HandleProcessingEventChanges = HandleProcessingEventChanges;

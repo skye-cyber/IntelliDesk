@@ -76,7 +76,7 @@ export const DiagramUi = ({ isOpen, onClose, content }) => {
                         </div>
                     </div>
                     <div className="flex items-center space-x-3">
-                        <button className="hidden px-4 py-2 text-sm gradient-neon dar:gradient-neon-dark dark:bg-slate-700! hover:bg-slate-600/50 text-gray-700 dark:text-slate-200 rounded-xl transition-all duration-300 hover:border-cyan-500/30 hover:shadow-lg disabled pointekr-events-none">
+                        <button className="hidden px-4 py-2 text-sm gradient-neon dark:gradient-neon-dark hover:bg-slate-600/50 text-gray-700 dark:text-slate-200 rounded-xl transition-all duration-300 hover:border-cyan-500/30 hover:shadow-lg disabled pointekr-events-none">
                             Export
                         </button>
                         <button

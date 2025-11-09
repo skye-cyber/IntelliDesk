@@ -28,8 +28,10 @@ import '@js/diagraming/jscharting.js'
 import '@js/Notification/notification';
 import '@js/ChatExport/export';
 import '@js/Utils/keyshortcuts';
-import { PortalContainer } from './PortalContainer';
+import { StaticPortalContainer } from './StaticPortalContainer';
+import { StreamingPortalContainer } from './StreamingPortalContainer';
 import '../renderer/js/react-portal-bridge';
+import './PortalTargetRegister';
 
 const App = () => {
     //const { electron } = useElectron();
@@ -97,9 +99,12 @@ const App = () => {
                     <Notifcation isOpen={true} onToggle={null} />
                 </ErrorBoundary>
             </MainLayout>
-            {/* Portal container for vanilla JS components */}
+            {/* Portal containers for vanilla JS components */}
             <ErrorBoundary>
-                <PortalContainer />
+                <StaticPortalContainer />
+            </ErrorBoundary>
+            <ErrorBoundary>
+                <StreamingPortalContainer />
             </ErrorBoundary>
         </ErrorBoundary >
     );

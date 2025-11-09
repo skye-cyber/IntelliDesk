@@ -5,6 +5,8 @@ import { saveAs } from 'file-saver';
 
 export async function HTML2Word(event, selector) {
     event.preventDefault();
+
+    window.ModalManager.startLoader("Exporting message to word...")
     const par = getParents(event);
     toggleExportOptions(par, true, true);
     const element = document.querySelector(selector);
@@ -22,6 +24,7 @@ export async function HTML2Word(event, selector) {
             const docx = await htmlToDocx(element.outerHTML);
             saveAs(docx, 'output.docx');
         } catch (err) {
+            window.ModalManager.hideLoader()
             console.error('Error creating Word document:', err);
             // Fallback to plain text
             exportAsPlainText(element);
@@ -29,6 +32,7 @@ export async function HTML2Word(event, selector) {
     } else {
         console.error('Element not found for the given selector:', selector);
     }
+    window.ModalManager.hideLoader()
 }
 
 
@@ -64,9 +68,11 @@ function exportAsPlainText(element) {
 
 export function HTML2Pdf(event, selector) {
     event.preventDefault(); // Prevent the default action of the anchor tag
+    window.ModalManager.startLoader("Exporting message to pdf...")
+
     const par = getParents(event);
     toggleExportOptions(par, true, true); // Hide export options
-    const element = document.querySelector(selector);
+    const element = document.querySelector(`${selector}`);
     if (element) {
         console.log('Exporting to PDF...');
 
@@ -99,15 +105,19 @@ export function HTML2Pdf(event, selector) {
 
             pdf.save('output.pdf');
         }).catch((err) => {
+            window.ModalManager.hideLoader()
             console.error('Error creating PDF:', err);
         });
     } else {
         console.error('Element not found for the given selector:', selector);
     }
+    window.ModalManager.hideLoader()
 }
 
 export function HTML2Jpg(event, selector) {
     event.preventDefault();
+
+    window.ModalManager.startLoader("Exporting message to jpg...")
 
     const par = getParents(event);
     toggleExportOptions(par, true, true);
@@ -141,7 +151,12 @@ export function HTML2Jpg(event, selector) {
         })
         .catch((error) => {
             console.error('Error creating image:', error);
+            window.ModalManager.hideLoader()
+
         });
+
+        window.ModalManager.hideLoader()
+
 }
 
 export function getParents(event, levels = 3) {
@@ -159,9 +174,8 @@ export function getParents(event, levels = 3) {
 }
 
 
-export function toggleExportOptions(button, state = null) {
-    const exportBtid = button.id;
-    const exportMenu = document.getElementById(`exportOptions-${exportBtid}`)
+export function toggleExportOptions(id, state = null) {
+    const exportMenu = document.getElementById(`exportOptions-${id}`)
 
     if (!exportMenu) return
 

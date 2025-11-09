@@ -296,6 +296,6 @@ export class InterPreter {
 }
 
 
-export const interpret = new InterPreter()
+export const chart_interpret = new InterPreter()
 
-window.chart_interpret = interpret
+window.chart_interpret = chart_interpret

@@ -22,13 +22,12 @@ export function addCopyListeners() {
     });
 }
 
-export async function handleCodeCopy(element, id = null) {
+export async function handleCodeCopy(b_id, id = null) {
     const codeBlock = document.querySelector(`[data-value="${id}"]`);
     const textToCopy = codeBlock.innerText;
-    const button = document.getElementById(element.id);
+    const button = document.getElementById(b_id);
     try {
         await navigator.clipboard.writeText(textToCopy);
-        console.log(button)
         const BtText = button?.querySelector('#BtText')
         BtText.textContent = 'copied!';
         setTimeout(() => {

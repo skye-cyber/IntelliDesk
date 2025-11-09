@@ -73,7 +73,7 @@ export class CanvasUtil {
     }
 }
 
-export function openInCanvas(element, id) {
+export function openInCanvas(id) {
     const codeBlock = document.querySelector(`[data-value^="${id}"]`)
     const code = codeBlock?.innerHTML
     const chatdisplay = new ChatDisplay()

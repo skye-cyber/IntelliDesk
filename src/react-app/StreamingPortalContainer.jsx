@@ -41,17 +41,18 @@ export const StreamingPortalContainer = () => {
 
         const handleStreamUpdate = (event) => {
             const { portalId, props } = event.detail;
+            const pid = portalId?.id
 
-            if (portalDataRef.current.has(portalId)) {
-                const portalData = portalDataRef.current.get(portalId);
+            if (portalDataRef.current.has(pid)) {
+                const portalData = portalDataRef.current.get(pid);
                 portalData.props = { ...portalData.props, ...props };
 
                 // Force update
                 setStreamingPortals(prev => {
                     const newMap = new Map(prev);
-                    if (newMap.has(portalId)) {
-                        const portal = newMap.get(portalId);
-                        newMap.set(portalId, {
+                    if (newMap.has(pid)) {
+                        const portal = newMap.get(pid);
+                        newMap.set(pid, {
                             ...portal,
                             props: portalData.props,
                             version: portal.version + 1

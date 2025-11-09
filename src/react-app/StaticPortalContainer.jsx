@@ -93,7 +93,6 @@ export const StaticPortalContainer = () => {
             return null;
         }
 
-        console.log(portal)
         return React.createElement(Component, {
             key: portal.id,
             ...portal.props,
@@ -123,7 +122,6 @@ export const StaticPortalContainer = () => {
                     return null;
                 }
 
-                console.log(containerId, containerElement)
                 const portalRoot = containerElement.querySelector('.react-portal-root');
                 if (!portalRoot) return null;
 

@@ -1,20 +1,42 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { CopyMessage } from '../../../renderer/js/Utils/chatUtils';
-import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
-import { markitdown } from '../../../renderer/js/CodeRenderer/code_renderer';
+//import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
 import { normalizeMathDelimiters } from '../../../renderer/js/MathBase/MathNormalize';
 import { toggleExportOptions } from '../../../renderer/js/ChatExport/export';
 import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../renderer/js/ChatExport/export';
-//import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { markitdown } from './CodeHighlighter';
+import { CodeBlockRenderer } from './CodeBlockRenderer';
 
-export function GenerateId(prefix = '', postfix = '', length = 36, indices = [1, 9]) {
-    return `${prefix}-${Math.random().toString(length).substring(indices[0], indices[1])}${postfix}`;
+//import { StateManager } from '../../../renderer/js/managers/StatesManager';
+export function GenerateId(prefix = '', postfix = '', length = 6) {
+    // Generate a random alphanumeric string (letters + digits) for valid class/ID characters
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+    let randomStr = '';
+    for (let i = 0; i < length; i++) {
+        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // Build id ensuring no extra hyphens when prefix or postfix are empty
+    let id = '';
+    if (prefix) {
+        id += prefix;
+    }
+    if (prefix && randomStr) {
+        id += '-';
+    }
+    id += randomStr;
+    if (postfix) {
+        id += '-' + postfix;
+    }
+
+    return id;
 }
 
-export const UserMessage = ({ message, file_type=null, file_data_url=null, save = true }) => {
+export const UserMessage = ({ message, file_type = null, file_data_url = null, save = true }) => {
     const message_id = GenerateId('user_msg')
 
-    console.log("Rendering user message")
+    //console.log("Rendering user message")
     //if (save) window.desk.api.addHistory({ role: "user", content: message });
 
     return (
@@ -22,7 +44,9 @@ export const UserMessage = ({ message, file_type=null, file_data_url=null, save 
             <section className="block">
                 <div className="flex items-end gap-x-2 justify-end">
                     <div id="user_message" data-id={message_id} className={`${message_id} relative bg-gray-200 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-lg w-fit max-w-full md:max-w-[80%]`}>
-                        <p className="whitespace-pre-wrap break-words max-w-full">{InputPurify(message)}</p>
+                        <div className="prose whitespace-pre-wrap break-words max-w-full h-fit"
+                            dangerouslySetInnerHTML={{ __html: markitdown(message) }}
+                        ></div>
                     </div>
                 </div>
 
@@ -41,10 +65,19 @@ export const UserMessage = ({ message, file_type=null, file_data_url=null, save 
 }
 
 
-export const AiMessage = ({ actual_response, isThinking, think_content }) => {
-    const message_id = GenerateId('ai-msg');
-    const export_id = GenerateId('export')
-    const fold_id = GenerateId('fold')
+export const AiMessage = ({
+    actual_response,
+    isThinking,
+    think_content,
+    message_id = GenerateId('ai-msg'),
+    export_id = GenerateId('export'),
+    fold_id = GenerateId('fold')
+}) => {
+
+    //console.log("Rendering AI message", actual_response)
+    const processedHtml = markitdown(normalizeMathDelimiters(actual_response));
+
+    const processedThinkHtml = think_content ? markitdown(normalizeMathDelimiters(think_content)) : null;
 
     const FoldThinking = useCallback((e, selector) => {
         const content = document.getElementById(selector);
@@ -63,29 +96,29 @@ export const AiMessage = ({ actual_response, isThinking, think_content }) => {
                     actual_response ?
                         (
                             <>
-                                <div id="ai_response_think" className={`${message_id} w-full bg-none py-4 text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-700`}>
+                                <div id="ai_response_think" className={`think-${message_id} w-full bg-none py-4 text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-700`}>
                                     {
                                         (isThinking || think_content) ? (
                                             <div className="think-section">
                                                 <div className="flex items-center justify-between">
-                                                    <strong className="leading-widest font-brand text-light" style="color: #007bff;">Thoughts:</strong>
+                                                    <strong className="leading-widest font-brand text-light text-blue-400 dark:text-blue-300">Thoughts:</strong>
                                                     <button
-                                                        className="text-sm text-gray-600 dark:text-gray-300"
+                                                        className="text-sm text-gray-600 dark:text-gray-200"
                                                         onClick={(e) => FoldThinking(e, fold_id)}
                                                     >
-                                                        <p className="flex">Fold
-                                                            <svg className="fold_svg mb-2 fold-icon transition-transform duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor" width="32" height="38">
-                                                                <path d="M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z" />
-                                                            </svg>
-                                                        </p>
+                                                        <svg className="fold_svg mb-2 fold-icon transition-transform duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor" width="32" height="38">
+                                                            <path d="M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z" />
+                                                        </svg>
                                                     </button>
                                                 </div>
                                                 <div id={fold_id} className="">
-                                                    <p id="think-content" style="color: #333;">{markitdown(normalizeMathDelimiters(think_content))}</p>
+                                                    <div id="think-content">
+                                                        <CodeBlockRenderer htmlContent={processedThinkHtml} />
+                                                    </div>
                                                 </div>
                                                 {
                                                     (think_content && actual_response) ?
-                                                        <p className="w-full rounded-lg border-2 border-blue-400 dark:border-orange-400 mb-2"></p>
+                                                        <p className="w-full rounded-lg border-2 border-blue-200 dark:border-gray-400 mb-2"></p>
                                                         : ""
                                                 }
                                             </div>
@@ -94,11 +127,13 @@ export const AiMessage = ({ actual_response, isThinking, think_content }) => {
                                     }
                                     {
                                         actual_response && think_content ?
-                                            <strong className="text-[#28a745]">Response:</strong>
+                                            <strong className="text-green-300 dark:text-green-400">Response:</strong>
                                             : ''
                                     }
-                                    <p style="color: #333;">{markitdown(normalizeMathDelimiters(actual_response))}</p>
-                                    <AiMessageOptions message_id={message_id} />
+                                    <div id={message_id} className={message_id}>
+                                        <CodeBlockRenderer htmlContent={processedHtml} />
+                                    </div>
+                                    <AiMessageOptions export_id={export_id} message_id={message_id} />
                                 </div>
                                 <ExportMenu export_id={export_id} message_id={message_id} />
                             </>
@@ -238,7 +273,7 @@ export const ExportMenu = ({ export_id, message_id }) => {
     )
 }
 
-export const AiMessageOptions = ({ message_id }) => {
+export const AiMessageOptions = ({ message_id, export_id }) => {
     const copy_button_id = GenerateId('ai-copy-button')
     const clone_button_id = GenerateId('ai-clone');
 
@@ -254,16 +289,21 @@ export const AiMessageOptions = ({ message_id }) => {
                     role="button"
                     id={export_id}
                     aria-expanded="false"
-                    onClick={() => toggleExportOptions(this)}
+                    onClick={() => toggleExportOptions(export_id)}
                     aria-label="Export"
                     className="relative overflow-hidden bg-white/80 backdrop-blur-md transition-all duration-700 hover:bg-white hover:shadow-lg hover:shadow-blue-500/10 dark:bg-[#5500ff]/80 dark:hover:bg-[#00aa00]/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/50 rounded-full"
-                    style="border: 2px solid rgba(255,85,0,0); background-clip: padding-box, border-box; background-origin: border-box; background-image: linear-gradient(to bottom right, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.8)), linear-gradient(135deg, rgba(255,0,255,170) 0%, rgba(0,0,255,85) 50%, rgba(0,255,255,170) 100%);"
+                    style={{
+                        border: '2px solid rgba(255,85,0,0)',
+                        backgroundClip: 'padding-box, border-box',
+                        backgroundOrigin: "border-box",
+                        backgroundImage: 'linear-gradient(to bottom right, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.8)), linear-gradient(135deg, rgba(255,0,255,170) 0%, rgba(0,0,255,85) 50%, rgba(0,255,255,170) 100%)'
+                    }}
                 >
                     <div className="flex items-center space-x-0.5 px-1 py-0.5">
                         <div className="relative h-6 w-6">
                             <svg className="absolute inset-0 h-full w-full fill-current text-blue-600 transition-all duration-700 group-hover:rotate-90 group-hover:scale-110 group-hover:text-blue-500 dark:text-[#00aaff] dark:group-hover:text-sky-800"
                                 viewBox="0 0 24 24"
-                                style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1))">
+                                style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))" }}>
                                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" className="origin-center transition-transform duration-300" />
                             </svg>
                         </div>
@@ -285,8 +325,8 @@ export const AiMessageOptions = ({ message_id }) => {
                 <svg className="w-5 md:w-6 h-5 md:h-6 transition-transform duration-200 ease-in-out hover:scale-110 cursor-pointer" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color: #FF4081; stop-opacity: 100" />
-                            <stop offset="100%" style="stop-color: #4a1dff; stop-opacity: 1" />
+                            <stop offset="0%" style={{ stopColor: "#FF4081", stopOpacity: 100 }} />
+                            <stop offset="100%" style={{ stopColor: "#4a1dff", stopOpacity: 1 }} />
                         </linearGradient>
                     </defs>
                     <g clipPath="url(#clip0)">
@@ -301,11 +341,11 @@ export const AiMessageOptions = ({ message_id }) => {
             </div>
 
             {/*CLONE OPTION*/}
-            <div data-id={clone_button_id} className="rounded-lg p-1 cursor-pointer" aria-label="Clone" title="Clone Raw" id="clone_content" onClick={() => clone_markdown_content(`.${message_id}`)}>
-                <svg className="w-5 md:w-6 h-5 md:h-6 transition-transform duration-200 ease-in-out hover:scale-110 cursor-pointer" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button data-id={clone_button_id} className="rounded-lg p-1 text-gray-700 cursor-pointer" aria-label="Clone" title="Clone Raw" id="clone_content" onClick={() => clone_markdown_content(`.${message_id}`)}>
+                <svg className="w-5 md:w-6 h-5 md:h-6 fill-gray-700 dark:fill-gray-200 transition-transform duration-200 ease-in-out hover:scale-110 cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                     <path d="M296.5 69.2C311.4 62.3 328.6 62.3 343.5 69.2L562.1 170.2C570.6 174.1 576 182.6 576 192C576 201.4 570.6 209.9 562.1 213.8L343.5 314.8C328.6 321.7 311.4 321.7 296.5 314.8L77.9 213.8C69.4 209.8 64 201.3 64 192C64 182.7 69.4 174.1 77.9 170.2L296.5 69.2zM112.1 282.4L276.4 358.3C304.1 371.1 336 371.1 363.7 358.3L528 282.4L562.1 298.2C570.6 302.1 576 310.6 576 320C576 329.4 570.6 337.9 562.1 341.8L343.5 442.8C328.6 449.7 311.4 449.7 296.5 442.8L77.9 341.8C69.4 337.8 64 329.3 64 320C64 310.7 69.4 302.1 77.9 298.2L112 282.4zM77.9 426.2L112 410.4L276.3 486.3C304 499.1 335.9 499.1 363.6 486.3L527.9 410.4L562 426.2C570.5 430.1 575.9 438.6 575.9 448C575.9 457.4 570.5 465.9 562 469.8L343.4 570.8C328.5 577.7 311.3 577.7 296.4 570.8L77.9 469.8C69.4 465.8 64 457.3 64 448C64 438.7 69.4 430.1 77.9 426.2z" />
                 </svg>
-            </div>
+            </button>
         </section>
     )
 }

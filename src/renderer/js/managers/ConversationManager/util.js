@@ -1,22 +1,36 @@
 import { normaliZeMathDisplay } from "../../MathBase/MathNormalize";
 import { debounceRenderKaTeX } from "../../MathBase/mathRenderer";
-import { interpret } from "../../diagraming/jscharting";
+import { chart_interpret } from "../../diagraming/jscharting";
 import { dot_interpreter } from "../../diagraming/vizcharting";
 import { waitForElement } from "../../Utils/dom_utils";
 
 export class ChatUtil {
     constructor() {
         this.diagram_interpreter = dot_interpreter
-        this.diagram_interpreter = interpret
+        this.diagram_interpreter = chart_interpret
     }
-    scrollToBottom(element = document.getElementById('chatArea'), check = false) {
-        this.updateScrollButtonVisibility()
-        if (check) {
-            if (document.getElementById('autoScroll').checked)
-                // Use setTimeout to ensure the scroll happens after the DOM has updated
-                setTimeout(() => {
-                    element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
-                }, 100);
+    scrollToBottom(element = document.getElementById('chatArea'), check = false, timeout = 500) {
+        this.updateScrollButtonVisibility();
+
+        if (check && !document.getElementById('autoScroll').checked) {
+            return; // Exit early if auto-scroll is disabled
+        }
+
+        // Use requestAnimationFrame for smoother animations
+        const scroll = () => {
+            element.scrollTo({
+                top: element.scrollHeight,
+                behavior: 'smooth'
+            });
+        };
+
+        // For streaming responses, use immediate scroll without delay when possible
+        if (timeout === 0) {
+            requestAnimationFrame(scroll);
+        } else {
+            setTimeout(() => {
+                requestAnimationFrame(scroll);
+            }, timeout);
         }
     }
 

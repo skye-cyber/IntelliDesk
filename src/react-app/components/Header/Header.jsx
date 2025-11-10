@@ -32,7 +32,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     }
     useEffect(() => {
         const handleEscape = (e) => {
-            if (e.key === 'Escape' && isModelDropdownOpen) hideSelectorModal();
+            if (e.key === 'Escape' && isModelDropdownOpen || document.getElementById('model-selector')?.classList.contains('translate-x-0')) hideSelectorModal();
         };
         document.addEventListener('keydown', handleEscape);
         document.addEventListener('open-settings', OpenSettings);
@@ -42,9 +42,17 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
         }
     }, [isModelDropdownOpen, hideSelectorModal, OpenSettings]);
 
+    const ModelSelectorToggle = useCallback(() => {
+        if (isModelDropdownOpen || document.getElementById('model-selector')?.classList.contains('translate-x-0')) {
+            hideSelectorModal()
+        } else {
+            openSelectorModal()
+        }
+    })
+
     return (
         <section id="header" className='w-full'>
-            <header className="space-b-1 my-2 z-[10] transform transition-transform transition-all duration-500">
+            <header className="space-b-1 my-1 mt-0 z-[10] transform transition-transform transition-all duration-500">
                 <div className="flex justify-between">
                     <section className="flex justify-start">
                         {/* Toggle Button */}
@@ -68,11 +76,8 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                         <div className="relative">
                             <button
                                 id="modelButton"
-                                className="rounded-lg ml-1 p-2 font-semibold bg-gray-200 hover:bg-blue-200 text-sky-900 dark:text-gray-100 rounded-md dark:bg-zinc-950 dark:hover:bg-stone-600 outline-none cursor-pointer transition-colors duration-1000"
-                                onClick={() => {
-                                    !isModelDropdownOpen ? openSelectorModal() : hideSelectorModal();
-                                }
-                                }
+                                className="rounded-lg ml-1 p-2 font-semibold bg-gray-200 hover:bg-blue-200 text-sky-900 dark:text-gray-100 rounded-md dark:bg-primary-900 dark:hover:bg-primary-700 hover:scale-[0.9] outline-none cursor-pointer transition-all duration-700"
+                                onClick={ModelSelectorToggle}
                             >
                                 <div className="flex">
                                     <span id="selectedModelText" data-class="hf" className="text-md max-w-36 truncate">
@@ -88,7 +93,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                     </section>
 
                     {/* Settings Button */}
-                    <section onClick={OpenSettings} className="absolute right-0 z-5">
+                    <section onClick={OpenSettings} className="absolute right-0 z-5 hover:scale-[0.85] transition-transform duration-700">
                         <button id="settings" title="Settings" className="mr-[3vw]">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 fill-current text-gray-800 dark:text-gray-200 transition-colors duration-200">
                                 <path d="M19.14 12.936c.06-.437.06-.874 0-1.31l2.007-1.55c.21-.16.27-.44.14-.67l-2.4-4.155c-.12-.21-.36-.29-.57-.21l-2.337 1.017c-.56-.43-1.17-.79-1.83-1.07l-.354-2.6c-.04-.26-.27-.46-.54-.46h-5c-.27 0-.51.2-.54.46l-.354 2.6c-.66.28-1.28.64-1.83 1.07L5.22 5.89c-.21-.08-.45 0-.57.21l-2.4 4.155c-.12.21-.07.51.14.67l2.007 1.55c-.06.437-.06.874 0 1.31l-2.007 1.55c-.21.16-.27.44-.14.67l2.4 4.155c.12.21.36.29.57.21l2.337-1.017c.56.43 1.17.79 1.83 1.07l.354 2.6c.04.26.27.46.54.46h5c.27 0 .51-.2.54-.46l.354-2.6c.66-.28 1.28-.64 1.83-1.07l2.337-1.017c.21-.08.45 0 .57.21l2.4 4.155c.12.21.07.51-.14.67l-2.007 1.55c.06.437.06.874 0 1.31zM12 16a4 4 0 110-8 4 4 0 010 8z" />

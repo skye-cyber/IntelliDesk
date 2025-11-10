@@ -186,14 +186,14 @@ export const ModelSelector = ({ selectedModel = 'mistral-large-latest', onModelS
     return (
         <div id="model-selector" className="fixed z-[55] mt-1 -ml-2 w-fit max-h-[88vh] overflow-y-auto py-1 max-w-md bg-white border border-blue-300 dark:border-[#242470] dark:bg-[#050511] text-gray-800 dark:text-gray-300 rounded-lg shadow-lg overflow-x-hidden whitespace-wrap text-truncate animation transition-colors duration-1000 transform-gpu scrollbar-custom scroll-smooth -translate-x-[100vw] opacity-0 transition-translate transition-all duration-500" value={selectedModel}>
             <div role="menu" aria-orientation="vertical">
-                {hfmodelCategories.map((category, index) => (
+                {/*hfmodelCategories.map((category, index) => (
                     <ModelCategory
                         key={index}
                         category={category}
                         selectedModel={selectedModel}
                         onModelSelect={onModelSelect}
                     />
-                ))}
+                ))*/}
                 {/*--Mistral Models Seperator*/}
                 <div role="separator" aria-orientation="horizontal" className="mx-5 my-1 flex items-center justify-center">
                     <div className="flex-1 h-px bg-gradient-to-r from-[#ffaa00] to-[#00ff00]"></div>

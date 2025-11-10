@@ -177,6 +177,28 @@ const api = {
     getModel: () => {
         return ConversationHistory[0].metadata.model
     },
+    setModel: (model) => {
+        try {
+            console.log(model)
+            model = model?.toLocaleLowerCase()
+
+            if (!['chat', 'multimodal'].includes(model)) return
+
+            ConversationHistory[0].metadata.model = model
+
+            if (ConversationHistory[0].chats[0].role === 'system') {
+                console.log("Update sys")
+                ConversationHistory[0].chats[0] = (model === "multimodal")
+                ? { role: "system", content: [{ type: "text", text: system_command }] }
+                : { role: "system", content: system_command }
+
+                console.log(ConversationHistory[0].chats[0])
+            }
+        } catch (error) {
+            console.log(error)
+            return false
+        }
+    },
     clean: (chats) => {
         return chats
             .map(chat => {
@@ -488,7 +510,7 @@ const api = {
             return new Promise((resolve, reject) => {
                 canvas.toBlob(async (blob) => {
                     if (!blob) {
-                        reject(new Error('Canvas toBlob returned null'));
+                        reject(new Error('Canvas to Blob returned null'));
                         return;
                     }
 
@@ -589,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('NewConversationOpened', function() {
     console.log("NewConversationOpened Event Recieved")
     ConversationId = api.generateUUID()
-    ConversationHistory[1].chats = [{ role: "system", content: [{ type: "text", text: system_command }] }]
+    ConversationHistory[0].chats = [{ role: "system", content: system_command }]
     ConversationHistory[0].metadata.id = ConversationId
 
     console.log(ConversationHistory)

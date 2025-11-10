@@ -10,7 +10,7 @@ const chatutil = new ChatUtil()
 StateManager.set('processing', false)
 
 
-const AllVisionModels = chatutil.get_vision_modesl()
+const multimodal = chatutil.get_multimodal_modesl()
 const ms_models = chatutil.get_models()
 
 export class Router {
@@ -68,8 +68,7 @@ export class Router {
     routeToMistral(text, modelName = null, file_type = null, fileDataUrl = null) {
         if (!text) window.ModalManager.showMessage("No text provided", "error")
 
-        if (["pixtral-12b-2409", "pixtral-large-2411", "mistral-small-latest"]
-            .includes(modelName)) {
+        if (multimodal.includes(modelName)) {
             return MistraMultimodal({ text: text, model_name: modelName, file_type: file_type, file_data_url: fileDataUrl })
         }
         MistraChat({ text: text, model: modelName })

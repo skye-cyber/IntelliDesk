@@ -14,20 +14,16 @@ export class ChatManager {
         this.storagePath = window.desk.api.joinPath(window.desk.api.home_dir(), '.IntelliDesk/.store');
         this.conversationManager = new ConversationManager(this.storagePath);
         this.activeItem
-        this.init()
+        //this.init()
     }
 
     init() {
+        //const cl = this.fetchConversations
         document.addEventListener('NewConversationOpened', function() {
-            waitForElement('#conversations', (el) => this.conversationManager.fetchConversations(el));
+            //waitForElement('#conversations', (el) => cl(el));
         })
 
-        this.checkAndCreateDirectory();
-        // Fetch and display conversations on page load
-        //this.conversationManager.fetchConversations();
-
-        // Setup ipc recievers
-        this.setupIPCRecievers()
+        //this.checkAndCreateDirectory();
 
         return this
     }
@@ -197,6 +193,10 @@ export class ChatManager {
 
     showConversationOptions(event) {
         try {
+            // First render the tooltip
+            const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
+            const chatOptions = document.getElementById('chatOptions');
+
             // Store conversation ID and position
             this.currentConversationId = this.conversationId;
             this.currentPosition = { x: event.clientX, y: event.clientY };
@@ -217,6 +217,13 @@ export class ChatManager {
             if (posY + rect.height > viewportHeight) {
                 posY = viewportHeight - rect.height - 10;
             }
+            // Show tooltip with animation
+            chatOptionsOverlay.classList.remove('hidden');
+            chatOptions.classList.remove('animate-exit');
+            chatOptions.classList.add('animate-enter');
+
+            chatOptionsOverlay.dataset.id = id
+            chatOptionsOverlay.dataset.portalid = portal_id
 
             return { posX: posX, posY: posY };
         } catch (err) {

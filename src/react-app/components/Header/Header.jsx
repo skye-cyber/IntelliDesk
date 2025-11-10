@@ -30,15 +30,25 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
         selector.classList.add('translate-x-0', 'opacity-100')
         setIsModelDropdownOpen(true);
     }
+
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape' && isModelDropdownOpen || document.getElementById('model-selector')?.classList.contains('translate-x-0')) hideSelectorModal();
         };
+
+        const handleClick = (e) => {
+            if (!document.getElementById('model-selector')?.contains(e.target) && ! document.getElementById('modelButton')?.parentElement.contains(e.target)) {
+                hideSelectorModal()
+            }
+        }
+
+        document.addEventListener('click', handleClick);
         document.addEventListener('keydown', handleEscape);
         document.addEventListener('open-settings', OpenSettings);
         return () => {
             document.removeEventListener('keydown', handleEscape);
             document.removeEventListener('open-settings', OpenSettings);
+            document.removeEventListener('click', handleClick);
         }
     }, [isModelDropdownOpen, hideSelectorModal, OpenSettings]);
 

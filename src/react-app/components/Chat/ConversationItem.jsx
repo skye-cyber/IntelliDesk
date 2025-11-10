@@ -69,6 +69,18 @@ export const ConversationItem = ({ metadata, portal_id }) => {
         chatmanager.renderConversationFromFile(metadata.id)
     });
 
+    const deactivate_item = () => {
+        document.addEventListener('NewConversationOpened', () => {
+            chatmanager.activeItem.classList.remove('animate-heartpulse-slow');
+            chatmanager.activeItem.querySelector('#active-dot')?.classList.remove('hidden');
+        })
+
+        useEffect(() => {
+            document.addEventListener('NewConversationOpened', deactivate_item)
+            return () => document.removeEventListener('NewConversationOpened');
+        })
+    }
+
 
     return (
         <div

@@ -96,7 +96,7 @@ export class ChatUtil {
         return MSmodels
     }
 
-    get_codestral_endpoint() {
+    get_codestral_endpoint(listify=false) {
         const codestral = {
             'https://codestral.mistral.ai/v1/fim/completions': 'Completion Endpoint',
             'https://codestral.mistral.ai/v1/chat/completions': 'Chat Endpoint'
@@ -104,14 +104,11 @@ export class ChatUtil {
         return codestral
     }
 
-    get_vision_modesl() {
+    get_multimodal_modesl() {
         return [
             "mistral-small-latest",
             "pixtral-12b-2409",
             "pixtral-large-2411",
-            "Qwen/Qwen2-VL-7B-Instruct",
-            "meta-llama/Llama-3.2-11B-Vision-Instruct",
-            "Qwen/QVQ-72B-Preview"
         ]
     }
 

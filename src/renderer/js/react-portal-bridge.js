@@ -18,8 +18,8 @@ class ReactPortalBridge {
     }
 
     // Show component in a specific target container
-    showComponentInTarget(componentType, containerId, props = {}) {
-        const portalId = `portal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    showComponentInTarget(componentType, containerId, props = {}, portal_prefix = '') {
+        const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         if (!this.portalContainers.has(containerId)) {
             console.warn(`Container ${containerId} not registered. Falling back to global.`);
@@ -35,8 +35,8 @@ class ReactPortalBridge {
     }
 
     // Original global show method
-    showComponent(componentType, props = {}) {
-        const portalId = `portal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    showComponent(componentType, props = {}, portal_prefix = '') {
+        const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         const event = new CustomEvent('react-portal-show', {
             detail: { portalId, componentType, props }
@@ -46,9 +46,9 @@ class ReactPortalBridge {
         return portalId;
     }
 
-    closeComponent(portalId) {
+    closeComponent(portalId, prefix = false) {
         const event = new CustomEvent('react-portal-close', {
-            detail: { portalId }
+            detail: { id: portalId, prefix: prefix }
         });
         document.dispatchEvent(event);
     }
@@ -92,8 +92,8 @@ class StreamingPortalBridge {
     }
 
     // Create a streaming portal that can be updated
-    createStreamingPortal(componentType, containerId, initialProps = {}) {
-        const portalId = `stream-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    createStreamingPortal(componentType, containerId, initialProps = {}, portal_prefix = '') {
+        const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}stream-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         const streamController = {
             id: portalId,
@@ -136,10 +136,9 @@ class StreamingPortalBridge {
     }
 
     // Close a streaming portal
-    closeStreamingPortal(portalId) {
-        console.log("Create portal", portalId)
+    closeStreamingPortal(portalId, prefix = false) {
         const event = new CustomEvent('react-portal-stream-close', {
-            detail: { portalId }
+            detail: { id: portalId, prefix: prefix }
         });
         document.dispatchEvent(event);
     }
@@ -150,6 +149,14 @@ class StreamingPortalBridge {
             detail: { updates }
         });
         document.dispatchEvent(event);
+    }
+}
+
+
+export function ClosePrefixed(){
+    for (let pid of ['user_message', 'ai_message']) {
+        window.reactPortalBridge.closeComponent(pid, true)
+        window.streamingPortalBridge.closeStreamingPortal(pid, true)
     }
 }
 

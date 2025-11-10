@@ -94,15 +94,60 @@ export const StreamingPortalContainer = () => {
             }
         };
 
+        /**
         const handleStreamClose = (event) => {
-            const { portalId } = event.detail;
+            const { details } = event.detail;
+            const portalId = details.id
+            const prefix = details.prefix
 
             portalDataRef.current.delete(portalId);
             setStreamingPortals(prev => {
                 const newMap = new Map(prev);
                 newMap.delete(portalId);
                 return newMap;
-            });
+                });
+            };
+        */
+
+        const handleStreamClose = (event) => {
+            const { id, prefix } = event.detail;
+            const portalId = id;
+
+            if (prefix) {
+                // Remove all portals that start with this portalId as prefix
+                const portalsToRemove = [];
+
+                // Find all portal IDs that match the prefix
+                portalDataRef.current.forEach((value, key) => {
+                    if (key.startsWith(portalId)) {
+                        portalsToRemove.push(key);
+                    }
+                });
+
+                // Remove from portalDataRef
+                portalsToRemove.forEach(id => {
+                    portalDataRef.current.delete(id);
+                });
+
+                // Remove from streamingPortals state
+                setStreamingPortals(prev => {
+                    const newMap = new Map(prev);
+                    portalsToRemove.forEach(id => {
+                        newMap.delete(id);
+                    });
+                    return newMap;
+                });
+
+                //console.log(`Removed ${portalsToRemove.length} portals with prefix: ${portalId}`);
+            } else {
+                // Original behavior - remove single portal
+                portalDataRef.current?.delete(portalId);
+                setStreamingPortals(prev => {
+                    const newMap = new Map(prev);
+                    newMap?.delete(portalId);
+                    return newMap;
+                });
+            }
         };
 
         // Register event listeners

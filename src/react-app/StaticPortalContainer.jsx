@@ -39,7 +39,8 @@ export const StaticPortalContainer = () => {
             });
         };
 
-        const handleClosePortal = (event) => {
+        /*
+         * const handleClosePortal = (event) => {
             const { portalId } = event.detail;
 
             setPortals(prev => prev.filter(portal => portal.id !== portalId));
@@ -50,6 +51,40 @@ export const StaticPortalContainer = () => {
                 }
                 return newMap;
             });
+        };
+        */
+
+        const handleClosePortal = (event) => {
+            const { id, prefix } = event.detail;
+            const portalId = id
+
+
+            if (prefix) {
+                // Remove all portals that start with this portalId as prefix
+                setPortals(prev => prev.filter(portal => !portal.id.startsWith(portalId)));
+
+                // Remove from targetedPortals state
+                setTargetedPortals(prev => {
+                    const newMap = new Map();
+                    for (const [containerId, portals] of prev.entries()) {
+                        newMap.set(containerId, portals.filter(p => !p.id.startsWith(portalId)));
+                    }
+                    return newMap;
+                });
+
+                //console.log(`Removed portals with prefix: ${portalId}`);
+            } else {
+                // remove single portal
+                setPortals(prev => prev.filter(portal => portal.id !== portalId));
+
+                setTargetedPortals(prev => {
+                    const newMap = new Map();
+                    for (const [containerId, portals] of prev.entries()) {
+                        newMap.set(containerId, portals.filter(p => p.id !== portalId));
+                    }
+                    return newMap;
+                });
+            }
         };
 
         const handleCloseContainer = (event) => {
@@ -123,7 +158,10 @@ export const StaticPortalContainer = () => {
                 }
 
                 const portalRoot = containerElement.querySelector('.react-portal-root');
-                if (!portalRoot) return null;
+                if (!portalRoot) {
+                    console.warn(`Container .react-portal-root not found in ${containerId}`);
+                    return null;
+                }
 
                 return ReactDOM.createPortal(
                     containerPortals.map(renderPortal),

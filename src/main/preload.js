@@ -99,8 +99,13 @@ const api = {
             return false;
         }
     },
-    stat: (obj) => {
-        return fs.statSync(obj);
+    stat: (filePath) => {
+        try {
+            return fs.statSync(filePath);
+        } catch (err) {
+            console.error(err);
+            return false
+        }
     },
     getExt: (file) => {
         return path.extname(file);
@@ -111,9 +116,25 @@ const api = {
     joinPath: (node, child) => {
         return path.join(node, child);
     },
-    Rename: (id, name, base_dir = conversation_root) => {
+    RenameFile: (old_name, new_name, base_dir = conversation_root) => {
         try {
-            fs.renameSync(path.join(base_dir, `${id}.json`), path.join(base_dir, `${name}.json`))
+            fs.renameSync(path.join(base_dir, `${old_name}.json`), path.join(base_dir, `${new_name}.json`))
+            return true
+        } catch (err) {
+            console.log(err)
+            return false
+        }
+    },
+    RenameConversation: async (id, name, base_dir = conversation_root) => {
+        try {
+            const fpath = path.join(base_dir, `${id}.json`)
+
+            let data = await api.read(fpath)
+            if (!data) return false
+
+            data[0].metadata.name = name
+
+            api.saveConversation(data, id)
             return true
         } catch (err) {
             console.log(err)

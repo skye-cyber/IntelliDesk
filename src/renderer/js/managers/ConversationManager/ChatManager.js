@@ -51,6 +51,8 @@ export class ChatManager {
                     if (window.desk.api.getExt(file) === '.json') {
                         // Cmpartibility logic for older conversations with C- and V- to denote models
 
+                        if (!window.desk.api.stat(window.desk.api.joinPath(this.storagePath, file))) continue;
+
                         const metadata = window.desk.api.getmetadata(file)
                         window.reactPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata }, 'chatItem')
 
@@ -195,11 +197,6 @@ export class ChatManager {
 
     showConversationOptions(event) {
         try {
-            //event.preventDefault();
-
-            const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
-            const chatOptions = document.getElementById('chatOptions');
-
             // Store conversation ID and position
             this.currentConversationId = this.conversationId;
             this.currentPosition = { x: event.clientX, y: event.clientY };
@@ -221,15 +218,7 @@ export class ChatManager {
                 posY = viewportHeight - rect.height - 10;
             }
 
-            chatOptions.style.left = `${posX}px`;
-            chatOptions.style.top = `${posY}px`;
-
-            // Show tooltip with animation
-            chatOptionsOverlay.classList.remove('hidden');
-            chatOptions.classList.remove('animate-exit');
-            chatOptions.classList.add('animate-enter');
-
-            return true;
+            return { posX: posX, posY: posY };
         } catch (err) {
             console.error('Error showing conversation options:', err);
             return false;
@@ -288,7 +277,7 @@ export class ChatManager {
             const conversationItem = document.querySelector(`[data-id="${this.currentConversationId}"]`);
             if (conversationItem && name !== '') {
 
-                const rename = window.desk.api.Rename(this.currentConversationId, name, this.storagePath);
+                const rename = window.desk.api.RenameConversation(this.currentConversationId, name, this.storagePath);
                 if (rename) {
                     conversationItem.dataset.name = name;
                     conversationItem.querySelector('#chat-name').textContent = name
@@ -327,6 +316,7 @@ export class ChatManager {
             this.hideConversationOptions()
             console.log("Failed to rename file", err);
             await this.hideLoadingModal()
+            return false
         }
     }
 

@@ -1,14 +1,59 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { chatmanager } from '../../../renderer/js/managers/ConversationManager/ChatManager';
 
-export const ConversationItem = ({ metadata }) => {
-
+export const ConversationItem = ({ metadata, portal_id }) => {
     const onContextMenu = useCallback((event, id) => {
         // Prevent the default context menu
         event.preventDefault();
-        chatmanager.currentConversationId = id
-        //conversationItem.dataset.id = conversationId
-        chatmanager.showConversationOptions(event)
+        chatmanager.currentConversationId = id;
+        chatmanager.currentPosition = { x: event.clientX, y: event.clientY };
+
+        // First render the tooltip
+        const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
+        const chatOptions = document.getElementById('chatOptions');
+
+        chatOptionsOverlay.dataset.id = id
+        chatOptionsOverlay.dataset.portalid = portal_id
+
+        // Show tooltip with animation
+        chatOptionsOverlay.classList.remove('hidden');
+        chatOptions.classList.remove('animate-exit');
+        chatOptions.classList.add('animate-enter');
+
+        // Use requestAnimationFrame to ensure DOM is updated before measuring
+        requestAnimationFrame(() => {
+            // Now the element should have its final dimensions
+            const rect = chatOptions.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            // Calculate position with offset from cursor
+            const offset = 10;
+            let posX = event.clientX + offset;
+            let posY = event.clientY + offset;
+
+            // Adjust horizontally
+            if (posX + rect.width > viewportWidth) {
+                posX = event.clientX - rect.width - offset;
+            }
+
+            // Adjust vertically
+            if (posY + rect.height > viewportHeight) {
+                posY = event.clientY - rect.height - offset;
+            }
+
+            // Ensure we don't go off-screen
+            posX = Math.max(5, Math.min(posX, viewportWidth - rect.width - 5));
+            posY = Math.max(5, Math.min(posY, viewportHeight - rect.height - 5));
+
+            const optionsHeight = chatOptions.offsetHeight; // better performance than getComputedStyle for height
+            if (posY + optionsHeight > viewportHeight) {
+                posY = posY - optionsHeight;
+            }
+
+            chatOptions.style.left = `${posX}px`;
+            chatOptions.style.top = `${posY}px`;
+        });
     });
 
     const handleItemClick = useCallback((item) => {
@@ -46,7 +91,7 @@ export const ConversationItem = ({ metadata }) => {
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                         <h3 id="chat-name" className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                            {metadata?.id}
+                            {metadata?.name}
                         </h3>
                         <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{chatmanager.formatRelativeTime(metadata?.timestamp)}</span>
                     </div>

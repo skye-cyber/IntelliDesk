@@ -1,13 +1,15 @@
 import React, { useCallback } from 'react';
 import { CopyMessage } from '../../../renderer/js/Utils/chatUtils';
-//import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
 import { normalizeMathDelimiters } from '../../../renderer/js/MathBase/MathNormalize';
 import { toggleExportOptions } from '../../../renderer/js/ChatExport/export';
 import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../renderer/js/ChatExport/export';
 import { markitdown } from './CodeHighlighter';
 import { CodeBlockRenderer } from './CodeBlockRenderer';
+import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
 
-//import { StateManager } from '../../../renderer/js/managers/StatesManager';
+const chatutil = new ChatUtil()
+
 export function GenerateId(prefix = '', postfix = '', length = 6) {
     // Generate a random alphanumeric string (letters + digits) for valid class/ID characters
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -36,8 +38,9 @@ export function GenerateId(prefix = '', postfix = '', length = 6) {
 export const UserMessage = ({ message, file_type = null, file_data_url = null, save = true }) => {
     const message_id = GenerateId('user_msg')
 
-    //console.log("Rendering user message")
-    //if (save) window.desk.api.addHistory({ role: "user", content: message });
+    if (save) window.desk.api.addHistory({ role: "user", content: message });
+
+    chatutil.render_math(`.${message_id}`, 0)
 
     return (
         <>
@@ -45,7 +48,7 @@ export const UserMessage = ({ message, file_type = null, file_data_url = null, s
                 <div className="flex items-end gap-x-2 justify-end">
                     <div id="user_message" data-id={message_id} className={`${message_id} relative bg-gray-200 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-lg w-fit max-w-full md:max-w-[80%]`}>
                         <div className="prose whitespace-pre-wrap break-words max-w-full h-fit"
-                            dangerouslySetInnerHTML={{ __html: markitdown(message) }}
+                            dangerouslySetInnerHTML={{ __html: InputPurify(message) }}
                         ></div>
                     </div>
                 </div>
@@ -74,8 +77,7 @@ export const AiMessage = ({
     fold_id = GenerateId('fold')
 }) => {
 
-    //console.log("Rendering AI message", actual_response)
-    const processedHtml = markitdown(normalizeMathDelimiters(actual_response));
+    const processedHtml = markitdown(actual_response);
 
     const processedThinkHtml = think_content ? markitdown(normalizeMathDelimiters(think_content)) : null;
 
@@ -87,10 +89,10 @@ export const AiMessage = ({
         document.querySelector('.fold_svg')?.classList.toggle('rotate-180')
     })
 
-    // chatutil.render_math(`.${aiMessageUId}`)
+    chatutil.render_math(`.${message_id}`, 2000)
 
     return (
-        <div className='flex justify-start mb-12 overflow-wrap'>
+        <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
             <section id="ai_response" className="relative w-fit max-w-full lg:max-w-5xl mb-[2vh] p-2">
                 {
                     actual_response ?

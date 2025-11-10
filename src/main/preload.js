@@ -500,6 +500,7 @@ const api2 = {
     getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),
     resetKeys: async (accounts) => ipcRenderer.invoke('reset-keys', accounts),
     appVersion: async () => ipcRenderer.invoke('get-app-version',),
+    appIsDev: async () => ipcRenderer.invoke('get-dev-status',),
 
     // Chat functionality
     sendChatMessage: (message, model, options) =>

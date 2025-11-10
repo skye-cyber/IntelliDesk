@@ -321,6 +321,10 @@ ipcMain.handle('get-app-version', async (event, accounts) => {
     }
 });
 
+ipcMain.handle('get-dev-status', async (event) => {
+    return isDev
+})
+
 async function prepDirectories() {
     try {
         const baseDir = path.join(app.getPath('home'), '.IntelliDesk');

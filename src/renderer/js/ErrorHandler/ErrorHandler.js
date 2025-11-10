@@ -246,32 +246,32 @@ export class RequestErrorHandler {
         const jsonString = JSON.stringify(errorData, null, 2);
 
         return jsonString
-        .replace(/"([^"]+)":/g, (match, key) => {
-            // Special styling for important keys
-            if (key === 'message') {
-                return `<span class='font-semibold' style="${styles.message}">"${key}"</span>:`;
-            } else if (key === 'timestamp') {
-                return `<span class='font-semibold' style="${styles.timestamp}">"${key}"</span>:`;
-            } else if (key === 'name' || key === 'type') {
-                return `<span class='font-semibold' style="${styles.errorType}">"${key}"</span>:`;
-            }
-            return `<span class='font-semibold' style="${styles.key}">"${key}"</span>:`;
-        })
-        .replace(/: "([^"]*)"/g, (match, value) => {
-            return `: <span style="${styles.string}">"${value}"</span>`;
-        })
-        .replace(/: (\d+)/g, (match, number) => {
-            return `: <span style="${styles.number}">${number}</span>`;
-        })
-        .replace(/: (true|false)/g, (match, bool) => {
-            return `: <span style="${styles.boolean}">${bool}</span>`;
-        })
-        .replace(/: null/g, (match) => {
-            return `: <span style="${styles.null}">null</span>`;
-        })
-        .replace(/(\{|\}|\[|\])/g, (match, bracket) => {
-            return `<span style="${styles.bracket}">${bracket}</span>`;
-        });
+            .replace(/"([^"]+)":/g, (match, key) => {
+                // Special styling for important keys
+                if (key === 'message') {
+                    return `<span class='font-semibold' style="${styles.message}">"${key}"</span>:`;
+                } else if (key === 'timestamp') {
+                    return `<span class='font-semibold' style="${styles.timestamp}">"${key}"</span>:`;
+                } else if (key === 'name' || key === 'type') {
+                    return `<span class='font-semibold' style="${styles.errorType}">"${key}"</span>:`;
+                }
+                return `<span class='font-semibold' style="${styles.key}">"${key}"</span>:`;
+            })
+            .replace(/: "([^"]*)"/g, (match, value) => {
+                return `: <span style="${styles.string}">"${value}"</span>`;
+            })
+            .replace(/: (\d+)/g, (match, number) => {
+                return `: <span style="${styles.number}">${number}</span>`;
+            })
+            .replace(/: (true|false)/g, (match, bool) => {
+                return `: <span style="${styles.boolean}">${bool}</span>`;
+            })
+            .replace(/: null/g, (match) => {
+                return `: <span style="${styles.null}">null</span>`;
+            })
+            .replace(/(\{|\}|\[|\])/g, (match, bracket) => {
+                return `<span style="${styles.bracket}">${bracket}</span>`;
+            });
     }
 
     getErrorOrigin(error) {
@@ -459,7 +459,7 @@ export class RequestErrorHandler {
 // Singleton instance for global use
 export const requestErrorHandler = new RequestErrorHandler();
 
-export function handleRequestError(error, user_message_pid, ai_message_pid, VS_url = null) {
+export function handleDevErrors(error, user_message_pid, ai_message_pid=null, file_type = null, file_data_url = null) {
     // Extract the message content before creating context
     let lastMessage, text;
 
@@ -470,7 +470,7 @@ export function handleRequestError(error, user_message_pid, ai_message_pid, VS_u
         if (lastEntry && (lastEntry.role !== 'system')) {
             lastMessage = lastEntry.content;
             text = typeof lastMessage === 'string' ? lastMessage : lastMessage.text ||
-            lastMessage.content;
+                lastMessage.content;
 
             text = text.replace(/\s*\[[^\]]*\]\s*/g, '').trim();
 
@@ -486,10 +486,11 @@ export function handleRequestError(error, user_message_pid, ai_message_pid, VS_u
 
     const context = {
         user_message_pid,
-        aiMessage,
-        VS_url,
-        text,           // Add extracted text
-        lastMessage,    // Add last message
+        ai_message_pid,
+        file_type,
+        file_data_url,
+        text,
+        lastMessage,
         timestamp: Date.now()
     };
 
@@ -508,7 +509,7 @@ export function handleRequestError(error, user_message_pid, ai_message_pid, VS_u
         if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
 
         if (context.VS_url) {
-            router.routeToMistral(context.text, window.currentModel, context.VS_url[1], context.fileDataUrl);
+            router.routeToMistral(context.text, window.currentModel, context.file_type, context.file_data_url);
         } else {
             // Use the extracted lastMessage
             router.requestRouter(context.lastMessage?.trim());

@@ -2,11 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Diagram } from './components/DiagramUI/diagram';
 import { UserMessage, AiMessage, LoadingAnimation } from './components/ConversationRenderer/Renderer';
+import { ConversationItem } from './components/Chat/ConversationItem';
+
 const streamingComponentRegistry = {
     Diagram,
     UserMessage,
     AiMessage,
     LoadingAnimation,
+    ConversationItem
 };
 
 export const StreamingPortalContainer = () => {

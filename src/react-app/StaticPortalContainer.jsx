@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Diagram } from './components/DiagramUI/diagram';
 import ReactDOM from 'react-dom';
 import { UserMessage, AiMessage, LoadingAnimation } from './components/ConversationRenderer/Renderer';
+import { ConversationItem } from './components/Chat/ConversationItem';
 
 const componentRegistry = {
     Diagram,
     UserMessage,
     AiMessage,
     LoadingAnimation,
+    ConversationItem
 };
 
 export const StaticPortalContainer = () => {

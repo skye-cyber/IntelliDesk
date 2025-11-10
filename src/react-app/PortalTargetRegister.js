@@ -10,6 +10,11 @@ waitForElement('#chatArea', (el) => {
     window.streamingPortalBridge.registerStreamingComponent('chatArea', el);
 })
 
+waitForElement('#conversations', (el) => {
+    window.reactPortalBridge.registerContainer('conversations', el);
+    window.streamingPortalBridge.registerStreamingComponent('conversations', el);
+})
+
 
 export function RegisterCanvas() {
     waitForElementSimple('#canvas-wrapper', (el) => {

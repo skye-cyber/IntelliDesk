@@ -60,7 +60,7 @@ renderer.code = function(code) {
     // Reset language to json-draw
     valid_language = dg_lang ? dg_lang : valid_language
 
-    return `<<<CODE_BLOCK||${highlighted}||${valid_language}>>>`;
+    return `<<<CODE_BLOCK|${highlighted}|${valid_language}END_BLOCK>>>`;
 };
 
 marked.setOptions({

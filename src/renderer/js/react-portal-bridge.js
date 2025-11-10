@@ -26,6 +26,8 @@ class ReactPortalBridge {
             return this.showComponent(componentType, props);
         }
 
+        props.portal_id = portalId
+
         const event = new CustomEvent('react-portal-show-targeted', {
             detail: { portalId, componentType, containerId, props }
         });
@@ -153,7 +155,7 @@ class StreamingPortalBridge {
 }
 
 
-export function ClosePrefixed(){
+export function ClosePrefixed() {
     for (let pid of ['user_message', 'ai_message']) {
         window.reactPortalBridge.closeComponent(pid, true)
         window.streamingPortalBridge.closeStreamingPortal(pid, true)

@@ -52,8 +52,10 @@ export class ChatManager {
                         // Cmpartibility logic for older conversations with C- and V- to denote models
 
                         const metadata = window.desk.api.getmetadata(file)
+                        window.reactPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata }, 'chatItem')
 
-                        if (!typeof (metadata) === 'object') continue
+                        /*
+                         if (!typeof (metadata) === 'object') continue
 
                         const conversationId = metadata?.id
                         const timestamp = metadata?.timestamp
@@ -100,6 +102,7 @@ export class ChatManager {
                             conversationItem.dataset.id = conversationId
                             this.showConversationOptions(event)
                         });
+                        */
                     } else {
                         console.log("No conversations saved!")
                     }
@@ -329,7 +332,7 @@ export class ChatManager {
 
     // Function to render a conversation from a file
     // Function to render a conversation from a file
-    async renderConversationFromFile(item, conversationId) {
+    async renderConversationFromFile(conversationId) {
         ClosePrefixed()
 
         // Show loading modal immediately without awaiting
@@ -340,7 +343,8 @@ export class ChatManager {
 
         try {
             // Remove animation from previous item as the active item is changing
-            if (this.activeItem) {
+            /*
+             if (this.activeItem) {
                 this.activeItem.classList.remove('animate-heartpulse');
                 this.activeItem.querySelector('#active-dot').classList.add('hidden');
             }
@@ -348,6 +352,7 @@ export class ChatManager {
 
             item.classList.add('animate-heartpulse-slow');
             item.querySelector('#active-dot').classList.remove('hidden');
+            */
 
             let [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
 
@@ -371,3 +376,4 @@ export class ChatManager {
     }
 }
 
+export const chatmanager = new ChatManager()

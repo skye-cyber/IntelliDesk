@@ -2,6 +2,7 @@ import { waitForElement } from "../../Utils/dom_utils";
 import { implementUserCopy, copyBMan } from "../../Utils/chatUtils";
 import { ChatUtil } from "./util";
 import { ChatDisplay } from "./util";
+import { ClosePrefixed } from "../../react-portal-bridge";
 
 export class ConversationManager {
     constructor(storagePath) {
@@ -42,13 +43,6 @@ export class ConversationManager {
         return null;
     }
 
-    /* DEPRECATED:
-     *  Add a message to the conversation history
-     */
-    addMessage(role, content, type = "text", fileDataUrl = null, fileType = null) {
-        //
-    }
-
     change_model(value = 'mistral-large-latest') {
         try {
             document.getElementById('modelButton').click()
@@ -63,7 +57,10 @@ export class ConversationManager {
     }
     // Render the conversation in the web interface
     renderConversation(conversationData, model = "chat") {
-        this.chatArea.innerHTML = '';
+        this.chatutil.hide_suggestions()
+
+        ClosePrefixed()
+
         this.change_model()
 
         if (model === 'multimodal') {
@@ -73,7 +70,7 @@ export class ConversationManager {
                     if (message.role === "user") {
                         this.renderUserMessage(message.content, model);
                     } else if (message.role === "assistant") {
-                        this.renderMultimodalAIMessage(message.content);
+                        this.renderAIMessage(message.content);
                     }
                 }
                 //window.debounceRenderKaTeX(null, null, true);
@@ -90,19 +87,14 @@ export class ConversationManager {
                 if (message.role === "user") {
                     this.renderUserMessage(content, model);
                 } else if (message.role === "assistant") {
-                    this.renderTextAIMessage(content);
+                    this.renderAIMessage(content);
                 }
             }
-            //window.debounceRenderKaTeX(null, null, true);
         });
-
-        implementUserCopy();
-        copyBMan();
-        //window.addCopyListeners();
-        //this.chatdisplay.chats_size_adjust()
 
         // force gc
         conversationData = null
+        this.chatutil.render_math()
     }
 
     // Get file type from message content
@@ -163,8 +155,6 @@ export class ConversationManager {
         if (fileType) {
             fileDataUrl = this.getFileUrl(content);
         }
-        const userMessage = document.createElement("div");
-        userMessage.className = "flex justify-end mb-4";
 
         if (model.toLocaleLowerCase() === 'multimodal') {
 
@@ -183,19 +173,12 @@ export class ConversationManager {
             userText = content?.slice(-1) === ']' ? content?.substring(0, content?.length - 22) : content
         }
 
-        if (userText) this.chatutil.addUserMessage(userText, null, fileType, fileDataUrl, false)
-        //this.chatdisplay.chats_size_adjust()
+        if (userText) window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: userText, file_type: fileType, file_data_url: fileDataUrl, save: false }, 'user_message')
+
     }
 
     // Render text-based assistant message
-    async renderTextAIMessage(content) {
-        const MessageUId = `msg_${Math.random().toString(30).substring(3, 9)}`;
-        const foldId = `think-content-${Math.random().toString(28).substring(3, 9)}`;
-        const MessageContainer = document.createElement('div');
-        MessageContainer.classList.add('flex', 'justify-start', 'mb-12', 'overflow-wrap');
-        this.chatArea.appendChild(MessageContainer);
-        const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
-
+    async renderAIMessage(content) {
         let actualResponse = "";
         let thinkContent = "";
 
@@ -210,26 +193,7 @@ export class ConversationManager {
             actualResponse = content;
         }
 
-        this.chatutil.addChatMessage(MessageContainer, false, thinkContent, actualResponse, MessageUId, exportId, foldId)
-        this.chatutil.render_math(MessageUId)
-    }
-
-    // Render vision-based assistant message
-    async renderMultimodalAIMessage(content) {
-        const MessageUId = `msg_${Math.random().toString(30).substring(3, 9)}`;
-        const MessageContainer = document.createElement('div');
-        const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
-
-        MessageContainer.classList.add('flex', 'justify-start', 'mb-12', 'overflow-wrap');
-        this.chatArea.appendChild(MessageContainer);
-        const textContent = content[0].text
-
-        //const fileType = this.getFileType(content);
-        //const fileDataUrl = this.getFileUrl(content);
-        this.chatutil.addMultimodalMessage(MessageContainer, false, null, textContent, MessageUId, exportId)
-
-        // render diagrams from this response
-        this.chatutil.render_math(MessageUId)
+        window.reactPortalBridge.showComponentInTarget('AiMessage', 'chatArea', { actual_response: actualResponse, isThinking: false, think_content: thinkContent }, 'ai_message');
     }
 }
 

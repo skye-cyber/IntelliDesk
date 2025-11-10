@@ -58,8 +58,9 @@ export class ChatUtil {
     }
 
     render_math(container_selector, scope = 'all', delay = null) {
-        if (['math', 'all'].includes(scope)) debounceRenderKaTeX(`.${container_selector}`, delay ? delay : null, delay ? false : true);
         if (['norm', 'all'].includes(scope)) normaliZeMathDisplay(`.${container_selector}`)
+
+        if (['math', 'all'].includes(scope)) debounceRenderKaTeX(`.${container_selector}`, delay ? delay : null, delay ? false : true);
     }
 
     get_models() {

@@ -1,5 +1,6 @@
 import { waitForElement } from '../../Utils/dom_utils.js';
 import { ConversationManager } from './ConversationManager.js'
+import { ClosePrefixed } from '../../react-portal-bridge.js';
 
 //InputPurify = window.InputPurify;
 
@@ -329,6 +330,8 @@ export class ChatManager {
     // Function to render a conversation from a file
     // Function to render a conversation from a file
     async renderConversationFromFile(item, conversationId) {
+        ClosePrefixed()
+
         // Show loading modal immediately without awaiting
         this.showLoadingModal('Preparing conversation');
 

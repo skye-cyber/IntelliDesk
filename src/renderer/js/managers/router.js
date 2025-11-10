@@ -1,25 +1,14 @@
-//import { CanvasUtil } from '../../Canvas/CanvasUtils';
 import { ChatUtil } from './ConversationManager/util';
 import { waitForElement } from '../Utils/dom_utils';
-import { MistraChat, MistraMultimodal } from './ConversationManager/MistralChatManager';
+import { MistraChat } from './ConversationManager/Mistral/Textual';
+import { MistraMultimodal } from './ConversationManager/Mistral/MultiModal';
 import { StateManager } from './StatesManager';
 
 
 const chatutil = new ChatUtil()
-//const canvasutil = new CanvasUtil()
 
 StateManager.set('processing', false)
 
-/*
- * Object.defineProperty(window, "processing", {
-    get() {
-        return processing;
-    },
-    set(value) {
-        processing = value;
-    }
-});
-*/
 
 const AllVisionModels = chatutil.get_vision_modesl()
 const ms_models = chatutil.get_models()
@@ -39,9 +28,6 @@ export class Router {
         } else {
             console.warn("No vision models detected");
         }
-    }
-    getModelValue() {
-        return window.currentModel
     }
 
     change_model(value = 'mistral-large-latest') {
@@ -66,26 +52,27 @@ export class Router {
         //switch to vision model
         const res = await this.switchToVision()
 
-        const modelName = this.getModelValue();
+        const modelName = window.currentModel;
 
         if (!res === true) {
             console.log('fail')
         }
 
         if (ms_models.includes(modelName)) {
-            MistraMultimodal(text, fileType, fileDataUrl, modelName);
+            MistraMultimodal({ text: text, model_name: modelName, file_type: fileType, file_data_url: fileDataUrl });
         } else {
             //window.VisionChat(text, chatArea, fileType, fileDataUrl, null);
         }
     }
 
-    routeToMistral(text, modelName = null, VS_url = null, fileDataUrl = null) {
-        if(!text) window.ModalManager.showMessage("No text provided", "error")
+    routeToMistral(text, modelName = null, file_type = null, fileDataUrl = null) {
+        if (!text) window.ModalManager.showMessage("No text provided", "error")
 
-        if (["pixtral-12b-2409", "pixtral-large-2411", "mistral-small-latest"].includes(modelName) || VS_url) {
-            return MistraMultimodal(text, VS_url, fileDataUrl, modelName)
+        if (["pixtral-12b-2409", "pixtral-large-2411", "mistral-small-latest"]
+            .includes(modelName)) {
+            return MistraMultimodal({ text: text, model_name: modelName, file_type: file_type, file_data_url: fileDataUrl })
         }
-        MistraChat(text, modelName)
+        MistraChat({ text: text, model: modelName })
     }
 
     /**
@@ -100,14 +87,13 @@ export class Router {
      * then route to the appropriate function.
      */
     requestRouter(text) {
-        if(!text) window.ModalManager.showMessage("No text provided", "error")
+        if (!text) window.ModalManager.showMessage("No text provided", "error")
+
         // clear buffer initialy
         StateManager.set('codeBuffer', null);
 
         if (StateManager.get('processing') === true) return;
-        const model = this.getModelValue();
-
-        // console.log("✅Reached Target requestRouter:")
+        const model = window.currentModel;
 
         //Intercept image generation
         if (StateManager.get('imageGen', true)
@@ -116,8 +102,7 @@ export class Router {
             //imageGen.createImage(text)
             return
         }
-        //console.log("DataClass:", dataClass); // This will log the value of the data-avalue attribute
-        else if (ms_models.includes(model) || window.desk.api.getModel()==='multimodal') {
+        else if (ms_models.includes(model) || window.desk.api.getModel() === 'multimodal') {
             this.routeToMistral(text, model);
         } else {
             this.routeToHf(text);

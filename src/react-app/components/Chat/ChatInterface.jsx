@@ -91,7 +91,10 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
     }, [])
 
     return (
-        <section id='chat-container' className='flex justify-center h-full w-full transition-transform ease-in-out'>
+        <section
+            id='chat-container'
+            data-portal-container='chatContainer'
+            className='flex justify-center h-full w-full transition-transform ease-in-out'>
             <div id="chatArea-wrapper" className='h-full w-[100%] md:w-[80%] lg:w-[70%] xl:w-[60%]'>
                 <section
                     id="chatArea"

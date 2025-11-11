@@ -20,6 +20,10 @@ waitForElementSimple('.FilePreview', (el) => {
     window.streamingPortalBridge.registerStreamingComponent('FilePreview', el);
 })
 
+waitForElement('#chat-container', (el) => {
+    window.reactPortalBridge.registerContainer('chatContainer', el);
+    window.streamingPortalBridge.registerStreamingComponent('chatContainer', el);
+})
 
 export function RegisterCanvas() {
     waitForElementSimple('#canvas-wrapper', (el) => {

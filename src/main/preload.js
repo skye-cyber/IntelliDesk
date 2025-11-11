@@ -323,6 +323,7 @@ const api = {
     },
     clearImages: (history) => {
         // Clean all messages by removing non-text content
+        console.log(history[0].chats)
         const cleanedHistory = history[0].chats.map(item => {
             const cleanedContent = item.content
                 .filter(val => val.type === "text")

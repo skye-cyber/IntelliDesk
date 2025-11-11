@@ -10,7 +10,7 @@ import errorHandler from "../../../../../react-app/components/ErrorHandler/Error
 
 export async function MistraChat({ text, model_name = window.currentModel }) {
     try {
-        if (!text.trim()) return console.log("Message is empty")
+        if (!text?.trim()) return console.log("Message is empty")
         // Create Timer object
         const _Timer = new window.Timer();
 
@@ -26,9 +26,6 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         window.desk.api.addHistory({ role: "user", content: text });
 
         StateManager.set('user_message_portal', user_message_portal)
-
-        // Add loading animation
-        //const { loader, lid } = chatutil.addLoadingAnimation(chatArea);
 
         const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea')
 
@@ -52,7 +49,6 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
             max_tokens: 3000
         });
         */
-
 
         const stream = generateTextChunks(text)
 

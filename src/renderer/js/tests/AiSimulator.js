@@ -1661,27 +1661,55 @@ Basic mode <sub><span class="text-yellow-500 text-xl">{</span>
 			</html>
 
 \`\`\``
+
+const message3 = `System integrity-check Already executed. Need deeper diagnostics or specific subsystem focus?`
+
+const code =
+`<continued> continued
+\`\`\`python
+import os
+
+class LinkFetcher:
+def __init__(self, base_url):
+self.base_url = base_url
+
+def fetch_links(self, url):
+# Simulated function to fetch links from a given URL
+# Replace this with your actual implementation
+return [
+    "/cgit/qt/qtdeclarative.git/plain/src/qmlls/file1.txt",
+    "/cgit/qt/qtdeclarative.git/plain/src/qmlls/file2.txt",
+    "/cgit/qt/qtdeclarative.git/plain/src/another_dir/",
+]
+
+def get_all_links(self, base):
+links_list = []
+\`\`\`
+</continued>`
+
 //Ai content emulator for Test
-export async function* generateTextChunks(message=null, hf = false) {
-	message = message ? message : Custommessage
+export async function* generateTextChunks(input, message = null, hf = false) {
+    message = message ? message : message3
 
-	const chunkSize = 1; // Number of characters per chunk
-	message = message.split(' ');
-	let index = 0;
-	const totalLength = message.length;
-	while (index < totalLength) {
-		// Generate a chunk of text
-		const chunk = message.slice(index, index + chunkSize);
-		if (hf === true) {
-			yield { choices: [{ delta: { content: `${chunk} ` } }] };
-		} else {
-			yield { data: { choices: [{ delta: { content: `${chunk} ` } }] } };
+    if (input === "continue") message = code
 
-		}
-		index += chunkSize;
+    const chunkSize = 1; // Number of characters per chunk
+    message = message.split(' ');
+    let index = 0;
+    const totalLength = message.length;
+    while (index < totalLength) {
+        // Generate a chunk of text
+        const chunk = message.slice(index, index + chunkSize);
+        if (hf === true) {
+            yield { choices: [{ delta: { content: `${chunk} ` } }] };
+        } else {
+            yield { data: { choices: [{ delta: { content: `${chunk} ` } }] } };
 
-		// Wait for 0.5 seconds before generating the next chunk
-		await new Promise(resolve => setTimeout(resolve, 0));
-	}
+        }
+        index += chunkSize;
+
+        // Wait for 0.5 seconds before generating the next chunk
+        await new Promise(resolve => setTimeout(resolve, 0));
+    }
 }
 window.generateTextChunks = generateTextChunks;

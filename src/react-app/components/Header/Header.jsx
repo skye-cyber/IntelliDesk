@@ -45,10 +45,12 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
         document.addEventListener('click', handleClick);
         document.addEventListener('keydown', handleEscape);
         document.addEventListener('open-settings', OpenSettings);
+        document.addEventListener('hide-model-selector', hideSelectorModal);
         return () => {
             document.removeEventListener('keydown', handleEscape);
             document.removeEventListener('open-settings', OpenSettings);
             document.removeEventListener('click', handleClick);
+            document.addEventListener('hide-model-selector', hideSelectorModal);
         }
     }, [isModelDropdownOpen, hideSelectorModal, OpenSettings]);
 

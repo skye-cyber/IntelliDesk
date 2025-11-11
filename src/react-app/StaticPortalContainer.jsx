@@ -3,13 +3,17 @@ import { Diagram } from './components/DiagramUI/diagram';
 import ReactDOM from 'react-dom';
 import { UserMessage, AiMessage, LoadingAnimation } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
+import { FileItem } from './components/DropZone/dropzone';
 
 const componentRegistry = {
     Diagram,
     UserMessage,
     AiMessage,
     LoadingAnimation,
-    ConversationItem
+    ConversationItem,
+    FileItem,
+    //DropZone,
+    //FilePreview
 };
 
 export const StaticPortalContainer = () => {
@@ -41,20 +45,6 @@ export const StaticPortalContainer = () => {
             });
         };
 
-        /*
-         * const handleClosePortal = (event) => {
-            const { portalId } = event.detail;
-
-            setPortals(prev => prev.filter(portal => portal.id !== portalId));
-            setTargetedPortals(prev => {
-                const newMap = new Map();
-                for (const [containerId, portals] of prev.entries()) {
-                    newMap.set(containerId, portals.filter(p => p.id !== portalId));
-                }
-                return newMap;
-            });
-        };
-        */
 
         const handleClosePortal = (event) => {
             const { id, prefix } = event.detail;

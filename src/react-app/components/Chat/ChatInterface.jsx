@@ -91,13 +91,13 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
     }, [])
 
     return (
-        <section id='chat-container' className='flex justify-center h-full w-full transform transition-all duration-700 ease-in-out'>
+        <section id='chat-container' className='flex justify-center h-full w-full transition-transform ease-in-out'>
             <div id="chatArea-wrapper" className='h-full w-[100%] md:w-[80%] lg:w-[70%] xl:w-[60%]'>
                 <section
                     id="chatArea"
                     data-portal-container='chatArea'
                     ref={chatAreaRef}
-                    className="relative bg-white dark:bg-primary-900 h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 w-full border-1 border-blend-50 dark:border-blend-700"
+                    className="relative bg-white dark:bg-primary-900 h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out w-full border-1 border-blend-50 dark:border-blend-700"
                 >
                     {/* Show quick actions when no messages */}
                     {messages.length === 0 && !isLoading && (
@@ -150,8 +150,8 @@ const CopyFeedbackModal = () => (
                 </div>
 
                 <div className="text-left">
-                    <p className="font-semibold text-gray-900 dark:text-white text-sm">Copied to clipboard</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Ready to paste anywhere</p>
+                    <p id="copy-title" className="font-semibold text-gray-900 dark:text-white text-sm">Copied to clipboard</p>
+                    <p id="copy-body" className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Ready to paste anywhere</p>
                 </div>
             </div>
 

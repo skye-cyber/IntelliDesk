@@ -38,7 +38,7 @@ export function GenerateId(prefix = '', postfix = '', length = 6) {
 export const UserMessage = ({ message, file_type = null, file_data_url = null, save = true }) => {
     const message_id = GenerateId('user_msg')
 
-    if (save) window.desk.api.addHistory({ role: "user", content: message });
+    //if (save) window.desk.api.addHistory({ role: "user", content: message });
 
     chatutil.render_math(`.${message_id}`, 0)
 
@@ -76,8 +76,14 @@ export const AiMessage = ({
     export_id = GenerateId('export'),
     fold_id = GenerateId('fold')
 }) => {
+    let processedHtml
 
-    const processedHtml = markitdown(actual_response);
+    //console.log(actual_response)
+    try {
+        processedHtml = markitdown(actual_response);
+    } catch (err) {
+        //console.log(err)
+    }
 
     const processedThinkHtml = think_content ? markitdown(normalizeMathDelimiters(think_content)) : null;
 
@@ -356,27 +362,27 @@ export const UserMessageOptions = ({ message_id }) => {
     const copy_button_id = GenerateId('copy-button')
     const clone_button_id = GenerateId('clone')
 
-    const clone_markdown_content = useCallback((id) => {
-        return
+    const clone_markdown_content = useCallback((selector, html=true) => {
+        CopyMessage(selector, html)
     });
 
     return (
         <div className="message-actions text-secondary-700 dark:text-white flex items-center justify-end space-x-1 opacity-100 transition-opacity duration-300 hover:opacity-100 motion-safe:transition-opacity">
-            <button id={copy_button_id} onClick={() => CopyMessage(message_id, this, true)} className="relative group rounded-lg cursor-pointer" aria-label="Copy">
+            <button id={copy_button_id} onClick={(e) => CopyMessage(`.${message_id}`, e.currentTarget, false)} className="relative group rounded-lg cursor-pointer" aria-label="Copy">
                 <span className="flex items-center justify-center w-6 h-6">
                     <svg width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                         <path d="M480 400L288 400C279.2 400 272 392.8 272 384L272 128C272 119.2 279.2 112 288 112L421.5 112C425.7 112 429.8 113.7 432.8 116.7L491.3 175.2C494.3 178.2 496 182.3 496 186.5L496 384C496 392.8 488.8 400 480 400zM288 448L480 448C515.3 448 544 419.3 544 384L544 186.5C544 169.5 537.3 153.2 525.3 141.2L466.7 82.7C454.7 70.7 438.5 64 421.5 64L288 64C252.7 64 224 92.7 224 128L224 384C224 419.3 252.7 448 288 448zM160 192C124.7 192 96 220.7 96 256L96 512C96 547.3 124.7 576 160 576L352 576C387.3 576 416 547.3 416 512L416 496L368 496L368 512C368 520.8 360.8 528 352 528L160 528C151.2 528 144 520.8 144 512L144 256C144 247.2 151.2 240 160 240L176 240L176 192L160 192z" />
                     </svg>
                 </span>
-                <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-3 text-xs font-modern rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400" >copy</span>
+                <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-4 text-xs font-modern rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400 active:outline-none" >copy</span>
             </button>
-            <button id={clone_button_id} onClick={() => clone_markdown_content(message_id, this, true)} className="relative group rounded-lg cursor-pointer" aria-label="Clone">
+            <button id={clone_button_id} onClick={(e) => clone_markdown_content(`.${message_id}`, true)} className="relative group rounded-lg cursor-pointer" aria-label="Clone">
                 <span className="flex items-center justify-center w-6 h-6">
                     <svg width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                         <path d="M352 528L128 528C119.2 528 112 520.8 112 512L112 288C112 279.2 119.2 272 128 272L176 272L176 224L128 224C92.7 224 64 252.7 64 288L64 512C64 547.3 92.7 576 128 576L352 576C387.3 576 416 547.3 416 512L416 464L368 464L368 512C368 520.8 360.8 528 352 528zM288 368C279.2 368 272 360.8 272 352L272 128C272 119.2 279.2 112 288 112L512 112C520.8 112 528 119.2 528 128L528 352C528 360.8 520.8 368 512 368L288 368zM224 352C224 387.3 252.7 416 288 416L512 416C547.3 416 576 387.3 576 352L576 128C576 92.7 547.3 64 512 64L288 64C252.7 64 224 92.7 224 128L224 352z" />
                     </svg>
                 </span>
-                <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-3 text-xs font-modern rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400" >clone</span>
+                <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-4 text-xs font-modern rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400 active:outline-none" >clone</span>
             </button>
             <button className="relative group hover:bg-accent-400 rounded-lg cursor-pointer" aria-label="Report message">
                 <span className="flex items-center justify-center w-6 h-6">
@@ -384,7 +390,7 @@ export const UserMessageOptions = ({ message_id }) => {
                         <path d="M3.50171 17.5003V3.84799C3.50185 3.29 3.81729 2.74214 4.37476 2.50522L4.80737 2.3353C6.9356 1.5739 8.52703 2.07695 9.948 2.60385C11.4516 3.16139 12.6757 3.68996 14.3953 3.19272L14.572 3.15268C15.4652 3.00232 16.4988 3.59969 16.4988 4.68198V11.8998C16.4986 12.4958 16.1364 13.0672 15.5427 13.2777L15.4216 13.3148C12.9279 13.9583 11.1667 13.2387 9.60815 12.7621C8.82352 12.5221 8.0928 12.3401 7.28784 12.3441C6.5809 12.3477 5.78505 12.4961 4.83179 12.9212V17.5003C4.83161 17.8675 4.53391 18.1654 4.16675 18.1654C3.79959 18.1654 3.50189 17.8675 3.50171 17.5003ZM4.83179 11.4847C5.71955 11.1539 6.52428 11.0178 7.28101 11.014C8.2928 11.0089 9.17964 11.2406 9.99683 11.4906C11.642 11.9938 13.024 12.5603 15.0886 12.0277L15.115 12.016C15.1234 12.0102 15.1316 12.0021 15.1394 11.9915C15.1561 11.969 15.1686 11.9366 15.1687 11.8998V4.68198C15.1687 4.62687 15.1436 4.56746 15.0652 4.51596C15.0021 4.47458 14.9225 4.45221 14.8435 4.45639L14.7644 4.47006C12.5587 5.10779 10.9184 4.38242 9.48511 3.85092C8.15277 3.3569 6.92639 2.98314 5.23804 3.59311L4.89429 3.72885C4.8709 3.73888 4.83192 3.77525 4.83179 3.84799V11.4847Z"></path>
                     </svg>
                 </span>
-                <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-3 text-xs font-modern rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400" >Report</span>
+                <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-4 text-xs font-modern rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400 active:outline-none" >Report</span>
             </button>
             <button className="relative group hover:bg-accent-400 rounded-lg cursor-pointer" aria-label="Edit message">
                 <span className="flex items-center justify-center w-6 h-6">
@@ -392,7 +398,7 @@ export const UserMessageOptions = ({ message_id }) => {
                         <path d="M11.3312 3.56837C12.7488 2.28756 14.9376 2.33009 16.3038 3.6963L16.4318 3.83106C17.6712 5.20294 17.6712 7.29708 16.4318 8.66895L16.3038 8.80372L10.0118 15.0947C9.68833 15.4182 9.45378 15.6553 9.22179 15.8457L8.98742 16.0225C8.78227 16.1626 8.56423 16.2832 8.33703 16.3828L8.10753 16.4756C7.92576 16.5422 7.73836 16.5902 7.5216 16.6348L6.75695 16.7705L4.36339 17.169C4.22053 17.1928 4.06908 17.2188 3.94054 17.2285C3.84177 17.236 3.70827 17.2386 3.56261 17.2031L3.41417 17.1543C3.19115 17.0586 3.00741 16.8908 2.89171 16.6797L2.84581 16.5859C2.75951 16.3846 2.76168 16.1912 2.7716 16.0596C2.7813 15.931 2.80736 15.7796 2.83117 15.6367L3.2296 13.2432L3.36437 12.4785C3.40893 12.2616 3.45789 12.0745 3.52453 11.8926L3.6173 11.6621C3.71685 11.4352 3.83766 11.2176 3.97765 11.0127L4.15343 10.7783C4.34386 10.5462 4.58164 10.312 4.90538 9.98829L11.1964 3.6963L11.3312 3.56837ZM5.84581 10.9287C5.49664 11.2779 5.31252 11.4634 5.18663 11.6162L5.07531 11.7627C4.98188 11.8995 4.90151 12.0448 4.83507 12.1963L4.77355 12.3506C4.73321 12.4607 4.70242 12.5761 4.66808 12.7451L4.54113 13.4619L4.14269 15.8555L4.14171 15.8574H4.14464L6.5382 15.458L7.25499 15.332C7.424 15.2977 7.5394 15.2669 7.64953 15.2266L7.80285 15.165C7.95455 15.0986 8.09947 15.0174 8.23644 14.9238L8.3839 14.8135C8.53668 14.6876 8.72225 14.5035 9.0714 14.1543L14.0587 9.16602L10.8331 5.94044L5.84581 10.9287ZM15.3634 4.63673C14.5281 3.80141 13.2057 3.74938 12.3097 4.48048L12.1368 4.63673L11.7735 5.00001L15.0001 8.22559L15.3634 7.86329L15.5196 7.68946C16.2015 6.85326 16.2015 5.64676 15.5196 4.81056L15.3634 4.63673Z"></path>
                     </svg>
                 </span>
-                <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-3 text-xs font-modern rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400" >Edit</span>
+                <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-4 text-xs font-modern rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400 active:outline-none" >Edit</span>
             </button>
         </div>
     )

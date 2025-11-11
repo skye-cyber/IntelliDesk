@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { ChatManager } from '@js/managers/ConversationManager/ChatManager';
 import indellidesk from '@assets/intellidesk.png';
 import { waitForElement } from '../../../renderer/js/Utils/dom_utils';
@@ -6,20 +6,25 @@ import { ChatOptions } from '@components/Chat/ChatOptions.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { ClosePrefixed } from '../../../renderer/js/react-portal-bridge';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+import { MessageList } from '../Chat/MessageList';
 
 const chatutil = new ChatUtil()
 
 const Manager = new ChatManager();
-
-export const StartNewConversation = (model) => {
+export const StartNewConversation = (model, details = {}) => {
     // Clear chatArea
     ClosePrefixed()
     //Display suggestion
     document.getElementById('suggestions')?.classList?.remove('hidden')
-    document.dispatchEvent(new CustomEvent("NewConversationOpened"))
+    const event = new CustomEvent("NewConversation", {
+        detail: details
+    })
+
+    document.dispatchEvent(event)
 
     window.desk.api.setModel(model)
 }
+
 
 export const Sidebar = ({ isOpen, onToggle }) => {
     const refs = useRef({
@@ -142,6 +147,8 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         };
 
 
+
+
         document.addEventListener('keydown', handleEscape);
         document.addEventListener('click', handleClick);
         document.addEventListener('close-panel', hidePanel);
@@ -175,7 +182,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                                 <path d="M6.83496 3.99992C6.38353 4.00411 6.01421 4.0122 5.69824 4.03801C5.31232 4.06954 5.03904 4.12266 4.82227 4.20012L4.62207 4.28606C4.18264 4.50996 3.81498 4.85035 3.55859 5.26848L3.45605 5.45207C3.33013 5.69922 3.25006 6.01354 3.20801 6.52824C3.16533 7.05065 3.16504 7.71885 3.16504 8.66301V11.3271C3.16504 12.2712 3.16533 12.9394 3.20801 13.4618C3.25006 13.9766 3.33013 14.2909 3.45605 14.538L3.55859 14.7216C3.81498 15.1397 4.18266 15.4801 4.62207 15.704L4.82227 15.79C5.03904 15.8674 5.31234 15.9205 5.69824 15.9521C6.01398 15.9779 6.383 15.986 6.83398 15.9902L6.83496 3.99992ZM18.165 11.3271C18.165 12.2493 18.1653 12.9811 18.1172 13.5702C18.0745 14.0924 17.9916 14.5472 17.8125 14.9648L17.7295 15.1415C17.394 15.8 16.8834 16.3511 16.2568 16.7353L15.9814 16.8896C15.5157 17.1268 15.0069 17.2285 14.4102 17.2773C13.821 17.3254 13.0893 17.3251 12.167 17.3251H7.83301C6.91071 17.3251 6.17898 17.3254 5.58984 17.2773C5.06757 17.2346 4.61294 17.1508 4.19531 16.9716L4.01855 16.8896C3.36014 16.5541 2.80898 16.0434 2.4248 15.4169L2.27051 15.1415C2.03328 14.6758 1.93158 14.167 1.88281 13.5702C1.83468 12.9811 1.83496 12.2493 1.83496 11.3271V8.66301C1.83496 7.74072 1.83468 7.00898 1.88281 6.41985C1.93157 5.82309 2.03329 5.31432 2.27051 4.84856L2.4248 4.57317C2.80898 3.94666 3.36012 3.436 4.01855 3.10051L4.19531 3.0175C4.61285 2.83843 5.06771 2.75548 5.58984 2.71281C6.17898 2.66468 6.91071 2.66496 7.83301 2.66496H12.167C13.0893 2.66496 13.821 2.66468 14.4102 2.71281C15.0069 2.76157 15.5157 2.86329 15.9814 3.10051L16.2568 3.25481C16.8833 3.63898 17.394 4.19012 17.7295 4.84856L17.8125 5.02531C17.9916 5.44285 18.0745 5.89771 18.1172 6.41985C18.1653 7.00898 18.165 7.74072 18.165 8.66301V11.3271ZM8.16406 15.995H12.167C13.1112 15.995 13.7794 15.9947 14.3018 15.9521C14.8164 15.91 15.1308 15.8299 15.3779 15.704L15.5615 15.6015C15.9797 15.3451 16.32 14.9774 16.5439 14.538L16.6299 14.3378C16.7074 14.121 16.7605 13.8478 16.792 13.4618C16.8347 12.9394 16.835 12.2712 16.835 11.3271V8.66301C16.835 7.71885 16.8347 7.05065 16.792 6.52824C16.7605 6.14232 16.7073 5.86904 16.6299 5.65227L16.5439 5.45207C16.32 5.01264 15.9796 4.64498 15.5615 4.3886L15.3779 4.28606C15.1308 4.16013 14.8165 4.08006 14.3018 4.03801C13.7794 3.99533 13.1112 3.99504 12.167 3.99504H8.16406C8.16407 3.99667 8.16504 3.99829 8.16504 3.99992L8.16406 15.995Z">
                                 </path>
                             </svg>
-                            <span data-action='arial-title' className='absolute -bottom-3 z-[30] -left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-xs font-semibold text-primary-950 dark:text-white bg-primary-100/0 dark:bg-zinc-950 rounded-xl p-1 w-fit max-18 whitespace-pre font-handwriting'>Close Panel</span>
+                            <span data-action='arial-title' className='absolute -bottom-4 z-[50] -left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-xs font-semibold text-primary-950 dark:text-gray-900 bg-primary-100/0 dark:bg-zinc-200 rounded-xl px-0.5 w-fit max-w-18 whitespace-pre font-handwriting'>Close Panel</span>
                         </div>
                     </div>
 
@@ -230,7 +237,16 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                     </div>
                     <div className="verbose-hide hidden truncate">New chat</div>
                 </div>
-                <div className='flex items-center rounded-lg flex min-w-0 items-center cursor-pointer hover:bg-gray-200 px-1.5 dark:hover:bg-blend-600'>
+                <div onClick={() => {
+                    StartNewConversation(
+                        (chatutil.get_multimodal_modesl().includes(window.currentModel)
+                            ? 'multimodal'
+                            : 'chat'),
+                        { type: "temporary" }
+                    )
+
+                }
+                } className='flex items-center rounded-lg flex min-w-0 items-center cursor-pointer hover:bg-gray-200 px-1.5 dark:hover:bg-blend-600'>
                     <div className="flex justify-start items-center text-primary no-draggable hover:bg-token-surface-hover keyboard-focused:bg-token-surface-hover touch:h-10 touch:w-10 h-9 w-9  rounded-lg focus:outline-none disabled:opacity-50 rounded-full" aria-label="Turn on temporary chat">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" data-rtl-flip="" className="icon">
                             <path d="M4.52148 15.1664C4.61337 14.8108 4.39951 14.4478 4.04395 14.3559C3.73281 14.2756 3.41605 14.4295 3.28027 14.7074L3.2334 14.8334C3.13026 15.2324 3.0046 15.6297 2.86133 16.0287L2.71289 16.4281C2.63179 16.6393 2.66312 16.8775 2.79688 17.06C2.93067 17.2424 3.14825 17.3443 3.37402 17.3305L3.7793 17.3002C4.62726 17.2265 5.44049 17.0856 6.23438 16.8764C6.84665 17.1788 7.50422 17.4101 8.19434 17.558C8.55329 17.6348 8.9064 17.4062 8.9834 17.0473C9.06036 16.6882 8.83177 16.3342 8.47266 16.2572C7.81451 16.1162 7.19288 15.8862 6.62305 15.5815C6.50913 15.5206 6.38084 15.4946 6.25391 15.5053L6.12793 15.5277C5.53715 15.6955 4.93256 15.819 4.30566 15.9027C4.33677 15.8053 4.36932 15.7081 4.39844 15.6098L4.52148 15.1664Z"></path>
@@ -258,25 +274,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </h2>
             </div>
             {/* Conversations List */}
-            <div
-                id="conversations"
-                data-portal-container="conversations"
-                className="verbose-hide hidden h-[64vh] overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth">
-                {/* Empty State */}
-                <div id="empty-conversations" className="flex-col items-center justify-center py-12 px-4 text-center">
-                    <div className='flex w-full flex items-center justify-center'>
-                        <img src={indellidesk} className="w-8 h-8 text-gray-400 dark:text-gray-500"></img>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Nothing yet</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                        Start a new conversation to get started
-                    </p>
-                    <button onClick={() => document.getElementById('new-chat')?.click()} className="px-4 py-2 bg-blend-500 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg font-medium text-sm whitespace-pre transition-all duration-300 transform hover:scale-105">
-                        New Conversation
-                    </button>
-                </div>
-            </div>
-
+            <MessageList />
             {/* Footer */}
             <div className="absolute bottom-0 left-0 right-0 py-2 px-4 bg-gradient-to-t from-white/80 to-transparent dark:from-gray-900/80 backdrop-blur-md border-t border-gray-200/50 dark:border-gray-700/50">
                 <div className="flex items-center justify-between text-xs">

@@ -22,7 +22,7 @@ class ReactPortalBridge {
         const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
         if (!this.portalContainers.has(containerId)) {
-            console.warn(`Container ${containerId} not registered. Falling back to global.`);
+            //console.warn(`Container ${containerId} not registered. Falling back to global.`);
             return this.showComponent(componentType, props);
         }
 
@@ -130,11 +130,51 @@ class StreamingPortalBridge {
     }
 
     // Append data to a streaming portal (for chat messages, etc.)
-    appendToStreamingPortal(portalId, data) {
+    _appendToStreamingPortal(portalId, data) {
+        console.log(data)
         const event = new CustomEvent('react-portal-stream-append', {
             detail: { portalId, data }
         });
         document.dispatchEvent(event);
+    }
+
+
+    // Enhanced append with type detection
+    appendToStreamingPortal(portalId, data, options = {}) {
+        const event = new CustomEvent('react-portal-stream-append', {
+            detail: {
+                portalId,
+                data,
+                options: {
+                    mergeStrategy: 'append', // 'append' | 'update' | 'replace'
+                    target: 'props', // 'props' | 'streamData' | 'auto'
+                    ...options
+                }
+            }
+        });
+        document.dispatchEvent(event);
+    }
+
+    // Specialized methods for common patterns
+    updateProps(portalId, props) {
+        this.appendToStreamingPortal(portalId, props, {
+            mergeStrategy: 'update',
+            target: 'props'
+        });
+    }
+
+    appendStreamData(portalId, data) {
+        this.appendToStreamingPortal(portalId, data, {
+            mergeStrategy: 'append',
+            target: 'streamData'
+        });
+    }
+
+    replaceProps(portalId, props) {
+        this.appendToStreamingPortal(portalId, props, {
+            mergeStrategy: 'replace',
+            target: 'props'
+        });
     }
 
     // Close a streaming portal

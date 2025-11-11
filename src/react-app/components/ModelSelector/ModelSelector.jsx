@@ -179,7 +179,13 @@ export const ModelSelector = ({ selectedModel = 'mistral-large-latest', onModelS
                     value: "mistral-embed", name: "mistral-embed", description: "Designed for embedding generation, facilitating the transformation of text into vector representations for downstream machine learning tasks.", icon: "mistral", platform: "mitsral", recommended: true
                 },
             ]
+        },
+        {
+            title: "OCR Models", models: [
+                {value:"mistral-ocr-latest", name:"mistral-ocr-lates", description:"OCR model from mistral",platform:"mistral", recommended:true}
+            ]
         }
+
     ];
 
 

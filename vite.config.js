@@ -46,5 +46,9 @@ export default defineConfig({
     optimizeDeps: {
         include: ['buffer'],
         //force: true
+    },
+    // Ensure proper React configuration
+    esbuild: {
+        //jsxInject: `import React from 'react'`
     }
 });

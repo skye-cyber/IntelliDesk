@@ -233,7 +233,7 @@ export const ErrorModal = ({ error, onRetry, onClose, autoCloseDelay = 8000 }) =
 
             {/* Main Modal */}
             <div
-                className="relative w-full max-w-md transform transition-all duration-500 scale-100 opacity-100"
+                className="relative w-full max-w-md max-h-lg transform transition-all duration-500 scale-100 opacity-100"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
@@ -280,7 +280,7 @@ export const ErrorModal = ({ error, onRetry, onClose, autoCloseDelay = 8000 }) =
                     </div>
 
                     {/* Body */}
-                    <div className="p-6 bg-white/50 dark:bg-[#0f0f2d]/80">
+                    <div className="p-6 bg-white/50 dark:bg-[#0f0f2d]/80 max-h-[30vh] overflow-y-auto scrollbar-custom scroll-smooth">
                         <p className="text-gray-700 dark:text-purple-100/90 leading-relaxed text-lg font-medium">
                             {error.message}
                         </p>

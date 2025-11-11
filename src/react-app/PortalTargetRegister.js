@@ -15,6 +15,11 @@ waitForElement('#conversations', (el) => {
     window.streamingPortalBridge.registerStreamingComponent('conversations', el);
 })
 
+waitForElementSimple('.FilePreview', (el) => {
+    window.reactPortalBridge.registerContainer('FilePreview', el);
+    window.streamingPortalBridge.registerStreamingComponent('FilePreview', el);
+})
+
 
 export function RegisterCanvas() {
     waitForElementSimple('#canvas-wrapper', (el) => {

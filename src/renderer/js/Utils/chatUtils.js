@@ -67,28 +67,22 @@ export function implementUserCopy() {
 }
 
 // Copy function for the whole text block/aiMessage
-export function CopyMessage(UId, bt = null, html = false) {
+export function CopyMessage(selector, html = false) {
     //console.log(UId)
-    const textBlock = document.querySelector(UId);
+    const textBlock = document.querySelector(selector);
     //console.log(textBlock)
     if (!textBlock) {
-        console.error('Element not found: ', UId);
+        console.error('Element not found: ', selector);
         return;
     }
 
     const textToCopy = html === true ? textBlock.innerHTML : textBlock.textContent;
     //console.log(textToCopy)
 
-    if (textToCopy.length >= 50) {
+    if (textToCopy.length >= 0) {
         try {
             navigator.clipboard.writeText(textToCopy);
-            if (bt) {
-                bt.textContent = 'Copied!';
-                setTimeout(() => {
-                    bt.textContent = 'Copy';
-                }, 3000)
-            }
-            showCopyModal()
+            html ? showCopyModal("Clone successfull!") : showCopyModal()
         } catch (err) {
             console.error('Failed to copy: ', err);
         }
@@ -98,24 +92,18 @@ export function CopyMessage(UId, bt = null, html = false) {
 }
 
 // Function to show the modal
-export function showCopyModal(_color = null, text = "Text copied") {
+export function showCopyModal(text) {
     const modal = document.getElementById('copyModal');
-    const txtSpace = document.getElementById("text-space")
+    const modalTitle = document.getElementById("copy-title")
 
-    //txtSpace.textContent = text;
-    //addRmColor();
-    function addRmColor(task = "add") {
-        if (_color) {
-            if (task === "add") {
-                txtSpace.classList.add(_color);
-                console.log("Added", _color)
-            }
-            else {
-                txtSpace.classList.remove(_color);
-                console.log("Removed", _color)
-            }
-        }
+    if (text) {
+        const original_text = modalTitle.textContent
+        modalTitle.textContent = InputPurify(text)
+        setTimeout(() => {
+            modalTitle.textContent = original_text
+        }, 4500)
     }
+
     // Slide modal to 20% height and make it visible after 1 second
     setTimeout(() => {
         modal.classList.add('top-1/5', 'opacity-100', 'pointer-events-auto');

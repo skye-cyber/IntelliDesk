@@ -7,8 +7,11 @@ import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
 
-export async function MistraMultimodal({ text, model_name, file_type, file_data_url = null }) {
-    const _Timer = new window.Timer;
+export async function MistraMultimodal({ text, model_name = window.currentModel }) {
+    if (!text.trim() && !file_data_url) return console.log("Message, files are empty")
+
+    const _Timer = new window.Timer();
+
     chatutil.hide_suggestions()
     //console.log('vision')
     StateManager.set('processing', true);
@@ -17,25 +20,25 @@ export async function MistraMultimodal({ text, model_name, file_type, file_data_
     const export_id = GenerateId('export')
     const fold_id = GenerateId('fold')
 
-    // Add user message to the chat interface
-    const user_message_pid = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, file_type: file_type, file_data_url: file_data_url, save: true }, 'user_message')
+    const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, file_type: null, file_data_url: null, save: true }, 'user_message')
 
-    let message_pid = window.streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
+    window.desk.api.addHistory({ role: "user", content: [{ type: 'text', text: text }] });
 
-    StateManager.set("ai_message_pid", message_pid)
-
-    StateManager.set('user_message_pid', user_message_pid)
+    StateManager.set('user_message_portal', user_message_portal)
 
     const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea')
 
     StateManager.set('loader-element-id', loader_id)
 
-    StateManager.set('prev_ai_message_pid', StateManager.get('ai_message_pid'))
+    let message_portal = window.streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
 
-    //Add Timestamp
-    //text = `${text} [${window.desk.api.getDateTime()} UTC]`
+    // change send button appearance to processing status
+    HandleProcessingEventChanges('show')
 
-    //console.log(text)
+
+    //start timer
+    _Timer.trackTime("start");
+
     // Determine the content based on file_data_url
     let userContent;
 
@@ -84,26 +87,17 @@ export async function MistraMultimodal({ text, model_name, file_type, file_data_
         ];
     }
 
-    // Add user message to VisionHistory
-    /*window.desk.api.addHistory({
-     *        role: "user",
-     *        content: userContent,
-    });*/
-
     try {
-        const visionstream = generateTextChunks(text)
-        /* await Mistarlclient.chat.stream({
-         *            model: model_name,
-         *            messages: window.desk.api.clearImages(window.desk.api.getHistory()),
-         *            max_tokens: 2000,
-        });
-        */
-        // change send button appearance to processing status
-        HandleProcessingEventChanges('show')
+        const stream = //generateTextChunks(text)
+            await Mistarlclient.chat.stream({
+                model: model_name,
+                messages: window.desk.api.clearImages(window.desk.api.getHistory(true)),
+                max_tokens: 2000,
+            });
 
-        //start timer
-        _Timer.trackTime("start");
 
+        let continued = false;
+        let conversationName = null
         let output = ""
         let thinkContent = "";
         let actualResponse = "";
@@ -111,16 +105,69 @@ export async function MistraMultimodal({ text, model_name, file_type, file_data_
         let fullResponse = "";
         let hasfinishedThinking = false;
 
-        for await (const chunk of visionstream) {
+        for await (const chunk of stream) {
             const choice = chunk?.data?.choices?.[0];
             if (!choice?.delta?.content) continue;
-            const deltaContent = choice?.delta?.content;
-            output += deltaContent;
-            fullResponse += deltaContent;
-            console.log(userContent)
+            const deltaContent = choice.delta.content;
+
+            // Store raw content before any processing
+            const rawDelta = deltaContent;
+            output += rawDelta;
+            fullResponse += rawDelta;
+
+            // Name extraction with comprehensive handling
+            if (output.includes("<name>")) {
+                // Case 1: Complete name tag found
+                if (output.includes("</name>")) {
+                    const nameStart = output.indexOf("<name>") + 6;
+                    const nameEnd = output.indexOf("</name>");
+
+                    // Extract name and validate
+                    conversationName = output.slice(nameStart, nameEnd).trim();
+
+                    // Only proceed if name is valid
+                    if (conversationName && conversationName.length > 0) {
+                        // Remove everything up to and including the closing name tag
+                        output = output.slice(nameEnd + 7); // 7 = length of "</name>"
+                        fullResponse = output; // Reset fullResponse to content after name tag
+
+                        // Reset other accumulators to maintain consistency
+                        actualResponse = output;
+                        thinkContent = "";
+
+                        console.log("Conversation named:", conversationName);
+                    } else {
+                        // Invalid name, continue accumulating
+                        console.warn("Empty name tag detected");
+                    }
+                }
+                // Case 2: Incomplete name tag - continue accumulating
+                else {
+                    // If no closing tag after long stream assume all content is actual content and not name
+                    if (output.length >= 50) {
+                        output.replace("<name>", "")
+                        actualResponse = output
+                    } else {
+                        continue;
+                    }
+                }
+            }
+
+            // Safety check: if output was cleared but no valid name was set
+            if (!output && !conversationName) {
+                console.warn("Output cleared without valid name extraction");
+                output = rawDelta; // Restore at least the current delta
+                continue;
+            }
+
+            // If we have a valid name and output is empty, wait for meaningful content
+            if (conversationName && !output.trim()) {
+                continue;
+            }
 
             const hasThinkTag = output.includes("<think>");
-            const shouldStartThinking = !isThinking && hasThinkTag;
+            const isDeepSeek = model_name === "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B";
+            const shouldStartThinking = !isThinking && (hasThinkTag || isDeepSeek);
             const shouldStopThinking = isThinking && output.includes("</think>");
 
             if (shouldStartThinking && !hasfinishedThinking) {
@@ -148,23 +195,47 @@ export async function MistraMultimodal({ text, model_name, file_type, file_data_
                 });
             }
 
-            // Render diagrams
-            //chatutil.render_math(`.${aiMessageUId}`)
-
-
             if (actualResponse.startsWith('<continued>')) {
-                message_pid = StateManager.get('prev_ai_message_pid')
-                StateManager.set('ai_message_pid', message_pid)
+                continued = true
             }
 
-            console.log(actualResponse)
-            window.streamingPortalBridge.updateStreamingPortal(message_pid, { actual_response: actualResponse, isThinking: isThinking, think_content: thinkContent, message_id: message_id, export_id: export_id, fold_id: fold_id });
+            if (continued) {
+                let target_message_portal = StateManager.get('prev_ai_message_portal')
+                actualResponse = actualResponse
+                    .replace("<continued>", "")
+                    .replace("</continued>", "")
+
+                window.streamingPortalBridge.appendToStreamingPortal(target_message_portal, {
+                    actual_response: deltaContent,
+                    isThinking: isThinking,
+                    think_content: thinkContent,
+                    message_id: message_id,
+                    export_id: export_id,
+                    fold_id: fold_id,
+                    conversation_name: conversationName
+                });
+            } else {
+                window.streamingPortalBridge.updateStreamingPortal(message_portal, {
+                    actual_response: actualResponse,
+                    isThinking: isThinking,
+                    think_content: thinkContent,
+                    message_id: message_id,
+                    export_id: export_id,
+                    fold_id: fold_id,
+                    conversation_name: conversationName
+                });
+            }
 
             // Scroll to bottom
             chatutil.scrollToBottom(chatArea, true, 0);
+
+            // Render mathjax immediately
+            // chatutil.render_math(`.${aiMessageUId}`, 3000)
         }
 
         StateManager.set('processing', false);
+
+        if (conversationName && conversationName !== "null") window.desk.api.updateName(conversationName, false)
 
         if (canvasutil.isCanvasOn()) {
             if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();
@@ -178,7 +249,32 @@ export async function MistraMultimodal({ text, model_name, file_type, file_data_
         // Reset send button appearance
         HandleProcessingEventChanges('hide')
 
-        //window.desk.api.addHistory({ role: "assistant", content: [{ type: "text", text: output }] });
+        /*
+         * Conversation continuation PROTOCOL
+         * 1. Pop last user message that triggered continuation
+         * 2. Modify the previous ai response and concatenate this response
+         * 3. Store conversation history
+         */
+        if (continued) {
+            // Remove user message from interface
+            window.reactPortalBridge.closeComponent(user_message_portal)
+
+            // Reset store user message state
+            StateManager.set('user_message_portal', null)
+
+            window.desk.api.updateContinueHistory({
+                role: "assistant",
+                content: [{
+                    type: "text", text: output
+                        .replace("<continued>", "")
+                        .replace("</continued>", "")
+                }]
+            })
+        } else {
+            window.desk.api.addHistory({ role: "assistant", content: [{ type: "text", text: output }] });
+            StateManager.set('ai_message_portal', message_portal)
+            StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
+        }
 
         // render diagrams from this response
         chatutil.render_math()
@@ -188,7 +284,7 @@ export async function MistraMultimodal({ text, model_name, file_type, file_data_
     } catch (error) {
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
         appIsDev
-            ? handleDevErrors(err, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'), file_type, file_data_url)
-            : errorHandler.showError({ title: error.name, message: error.message || error, retryCallback: MistraMultimodal, callbackArgs: { text: text, model: model_name } })
+            ? handleDevErrors(error, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'))
+            : errorHandler.showError({ title: error.name, message: error.message || error, retryCallback: MistraMultimodal, callbackArgs: { text: text, model_name: model_name } })
     }
 }

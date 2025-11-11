@@ -459,7 +459,7 @@ export class RequestErrorHandler {
 // Singleton instance for global use
 export const requestErrorHandler = new RequestErrorHandler();
 
-export function handleDevErrors(error, user_message_pid, ai_message_pid=null, file_type = null, file_data_url = null) {
+export function handleDevErrors(error, user_message_pid, ai_message_pid = null) {
     // Extract the message content before creating context
     let lastMessage, text;
 

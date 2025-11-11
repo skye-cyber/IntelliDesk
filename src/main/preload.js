@@ -170,16 +170,12 @@ const api = {
             ConversationHistory[0].metadata.highlight = item?.content.slice(0, 15)
         }
         if (ConversationHistory[0].metadata.type === "temporary") return console.log("In temporary chat Not saving!")
-        console.log(JSON.stringify(ConversationHistory[0].chats))
 
         // Save to file
         api.saveConversation(ConversationHistory)
     },
     getHistory: (filter = false) => {
-        console.log(JSON.stringify(ConversationHistory[0].chats))
-
         const data = filter ? ConversationHistory[0].chats : ConversationHistory;
-        console.log(JSON.stringify(data))
 
         return data
     },
@@ -283,6 +279,31 @@ const api = {
             return false
         }
     },
+    updateContinueHistory: (item) => {
+        try {
+            if (!item) return console.log('Conversation item is null')
+            //console.log(ConversationHistory[0].chats.slice(-1)[0])
+            if (ConversationHistory[0].chats.slice(-1)[0].role === "user") api.popHistory() // Remove user message
+
+            if (ConversationHistory[0].chats.slice(-1)[0].role === "assistant") {
+                const target_ai_response = JSON.parse(JSON.stringify(ConversationHistory))[0].chats.slice(-1)[0] // Clone content to avoid mutation
+                api.popHistory() // Remove the ai response
+
+                if (target_ai_response.content === "object" && Array.isArray(target_ai_response.content)) {
+                    const new_text = `${target_ai_response.content[0].text} ${item.content[0].text}`
+                    target_ai_response.content[0] = { type: "text", text: new_text }
+                } else {
+                    const new_text = `${target_ai_response.content} ${item.content}`
+                    target_ai_response.content = new_text
+                }
+                //console.log(JSON.stringify(target_ai_response))
+                if (target_ai_response) api.addHistory(target_ai_response)
+            }
+        } catch (error) {
+            console.error(error)
+            return false
+        }
+    },
     clearAllImages: (history) => {
         // Convert history to array and process each message
         return history[0].chats.map(item => {
@@ -349,7 +370,7 @@ const api = {
         try {
             if (ConversationHistory[0].metadata.type === "temporary") return console.log("In temporary chat Not saving")
             //console.log("Saving: " + conversationId + filePath)
-            await api.write(filePath, conversationData);
+            //await api.write(filePath, conversationData);
             return filePath
         } catch (err) {
             console.error('Error saving conversation:', err);
@@ -375,7 +396,6 @@ const api = {
     },
     setConversation: (data, id) => {
         //api.saveConversation(data, data[0].metadata.id)
-        console.log("Setting conv")
         if (data[0].chats[0]?.role !== 'system') data[0].chats.unshift({ role: 'system', content: system_command })
         ConversationHistory = data;
         ConversationId = id ? id : data[0].metadata.id;
@@ -632,7 +652,7 @@ document.addEventListener('NewConversation', function(e) {
 
     const details = e.detail
 
-    if (details?.type.toLocaleLowerCase() === "temporary") ConversationHistory[0].metadata.type = "temporary";
+    if (details?.type?.toLocaleLowerCase() === "temporary") ConversationHistory[0].metadata.type = "temporary";
 
     ConversationId = api.generateUUID()
     ConversationHistory[0].chats = [{ role: "system", content: system_command }]

@@ -22,7 +22,7 @@ export class ModalManager {
         message,
         type = "info",
         autoDismiss = true,
-        duration = 5000,
+        duration = 3000,
     ) {
         // Create message container if it doesn't exist
         let container = document.getElementById("message-container");
@@ -86,7 +86,7 @@ export class ModalManager {
             class="message-toast transform transition-all duration-500 ease-out opacity-0 translate-x-full backdrop-blur-lg"
             data-message-id="${messageId}"
             data-auto-dismiss="${autoDismiss}">
-            <div class="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl p-5 overflow-hidden backdrop-blur-lg">
+            <div class="relative bg-white/95 dark:bg-primary-800/95 border border-gray-200/50 dark:border-accent-200/50 rounded-2xl shadow-2xl p-5 overflow-hidden backdrop-blur-lg">
                 <!-- Animated gradient background -->
                 <div class="absolute inset-0 bg-gradient-to-br ${typeConfig[type].gradient} opacity-5"></div>
 

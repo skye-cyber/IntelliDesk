@@ -59,7 +59,7 @@ export class Router {
         }
 
         if (ms_models.includes(modelName)) {
-            MistraMultimodal({ text: text, model_name: modelName, file_type: fileType, file_data_url: fileDataUrl });
+            MistraMultimodal({ text: text, model_name: modelName });
         } else {
             //window.VisionChat(text, chatArea, fileType, fileDataUrl, null);
         }
@@ -67,11 +67,10 @@ export class Router {
 
     routeToMistral(text, modelName = null, file_type = null, fileDataUrl = null) {
         if (!text) window.ModalManager.showMessage("No text provided", "error")
-
         if (multimodal.includes(modelName)) {
-            return MistraMultimodal({ text: text, model_name: modelName, file_type: file_type, file_data_url: fileDataUrl })
+            return MistraMultimodal({ text: text, model_name: modelName })
         }
-        MistraChat({ text: text, model: modelName })
+        MistraChat({ text: text, model_name: modelName })
     }
 
     /**
@@ -103,10 +102,10 @@ export class Router {
         }
         else if (ms_models.includes(model) || window.desk.api.getModel() === 'multimodal') {
             this.routeToMistral(text, model);
-        } else {
-            this.routeToHf(text);
-
         }// else {
+        // this.routeToHf(text);
+
+        //} else {
         //    console.warn("⚠️Unrecognized dataClass from the selected model!")
         //}
     }

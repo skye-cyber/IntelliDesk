@@ -13,21 +13,6 @@ export class ConversationManager {
         waitForElement('#chatArea', (el) => this.chatArea = el)
     }
 
-    /**
-     * DEPRECATED: In favour of main process events
-     * Save conversation to a JSON file
-    */
-    async saveConversation(conversationData, conversationId) {
-        const filePath = `${this.storagePath}/${conversationId}.json`;
-        //console.log(JSON.stringify(conversationData))
-        try {
-            //console.log("Saving: " + conversationId + filePath)
-            await window.desk.api.write(filePath, conversationData);
-        } catch (err) {
-            console.error('Error saving conversation:', err);
-        }
-    }
-
     // Load conversation from a JSON file
     async loadConversation(conversationId) {
         const filePath = `${this.storagePath}/${conversationId}.json`;

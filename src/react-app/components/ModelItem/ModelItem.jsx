@@ -17,6 +17,7 @@ export const ModelItem = ({ model, isSelected, onSelect }) => {
         if (selected_model !== is_current_multimodal) {
             StartNewConversation(selected_model)
         }
+        document.dispatchEvent(new CustomEvent('hide-model-selector'))
     })
     return (
         <div
@@ -162,7 +163,7 @@ const CohereIcon = () => (
                             <g>
                                 <g>
                                     <polygon style="fill:#FFFFFF;" points="213.765,461.172 208.204,474.017 205.268,474.017 199.726,461.172 202.938,461.172
-    206.846,470.347 210.81,461.172 							"/>
+    206.846,470.347 210.81,461.172"/>
                                 </g>
                                 <g>
                                     <path style="fill:#FFFFFF;" d="M223.507,469.741h-7.469c0.275,1.23,1.321,1.982,2.826,1.982c1.046,0,1.798-0.312,2.477-0.954

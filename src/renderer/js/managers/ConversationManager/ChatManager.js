@@ -45,62 +45,16 @@ export class ChatManager {
 
                 for (let [index, file] of files.entries()) {
                     if (window.desk.api.getExt(file) === '.json') {
-                        // Cmpartibility logic for older conversations with C- and V- to denote models
 
                         if (!window.desk.api.stat(window.desk.api.joinPath(this.storagePath, file))) continue;
 
                         const metadata = window.desk.api.getmetadata(file)
+                        if(!metadata) continue;
+
                         window.reactPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata }, 'chatItem')
 
-                        /*
-                         if (!typeof (metadata) === 'object') continue
+                        document.dispatchEvent(new CustomEvent('hide-loading'));
 
-                        const conversationId = metadata?.id
-                        const timestamp = metadata?.timestamp
-                        const highlight = metadata?.highlight || ''
-                        const name = metadata?.name || conversationId
-
-                        const conversationItem = document.createElement('div');
-                        conversationItem.className = `conversation-item group`
-                        conversationItem.id = "chat-item"
-
-                        conversationItem.setAttribute('data-name', conversationId);
-                        conversationItem.setAttribute('data-id', name);
-                        conversationItem.setAttribute('data-hightlight', highlight);
-
-                        conversationItem.innerHTML = `
-                        <div class="flex items-center space-x-3 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 cursor-pointer transition-all duration-200">
-                            <div class="relative flex-shrink-0">
-                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-md">
-                                    <span class="text-white font-semibold text-sm">GN</span>
-                                </div>
-                                <div id="active-dot" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center justify-between">
-                                    <h3 id="chat-name" class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                        ${conversationId}
-                                    </h3>
-                                    <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">${this.formatRelativeTime(timestamp)}</span>
-                                </div>
-                                <p id="chat-highlight" class="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
-                                    ${highlight}
-                                </p>
-                            </div>
-                        </div>`
-
-                        conversationItem.onclick = () => this.renderConversationFromFile(conversationItem, conversationId);
-                        conversationsPanel.appendChild(conversationItem);
-
-                        //Chat Options
-                        conversationItem.addEventListener('contextmenu', (event) => {
-                            // Prevent the default context menu
-                            event.preventDefault();
-                            this.currentConversationId = conversationId
-                            conversationItem.dataset.id = conversationId
-                            this.showConversationOptions(event)
-                        });
-                        */
                     } else {
                         console.log("No conversations saved!")
                     }
@@ -108,8 +62,12 @@ export class ChatManager {
                 files = null
                 return true
             }
+            else {
+                document.dispatchEvent(new CustomEvent('hide-loading'));
+            }
             return false
         } catch (err) {
+            document.dispatchEvent(new CustomEvent('hide-loading'));
             console.error('Error reading conversation files:', err);
             return false
         }

@@ -3,13 +3,17 @@ import ReactDOM from 'react-dom';
 import { Diagram } from './components/DiagramUI/diagram';
 import { UserMessage, AiMessage, LoadingAnimation } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
+import { FileItem } from './components/DropZone/dropzone';
 
 const streamingComponentRegistry = {
     Diagram,
     UserMessage,
     AiMessage,
     LoadingAnimation,
-    ConversationItem
+    ConversationItem,
+    FileItem,
+    //DropZone,
+    //FilePreview
 };
 
 export const StreamingPortalContainer = () => {
@@ -44,7 +48,7 @@ export const StreamingPortalContainer = () => {
 
         const handleStreamUpdate = (event) => {
             const { portalId, props } = event.detail;
-            const pid = portalId?.id
+            const pid = typeof (portalId) === 'string' ? portalId : portalId?.id
 
             if (portalDataRef.current.has(pid)) {
                 const portalData = portalDataRef.current.get(pid);
@@ -66,27 +70,38 @@ export const StreamingPortalContainer = () => {
             }
         };
 
-        const handleStreamAppend = (event) => {
+        const _handleStreamAppend_ = (event) => {
             const { portalId, data } = event.detail;
+            //console.log('📝 Appending to portal:', portalId, data);
 
-            if (portalDataRef.current.has(portalId)) {
-                const portalData = portalDataRef.current.get(portalId);
+            // Handle both string portalId and object with id property
+            const pid = typeof portalId === 'string' ? portalId : portalId?.id || portalId;
 
-                // Handle different append strategies
-                if (Array.isArray(portalData.data)) {
-                    portalData.data.push(data);
-                } else if (typeof portalData.data === 'object') {
-                    portalData.data = { ...portalData.data, ...data };
-                } else {
-                    portalData.data = data;
+            if (portalDataRef.current.has(pid)) {
+                const portalData = portalDataRef.current.get(pid);
+                //console.log('📊 Current portal data before append:', portalData);
+
+                // CRITICAL FIX: Ensure streamData is always an array for appending
+                if (!Array.isArray(portalData.streamData)) {
+                    portalData.streamData = [];
                 }
+
+                // Append the new data to the array
+                const actual_response = data?.actual_response
+                console.log(portalId, data)
+                if (actual_response) portalData.props.actual_response += actual_response
+                if(data.think_content) portalData.props.think_content = data.think_content
+                    if(data.conversation_name) portalData.props.conversation_name = data.conversation_name
+                portalData.streamData = [...portalData.streamData, data];
+
+                //console.log('📊 Portal data after append:', portalData);
 
                 // Force update
                 setStreamingPortals(prev => {
                     const newMap = new Map(prev);
-                    if (newMap.has(portalId)) {
-                        const portal = newMap.get(portalId);
-                        newMap.set(portalId, {
+                    if (newMap.has(pid)) {
+                        const portal = newMap.get(pid);
+                        newMap.set(pid, {
                             ...portal,
                             version: portal.version + 1,
                             lastUpdate: Date.now()
@@ -94,23 +109,168 @@ export const StreamingPortalContainer = () => {
                     }
                     return newMap;
                 });
+            } else {
+                console.warn('❌ Portal not found for append:', pid);
+                console.log('Available portals:', Array.from(portalDataRef.current.keys()));
+            }
+        }
+
+        const handleStreamAppend = (event) => {
+            const { portalId, data, options = {} } = event.detail;
+            const pid = typeof portalId === 'string' ? portalId : portalId?.id || portalId;
+
+            if (!portalDataRef.current.has(pid)) {
+                //console.warn('❌ Portal not found for append:', pid);
+                return;
+            }
+
+            const portalData = portalDataRef.current.get(pid);
+            const {
+                mergeStrategy = 'auto',
+              target = 'auto'
+            } = options;
+
+            // Auto-detect based on data structure if not specified
+            const finalTarget = target === 'auto' ?
+            (data.actual_response !== undefined ? 'props' : 'streamData') :
+            target;
+
+            const finalMergeStrategy = mergeStrategy === 'auto' ?
+            (finalTarget === 'props' ? 'update' : 'append') :
+            mergeStrategy;
+
+            /*
+             * console.log(`🔄 Processing append:`, {
+                portalId: pid,
+                target: finalTarget,
+                strategy: finalMergeStrategy,
+                data
+            });
+            */
+
+            // Handle based on target and strategy
+            if (finalTarget === 'props') {
+                handlePropsUpdate(portalData, data, finalMergeStrategy);
+            } else {
+                handleStreamDataAppend(portalData, data, finalMergeStrategy);
+            }
+
+            // Force React update
+            setStreamingPortals(prev => {
+                const newMap = new Map(prev);
+                if (newMap.has(pid)) {
+                    const portal = newMap.get(pid);
+                    newMap.set(pid, {
+                        ...portal,
+                        version: portal.version + 1,
+                        lastUpdate: Date.now()
+                    });
+                }
+                return newMap;
+            });
+        };
+
+        // Handle props updates (current state)
+        const handlePropsUpdate = (portalData, newData, strategy) => {
+            switch (strategy) {
+                case 'update':
+                    // Merge props, handling special fields
+                    portalData.props = mergeProps(portalData.props, newData);
+                    break;
+
+                case 'replace':
+                    // Replace entire props
+                    portalData.props = { ...newData };
+                    break;
+
+                case 'append':
+                    // Append to string fields, replace others
+                    portalData.props = appendProps(portalData.props, newData);
+                    break;
+
+                default:
+                    console.warn(`Unknown merge strategy: ${strategy}`);
             }
         };
 
-        /**
-        const handleStreamClose = (event) => {
-            const { details } = event.detail;
-            const portalId = details.id
-            const prefix = details.prefix
+        // Handle stream data (historical data)
+        const handleStreamDataAppend = (portalData, newData, strategy) => {
+            if (!Array.isArray(portalData.streamData)) {
+                portalData.streamData = [];
+            }
 
-            portalDataRef.current.delete(portalId);
-            setStreamingPortals(prev => {
-                const newMap = new Map(prev);
-                newMap.delete(portalId);
-                return newMap;
-                });
-            };
-        */
+            switch (strategy) {
+                case 'append':
+                    // Add to historical data array
+                    portalData.streamData = [...portalData.streamData, newData];
+                    break;
+
+                case 'update':
+                    // Update last item or add new
+                    if (portalData.streamData.length > 0) {
+                        const lastIndex = portalData.streamData.length - 1;
+                        portalData.streamData[lastIndex] = {
+                            ...portalData.streamData[lastIndex],
+                            ...newData
+                        };
+                    } else {
+                        portalData.streamData = [newData];
+                    }
+                    break;
+
+                case 'replace':
+                    // Replace entire stream data
+                    portalData.streamData = [newData];
+                    break;
+            }
+        };
+
+        // Smart props merging
+        const mergeProps = (currentProps, newProps) => {
+            const merged = { ...currentProps };
+
+            for (const [key, value] of Object.entries(newProps)) {
+                if (value === undefined || value === null) continue;
+
+                if (key === 'actual_response' && currentProps.actual_response) {
+                    // Append to existing response
+                    merged.actual_response = currentProps.actual_response + value;
+                } else if (key === 'think_content') {
+                    // Replace think content
+                    merged.think_content = value;
+                } else if (key === 'isThinking') {
+                    // Update thinking state
+                    merged.isThinking = value;
+                } else if (key === 'conversation_name' && !currentProps.conversation_name) {
+                    // Set conversation name if not already set
+                    merged.conversation_name = value;
+                } else {
+                    // Default: replace
+                    merged[key] = value;
+                }
+            }
+
+            return merged;
+        };
+
+        // Props appending (for chunked responses)
+        const appendProps = (currentProps, newData) => {
+            const updated = { ...currentProps };
+
+            for (const [key, value] of Object.entries(newData)) {
+                if (value === undefined || value === null) continue;
+
+                if (typeof currentProps[key] === 'string' && typeof value === 'string') {
+                    // Append to string fields
+                    updated[key] = (currentProps[key] || '') + value;
+                } else {
+                    // Replace other fields
+                    updated[key] = value;
+                }
+            }
+
+            return updated;
+        };
 
         const handleStreamClose = (event) => {
             const { id, prefix } = event.detail;
@@ -205,6 +365,7 @@ export const StreamingPortalContainer = () => {
                 }
 
                 const portalRoot = containerElement.querySelector('.react-portal-root');
+
                 if (!portalRoot) return null;
 
                 return ReactDOM.createPortal(

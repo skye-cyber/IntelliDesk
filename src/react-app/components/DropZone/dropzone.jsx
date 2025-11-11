@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { CloseDropZone, openPreview, closePreview, handleFiles, HandleFileSubmit } from '@components/DropZone/util.js'
+import { CloseDropZone, openPreview, closePreview, handleFiles, HandleFileSubmit, formatFileSize, getFileType } from './util.js'
 
 export const DropZone = ({ isOpen, onToggle }) => {
 
@@ -40,9 +40,6 @@ export const DropZone = ({ isOpen, onToggle }) => {
         });
     })
 
-
-
-
     function handleFileSelect(event) {
         const files = event.target.files;
         handleFiles(files);
@@ -53,19 +50,24 @@ export const DropZone = ({ isOpen, onToggle }) => {
     })
 
     const shouldClosePreview = useCallback((e) => {
-        if (e.target.id === 'previewModal') closePreview();
+        if (!document.getElementById('modalContent').contains(e.target)) closePreview();
     })
 
-    const handleEscape = useCallback((e)=>{
-        if(e.key==='Escape' && !e.shiftKey) CloseDropZone();
+    const handleEscape = useCallback((e) => {
+        if (e.key === 'Escape' && !e.shiftKey) {
+            if (!document.getElementById('previewModal')?.classList.contains('hidden')) {
+                return closePreview()
+            }
+            CloseDropZone();
+        }
     });
 
-    useEffect(()=>{
+    useEffect(() => {
         document.addEventListener('keydown', handleEscape)
         return () => document.removeEventListener('keydown', handleEscape)
     })
     return (
-        <section>
+        <section id="dropZoneModalContainer" >
             {/* Main Dropzone Modal */}
             <div onClick={shouldClose} id="dropZoneModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 transition-all duration-500 hidden">
                 <div id="dropZoneContent" className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-4xl h-[95vh] backdrop-blur-lg transform transition-all duration-500 scale-95 opacity-0">
@@ -173,7 +175,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
                                     id="imagePrompt"
                                     aria-label="prompt input field"
                                     title="prompt field"
-                                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 scrollbar-thin"
+                                    className="w-full px-4 py-3 text-gray-700 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 scrollbar-thin"
                                     placeholder="Describe what you'd like to do with these files..."
                                     rows="2"
                                     onInput={(e) => {
@@ -199,8 +201,25 @@ export const DropZone = ({ isOpen, onToggle }) => {
                 </div>
             </div>
 
+            <FilePreview shouldClosePreview={shouldClosePreview} closePreview={closePreview} />
+            {/* Hidden File Input */}
+            <input
+                multiple
+                className="absolute opacity-0"
+                accept=".txt, .doc, .docx, .rtf, .md, .markdown, .epub, .mobi, .pdf, .png, .jpg, .jpeg, .svg, .gif, .bmp"
+                type="file"
+                id="fileInput"
+            />
+        </section>
+    );
+
+};
+
+export const FilePreview = ({ shouldClosePreview, closePreview }) => {
+    return (
+        <>
             {/* Preview Modal */}
-            <div onClick={shouldClosePreview} id="previewModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden opacity-0">
+            < div onClick={shouldClosePreview} id="previewModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden opacity-0" >
                 <div id="modalContent" className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] backdrop-blur-lg transform transition-all duration-500 animate-exit">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
@@ -234,7 +253,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
 
                     {/* Content */}
                     <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                        <div id="uploadedFiles" className="space-y-4">
+                        <div data-portal-container='FilePreview' id="uploadedFiles" className="FilePreview space-y-4">
                             {/* Empty State */}
                             <div id="EmptyDisplay" className="text-center py-12">
                                 <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -264,16 +283,92 @@ export const DropZone = ({ isOpen, onToggle }) => {
                         </div>
                     </div>
                 </div>
+            </div >
+        </>
+    )
+}
+
+export const FileItem = ({ file, portal_id }) => {
+    const removeFile = useCallback((name) => {
+        // Filter out files whose name matches the given name
+        window.filedata = window.filedata.filter(file => file.name !== name);
+
+        // Close the portal component
+        window.reactPortalBridge.closeComponent(portal_id);
+    }, []);
+
+    return (
+        <div className='group flex items-center justify-between p-4 bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 backdrop-blur-sm'>
+            <div className="flex items-center space-x-4 flex-1 min-w-0">
+                {/* File Icon with Progress */}
+                <div className="relative flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-xl flex items-center justify-center">
+                        <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    {/* Progress Ring */}
+                    <div className="absolute -inset-1">
+                        <svg className="w-14 h-14 transform -rotate-90" viewBox="0 0 50 50">
+                            <circle cx="25" cy="25" r="20" stroke="currentColor" strokeWidth="3" fill="none"
+                                strokeDasharray="125.6" strokeDashoffset="125.6"
+                                className="text-green-500/30 transition-all duration-500"
+                                style={{ strokeDashoffset: `${125.6 * (1 - (file.progress || 1))}` }}>
+                            </circle>
+                        </svg>
+                    </div>
+                </div>
+
+                {/* File Info */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate flex-1" title={file.name}>
+                            {file.name}
+                        </h4>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">
+                            {file.progress ? Math.round(file.progress * 100) + '%' : 'Ready'}
+                        </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                        <div className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
+                            style={{ width: `${((file.progress || 0) * 100)}%` }}></div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        <span className="flex items-center space-x-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>{new Date().toLocaleDateString()}</span>
+                        </span>
+                        <span>{formatFileSize(file.size)}</span>
+                        <span>•</span>
+                        <span className="flex items-center space-x-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                            </svg>
+                            <span>{getFileType(file.name)}</span>
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            {/* Hidden File Input */}
-            <input
-                multiple
-                className="absolute opacity-0"
-                accept=".txt, .doc, .docx, .rtf, .md, .markdown, .epub, .mobi, .pdf, .png, .jpg, .jpeg, .svg, .gif, .bmp"
-                type="file"
-                id="fileInput"
-            />
-        </section>
-    );
-};
+            {/* Remove Button */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
+                <span className="ml-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-xl border border-blue-400 font-medium">
+                    {formatFileSize(file.size)}
+                </span>
+                <button className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+                    onClick={() => removeFile(file.name)}
+                    title="Remove file">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.981-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+        </div >
+    )
+}

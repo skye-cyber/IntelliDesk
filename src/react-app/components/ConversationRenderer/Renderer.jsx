@@ -35,7 +35,7 @@ export function GenerateId(prefix = '', postfix = '', length = 6) {
     return id;
 }
 
-export const UserMessage = ({ message, file_type = null, file_data_url = null, save = true }) => {
+export const UserMessage = ({ message, filedata, save = true }) => {
     const message_id = GenerateId('user_msg')
 
     //if (save) window.desk.api.addHistory({ role: "user", content: message });
@@ -56,13 +56,9 @@ export const UserMessage = ({ message, file_type = null, file_data_url = null, s
                 <UserMessageOptions message_id={message_id} />
             </section >
 
-            {file_data_url ? (
-                <div className='flex justify-end'>
-                    <FileContainer file_type={file_type} file_data_url={file_data_url} />
-                </div>
-            )
-                : ''
-            }
+            <div className='flex justify-end'>
+                <FileContainer filedata={filedata} />
+            </div>
         </>
     )
 }
@@ -152,39 +148,71 @@ export const AiMessage = ({
         </div >
     )
 }
-
-export const FileContainer = ({ file_type, file_data_url }) => {
+export const FileContainer = ({ filedata }) => {
     const file_container_id = `file_container-${Math.random().toString(36).substring(2, 6)}`;
+
+    // Handle case where filedata is undefined or empty
+    if (!filedata || !Array.isArray(filedata) || filedata.length === 0) {
+        return null;
+    }
 
     return (
         <div id={file_container_id} className="flex justify-end">
-            <article className="flex flex-rows-1 md:flex-rows-3 bg-cyan-100 w-fit p-1 rounded-lg">
-                {
-                    (file_data_url && file_type === "image") ?
-                        file_data_url.map(url =>
-                            <img src={url} alt="Uploaded Image" className="rounded-md w-14 h-14 my-auto mx-1" />)
-                            .join('') :
-                        (file_type === "document") ?
-                            file_data_url.map(url =>
-                                <div className="inline-flex items-center">
-                                    <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16V4a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2zm1-1h4v10h-4V4z" />
-                                    </svg>
-                                    <span>{url}</span>
-                                </div>)
-                                .join('') :
-                            ""
-                }
+            <article className="flex flex-row md:flex-row w-fit p-1 rounded-lg">
+                {filedata.map((file, index) => {
+                    // Handle different file object structures
+                    const url = file.url || file.image_url || file.document_url;
+                    const name = file.name || 'File';
+                    const type = file.type || ((file.is_image || file.image_url) ? 'image' : 'document');
+
+                    if (!url) {
+                        console.warn('File missing URL:', file);
+                        return null;
+                    }
+
+                    if (type === 'image_url' || file.is_image || file.image_url) {
+                        return (
+                            <img
+                                key={`image-${index}`}
+                                src={url}
+                                alt={`Uploaded ${name}`}
+                                className="rounded-md w-14 h-14 my-auto mx-1 object-cover"
+                            />
+                        );
+                    } else {
+                        return (
+                            <div key={`doc-${index}`} className="inline-flex items-center bg-white p-2 rounded-md m-1">
+                                <svg
+                                    className="w-6 h-6 mr-1 text-gray-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                    />
+                                </svg>
+                                <span className="text-sm font-medium truncate max-w-32">
+                                    {name}
+                                </span>
+                            </div>
+                        );
+                    }
+                })}
             </article>
         </div>
-    )
-}
+    );
+};
 
 export const LoadingAnimation = ({ }) => {
     const loaderUUID = `loader_${Math.random().toString(30).substring(3, 9)}`;
 
     return (
-        <div id={loaderUUID} className='fixed bottom-[10vh] left-2 z-[51]'>
+        <div id={loaderUUID} className='absolute bottom-[10vh] -left-3 z-[51]'>
             <div id="loader-parent">
                 <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className="transform scale-75">
                     <circle cx="12" cy="24" r="4" className="fill-green-500">
@@ -362,7 +390,7 @@ export const UserMessageOptions = ({ message_id }) => {
     const copy_button_id = GenerateId('copy-button')
     const clone_button_id = GenerateId('clone')
 
-    const clone_markdown_content = useCallback((selector, html=true) => {
+    const clone_markdown_content = useCallback((selector, html = true) => {
         CopyMessage(selector, html)
     });
 

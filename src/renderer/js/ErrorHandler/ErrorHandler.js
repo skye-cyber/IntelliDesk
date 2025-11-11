@@ -459,38 +459,34 @@ export class RequestErrorHandler {
 // Singleton instance for global use
 export const requestErrorHandler = new RequestErrorHandler();
 
-export function handleDevErrors(error, user_message_pid, ai_message_pid = null) {
+export function handleDevErrors(error, user_message_pid, ai_message_pid = null, userContent, is_multimodal = false) {
     // Extract the message content before creating context
-    let lastMessage, text;
+    let lastMessage = userContent;
 
-    try {
+    /*
+     * try {
         const conversationHistory = window.desk.api.getHistory();
         const lastEntry = conversationHistory[0]?.chats?.slice(-1)[0];
 
-        if (lastEntry && (lastEntry.role !== 'system')) {
-            lastMessage = lastEntry.content;
-            text = typeof lastMessage === 'string' ? lastMessage : lastMessage.text ||
-                lastMessage.content;
+        if (lastEntry && lastEntry.role !== 'system') {
+            lastMessage = extractAndCleanContent(lastEntry.content);
 
-            text = text.replace(/\s*\[[^\]]*\]\s*/g, '').trim();
-
-            // Strip date/time if present (from your original code)
-            text = text.slice(-1) === ']' ? text.slice(0, text.length - 22) : text;
-            lastMessage = text
-
-            window.desk.api.popHistory()
+            if (lastMessage) {
+                text = lastMessage;
+                window.desk.api.popHistory();
+            }
         }
     } catch (err) {
         console.warn('Could not extract last message:', err);
     }
+    */
 
     const context = {
         user_message_pid,
         ai_message_pid,
-        file_type,
-        file_data_url,
-        text,
+        userContent,
         lastMessage,
+        is_multimodal,
         timestamp: Date.now()
     };
 
@@ -508,8 +504,8 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null) 
 
         if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
 
-        if (context.VS_url) {
-            router.routeToMistral(context.text, window.currentModel, context.file_type, context.file_data_url);
+        if (context.is_multimodal) {
+            router.routeToMistral(context.userContent, window.currentModel);
         } else {
             // Use the extracted lastMessage
             router.requestRouter(context.lastMessage?.trim());
@@ -518,4 +514,37 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null) 
 
     requestErrorHandler.handleError(error, context);
     return unsubscribe;
+}
+
+function extractAndCleanContent(content) {
+    const extractors = {
+        string: (c) => c,
+        object: (c) => c.text || c.content || (Array.isArray(c) ? extractFromArray(c) : ''),
+        array: (c) => extractFromArray(c)
+    };
+
+    const extractFromArray = (arr) => arr
+        .map(item => {
+            if (!item) return '';
+            if (item.type === 'text') return item.text || '';
+            if (item.text) return item.text;
+            if (item.content) return item.content;
+            if (typeof item === 'string') return item;
+            return '';
+        })
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
+    const type = Array.isArray(content) ? 'array' : typeof content;
+    const extractor = extractors[type] || (() => '');
+
+    const rawText = extractor(content);
+
+    // Clean the text
+    return rawText
+        .replace(/\s*\[[^\]]*\]\s*/g, ' ')
+        .replace(/\s*\[\d{1,2}:\d{2}(?::\d{2})?\]\s*$/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 }

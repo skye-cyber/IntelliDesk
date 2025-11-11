@@ -371,7 +371,7 @@ const api = {
         try {
             if (ConversationHistory[0].metadata.type === "temporary") return console.log("In temporary chat Not saving")
             //console.log("Saving: " + conversationId + filePath)
-            //await api.write(filePath, conversationData);
+            await api.write(filePath, conversationData);
             return filePath
         } catch (err) {
             console.error('Error saving conversation:', err);
@@ -649,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 
 document.addEventListener('NewConversation', function(e) {
-    console.log("NewConversation Event Recieved")
+    //console.log("NewConversation Event Recieved")
 
     const details = e.detail
 

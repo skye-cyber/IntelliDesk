@@ -17,7 +17,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         //console.log("Reached Mistral chat", text)
         chatutil.hide_suggestions()
 
-        const message_id = GenerateId('ai-msg');
+        let message_id = GenerateId('ai-msg');
         const export_id = GenerateId('export')
         const fold_id = GenerateId('fold')
 
@@ -42,15 +42,14 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        /*
-         * const stream = await Mistarlclient.chat.stream({
+         const stream = await Mistarlclient.chat.stream({
             model: model_name,
             messages: window.desk.api.getHistory(true),
             max_tokens: 3000
         });
-        */
 
-        const stream = generateTextChunks(text)
+
+        //const stream = generateTextChunks(text)
 
         let conversationName = null;
         let continued = false;
@@ -151,7 +150,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
                 });
             }
 
-            if (actualResponse.startsWith('<continued>')) {
+            if (actualResponse.includes('<continued>')) {
                 continued = true
             }
 
@@ -183,10 +182,12 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
             }
 
             // Scroll to bottom
-            chatutil.scrollToBottom(chatArea, true, 0);
+            chatutil.scrollToBottom(chatArea, true, 1000);
 
             // Render mathjax immediately
-            // chatutil.render_math(`.${aiMessageUId}`, 3000)
+            if(!message_id) message_id = window.StateManager.get("current_message_id", message_id)
+
+            chatutil.render_math(`.${message_id}`, 3000)
         }
 
         StateManager.set('processing', false);
@@ -238,7 +239,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
         console.log(error)
         appIsDev
-            ? handleDevErrors(error, StateManager.get('user_message_portal'), StateManager.get('ai_message_portal'))
+            ? handleDevErrors(error, StateManager.get('user_message_portal'), StateManager.get('ai_message_portal'), text)
             : errorHandler.showError({ title: error?.name, message: error.message || error, retryCallback: MistraChat, callbackArgs: { text: text, model_name: model_name } })
     }
 }

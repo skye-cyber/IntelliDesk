@@ -12,6 +12,11 @@ document.addEventListener("keydown", event => {
     } else if (event.key === "Escape") {
         event.preventDefault();
         document.dispatchEvent(new CustomEvent('close-settings'));
+        if (!document.getElementById('previewModal')?.classList.contains('hidden')) {
+            document.dispatchEvent(new CustomEvent('close-dropzone'));
+        } else {
+            document.dispatchEvent(new CustomEvent('close-preview'));
+        }
 
     } else if ((event.ctrlKey && (event.key === "P" || event.key === "p"))) {
         event.preventDefault();

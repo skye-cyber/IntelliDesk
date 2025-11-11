@@ -43,11 +43,12 @@ export function prep_user_input(text, options = {}) {
 
     const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, filedata: userContent.filter(c => c.type !== "text") }, 'user_message')
 
+    window.desk.api.addHistory({ role: "user", content: userContent });
 
     StateManager.set('user_message_portal', user_message_portal)
 
     console.log('Prepared user content:', userContent);
-    return userContent;
+    return { user_message_portal: user_message_portal, userContent: userContent };
 }
 
 /**
@@ -107,9 +108,7 @@ export function processFilesByType(files) {
     if (filesByType.image && filesByType.image.length > 0) {
         const imageContent = filesByType.image.map(file => ({
             type: "image_url",
-            image_url: { // Fixed: should be image_url not imageUrl
-                url: file.url
-            }
+            imageUrl: file.url
         }));
         content.push(...imageContent);
     }
@@ -118,11 +117,13 @@ export function processFilesByType(files) {
     if (filesByType.document && filesByType.document.length > 0) {
         const documentContent = filesByType.document.map(file => ({
             type: "document_url", // or "file" depending on your API
-            document_url: { // Fixed: should be document_url not documentUrl
+            documentUrl: file.url
+            /*{ // Fixed: should be document_url not documentUrl
                 url: file.url,
                 name: file.name,
                 size: file.size
             }
+            */
         }));
         content.push(...documentContent);
     }
@@ -131,12 +132,14 @@ export function processFilesByType(files) {
     if (filesByType.pdf && filesByType.pdf.length > 0) {
         const pdfContent = filesByType.pdf.map(file => ({
             type: "document_url",
-            document_url: {
+            documentUrl: file.url
+            /*
+             * {
                 url: file.url,
                 name: file.name,
                 size: file.size,
                 mime_type: 'application/pdf'
-            }
+            }*/
         }));
         content.push(...pdfContent);
     }

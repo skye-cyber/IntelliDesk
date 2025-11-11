@@ -61,9 +61,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
             }
             CloseDropZone();
         }
-        else if (e.key === "Enter" && !e.shiftKey) {
-            HandleFileSubmit(e)
-        }
+
     });
 
     const HandleFileSubmit = useCallback((e) => {
@@ -83,10 +81,22 @@ export const DropZone = ({ isOpen, onToggle }) => {
     })
 
 
+    const handleEnter = useCallback((e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            HandleFileSubmit(e)
+        }
+    })
+
     useEffect(() => {
-        document.addEventListener('keydown', handleEscape)
+        const textInputSec = document.getElementById('dropzone_input')
+        textInputSec.addEventListener('keydown', handleEnter)
+        document.addEventListener('close-dropzone', CloseDropZone)
+        document.addEventListener('close-preview', closePreview)
+
         return () => {
-            document.removeEventListener('keydown', handleEscape)
+            textInputSec.removeEventListener('keydown', handleEnter)
+            document.removeEventListener('close-dropzone', CloseDropZone)
+            document.removeEventListener('close-preview', closePreview)
         }
     })
     return (
@@ -229,7 +239,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
             <input
                 multiple
                 className="absolute opacity-0"
-                accept=".txt, .doc, .docx, .rtf, .md, .markdown, .epub, .mobi, .pdf, .png, .jpg, .jpeg, .svg, .gif, .bmp"
+                accept=".txt, .doc, .docx, .rtf, .md, .markdown, .epub, .mobi, .pdf, .png, .jpg, .jpeg, .svg, .gif, .bmp, .py "
                 type="file"
                 id="fileInput"
             />
@@ -275,8 +285,8 @@ export const FilePreview = ({ shouldClosePreview, closePreview }) => {
                     </div>
 
                     {/* Content */}
-                    <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                        <div data-portal-container='FilePreview' id="uploadedFiles" className="FilePreview space-y-4">
+                    <div className="p-6 max-h-[60vh] overflow-y-auto scrollbar-custom scroll-smooth">
+                        <div data-portal-container='FilePreview' id="uploadedFiles" className="FilePreview space-y-1">
                             {/* Empty State */}
                             <div id="EmptyDisplay" className="text-center py-12">
                                 <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -321,7 +331,7 @@ export const FileItem = ({ file, portal_id }) => {
     }, []);
 
     return (
-        <div className='group flex items-center justify-between p-4 bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 backdrop-blur-sm'>
+        <div className='group mb-2 flex items-center justify-between p-4 bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 backdrop-blur-sm'>
             <div className="flex items-center space-x-4 flex-1 min-w-0">
                 {/* File Icon with Progress */}
                 <div className="relative flex-shrink-0">

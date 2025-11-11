@@ -81,6 +81,8 @@ export const AiMessage = ({
         //console.log(err)
     }
 
+    window.StateManager.set("current_message_id", message_id)
+
     const processedThinkHtml = think_content ? markitdown(normalizeMathDelimiters(think_content)) : null;
 
     const FoldThinking = useCallback((e, selector) => {
@@ -161,16 +163,16 @@ export const FileContainer = ({ filedata }) => {
             <article className="flex flex-row md:flex-row w-fit p-1 rounded-lg">
                 {filedata.map((file, index) => {
                     // Handle different file object structures
-                    const url = file.url || file.image_url || file.document_url;
+                    const url = file.url || file.imageUrl || file.documentUrl;
                     const name = file.name || 'File';
-                    const type = file.type || ((file.is_image || file.image_url) ? 'image' : 'document');
+                    const type = file.type || ((file.is_image || file.imageUrl) ? 'image' : 'document');
 
                     if (!url) {
                         console.warn('File missing URL:', file);
                         return null;
                     }
 
-                    if (type === 'image_url' || file.is_image || file.image_url) {
+                    if (type === 'image_url' || file.is_image || file.imageUrl) {
                         return (
                             <img
                                 key={`image-${index}`}

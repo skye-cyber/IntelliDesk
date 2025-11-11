@@ -35,13 +35,13 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     _Timer.trackTime("start");
 
     // Prep user message
-    return prep_user_input(text)
+    const { user_message_portal, userContent } = prep_user_input(text)
 
     try {
         const stream = //generateTextChunks(text)
             await Mistarlclient.chat.stream({
                 model: model_name,
-                messages: window.desk.api.clearImages(window.desk.api.getHistory(true)),
+                messages: window.desk.api.getHistory(true),
                 max_tokens: 2000,
             });
 
@@ -145,7 +145,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
                 });
             }
 
-            if (actualResponse.startsWith('<continued>')) {
+            if (actualResponse.includes('<continued>')) {
                 continued = true
             }
 
@@ -177,10 +177,12 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
             }
 
             // Scroll to bottom
-            chatutil.scrollToBottom(chatArea, true, 0);
+            chatutil.scrollToBottom(chatArea, true, 1000);
 
             // Render mathjax immediately
-            // chatutil.render_math(`.${aiMessageUId}`, 3000)
+            if (!message_id) message_id = window.StateManager.get("current_message_id", message_id)
+
+            chatutil.render_math(`.${message_id}`, 3000)
         }
 
         StateManager.set('processing', false);
@@ -234,7 +236,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     } catch (error) {
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
         appIsDev
-            ? handleDevErrors(error, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'))
+            ? handleDevErrors(error, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'), text, true)
             : errorHandler.showError({ title: error.name, message: error.message || error, retryCallback: MistraMultimodal, callbackArgs: { text: text, model_name: model_name } })
     }
 }

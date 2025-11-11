@@ -58,9 +58,25 @@ export class ChatUtil {
     }
 
     render_math(container_selector, scope = 'all', delay = null) {
-        if (['norm', 'all'].includes(scope)) normaliZeMathDisplay(`.${container_selector}`)
+        try {
+            if (['norm', 'all'].includes(scope)) {
+                if (container_selector) {
+                    normaliZeMathDisplay(`.${container_selector}`)
+                } else {
+                    debounceRenderKaTeX();
+                }
+            }
 
-        if (['math', 'all'].includes(scope)) debounceRenderKaTeX(`.${container_selector}`, delay ? delay : null, delay ? false : true);
+            if (['math', 'all'].includes(scope)) {
+                if (container_selector) {
+                    debounceRenderKaTeX(`.${container_selector}`, delay ? delay : null, delay ? false : true);
+                } else {
+                    debounceRenderKaTeX();
+                }
+            }
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     get_models() {
@@ -96,7 +112,7 @@ export class ChatUtil {
         return MSmodels
     }
 
-    get_codestral_endpoint(listify=false) {
+    get_codestral_endpoint(listify = false) {
         const codestral = {
             'https://codestral.mistral.ai/v1/fim/completions': 'Completion Endpoint',
             'https://codestral.mistral.ai/v1/chat/completions': 'Chat Endpoint'

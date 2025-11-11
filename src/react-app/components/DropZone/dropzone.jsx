@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
-import { CloseDropZone, openPreview, closePreview, handleFiles, HandleFileSubmit, formatFileSize, getFileType } from './util.js'
+import { CloseDropZone, openPreview, closePreview, handleFiles, formatFileSize, getFileType } from './util.js'
+import { MistraMultimodal } from '../../../renderer/js/managers/ConversationManager/Mistral/MultiModal.js';
 
 export const DropZone = ({ isOpen, onToggle }) => {
 
@@ -60,11 +61,33 @@ export const DropZone = ({ isOpen, onToggle }) => {
             }
             CloseDropZone();
         }
+        else if (e.key === "Enter" && !e.shiftKey) {
+            HandleFileSubmit(e)
+        }
     });
+
+    const HandleFileSubmit = useCallback((e) => {
+        e.preventDefault()
+        const userInput = document.getElementById('dropzone_input');
+
+        //document.dispatchEvent(new CustomEvent('Clear-all-files'))
+
+        const inputText = userInput.value?.trim();
+        userInput.value = ''; // clear input
+
+        if (inputText) {
+            //Reset the input field content
+            MistraMultimodal({ text: inputText })
+            CloseDropZone()
+        }
+    })
+
 
     useEffect(() => {
         document.addEventListener('keydown', handleEscape)
-        return () => document.removeEventListener('keydown', handleEscape)
+        return () => {
+            document.removeEventListener('keydown', handleEscape)
+        }
     })
     return (
         <section id="dropZoneModalContainer" >
@@ -166,16 +189,16 @@ export const DropZone = ({ isOpen, onToggle }) => {
 
                     {/* Prompt Input Section */}
                     <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-b-2xl">
-                        <div className="flex items-end space-x-3">
+                        <div className="flex items-center space-x-3">
                             <div className="flex-1">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Add context for your files
                                 </label>
                                 <textarea
-                                    id="imagePrompt"
+                                    id="dropzone_input"
                                     aria-label="prompt input field"
                                     title="prompt field"
-                                    className="w-full px-4 py-3 text-gray-700 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 scrollbar-thin"
+                                    className="w-full max-h-24 px-4 py-3 text-gray-700 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 scrollbar-custom scroll-smooth"
                                     placeholder="Describe what you'd like to do with these files..."
                                     rows="2"
                                     onInput={(e) => {

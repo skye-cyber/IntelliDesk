@@ -75,36 +75,33 @@ export function handleFiles(files) {
         const fileType = isImage ? 'image' : 'document';
 
         // Convert the file to a data URL if it's an image
-        if (isImage) {
-            waitForElement('#EmptyDisplay', (el) => el.classList.add('hidden'))
+        waitForElement('#EmptyDisplay', (el) => el.classList.add('hidden'))
 
-            //Remove content from preview container
-            if (!clear) {
-                clear = true;
-            }
-
-            Uploaded += 1;
-
-            // Create a list item for the file
-            window.reactPortalBridge.showComponentInTarget('FileItem', 'FilePreview', { file: file, is_image: fileType === 'image' })
-
-            const reader = new FileReader();
-
-
-            window.AllfileTypes = fileType //AllfileTypes
-
-            reader.onload = (e) => {
-                const filedataurl = e.target.result;
-                filedata.push({file:file, name: file.name, type: getFileType(file.name), is_image: fileType === "image", url: filedataurl, size: file.size })
-            };
-            reader.readAsDataURL(file);
-
-            uploaded_file.push(file.name)
-
-            window.filedata = filedata
-        } else {
-            ignored += 1
+        //Remove content from preview container
+        if (!clear) {
+            clear = true;
         }
+
+        Uploaded += 1;
+
+        // Create a list item for the file
+        window.reactPortalBridge.showComponentInTarget('FileItem', 'FilePreview', { file: file, is_image: fileType === 'image' })
+
+        const reader = new FileReader();
+
+
+        window.AllfileTypes = fileType //AllfileTypes
+
+        reader.onload = (e) => {
+            const filedataurl = e.target.result;
+            filedata.push({ file: file, name: file.name, type: getFileType(file.name)?.toLocaleLowerCase(), is_image: fileType === "image", url: filedataurl, size: file.size })
+        };
+        reader.readAsDataURL(file);
+
+        uploaded_file.push(file.name)
+
+        window.filedata = filedata
+
     }
 
     // switch model to multi-modal
@@ -147,23 +144,6 @@ export function getFileType(filename) {
         'rar': 'Archive'
     };
     return fileTypes[extension] || extension.toUpperCase();
-}
-
-export function HandleFileSubmit() {
-    const userInput = document.getElementById('fileInput');
-    const submitFiles = document.getElementById("submitFiles");
-
-    const inputText = userInput.textContent.trim();
-
-    if (inputText) {
-        //Reset the input field content
-        submitFiles.textContent = "";
-        // Reset th input field size/height
-        submitFiles.style.height = 'auto';
-        submitFiles.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight / 100) + 'px';
-        submitFiles.scrollTop = userInput.scrollHeight;
-        submitFilesAndText();
-    }
 }
 
 export function submitFilesAndText() {

@@ -30,6 +30,7 @@ let ConversationHistory = [
     {
         metadata: {
             model: 'chat',
+            type: 'normal',
             name: '',
             id: ConversationId,
             timestamp: getformatDateTime(),
@@ -60,15 +61,18 @@ const api = {
     },
     write: async (path, data) => {
         try {
-            // Remove system instructions before saving
-            if (data[0].chats[0].role === 'system') data[0].chats.shift()
+            // Create a deep clone to avoid mutating original
+            let dataToSave = JSON.parse(JSON.stringify(data));
 
-            data = api.clean(data)
+            // Remove system instructions from clone only
+            if (dataToSave[0].chats[0].role === 'system') {
+                dataToSave[0].chats.shift();
+            }
 
-            data = JSON.stringify(data, null, 2)
-            //console.log("Write data to file")
+            dataToSave = api.clean(dataToSave);
+            const fileData = JSON.stringify(dataToSave, null, 2);
 
-            fs.writeFileSync(path, data);
+            fs.writeFileSync(path, fileData);
             return true;
         } catch (err) {
             console.log(err);
@@ -158,18 +162,26 @@ const api = {
         }
     },
     addHistory: (item) => {
-        ConversationHistory[0].chats.push(item); // Modify the array
+        if (!typeof (item) === "object") return console.log("Invalid conversation item")
+
+        ConversationHistory[0].chats.push(item)
+
         if (!ConversationHistory[0].metadata.highlight) {
             ConversationHistory[0].metadata.highlight = item?.content.slice(0, 15)
         }
+        if (ConversationHistory[0].metadata.type === "temporary") return console.log("In temporary chat Not saving!")
+        console.log(JSON.stringify(ConversationHistory[0].chats))
+
         // Save to file
         api.saveConversation(ConversationHistory)
-        //DEPRECATED
-        ipcRenderer.send('desk.api-update-chat', ConversationHistory); // Notify other processes
-        //console.log("Saved conversation, size:", ConversationHistory[0].chats.length);
     },
-    getHistory: () => {
-        return ConversationHistory;
+    getHistory: (filter = false) => {
+        console.log(JSON.stringify(ConversationHistory[0].chats))
+
+        const data = filter ? ConversationHistory[0].chats : ConversationHistory;
+        console.log(JSON.stringify(data))
+
+        return data
     },
     popHistory: () => {
         ConversationHistory[0].chats.pop();
@@ -179,7 +191,6 @@ const api = {
     },
     setModel: (model) => {
         try {
-            console.log(model)
             model = model?.toLocaleLowerCase()
 
             if (!['chat', 'multimodal'].includes(model)) return
@@ -187,12 +198,9 @@ const api = {
             ConversationHistory[0].metadata.model = model
 
             if (ConversationHistory[0].chats[0].role === 'system') {
-                console.log("Update sys")
                 ConversationHistory[0].chats[0] = (model === "multimodal")
-                ? { role: "system", content: [{ type: "text", text: system_command }] }
-                : { role: "system", content: system_command }
-
-                console.log(ConversationHistory[0].chats[0])
+                    ? { role: "system", content: [{ type: "text", text: system_command }] }
+                    : { role: "system", content: system_command }
             }
         } catch (error) {
             console.log(error)
@@ -264,6 +272,17 @@ const api = {
             return false
         }
     },
+    updateName: (name, save = true) => {
+        try {
+            if (!name?.trim()) return false;
+            console.log("Rename conversation to:", name)
+            ConversationHistory[0].metadata.name = name
+            if (save) api.saveConversation(ConversationHistory)
+            return true
+        } catch (err) {
+            return false
+        }
+    },
     clearAllImages: (history) => {
         // Convert history to array and process each message
         return history[0].chats.map(item => {
@@ -328,6 +347,7 @@ const api = {
         const filePath = `${conversation_root}/${conversationId}.json`;
         //console.log(JSON.stringify(conversationData))
         try {
+            if (ConversationHistory[0].metadata.type === "temporary") return console.log("In temporary chat Not saving")
             //console.log("Saving: " + conversationId + filePath)
             await api.write(filePath, conversationData);
             return filePath
@@ -355,7 +375,7 @@ const api = {
     },
     setConversation: (data, id) => {
         //api.saveConversation(data, data[0].metadata.id)
-
+        console.log("Setting conv")
         if (data[0].chats[0]?.role !== 'system') data[0].chats.unshift({ role: 'system', content: system_command })
         ConversationHistory = data;
         ConversationId = id ? id : data[0].metadata.id;
@@ -537,7 +557,6 @@ const api = {
     }
 };
 
-//Exporse Api
 const api2 = {
     saveKeys: async (keys) => ipcRenderer.invoke('save-keys', keys),
     getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),
@@ -602,19 +621,22 @@ contextBridge.exposeInMainWorld('desk', {
 
 document.addEventListener('DOMContentLoaded', function() {
     //initialize conversation histories when is ready/loaded
-    ConversationHistory[0].chats = [{ role: "system", content: system_command }]; // Define your array here
+    ConversationHistory[0].chats = [{ role: "system", content: system_command }];
     ConversationId = api.generateUUID()
 
     ConversationHistory[0].metadata.id = ConversationId
 })
 
-document.addEventListener('NewConversationOpened', function() {
-    console.log("NewConversationOpened Event Recieved")
+document.addEventListener('NewConversation', function(e) {
+    console.log("NewConversation Event Recieved")
+
+    const details = e.detail
+
+    if (details?.type.toLocaleLowerCase() === "temporary") ConversationHistory[0].metadata.type = "temporary";
+
     ConversationId = api.generateUUID()
     ConversationHistory[0].chats = [{ role: "system", content: system_command }]
     ConversationHistory[0].metadata.id = ConversationId
-
-    console.log(ConversationHistory)
 })
 
 

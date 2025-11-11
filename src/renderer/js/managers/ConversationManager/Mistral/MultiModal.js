@@ -6,9 +6,10 @@ import { generateTextChunks } from '../../../tests/AiSimulator';
 import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
+import { prep_user_input } from "./file_util";
 
 export async function MistraMultimodal({ text, model_name = window.currentModel }) {
-    if (!text.trim() && !file_data_url) return console.log("Message, files are empty")
+    if (!text?.trim() && !file_data_url) return console.log("Message, files are empty")
 
     const _Timer = new window.Timer();
 
@@ -19,12 +20,6 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     const message_id = GenerateId('ai-msg');
     const export_id = GenerateId('export')
     const fold_id = GenerateId('fold')
-
-    const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, file_type: null, file_data_url: null, save: true }, 'user_message')
-
-    window.desk.api.addHistory({ role: "user", content: [{ type: 'text', text: text }] });
-
-    StateManager.set('user_message_portal', user_message_portal)
 
     const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea')
 
@@ -39,53 +34,8 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     //start timer
     _Timer.trackTime("start");
 
-    // Determine the content based on file_data_url
-    let userContent;
-
-    if (file_data_url) {
-        //console.log("Image url present");
-        if (file_type == "image") {
-            const imageContent = file_data_url.map(_url => ({
-                type: "image_url",
-                imageUrl: {
-                    url: _url,
-                }
-            }));
-
-            userContent = [
-                {
-                    type: "text",
-                    text: text,
-                },
-                ...imageContent // Spread the image content objects
-            ];
-        }
-
-        else if (file_type == "document") {
-            const documentContent = file_data_url.map(_url => ({
-                type: "document_url",
-                documentUrl: {
-                    url: _url,
-                }
-            }));
-
-            userContent = [
-                {
-                    type: "text",
-                    text: text,
-                },
-                ...documentContent // Spread the document content objects
-            ];
-        }
-    } else {
-        //console.log("Url not found");
-        userContent = [
-            {
-                type: "text",
-                text: text,
-            },
-        ];
-    }
+    // Prep user message
+    return prep_user_input(text)
 
     try {
         const stream = //generateTextChunks(text)

@@ -12,6 +12,6 @@ function RunTest() {
     }\`\`\``
     //window.createLWTCharts('LWT Chart TS')
     //window.createJSCCharts(testData.chartName, testData.data, testData.description)
-    window.LoopRenderCharts(data=testData, type='text')
+    window.ChartsInterpreter(data=testData, type='text')
 }
 RunTest();

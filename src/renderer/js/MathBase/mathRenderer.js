@@ -10,7 +10,7 @@ window.renderMathInElement = renderMathInElement;
 
 const renderTimeouts = new Map();
 
-function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = false) {
+export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = false) {
     const selector = containerSelector ? containerSelector : 'body'
     let element = document.querySelector(selector);
 
@@ -29,7 +29,7 @@ function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = false) {
                 ],
                 throwOnError: false,
             });
-            console.log('KaTeX rendering complete for', selector);
+            //console.log('KaTeX rendering complete for', selector);
         } else {
             console.error('KaTeX auto-render extension not loaded.');
         }
@@ -46,7 +46,7 @@ function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = false) {
     }
 }
 
-function NormalizeCode(element) {
+export function NormalizeCode(element) {
     const targetList = element ? element.querySelectorAll('code') : document.querySelectorAll('code');
     for (const x in targetList) {
         x

@@ -9,9 +9,9 @@
 # IntelliDesk
 
 ## About
-
 IntelliDesk is a versatile AI application that integrates advanced machine learning models from Hugging Face and Mistral to assist with tasks such as Natural Language Processing (NLP), Image Recognition, Image Generation, Data Analysis, and Machine Learning. Users can choose to utilize either or both models based on their requirements.
 
+```text
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   React UI      │───▶│  Electron Main   │───▶│  Backend APIs   │
 │   (Components)  │    │   (Bridge)       │    │  (AI Services)  │
@@ -23,6 +23,7 @@ IntelliDesk is a versatile AI application that integrates advanced machine learn
                         │ Event System  │
                         │ (Existing)    │
                         └───────────────┘
+```
 
 ## Features
 

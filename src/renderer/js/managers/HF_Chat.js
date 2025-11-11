@@ -19,7 +19,7 @@ let check = false;
 window.check = check;
 
 async function routeToHf(text) {
-	console.log("Reached Target: hfRoute")
+	//console.log("Reached Target: hfRoute")
 
 	const escapedText = window.InputPurify(text);
 	const Currentmodel = modelSelect.value;
@@ -38,8 +38,8 @@ async function routeToHf(text) {
 	const provider = {
 		"Qwen/Qwen2.5-Math-1.5B": "hf-inference",
 		"Qwen/Qwen2-VL-7B-Instruct": "hyperbolic",
-		"Qwen/Qwen2.5-Coder-7B-Instruct": "nebius",
-		"Qwen/QVQ-72B-Preview": "nebius",
+		"Qwen/Qwen2.5-Coder-7B-Instruct": "hf-inference",
+		"Qwen/QVQ-72B-Preview": "hf-inference",
 		"deepseek-ai/DeepSeek-R1-Distill-Qwen-32B": "together",
 		"deepseek-ai/DeepSeek-R1": "together",
 		"meta-llama/Llama-3.2-11B-Vision-Instruct": "hf-inference"
@@ -54,7 +54,7 @@ async function routeToHf(text) {
 		userMessage.innerHTML = `
 			<div data-id="${userMessageId}" class="${userMessageId} relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl">
 			<p class="whitespace-pre-wrap break-words max-w-xl md:max-w-2xl lg:max-w-3xl">${escapedText}</p>
-			<button id="${copyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80 " onclick="CopyAll('.${userMessageId}', this)">
+			<button id="${copyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80 " onclick="CopyMessage('.${userMessageId}', this)">
 			Copy
 			</button>
 			</div>
@@ -66,9 +66,15 @@ async function routeToHf(text) {
 		chatArea.scrollTop = chatArea.scrollHeight;
 
 		// Add Timestamp
+<<<<<<<< HEAD:src/renderer/js/managers/HF_Chat.js
 		text = `${text} [${window.electron.getDateTime()} UTC]`
 		// Add timestamped  user prompt to history
 		window.electron.addToChat({ role: "user", content: text });
+========
+		text = `${text} [${window.desk.api.getDateTime()} UTC]`
+		// Add timestamped  user prompt to history
+		window.desk.api.addHistory({ role: "user", content: text });
+>>>>>>>> dev:src/renderer/js/managers/ConversationManager/hfChatManager.js
 
 		const aiMessage = document.createElement("div");
 		aiMessage.innerHTML = `
@@ -97,17 +103,29 @@ async function routeToHf(text) {
 		const foldId = `think-content-${Math.random().toString(33).substring(3, 9)}`;
 		const exportId = `export-${Math.random().toString(33).substring(3, 9)}`;
 
+<<<<<<<< HEAD:src/renderer/js/managers/HF_Chat.js
 		//console.log(JSON.stringify(window.electron.getChat()), null, 4);
+========
+		//console.log(JSON.stringify(window.desk.api.getHistory()), null, 4);
+>>>>>>>> dev:src/renderer/js/managers/ConversationManager/hfChatManager.js
 
 		const _Timer = new window.Timer;
 		try {
 			processing = true;
 
+<<<<<<<< HEAD:src/renderer/js/managers/HF_Chat.js
 			//console.log(typeof(window.electron.getChat()))
 			const options = {
 				model: Currentmodel,
 				messages: window.electron.getChat(), // Add conversation in JSON format to avoid size limitation
 				max_tokens: 3000
+========
+			//console.log(typeof(window.desk.api.getHistory()))
+			const options = {
+				model: Currentmodel,
+				messages: window.desk.api.getHistory(), // Add conversation in JSON format to avoid size limitation
+				//max_tokens: 3000
+>>>>>>>> dev:src/renderer/js/managers/ConversationManager/hfChatManager.js
 			};
 
 			if (provider[Currentmodel]) {
@@ -228,7 +246,7 @@ async function routeToHf(text) {
 											<!-- Hover enhancement effect -->
 											<div class="absolute -inset-2 -z-10 rounded-xl bg-blue-500/10 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-blue-400/15"></div>
 										</div>
-										<div class="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onclick="CopyAll('.${aiMessageUId}');">
+										<div class="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onclick="CopyMessage('.${aiMessageUId}');">
 											<svg
 												class="w-5 md:w-6 h-5 md:h-6 mt-1 transition-transform duration-300 ease-in-out hover:scale-110 cursor-pointer"
 												viewBox="0 0 24 24"
@@ -278,6 +296,11 @@ async function routeToHf(text) {
 			}
 
 			processing = false;
+<<<<<<<< HEAD:src/renderer/js/managers/HF_Chat.js
+========
+			// solves aiMessage w-full issue
+			if (isCanvasActive) showCanvas();
+>>>>>>>> dev:src/renderer/js/managers/ConversationManager/hfChatManager.js
 
 			//stop timer
 			_Timer.trackTime("stop");
@@ -289,7 +312,7 @@ async function routeToHf(text) {
 
 			if (check === false) {
 				// Sending a message to the main process
-				window.electron.send('toMain', { message: 'set-Utitility-Script' });
+				window.desk.api.send('dispatch-to-main-process', { message: 'set-Utitility-Script' });
 				check = true;
 			}
 
@@ -298,13 +321,14 @@ async function routeToHf(text) {
 			normaliZeMathDisplay(`.${aiMessageUId}`)
 
 			// Store conversation history
-			window.electron.addToChat({ role: "assistant", content: fullResponse });
+			window.desk.api.addHistory({ role: "assistant", content: fullResponse });
 
 			// render diagrams fromthis response
-			window.handleDiagrams(actualResponse, 'both');
-			window.LoopRenderCharts(actualResponse)
+			window.diagram_interpreter(actualResponse, 'both');
+			window.ChartsInterpreter(actualResponse)
 
 		} catch (error) {
+			console.log(error)
 			window.handleRequestError(error, userMessage, aiMessage);
 
 		}
@@ -327,7 +351,7 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 	const userMessage = addUserMessage(text, fileType, fileDataUrl, fileContainerId);
 
 	//Add Timestamp
-	text = `${text} [${window.electron.getDateTime()} UTC]`
+	text = `${text} [${window.desk.api.getDateTime()} UTC]`
 	//console.log(text)
 	// Determine the content based on fileDataUrl
 	let userContent;
@@ -377,7 +401,7 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 	}
 
 	// Add user message to VisionHistory
-	window.electron.addToVisionChat({
+	window.desk.api.addHistory({
 		role: "user",
 		content: userContent,
 	});
@@ -409,12 +433,12 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 		`;
 
 	try {
-		//console.log(window.electron.clearImages(window.electron.getVisionChat()),)
+		//console.log(window.desk.api.clearImages(window.desk.api.getHistory()),)
 		//const visionstream = window.generateTextChunks(null, true);
 
 		const visionstream = client.chatCompletionStream({
 			model: Vmodel,
-			messages: window.electron.clearImages(window.electron.getVisionChat()),
+			messages: window.desk.api.clearImages(window.desk.api.getHistory()),
 			max_tokens: 2000,
 		});
 
@@ -480,7 +504,7 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 								<!-- Hover enhancement effect -->
 								<div class="absolute -inset-2 -z-10 rounded-xl bg-blue-500/10 blur-xl transition-opacity duration-500 group-hover:opacity-100 dark:bg-blue-400/15"></div>
 							</div>
-							<div class="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onclick="CopyAll('.${VisionMessageUId}');">
+							<div class="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onclick="CopyMessage('.${VisionMessageUId}');">
 								<svg
 									class="w-5 md:w-6 h-5 md:h-6 mt-1 transition-transform duration-300 ease-in-out hover:scale-110 cursor-pointer"
 									viewBox="0 0 24 24"
@@ -532,6 +556,11 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 		}
 
 		processing = true;
+<<<<<<<< HEAD:src/renderer/js/managers/HF_Chat.js
+========
+		// solves aiMessage w-full issue
+		if (isCanvasActive) showCanvas();
+>>>>>>>> dev:src/renderer/js/managers/ConversationManager/hfChatManager.js
 
 		//stop timer
 		_Timer.trackTime("stop");
@@ -548,12 +577,12 @@ async function VisionChat(text, fileType, fileDataUrl = null, Vmodel = null, pro
 		window.debounceRenderKaTeX(null, null, true);
 		normaliZeMathDisplay(`.${VisionMessageUId}`)
 
-		window.electron.addToVisionChat({ role: "assistant", content: [{ type: "text", text: visionMs }] });
+		window.desk.api.addHistory({ role: "assistant", content: [{ type: "text", text: visionMs }] });
 		//console.log("Final VisionHistory:", JSON.stringify(VisionHistory, null, 2));
 
 		// render diagrams from this response
-		window.handleDiagrams(visionMs, 'both');
-		window.LoopRenderCharts(visionMs);
+		window.diagram_interpreter(visionMs, 'both');
+		window.ChartsInterpreter(visionMs);
 
 	} catch (error) {
 		window.handleRequestError(error, userMessage, VisionMessage, ["VS", fileType, fileContainerId])
@@ -568,7 +597,7 @@ function addUserMessage(text, fileType, fileDataUrl, fileContainerId) {
 	const messageHtml = `
 		<div data-id="${VisionUserMessageUId}" class="${VisionUserMessageUId} relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl">
 		<p class="whitespace-pre-wrap break-words max-w-xl md:max-w-2xl lg:max-w-3xl">${window.InputPurify(text)}</p>
-		<button id="${VisioncopyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80" onclick="CopyAll('.${VisionUserMessageUId}', this, true)">
+		<button id="${VisioncopyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80" onclick="CopyMessage('.${VisionUserMessageUId}', this, true)">
 		Copy
 		</button>
 		</div>
@@ -613,7 +642,11 @@ class ImageGenerator {
 		userMessage.innerHTML = `
 		<div data-id="${userMessageId}" class="${userMessageId} relative bg-[#566fdb] dark:bg-[#142384] text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-md w-fit max-w-full lg:max-w-5xl">
 		<p class="whitespace-pre-wrap break-words max-w-xl md:max-w-2xl lg:max-w-3xl">${text}</p>
+<<<<<<<< HEAD:src/renderer/js/managers/HF_Chat.js
 		<button id="${copyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80 " onclick="CopyAll('.${userMessageId}', this)">
+========
+		<button id="${copyButtonId}" class="user-copy-button absolute rounded-md px-2 py-2 right-1 bottom-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 dark:from-gray-700 dark:to-gray-900 hover:bg-indigo-200 dark:hover:bg-gray-600 text-white dark:text-gray-100 rounded-lg font-semibold border border-2 cursor-pointer opacity-40 hover:opacity-80 " onclick="CopyMessage('.${userMessageId}', this)">
+>>>>>>>> dev:src/renderer/js/managers/ConversationManager/hfChatManager.js
 		Copy
 		</button>
 		</div>

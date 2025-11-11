@@ -6,9 +6,9 @@ const keytar = require('keytar');
 let mainWindow;
 
 const isDev = !app.isPackaged;
-const iconPath = isDev
-    ? path.join(__dirname, '../assets/IntelliDesk.png') // for dev
-    : path.join(process.resourcesPath, 'assets/IntelliDesk.png'); // for prod;
+let iconPath = isDev
+    ? path.join(__dirname, '../assets/intellidesk.png') // for dev
+    : path.join(process.resourcesPath, 'assets/intellidesk.png'); // for prod;
 
 // Fallback to a generic icon or skip setting it
 if (!fs.existsSync(iconPath)) {
@@ -34,29 +34,29 @@ ipcMain.on('Notify', (event, data) => {
     }
 
     // Optionally send a response back
-    // event.reply('fromMain', data);
+    // event.reply('reply-from-main-process', data);
 });
 
 
 // Handle IPC messages from renderer
-ipcMain.on('toMain', (event, data) => {
+ipcMain.on('dispatch-to-main-process', (event, data) => {
     //console.log('Received data from renderer:', data);
     // Optionally send a response back
-    event.reply('fromMain', data);
+    event.reply('reply-from-main-process', data);
 });
 
 // Handle IPC messages from renderer
-ipcMain.on('fromVision-ToMain', (event, data) => {
+ipcMain.on('desk.api-update-visionchat', (event, data) => {
     //console.log('Received data from VChat:', data);
     // Optionally send a response back
-    event.reply('fromMain-ToVision', data);
+    event.reply('reply-from-main-process', data);
 });
 
 // Handle IPC messages from renderer
-ipcMain.on('fromChat-ToMain', (event, data) => {
+ipcMain.on('desk.api-update-chat', (event, data) => {
     //console.log('Received data from Chat:', data);
     // Optionally send a response back
-    event.reply('fromMain-ToChat', data);
+    event.reply('reply-from-main-process', data);
 });
 
 app.disableHardwareAcceleration()
@@ -113,7 +113,8 @@ const template = [
         submenu: [
             { label: 'Minimize', accelerator: 'CmdOrCtrl+M', role: 'minimize' },
             { label: 'Close', accelerator: 'CmdOrCtrl+W', role: 'close' },
-            {   label: 'Toggle Full Screen',
+            {
+                label: 'Toggle Full Screen',
                 role: 'togglefullscreen',       // built-in behavior
                 accelerator: 'F11'              // explicit on all platforms
             }
@@ -174,9 +175,14 @@ function createWindow() {
             sandbox: false, // Disable sandboxing
         }
     });
-
-    // Load the main application when it is ready
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html')); // Load your HTML file
+    if (isDev) {
+        mainWindow.loadURL('http://localhost:40099/')
+        // Open DevTools in development
+        //mainWindow.webContents.openDevTools()
+    } else {
+        // Load the main application when it is ready
+        mainWindow.loadFile(path.join(__dirname, '../../build/index.html')); // Load your HTML file
+    }
 
     // Show the main window and close the loading window when the main window is ready to show**
     mainWindow.once('ready-to-show', () => {
@@ -189,7 +195,7 @@ function createWindow() {
 }
 
 // Set the app user model ID
-app.setAppUserModelId('com.IntelliDesk.app');
+app.setAppUserModelId('com.intellidesk.app');
 
 app.on('ready', async () => {
     try {
@@ -244,7 +250,7 @@ app.on('activate', () => {
 });
 
 
-const SERVICE_NAME = 'com.IntelliDesk.app'
+const SERVICE_NAME = 'com.intellidesk.app'
 
 // IPC handler to save keys
 ipcMain.handle('save-keys', async (event, keys) => {
@@ -258,11 +264,22 @@ ipcMain.handle('save-keys', async (event, keys) => {
     return { success: true };
 });
 
+// IPC handler for keys reset
+ipcMain.handle('reset-keys', async (event, accounts) => {
+    accounts.forEach(async (account) => {
+        try {
+            await keytar.deletePassword(SERVICE_NAME, account);
+        } catch (err) {
+            //console.log(err)
+        }
+    })
+    return { success: true };
+});
+
 // IPC handler to retrieve keys
 ipcMain.handle('get-keys', async (event, keyType) => {
     const mistralKey = await keytar.getPassword(SERVICE_NAME, 'mistral') || null;
     const huggingfaceKey = await keytar.getPassword(SERVICE_NAME, 'huggingface') || null;
-
     if (keyType) {
         return (keyType === "mistral") ? { mistralKey } : { huggingfaceKey };
 
@@ -294,21 +311,35 @@ ipcMain.handle('save-dg-As-PNG', async (event, buffer, path) => {
     }
 });
 
+
+// IPC handler for keys reset
+ipcMain.handle('get-app-version', async (event, accounts) => {
+    try {
+        return app.getVersion()
+    } catch (err) {
+        //console.log(err)
+    }
+});
+
+ipcMain.handle('get-dev-status', async (event) => {
+    return isDev
+})
+
 async function prepDirectories() {
     try {
         const baseDir = path.join(app.getPath('home'), '.IntelliDesk');
 
         // Create the base .IntelliDesk directory if it doesn't exist
         fs.mkdirSync(baseDir, { recursive: true });
-        console.log(`Ensured base directory: ${baseDir}`);
+        //console.log(`Ensured base directory: ${baseDir}`);
 
         // Define subdirectories to be created inside .IntelliDesk
-        const subdirs = ['.IntelliDesk.config', '.IntelliDesk.store', '.IntelliDesk.cache'];
+        const subdirs = ['.config', '.store', '.cache'];
 
         subdirs.forEach(sub => {
             const fullPath = path.join(baseDir, sub);
             fs.mkdirSync(fullPath, { recursive: true });
-            console.log(`Ensured subdirectory: ${fullPath}`);
+            //console.log(`Ensured subdirectory: ${fullPath}`);
         });
     } catch (error) {
         console.log(error)

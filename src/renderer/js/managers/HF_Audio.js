@@ -62,7 +62,7 @@ function displayResponse(text){
 	<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
 	</svg>
 	</div>
-	<div class="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onclick="CopyAll('.${aiMessageUId}');">
+	<div class="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onclick="CopyMessage('.${aiMessageUId}');">
 	<svg class="w-5 md:w-6 h-5 md:h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 	<path class="fill-black dark:fill-pink-300" fill-rule="evenodd" clip-rule="evenodd" d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"/></path>
 	</svg>
@@ -143,7 +143,7 @@ async function main(fpath){
 		// Add audio to user interface
 		displayUserAudio(fpath)
 		//Read data from file
-		const data = await window.electron.readFileData(fpath)
+		const data = await window.desk.api.readFileData(fpath)
 
 		// call automaticSpeechRecognition
 		const response = await autoSpeech(data)
@@ -243,7 +243,7 @@ function utilityScriptExists(){
 	console.log("Utility missing. Adding");
 	// add export utility script
 	// Sending a message to the main process if script does not exist already
-	window.electron.send('toMain', { message: 'set-Utitility-Script' })
+	window.desk.api.send('dispatch-to-main-process', { message: 'set-Utitility-Script' })
 	return exists
 }
 
@@ -295,8 +295,7 @@ async function startRecording(task=null) {
 			microphoneSVG.classList.remove('animate-pulse')
 
 			// Save the audioBlob to a temporary file
-			const savePath = await window.electron.saveRecording(audioBlob);
-			console.log(savePath)
+			const savePath = await window.desk.api.saveRecording(audioBlob);
 
 			// Release microphone
 			await ReleaseMediaDevice();

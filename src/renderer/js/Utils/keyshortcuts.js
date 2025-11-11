@@ -1,5 +1,3 @@
-const settingsModal = document.getElementById("settingsModal");
-
 document.addEventListener("keydown", event => {
     // 1) if it’s F11, do nothing here and let the browser/Electron handle it
     if (event.key === "F11" || event.code === "F11") {
@@ -9,26 +7,31 @@ document.addEventListener("keydown", event => {
     // 2) now your other shortcuts, with proper grouping
     if ((event.ctrlKey && (event.key === "S" || event.key === "s"))) {
         event.preventDefault();
-        settingsModal.classList.toggle("hidden");
+        document.dispatchEvent(new CustomEvent('open-settings'));
 
     } else if (event.key === "Escape") {
         event.preventDefault();
-        settingsModal.classList.add("hidden");
+        document.dispatchEvent(new CustomEvent('close-settings'));
+        if (!document.getElementById('previewModal')?.classList.contains('hidden')) {
+            document.dispatchEvent(new CustomEvent('close-dropzone'));
+        } else {
+            document.dispatchEvent(new CustomEvent('close-preview'));
+        }
 
     } else if ((event.ctrlKey && (event.key === "P" || event.key === "p"))) {
         event.preventDefault();
-        document.getElementById("togglePane").click();
+        document.getElementById("togglePane")?.click();
 
     } else if ((event.ctrlKey && (event.key === "N" || event.key === "n"))) {
         event.preventDefault();
-        NewConversation(event);
+        //NewConversation(event);
 
     } else if ((event.ctrlKey && (event.key === "F" || event.key === "f"))) {
         event.preventDefault();
-        attachFiles.click();
+        document.getElementById('AttachFiles')?.click();;
 
     } else if ((event.altKey && (event.key === "A" || event.key === "a"))) {
         event.preventDefault();
-        document.getElementById("AutoScroll").click();
+        document.getElementById("autoScroll")?.click();
     }
 });

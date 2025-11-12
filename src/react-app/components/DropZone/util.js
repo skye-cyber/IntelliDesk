@@ -85,7 +85,7 @@ export function handleFiles(files) {
         Uploaded += 1;
 
         // Create a list item for the file
-        window.reactPortalBridge.showComponentInTarget('FileItem', 'FilePreview', { file: file, is_image: fileType === 'image' })
+        window.reactPortalBridge.showComponentInTarget('FileItem', 'FilePreview', { file: file, is_image: fileType === 'image' }, "uploade_files")
 
         const reader = new FileReader();
 
@@ -115,6 +115,10 @@ export function handleFiles(files) {
     } else {
         waitForElement('#EmptyDisplay', (el) => el.classList.remove('hidden'))
     }
+
+    setTimeout(() => {
+        window.reactPortalBridge.showComponentInTarget('UploadeFileIndicator', 'userInputContainer', {}, "file_count")
+    }, 1000)
 }
 
 // Helper functions you'll need to add:

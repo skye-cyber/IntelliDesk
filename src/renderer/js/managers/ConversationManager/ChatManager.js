@@ -42,6 +42,7 @@ export class ChatManager {
                 document.getElementById('empty-conversations').classList.add('hidden');
 
                 // Define the colors you want to cycle through
+                window.reactPortalBridge.closeComponent('chatItem', true)
 
                 for (let [index, file] of files.entries()) {
                     if (window.desk.api.getExt(file) === '.json') {

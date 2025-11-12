@@ -59,7 +59,7 @@ export const ConversationItem = ({ metadata, portal_id }) => {
     const handleItemClick = useCallback((item) => {
         // Remove animation from previous item as the active item is changing
         if (chatmanager.activeItem) {
-            chatmanager.activeItem.classList.remove('animate-heartpulse');
+            chatmanager.activeItem.classList.remove('animate-heartpulse-slow');
             chatmanager.activeItem.querySelector('#active-dot').classList.add('hidden');
         }
 

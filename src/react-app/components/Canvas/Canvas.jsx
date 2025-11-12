@@ -474,10 +474,12 @@ export const Canvas = ({ isOpen, onToggle }) => {
             //mainLayoutAWfitAdjust('retract')
         }, 400)
         waitForElement('#main-container-center', (container) => {
-            if (container.classList.contains('md:w-[96vw]')) {
-                container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]')
-                container.classList.add('w-[50vw]')
+            if (window.StateManager.get("sidebar-open")) {
+                container.classList.remove('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
+            } else {
+                container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')
             }
+            container.classList.add('w-[50vw]')
         });
 
         //Adjust main interface width for max space usage
@@ -511,10 +513,13 @@ export const Canvas = ({ isOpen, onToggle }) => {
         }, 400)
 
         waitForElement('#main-container-center', (container) => {
-            if (container.classList.contains('w-[50vw]')) {
-                container.classList.remove('w-[50vw]')
-                container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]')
+
+            if (window.StateManager.get("sidebar-open")) {
+                container.classList.add('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
+            } else {
+                container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')
             }
+            container.classList.remove('w-[50vw]')
         });
 
         // Re-Adjust main interface width to normal
@@ -567,7 +572,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                                 </path>
                             </svg>
                         </button>
-                        <span data-action='arial-title' className='absolute -bottom-10 -left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-xs font-semibold text-primary-950 dark:text-white bg-primary-100 dark:bg-zinc-700 rounded-xl p-1 w-fit max-18 whitespace-pre font-handwriting'>Close Canvas</span>
+                        <span data-action='arial-title' className='absolute -bottom-6 -left-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-xs font-semibold text-primary-950 dark:text-white bg-gray-100 dark:bg-zinc-700 rounded-xl p-1 w-fit max-18 whitespace-pre font-handwriting'>Close Canvas</span>
                     </div>
 
                     <h2 className="hidden xl:flex text-xl font-semibold text-purple-900 dark:text-purple-200">Canvas</h2>
@@ -623,7 +628,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                         {/* Line numbers gutter */}
                         <pre id="line-numbers"
                             onScroll={syncScroll}
-                            className="line-numbers font-mon text-xs leading-loose text-[#a07add] text-right select-[1.5rem] p-2 block h-full max-h-[92vh] min-w-fit max-w-12 bg-purple-100 dark:bg-primary-950 px-4 pt-0 border-r border-purple-200 dark:border-purple-700 transition-colors duration-500 text-sm font-mono flex-shrink-0 bg-opacity-100 overflow-auto scrollbar-hide"></pre>
+                            className="line-numbers font-mon text-xs leading-loose text-[#a07add] text-right select-[1.5rem] p-2 block h-full max-h-[92vh] min-w-fit max-w-12 bg-purple-100 dark:bg-primary-950 px-4 pt-0 border-r border-purple-200 dark:border-purple-700 transition-colors duration-500 text-sm font-mono flex-shrink-0 bg-opacity-100 overflow-auto scrollbar-hide pt-3"></pre>
 
                         {/* Code content scrollable container */}
                         <div id="code-scroll-wrapper" className="flex flex-row flex-1 pl-2 overflow-hidden">
@@ -631,7 +636,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                             <pre id="code-view"
                                 tabIndex="0"
                                 aria-label="Code editor view"
-                                className="relative flex-1 h-auto h-full whitespace-pre-wrap leading-[1.5rem] text-sm font-mono transform transition-tranform duration-100 focus:ring-none focus:outline-none cursor-pen overflow-auto scrollbar-custom border-l border-primary-400"
+                                className="relative flex-1 h-auto h-full whitespace-pre-wrap leading-[1.5rem] text-sm font-mono transform transition-tranform duration-100 focus:ring-none focus:outline-none cursor-pen overflow-auto scrollbar-custom border-l border-primary-400 pt-3"
                                 contentEditable="true"
                                 spellCheck="false"
                                 data-portal-container="code_canvas"

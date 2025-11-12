@@ -10,6 +10,8 @@ import { MessageList } from '../Chat/MessageList';
 
 const chatutil = new ChatUtil()
 
+window.StateManager.set("sidebar-open", false)
+
 const Manager = new ChatManager();
 export const StartNewConversation = (model, details = {}) => {
     // Clear chatArea
@@ -47,12 +49,12 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             waitForElement('#main-container-center', (container) => {
                 if (container.classList.contains('md:w-[96vw]')) {
                     //container.classList.replace('w-[96vw]', 'w-[75vw]');
-                    container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[95vw]', 'lg:w-[94vw]')
+                    container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')
                     container.classList.add('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]');
                 }
-
             });
         });
+        window.StateManager.set("sidebar-open", true)
     }, [onToggle]);
 
     const hidePanel = useCallback(() => {
@@ -64,10 +66,11 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             waitForElement('#main-container-center', (container) => {
                 if (container.classList.contains('w-[100vw]')) {
                     container.classList.remove('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
-                    container.classList.add('w-[calc(100vw-40px)]', 'md:w-[95vw]', 'lg:w-[94vw]');
+                    container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]');
                 }
             });
         });
+        window.StateManager.set("sidebar-open", false)
     }, []);
 
     const togglePanel = useCallback(() => {

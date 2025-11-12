@@ -104,7 +104,11 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
                 // Case 2: Incomplete tag timeout (prevent infinite wait)
                 else if (output.length >= 200) {
                     console.warn("Name tag incomplete after 200 chars, treating as plain text");
-                    output = output.replace(/<name>?/g, ""); // Remove both <name> and <name
+                    output = output
+                        .replace(/<name>?/g, "") // Remove both <name> and <name
+                        .replace("<name>", "")
+                        .replace("</name>", "")
+
                     actualResponse = output;
                 } else {
                     // Continue accumulating for complete tag

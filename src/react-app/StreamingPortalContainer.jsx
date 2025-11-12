@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Diagram } from './components/DiagramUI/diagram';
-import { UserMessage, AiMessage, LoadingAnimation } from './components/ConversationRenderer/Renderer';
+import { UserMessage, AiMessage } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { FileItem } from './components/DropZone/dropzone';
+import { LoadingAnimation } from './components/StatusUI/StatusUI';
 
 const streamingComponentRegistry = {
     Diagram,
@@ -12,8 +13,6 @@ const streamingComponentRegistry = {
     LoadingAnimation,
     ConversationItem,
     FileItem,
-    //DropZone,
-    //FilePreview
 };
 
 export const StreamingPortalContainer = () => {
@@ -90,8 +89,8 @@ export const StreamingPortalContainer = () => {
                 const actual_response = data?.actual_response
                 console.log(portalId, data)
                 if (actual_response) portalData.props.actual_response += actual_response
-                if(data.think_content) portalData.props.think_content = data.think_content
-                    if(data.conversation_name) portalData.props.conversation_name = data.conversation_name
+                if (data.think_content) portalData.props.think_content = data.think_content
+                if (data.conversation_name) portalData.props.conversation_name = data.conversation_name
                 portalData.streamData = [...portalData.streamData, data];
 
                 //console.log('📊 Portal data after append:', portalData);
@@ -120,24 +119,25 @@ export const StreamingPortalContainer = () => {
             const pid = typeof portalId === 'string' ? portalId : portalId?.id || portalId;
 
             if (!portalDataRef.current.has(pid)) {
-                //console.warn('❌ Portal not found for append:', pid);
+                console.warn('❌ Portal not found for append:', pid);
                 return;
             }
 
             const portalData = portalDataRef.current.get(pid);
             const {
                 mergeStrategy = 'auto',
-              target = 'auto'
+                target = 'auto',
+                replace = { target_props: [], repvalues: [] }
             } = options;
 
             // Auto-detect based on data structure if not specified
             const finalTarget = target === 'auto' ?
-            (data.actual_response !== undefined ? 'props' : 'streamData') :
-            target;
+                (data.actual_response !== undefined ? 'props' : 'streamData') :
+                target;
 
             const finalMergeStrategy = mergeStrategy === 'auto' ?
-            (finalTarget === 'props' ? 'update' : 'append') :
-            mergeStrategy;
+                (finalTarget === 'props' ? 'update' : 'append') :
+                mergeStrategy;
 
             /*
              * console.log(`🔄 Processing append:`, {
@@ -150,7 +150,7 @@ export const StreamingPortalContainer = () => {
 
             // Handle based on target and strategy
             if (finalTarget === 'props') {
-                handlePropsUpdate(portalData, data, finalMergeStrategy);
+                handlePropsUpdate(portalData, data, finalMergeStrategy, replace);
             } else {
                 handleStreamDataAppend(portalData, data, finalMergeStrategy);
             }
@@ -171,7 +171,7 @@ export const StreamingPortalContainer = () => {
         };
 
         // Handle props updates (current state)
-        const handlePropsUpdate = (portalData, newData, strategy) => {
+        const handlePropsUpdate = (portalData, newData, strategy, replace) => {
             switch (strategy) {
                 case 'update':
                     // Merge props, handling special fields
@@ -185,7 +185,7 @@ export const StreamingPortalContainer = () => {
 
                 case 'append':
                     // Append to string fields, replace others
-                    portalData.props = appendProps(portalData.props, newData);
+                    portalData.props = appendProps(portalData.props, newData, replace);
                     break;
 
                 default:
@@ -254,7 +254,7 @@ export const StreamingPortalContainer = () => {
         };
 
         // Props appending (for chunked responses)
-        const appendProps = (currentProps, newData) => {
+        const appendProps = (currentProps, newData, replace) => {
             const updated = { ...currentProps };
 
             for (const [key, value] of Object.entries(newData)) {
@@ -262,7 +262,19 @@ export const StreamingPortalContainer = () => {
 
                 if (typeof currentProps[key] === 'string' && typeof value === 'string') {
                     // Append to string fields
-                    updated[key] = (currentProps[key] || '') + value;
+                    let data = (currentProps[key] || '') + value;
+
+                    // Replacement - only if this key is in target_props AND we have repvalues
+                    if (replace && replace.target_props && replace.target_props.includes(key) && replace.repvalues && replace.repvalues.length > 0) {
+                        //console.log("BEFORE:", data)
+                        // Apply each replacement sequentially
+                        replace.repvalues.forEach(replacement => {
+                            data = data.replace(replacement.pattern, replacement.repl);
+                        });
+                        //console.log("AFTER:", data)
+                    }
+
+                    updated[key] = data;
                 } else {
                     // Replace other fields
                     updated[key] = value;
@@ -273,8 +285,7 @@ export const StreamingPortalContainer = () => {
         };
 
         const handleStreamClose = (event) => {
-            const { id, prefix } = event.detail;
-            const portalId = id;
+            const { portalId, prefix } = event.detail;
 
             if (prefix) {
                 // Remove all portals that start with this portalId as prefix
@@ -282,7 +293,7 @@ export const StreamingPortalContainer = () => {
 
                 // Find all portal IDs that match the prefix
                 portalDataRef.current.forEach((value, key) => {
-                    if (key.startsWith(portalId)) {
+                    if (key.startsWith(portalId.id)) {
                         portalsToRemove.push(key);
                     }
                 });
@@ -301,10 +312,9 @@ export const StreamingPortalContainer = () => {
                     return newMap;
                 });
 
-                //console.log(`Removed ${portalsToRemove.length} portals with prefix: ${portalId}`);
             } else {
                 // Original behavior - remove single portal
-                portalDataRef.current?.delete(portalId);
+                portalDataRef.current?.delete(portalId.id);
                 setStreamingPortals(prev => {
                     const newMap = new Map(prev);
                     newMap?.delete(portalId);

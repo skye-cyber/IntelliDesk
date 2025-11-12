@@ -180,7 +180,7 @@ class StreamingPortalBridge {
     // Close a streaming portal
     closeStreamingPortal(portalId, prefix = false) {
         const event = new CustomEvent('react-portal-stream-close', {
-            detail: { id: portalId, prefix: prefix }
+            detail: { portalId: portalId, prefix: prefix }
         });
         document.dispatchEvent(event);
     }

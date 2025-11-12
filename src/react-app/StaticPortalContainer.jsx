@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Diagram } from './components/DiagramUI/diagram';
 import ReactDOM from 'react-dom';
-import { UserMessage, AiMessage, LoadingAnimation } from './components/ConversationRenderer/Renderer';
+import { UserMessage, AiMessage } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { FileItem } from './components/DropZone/dropzone';
+import { UploadeFileIndicator } from './components/DropZone/uploads';
+import { LoadingAnimation } from './components/StatusUI/StatusUI';
 
 const componentRegistry = {
     Diagram,
@@ -12,8 +14,7 @@ const componentRegistry = {
     LoadingAnimation,
     ConversationItem,
     FileItem,
-    //DropZone,
-    //FilePreview
+    UploadeFileIndicator
 };
 
 export const StaticPortalContainer = () => {

@@ -10,6 +10,13 @@ waitForElement('#chatArea', (el) => {
     window.streamingPortalBridge.registerStreamingComponent('chatArea', el);
 })
 
+/*
+waitForElement('#chat-container', (el) => {
+    window.reactPortalBridge.registerContainer('chatContainer', el);
+    window.streamingPortalBridge.registerStreamingComponent('chatContainer', el);
+})
+*/
+
 waitForElement('#conversations', (el) => {
     window.reactPortalBridge.registerContainer('conversations', el);
     window.streamingPortalBridge.registerStreamingComponent('conversations', el);
@@ -17,12 +24,17 @@ waitForElement('#conversations', (el) => {
 
 waitForElementSimple('.FilePreview', (el) => {
     window.reactPortalBridge.registerContainer('FilePreview', el);
-    window.streamingPortalBridge.registerStreamingComponent('FilePreview', el);
+    //window.streamingPortalBridge.registerStreamingComponent('FilePreview', el);
 })
 
 waitForElement('#chat-container', (el) => {
     window.reactPortalBridge.registerContainer('chatContainer', el);
-    window.streamingPortalBridge.registerStreamingComponent('chatContainer', el);
+    //window.streamingPortalBridge.registerStreamingComponent('chatContainer', el);
+})
+
+waitForElement('#userInputContainer', (el) => {
+    window.reactPortalBridge.registerContainer('userInputContainer', el);
+    //window.streamingPortalBridge.registerStreamingComponent('userInput-wrapper', el);
 })
 
 export function RegisterCanvas() {

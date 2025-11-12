@@ -139,11 +139,11 @@ export async function* generateTextChunks(input, message = null, hf = false) {
         xml: "<name>Test Conversation</name>This is the actual response content after the name tag.",
         code: "```javascript\n function example() {\n\t return 'Hello World';\n }\n // This is a code example\n```",
         long: "This is a much longer message designed to test streaming with multiple chunks and various edge cases including line breaks\nand special characters like <, >, &, and @ symbols.",
-        mixed: "<think>Let me analyze this...</think><name>Analysis Result</name>The final answer is 42.",
+        mixed: "<name>Analysis Result</name><think>\nLet me analyze this...</think>\nThe final answer is 42.",
         edge: "Incomplete<name>Partial",
         empty: "",
         continue: `<continued> Continuation response </continued> ${code}`,
-        name: "<name>Test c name</name>The rest of response goes here Rename conversatiRename conversatiRename conversatiRename conversati",
+        name: "<name>Test c name</name>The rest of response goes here",
         think: thinkms
     };
 

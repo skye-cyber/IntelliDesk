@@ -1,0 +1,28 @@
+import React, { useCallback } from "react";
+
+export const UploadeFileIndicator = ({ portal_id }) => {
+
+    const clearFiles = useCallback(() => {
+        // Filter out files whose name matches the given name
+        window.filedata = []
+        // Close the portal component
+        window.reactPortalBridge.closeComponent('uploade_files', true);
+        window.reactPortalBridge.closeComponent(portal_id);
+
+    }, []);
+
+    return (
+        <>
+            {/*Show uploaded files*/}
+            <div
+                id="uploaded files indicator"
+                tilte="Uploaded files"
+                className='absolute left-0 -top-6 -z-10 text-gray-800 dark:text-white bg-secondary-200 dark:bg-accent-600 flex justify-between w-full sm:w-[70vw] xl:w-[50vw] h-8 px-2 rounded-t-md'>
+                <span>{window.filedata.length} files selected</span>
+                <svg onClick={clearFiles} title="clear files" aria-label="clear files" className='text-gray-900 text-lg cursor-pointer h-5 w-5 fill-gray-800 dark:fill-white' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                    <path d="M290.4 70C288.9 66.4 285.4 64 281.5 64L262.5 64C258.6 64 255 66.4 253.6 70L232.9 121.7C229.7 129.7 218.3 129.7 215.1 121.7L194.4 70C192.9 66.4 189.4 64 185.5 64L176 64C149.5 64 128 85.5 128 112L128 320L512 320L512 112C512 85.5 490.5 64 464 64L358.5 64C354.6 64 351 66.4 349.6 70L328.9 121.7C325.7 129.7 314.3 129.7 311.1 121.7L290.4 70zM128 368L128 384C128 419.3 156.7 448 192 448L256 448L256 512C256 547.3 284.7 576 320 576C355.3 576 384 547.3 384 512L384 448L448 448C483.3 448 512 419.3 512 384L512 368L128 368zM320 528C311.2 528 304 520.8 304 512C304 503.2 311.2 496 320 496C328.8 496 336 503.2 336 512C336 520.8 328.8 528 320 528z" />
+                </svg>
+            </div>
+        </>
+    )
+}

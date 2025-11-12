@@ -13,11 +13,11 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
 
     const _Timer = new window.Timer();
 
-    chatutil.hide_suggestions()
+    //chatutil.hide_suggestions()
     //console.log('vision')
     StateManager.set('processing', true);
 
-    const message_id = GenerateId('ai-msg');
+    let message_id = GenerateId('ai-msg');
     const export_id = GenerateId('export')
     const fold_id = GenerateId('fold')
 
@@ -145,25 +145,49 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
                 });
             }
 
-            if (actualResponse.includes('<continued>')) {
+            if (actualResponse.includes('<continued>') || actualResponse.includes('<continued')) {
+                // In first run set <continue> tag as chunk to avoid breaking due to stary chunks that may be part of it, rawDelta cannot be anything except for items in the tage
+                if (firt_run) {
+                    rawDelta = "<continued>"
+                    // Remove user message from interface
+                    window.reactPortalBridge.closeComponent(user_message_portal)
+                    firt_run = false
+                }
                 continued = true
-            }
 
-            if (continued) {
                 let target_message_portal = StateManager.get('prev_ai_message_portal')
-                actualResponse = actualResponse
-                    .replace("<continued>", "")
-                    .replace("</continued>", "")
+
+                // th now created portal and resuse the previous
+                if (target_message_portal) {
+                    window.streamingPortalBridge.closeStreamingPortal(message_portal)
+                } else {
+                    target_message_portal = message_portal
+                }
 
                 window.streamingPortalBridge.appendToStreamingPortal(target_message_portal, {
-                    actual_response: deltaContent,
+                    actual_response: rawDelta,
                     isThinking: isThinking,
                     think_content: thinkContent,
                     message_id: message_id,
                     export_id: export_id,
                     fold_id: fold_id,
                     conversation_name: conversationName
-                });
+                },
+                    {
+                        replace: {
+                            target_props: ["actual_response"],
+                            repvalues: [
+                                {
+                                    pattern: "<continued>",
+                                    repl: "\n"
+
+                                }, {
+                                    pattern: "</continued>",
+                                    repl: ""
+                                }
+                            ]
+                        }
+                    });
             } else {
                 window.streamingPortalBridge.updateStreamingPortal(message_portal, {
                     actual_response: actualResponse,
@@ -208,9 +232,6 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
          * 3. Store conversation history
          */
         if (continued) {
-            // Remove user message from interface
-            window.reactPortalBridge.closeComponent(user_message_portal)
-
             // Reset store user message state
             StateManager.set('user_message_portal', null)
 

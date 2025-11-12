@@ -13,9 +13,9 @@ document.addEventListener("keydown", event => {
         event.preventDefault();
         document.dispatchEvent(new CustomEvent('close-settings'));
         if (!document.getElementById('previewModal')?.classList.contains('hidden')) {
-            document.dispatchEvent(new CustomEvent('close-dropzone'));
-        } else {
             document.dispatchEvent(new CustomEvent('close-preview'));
+        } else {
+            document.dispatchEvent(new CustomEvent('close-dropzone'));
         }
 
     } else if ((event.ctrlKey && (event.key === "P" || event.key === "p"))) {

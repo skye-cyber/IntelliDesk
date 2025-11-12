@@ -70,3 +70,4 @@ export function normalizeMathDelimiters(text) {
 }
 
 window.normalizeMathDelimiters = normalizeMathDelimiters
+window.normaliZeMathDisplay=normaliZeMathDisplay

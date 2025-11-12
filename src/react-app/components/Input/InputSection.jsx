@@ -16,7 +16,7 @@ import('@js/managers/router.js').then(({ Router }) => {
 })
 
 
-export const InputSection = ({isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
+export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
     // State management for the toggle
     const [isAIActive, setIsAIActive] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -36,7 +36,7 @@ export const InputSection = ({isCanvasOpen, onToggleCanvas, onToggleRecording })
             const userInput = document.getElementById('userInput');
 
             const inputText = userInput.innerHTML.trim();
-            if (inputText) {
+            if (inputText && !StateManager.get('processing')) {
                 // Reset the input field
                 userInput.innerHTML = "";
                 // Adjust input field height
@@ -44,9 +44,7 @@ export const InputSection = ({isCanvasOpen, onToggleCanvas, onToggleRecording })
                 userInput.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight / 100) + 'px';
                 userInput.scrollTop = userInput.scrollHeight;
                 router.requestRouter(inputText, document.getElementById('chatArea'));
-                // document.getElementById('suggestions').classList.add('hidden');
-                //updateInputHeight(this)
-                //onSendMessage()
+                chatutil.hide_suggestions()
             }
         }
     })
@@ -178,8 +176,14 @@ export const InputSection = ({isCanvasOpen, onToggleCanvas, onToggleRecording })
     }, []);
 
     return (
-        <div id="userInput-wrapper" className="sticky flex justify-center w-full lg:items-center lg:justify-center z-30 bottom-[0.5%] transition-all duration-1000">
-            <section className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-500">
+        <div
+            id="userInput-wrapper"
+            className="sticky flex justify-center w-full lg:items-center lg:justify-center z-30 bottom-[0.5%] transition-all duration-1000">
+            <section
+                id="userInputContainer"
+                data-portal-container="userInputContainer"
+                className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-500">
+
                 {/* Custom input field */}
                 <div id="userInput"
                     contentEditable="true"
@@ -188,7 +192,8 @@ export const InputSection = ({isCanvasOpen, onToggleCanvas, onToggleRecording })
                     autoFocus={true}
                     data-placeholder="Message IntelliDesk 💫"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.textContent)} className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000"></div>
+                    onChange={(e) => setInputValue(e.target.textContent)} className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000 active:outline-none">
+                </div>
 
                 <section id="userInputSection" className="absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
                     <section className='flex'>

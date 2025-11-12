@@ -1,4 +1,4 @@
-import { Mistarlclient, appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
+import { Mistarlclient, mistral, appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
 import { GenerateId } from '../../../../../react-app/components/ConversationRenderer/Renderer';
@@ -38,13 +38,13 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     const { user_message_portal, userContent } = prep_user_input(text)
 
     try {
-        const stream = generateTextChunks(text)
-            /*await Mistarlclient.chat.stream({
+        const stream = //generateTextChunks(text)
+            await mistral.client.chat.stream({
                 model: model_name,
                 messages: window.desk.api.getHistory(true),
                 max_tokens: 2000,
             });
-            */
+
 
 
         let conversationName = null;

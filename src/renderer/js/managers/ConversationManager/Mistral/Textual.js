@@ -1,4 +1,4 @@
-import { Mistarlclient, appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
+import { Mistarlclient, mistral, appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
 import { GenerateId } from '../../../../../react-app/components/ConversationRenderer/Renderer';
@@ -42,15 +42,13 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        /*const stream = await Mistarlclient.chat.stream({
-           model: model_name,
-           messages: window.desk.api.getHistory(true),
-           max_tokens: 3000
-       });
-        */
+        const stream = await mistral.client.chat.stream({
+            model: model_name,
+            messages: window.desk.api.getHistory(true),
+            max_tokens: 3000
+        });
 
-
-        const stream = generateTextChunks(text)
+        //const stream = generateTextChunks(text)
 
         let conversationName = null;
         let continued = false;

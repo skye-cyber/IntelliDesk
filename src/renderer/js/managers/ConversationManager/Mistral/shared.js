@@ -1,6 +1,7 @@
 import { Mistral } from '@mistralai/mistralai';
 import { CanvasUtil } from '../../Canvas/CanvasUtils';
 import { ChatUtil, ChatDisplay } from '../util';
+import { MistralIntegration } from './MistralIntegration';
 
 export const chatdisplay = new ChatDisplay()
 export const chatutil = new ChatUtil()
@@ -23,6 +24,9 @@ async function loadApiKey() {
 
 await loadApiKey()
 export const Mistarlclient = new Mistral({ apiKey: MISTRAL_API_KEY });
+
+// Initialize
+export const mistral = new MistralIntegration(MISTRAL_API_KEY);
 
 
 /*

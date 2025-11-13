@@ -8,11 +8,12 @@ export const chatutil = new ChatUtil()
 export const canvasutil = new CanvasUtil()
 
 export let MISTRAL_API_KEY = null
+let globalIsDev = false;
 
 export const appIsDev = async () => {
     try {
-        const result = await window.desk.api2.appIsDev();
-        return result || false;
+        globalIsDev = await window.desk.api2.appIsDev();
+        return globalIsDev || false;
     } catch (error) {
         console.error('Error checking dev mode:', error);
         return false;

@@ -58,6 +58,14 @@ jobs:
                 source build-env/bin/activate
                 python3 -m pip install --upgrade pip setuptools
 
+            - name: Setup Python environment (macOS)
+              if: runner.os == 'macOS'
+              run: |
+                brew install python@3
+                python3 -m venv build-env
+                source build-env/bin/activate
+                python3 -m pip install setuptools
+
             - name: Install dependencies
               run: npm install --no-cache --verbose --force --no-audit --production
 
@@ -126,7 +134,7 @@ jobs:
                     sudo npm run build:electron -- --linux appimage --arm64
 
                     # Build SNAP separately
-                    sudo npm run build:electron -- --linux snap
+                    # sudo npm run build:electron -- --linux snap
                   elif [ "${{ runner.os }}" == "macOS" ]; then
                     # Build the macOS target
                     sudo npm run build:electron -- --mac --x64
@@ -134,7 +142,7 @@ jobs:
                   elif [ "${{ runner.os }}" == "Windows" ]; then
                     # Build the Windows target
                     npm run build:electron -- --win --x64
-                    npm run build:electron -- --win --ia32
+                    # npm run build:electron -- --win --ia32
                     npm run build:electron -- --win --arm64
                   else
                     echo "Unsupported platform: ${{ runner.os }}"

@@ -27,7 +27,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
         StateManager.set('user_message_portal', user_message_portal)
 
-        const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea')
+        const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea', {}, "loader")
 
         StateManager.set('loader-element-id', loader_id)
 
@@ -52,7 +52,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         });
         */
 
-        const stream = generateTextChunks(text)
+        //const stream = generateTextChunks(text)
         const y = 2 / 0
         let conversationName = null;
         let continued = false;
@@ -268,6 +268,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         chatutil.render_math()
 
         window.reactPortalBridge.closeComponent(loader_id)
+        loader_id = null
     } catch (error) {
         HandleProcessingEventChanges("hide")
 
@@ -277,7 +278,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
         //console.log(error)
-        appIsDev()
+        await appIsDev()
             ? handleDevErrors(error, StateManager.get('user_message_portal'), StateManager.get('ai_message_portal'), text)
             : errorHandler.showError({ title: error?.name, message: error.message || error, retryCallback: MistraChat, callbackArgs: { text: text, model_name: model_name } })
     }

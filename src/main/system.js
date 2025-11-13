@@ -23,6 +23,7 @@ class command {
         - Only suggest names for genuinely new conversation threads
         - Generally do not name if exhanges are 4+.
         - If uncertain, suggest name.
+        - Seperate name with rest for the response with newline.
 
         # Response Continuation
         - Use \`<continued>\` tags ONLY when user explicitly requests continuation

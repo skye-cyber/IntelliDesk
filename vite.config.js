@@ -6,8 +6,9 @@ export default defineConfig({
     plugins: [
         react()
     ],
-    root: resolve(__dirname, 'src/react-app'),
-    publicDir: resolve(__dirname, 'src/assets'),
+    base: './',
+    //root: resolve(__dirname, 'src/react-app'),
+    //publicDir: resolve(__dirname, 'src/assets'),
     server: {
         port: 40099,
     },
@@ -15,9 +16,16 @@ export default defineConfig({
         outDir: resolve(__dirname, 'build'),
         emptyOutDir: true,
         rollupOptions: {
-            input: resolve(__dirname, 'src/react-app/index.html'),
-            plugins: [
-            ]
+            input: resolve(__dirname, 'index.html'),
+            //input: resolve(__dirname, 'src/react-app/'),
+            /*
+             * output: {
+                // Ensure relative paths in build
+                entryFileNames: 'assets/[name]-[hash].js',
+                chunkFileNames: 'assets/[name]-[hash].js',
+                assetFileNames: 'assets/[name]-[hash].[ext]'
+            }
+            */
         },
     },
     resolve: {

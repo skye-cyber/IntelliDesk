@@ -9,7 +9,7 @@ export const canvasutil = new CanvasUtil()
 
 export let MISTRAL_API_KEY = null
 
-export const appIsDev = window.desk.api2.appIsDev
+export const appIsDev = window.desk.api2.appIsDev()
 
 StateManager.set('codeBuffer', {})
 

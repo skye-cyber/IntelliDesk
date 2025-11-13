@@ -1,12 +1,10 @@
 {
   "name": "intellidesk",
   "version": "2.0.0",
-  "description": "An application to interact with AI assistants for free.",
+  "description": "An ai application powered by mistral models",
   "main": "src/main/index.js",
-  "homepage": "src/renderer/home.html",
+  "homepage": "src/assets/home.html",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1",
     "tailwind:build": "NODE_ENV=production npx tailwindcss -i ./src/renderer/css/config.css -o ./src/renderer/css/styles.css --minify",
     "tailwind:watch": "npx tailwindcss -i ./src/renderer/css/config.css -o ./src/renderer/css/styles.css --watch",
@@ -17,7 +15,7 @@
     "dev:electron": "electron .",
     "build": "npm run build:react && npm run build:electron",
     "build:react": "vite build",
-    "build:electron": "node scripts/build.js",
+    "build:electron": "electron-builder",
     "preview": "vite preview"
   },
   "keywords": [],
@@ -114,7 +112,9 @@
     "README.md",
     "LICENSE",
     "package.json",
-    "src/**/*",
+    "build/**/*",
+    "src/renderer/**/*",
+    "src/main/**/*",
     "public/**/*",
     "!node_modules/"
   ],
@@ -133,6 +133,11 @@
       {
         "from": "src/assets/",
         "to": "assets/"
+      },
+      {
+        "from": "build/",
+        "to":"build/",
+        "filter": ["**/*"]
       },
       {
         "from": "node_modules/keytar",
@@ -217,7 +222,7 @@
       "icon": "src/icons",
       "maintainer": "Skye <swskye17@gmail.com>",
       "synopsis": "IntelliDesk Desktop",
-      "description": "Your AI assistant on all platforms"
+      "description": "AI for all tasks, chat, ocr, image-generation, document analysis ..."
     },
     "appImage": {
       "artifactName": "${productName}-${version}-${arch}.AppImage"

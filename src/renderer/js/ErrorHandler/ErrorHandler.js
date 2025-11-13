@@ -1,5 +1,5 @@
 import { Timer } from '../Timer/timer.js';
-import { waitForNamespace } from '../Utils/namespace_utils.js';
+// import { waitForNamespace } from '../Utils/namespace_utils.js';
 import { StateManager } from '../managers/StatesManager.js';
 import { HandleProcessingEventChanges } from '../Utils/chatUtils.js';
 
@@ -106,6 +106,7 @@ export class RequestErrorHandler {
             </div>
         </div>
         `;
+
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         this.attachModalEvents();
     }
@@ -501,6 +502,7 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null, 
 
         //userMessage?.remove();
         window.reactPortalBridge.closeComponent(user_message_pid)
+        window.reactPortalBridge.closeComponent(ai_message_pid)
 
         if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
 

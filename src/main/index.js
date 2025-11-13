@@ -8,7 +8,7 @@ let mainWindow;
 const isDev = !app.isPackaged;
 let iconPath = isDev
     ? path.join(__dirname, '../assets/intellidesk.png') // for dev
-    : path.join(process.resourcesPath, 'assets/intellidesk.png'); // for prod;
+    : path.join(process.resourcesPath, './assets/intellidesk.png'); // for prod;
 
 // Fallback to a generic icon or skip setting it
 if (!fs.existsSync(iconPath)) {
@@ -73,7 +73,9 @@ ipcMain.handle('show-documentation', () => {
             contextIsolation: true
         }
     });
-    _docWindow.loadFile(path.join(__dirname, '../assets/documentation.html'));
+    isDev
+        ? _docWindow.loadFile(path.join(__dirname, '../assets/documentation.html'))
+        : _docWindow.loadFile(path.join(process.resourcesPath, './assets/documentation.html'));
 });
 
 const template = [
@@ -159,7 +161,10 @@ function createWindow() {
         }
     });
 
-    loadingWindow.loadFile(path.join(__dirname, '../assets/loading.html'));
+    //isDev
+    loadingWindow.loadFile(path.join(__dirname, '../assets/loading.html'))
+    //: loadingWindow.loadFile(path.join(process.resourcesPath, './assets/loading.html'));
+
     loadingWindow.show(); // Show the loading window immediately
 
     // Create the main window
@@ -181,7 +186,9 @@ function createWindow() {
         //mainWindow.webContents.openDevTools()
     } else {
         // Load the main application when it is ready
-        mainWindow.loadFile(path.join(__dirname, '../../build/index.html')); // Load your HTML file
+        isDev
+            ? mainWindow.loadFile(path.join(__dirname, '../build/index.html'))
+            : mainWindow.loadFile(path.join(process.resourcesPath, './build/index.html'))
     }
 
     // Show the main window and close the loading window when the main window is ready to show**

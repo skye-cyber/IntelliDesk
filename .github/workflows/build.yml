@@ -41,7 +41,7 @@ jobs:
               run: |
                   sudo apt-get update
                   sudo apt-get install -y build-essential
-                  sudo apt-get install python3-distutils
+                  #sudo apt-get install python3-distutils
 
             - name: Setup Python environment (macOS)
               if: runner.os == 'macOS'

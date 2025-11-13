@@ -265,7 +265,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         window.reactPortalBridge.closeComponent(loader_id)
     } catch (error) {
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
-        console.log(error)
+        //console.log(error)
         appIsDev
             ? handleDevErrors(error, StateManager.get('user_message_portal'), StateManager.get('ai_message_portal'), text)
             : errorHandler.showError({ title: error?.name, message: error.message || error, retryCallback: MistraChat, callbackArgs: { text: text, model_name: model_name } })

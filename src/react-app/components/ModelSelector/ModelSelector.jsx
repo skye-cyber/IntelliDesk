@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { ModelCategory } from '@components/ModelCategory/ModelCategory';
 
 
-export const ModelSelector = ({ selectedModel = 'mistral-large-latest', onModelSelect, onClose }) => {
+export const ModelSelector = ({ selectedModel = 'mistral-medium-latest', onModelSelect, onClose }) => {
     const hfmodelCategories = [
 
         {

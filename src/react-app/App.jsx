@@ -41,7 +41,7 @@ const App = () => {
     //const { electron } = useElectron();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
+    const [selectedModel, setSelectedModel] = useState('mistral-medium-latest');
     const [isRecordingOn, setIsRecordingOn] = useState(false);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);

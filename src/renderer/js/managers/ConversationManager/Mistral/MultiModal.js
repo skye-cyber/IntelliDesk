@@ -23,7 +23,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     const export_id = GenerateId('export')
     const fold_id = GenerateId('fold')
 
-    const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea')
+    const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea', {}, "loader")
 
     StateManager.set('loader-element-id', loader_id)
 
@@ -49,8 +49,6 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
                 messages: window.desk.api.getHistory(true),
                 max_tokens: 2000,
             });
-
-
 
         let conversationName = null;
         let continued = false;
@@ -269,7 +267,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         window.desk.api.popHistory('user')
 
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
-        appIsDev
+        await appIsDev()
             ? handleDevErrors(error, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'), text, true)
             : errorHandler.showError({ title: error.name, message: error.message || error, retryCallback: MistraMultimodal, callbackArgs: { text: text, model_name: model_name } })
     }

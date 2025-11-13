@@ -476,13 +476,13 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null, 
     StateManager.set('retry-context', context)
 
     // Remove loader
-    document.getElementById('loader-parent')?.parentElement?.remove();
+    //document.getElementById('loader-parent')?.parentElement?.remove();
 
     const unsubscribe = requestErrorHandler.onRetry((error, context) => {
         context = StateManager.get('retry-context')
         //console.log("Retry callback executed with context:", context);
 
-        if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
+        //if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
 
         if (context.is_multimodal) {
             router.routeToMistral(context.userContent, window.currentModel);

@@ -51,16 +51,15 @@ export const StaticPortalContainer = () => {
             const { id, prefix } = event.detail;
             const portalId = id
 
-
             if (prefix) {
                 // Remove all portals that start with this portalId as prefix
-                setPortals(prev => prev.filter(portal => !portal.id.startsWith(portalId)));
+                setPortals(prev => prev.filter(portal => !portal?.id.startsWith(portalId)));
 
                 // Remove from targetedPortals state
                 setTargetedPortals(prev => {
                     const newMap = new Map();
                     for (const [containerId, portals] of prev.entries()) {
-                        newMap.set(containerId, portals.filter(p => !p.id.startsWith(portalId)));
+                        newMap.set(containerId, portals.filter(p => !p?.id.startsWith(portalId)));
                     }
                     return newMap;
                 });
@@ -68,12 +67,12 @@ export const StaticPortalContainer = () => {
                 //console.log(`Removed portals with prefix: ${portalId}`);
             } else {
                 // remove single portal
-                setPortals(prev => prev.filter(portal => portal.id !== portalId));
+                setPortals(prev => prev.filter(portal => portal?.id !== portalId));
 
                 setTargetedPortals(prev => {
                     const newMap = new Map();
                     for (const [containerId, portals] of prev.entries()) {
-                        newMap.set(containerId, portals.filter(p => p.id !== portalId));
+                        newMap.set(containerId, portals.filter(p => p?.id !== portalId));
                     }
                     return newMap;
                 });
@@ -104,11 +103,11 @@ export const StaticPortalContainer = () => {
     }, []);
 
     const closePortal = (portalId) => {
-        setPortals(prev => prev.filter(portal => portal.id !== portalId));
+        setPortals(prev => prev.filter(portal => portal?.id !== portalId));
         setTargetedPortals(prev => {
             const newMap = new Map();
             for (const [containerId, portals] of prev.entries()) {
-                newMap.set(containerId, portals.filter(p => p.id !== portalId));
+                newMap.set(containerId, portals.filter(p => p?.id !== portalId));
             }
             return newMap;
         });

@@ -18,8 +18,7 @@ import '@js/StatusUIManager/SuccessModal.js'
 import '@js/StatusUIManager/Manager.js'
 import { APIKeysManager } from '@components/ApiManager/api.jsx';
 import { DropZone } from '@components/DropZone/dropzone.jsx'
-import { NotificationFlyer } from '@components/Notifications/Notification.jsx'
-import { Notifcation } from '@components/Notification/notification';
+import { NotificationFlyer, Notifcation } from '@components/Notifications/Notification.jsx'
 import '@js/MathBase/MathNormalize.js';
 import '@js/MathBase/mathRenderer.js';
 import '@js/diagraming/Utils.js'

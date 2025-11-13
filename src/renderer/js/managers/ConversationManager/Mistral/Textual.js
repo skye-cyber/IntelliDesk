@@ -53,7 +53,6 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
 
         //const stream = generateTextChunks(text)
-        const y = 2 / 0
         let conversationName = null;
         let continued = false;
         let output = ""

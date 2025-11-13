@@ -45,12 +45,12 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        /*const stream = await mistral.client.chat.stream({
+        const stream = await mistral.client.chat.stream({
             model: model_name,
             messages: window.desk.api.getHistory(true),
             max_tokens: 3000
         });
-        */
+
 
         //const stream = generateTextChunks(text)
         const y = 2 / 0
@@ -275,7 +275,6 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         window.reactPortalBridge.closeComponent(StateManager.get('user_message_portal'))
         window.streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
         window.desk.api.popHistory('user')
-
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
         //console.log(error)
         await appIsDev()

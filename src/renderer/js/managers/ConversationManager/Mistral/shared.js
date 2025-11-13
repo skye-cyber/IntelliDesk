@@ -9,7 +9,15 @@ export const canvasutil = new CanvasUtil()
 
 export let MISTRAL_API_KEY = null
 
-export const appIsDev = async () => await window.desk.api2.appIsDev() || false
+export const appIsDev = async () => {
+    try {
+        const result = await window.desk.api2.appIsDev();
+        return result || false;
+    } catch (error) {
+        console.error('Error checking dev mode:', error);
+        return false;
+    }
+};
 
 StateManager.set('codeBuffer', {})
 

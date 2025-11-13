@@ -7,6 +7,7 @@ import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
 
+let ai_ms_pid
 
 export async function MistraChat({ text, model_name = window.currentModel }) {
     try {
@@ -14,8 +15,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         // Create Timer object
         const _Timer = new window.Timer();
 
-        //console.log("Reached Mistral chat", text)
-        //chatutil.hide_suggestions()
+        StateManager.set('user-text', text)
 
         let message_id = GenerateId('ai-msg');
         const export_id = GenerateId('export')
@@ -33,6 +33,9 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
         let message_portal = window.streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
 
+        // This shall be for errors
+        ai_ms_pid = message_portal
+
         // Scroll to bottom
         chatutil.scrollToBottom(chatArea, true);
 
@@ -42,14 +45,15 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        const stream = await mistral.client.chat.stream({
+        /*const stream = await mistral.client.chat.stream({
             model: model_name,
             messages: window.desk.api.getHistory(true),
             max_tokens: 3000
         });
+        */
 
-        //const stream = generateTextChunks(text)
-
+        const stream = generateTextChunks(text)
+        const y = 2 / 0
         let conversationName = null;
         let continued = false;
         let output = ""
@@ -233,6 +237,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
         //stop timer
         _Timer.trackTime("stop");
+        tm()
 
         // Reset send button appearance
         HandleProcessingEventChanges("hide")
@@ -264,9 +269,15 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
         window.reactPortalBridge.closeComponent(loader_id)
     } catch (error) {
+        HandleProcessingEventChanges("hide")
+
+        window.reactPortalBridge.closeComponent(StateManager.get('user_message_portal'))
+        window.streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
+        window.desk.api.popHistory('user')
+
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
         //console.log(error)
-        appIsDev
+        appIsDev()
             ? handleDevErrors(error, StateManager.get('user_message_portal'), StateManager.get('ai_message_portal'), text)
             : errorHandler.showError({ title: error?.name, message: error.message || error, retryCallback: MistraChat, callbackArgs: { text: text, model_name: model_name } })
     }

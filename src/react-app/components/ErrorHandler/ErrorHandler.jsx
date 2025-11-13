@@ -21,6 +21,10 @@ export class ErrorHandler {
         maxRetries = 3
     }) {
 
+        // Set text to the input section
+        const input = document.getElementById("userInput")
+        if (input) input.textContent = StateManager.get('user-text')
+
         // Clean up any existing error
         this.hideError();
 
@@ -229,7 +233,7 @@ export const ErrorModal = ({ error, onRetry, onClose, autoCloseDelay = 8000 }) =
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Enhanced Backdrop */}
-            <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-purple-900/20 to-black/60 backdrop-blur-xl transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-br from-black/0 via-purple-900/0 to-black/0 transition-opacity backdrop-brightness-50 duration-500" />
 
             {/* Main Modal */}
             <div

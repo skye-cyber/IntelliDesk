@@ -1,7 +1,7 @@
 {
   "name": "intellidesk",
   "version": "2.0.0",
-  "description": "An application to interact with AI assistants for free.",
+  "description": "An ai application powered by mistral models",
   "main": "src/main/index.js",
   "homepage": "src/assets/home.html",
   "scripts": {
@@ -222,7 +222,7 @@
       "icon": "src/icons",
       "maintainer": "Skye <swskye17@gmail.com>",
       "synopsis": "IntelliDesk Desktop",
-      "description": "Your AI assistant on all platforms"
+      "description": "AI for all tasks, chat, ocr, image-generation, document analysis ..."
     },
     "appImage": {
       "artifactName": "${productName}-${version}-${arch}.AppImage"

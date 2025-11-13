@@ -17,6 +17,7 @@ document.addEventListener("keydown", event => {
         } else {
             document.dispatchEvent(new CustomEvent('close-dropzone'));
         }
+        document.dispatchEvent(new CustomEvent("close-tool"))
 
     } else if ((event.ctrlKey && (event.key === "P" || event.key === "p"))) {
         event.preventDefault();

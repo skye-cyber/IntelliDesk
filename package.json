@@ -87,6 +87,7 @@
     "vm-browserify": "^1.1.2"
   },
   "dependencies": {
+    "@huggingface/inference": "^4.13.2",
     "@tailwindcss/typography": "^0.5.15",
     "base": "^3.0.0",
     "bl": "^6.0.16",
@@ -136,8 +137,10 @@
       },
       {
         "from": "build/",
-        "to":"build/",
-        "filter": ["**/*"]
+        "to": "build/",
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "node_modules/keytar",

@@ -8,6 +8,8 @@
 
 # IntelliDesk
 
+---
+
 ## About
 IntelliDesk is a versatile AI application that integrates advanced machine learning models from Hugging Face and Mistral to assist with tasks such as Natural Language Processing (NLP), Image Recognition, Image Generation, Data Analysis, and Machine Learning. Users can choose to utilize either or both models based on their requirements.
 
@@ -24,6 +26,8 @@ IntelliDesk is a versatile AI application that integrates advanced machine learn
                         │ (Existing)    │
                         └───────────────┘
 ```
+
+---
 
 ## Features
 
@@ -102,6 +106,8 @@ npm start
 
 This command starts the application in development mode.
 
+---
+
 ## Usage
 
 Upon launching IntelliDesk, you will be prompted to enter your API keys for Hugging Face and Mistral models. You can choose to use one or both models based on your preferences. The application will securely store these keys using `keytar`.
@@ -115,6 +121,8 @@ After entering your API keys, you can utilize IntelliDesk's features:
 <!-- **Machine Learning:** Employ the `mlTrainer` module to train and deploy models.-->
 
 Refer to the [IntelliDesk Documentation](https://github.com/skye-cyber/IntelliDesk.git) for detailed usage instructions and examples.
+
+---
 
 ## Interface
 
@@ -132,11 +140,17 @@ IntelliDesk offers both Light and Dark modes for user interface customization. B
 
 ### File Upload
 
-![File Upload Preview](./src/common/file-selet-modal.png)
+![File Upload Preview](./src/common/file-upload.png)
 
-### Image Generation
+### Settings
 
-![Image Generation Preview](./src/common/image-preview.png)
+![Image Generation Preview](./src/common/settings.png)
+
+### Chat ui & conversations
+
+![Image Generation Preview](./src/common/chat-ui.png)
+
+---
 
 ## Contribution
 
@@ -147,6 +161,8 @@ We welcome contributions from the community! To contribute:
 3. **Submit a Pull Request:** Once your changes are ready, submit a pull request for review.
 
 Please ensure that your code adheres to existing coding standards and includes appropriate tests.
+
+---
 
 ## License
 This program is free software: you can redistribute it and/or modify

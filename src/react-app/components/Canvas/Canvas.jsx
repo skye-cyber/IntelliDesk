@@ -128,7 +128,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
         openCanvas()
         new ResizeClassToggler(userInput, ToggleCanvasBt, 430, 'sm:flex');
-        new ResizeClassToggler(userInput, imageGen, 400, 'sm:flex');
+        //new ResizeClassToggler(userInput, imageGen, 400, 'sm:flex');
 
         new Editor(codeView, [updateHandIndicator, updateLineNumbers])
     }, []);

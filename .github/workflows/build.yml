@@ -54,7 +54,7 @@ jobs:
                     echo "Installing Python via brew"
                     brew install python@3.11
                     brew link --overwrite python@3.11
-                    npm config set python $(which python3)
+                    # npm config set python $(which python3)
                 fi
                 echo "Using system Python for distutils"
                 /usr/bin/python3 -c "import distutils; print('System Python distutils available')"

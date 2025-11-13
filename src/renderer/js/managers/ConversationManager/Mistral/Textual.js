@@ -236,7 +236,6 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
         //stop timer
         _Timer.trackTime("stop");
-        tm()
 
         // Reset send button appearance
         HandleProcessingEventChanges("hide")
@@ -270,10 +269,9 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         loader_id = null
     } catch (error) {
         HandleProcessingEventChanges("hide")
-
+        window.desk.api.popHistory("user")
         window.reactPortalBridge.closeComponent(StateManager.get('user_message_portal'))
         window.streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
-        window.desk.api.popHistory('user')
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
         //console.log(error)
         await appIsDev()

@@ -182,7 +182,7 @@ const api = {
     popHistory: (role = null) => {
         if (!role) {
             ConversationHistory[0].chats.pop();
-        } else if (ConversationHistory[0].chats.slice(-1).role === role) {
+        } else if (ConversationHistory[0].chats?.slice(-1)[0]?.role === role) {
             ConversationHistory[0].chats.pop();
         }
 

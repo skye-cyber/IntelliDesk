@@ -261,12 +261,12 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
 
     } catch (error) {
         HandleProcessingEventChanges("hide")
+        window.desk.api.popHistory('user')
 
         window.reactPortalBridge.closeComponent(StateManager.get('user_message_portal'))
         window.streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
-        window.desk.api.popHistory('user')
-
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
+
         await appIsDev()
             ? handleDevErrors(error, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'), text, true)
             : errorHandler.showError({ title: error.name, message: error.message || error, retryCallback: MistraMultimodal, callbackArgs: { text: text, model_name: model_name } })

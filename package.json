@@ -9,7 +9,6 @@
     "tailwind:build": "NODE_ENV=production npx tailwindcss -i ./src/renderer/css/config.css -o ./src/renderer/css/styles.css --minify",
     "tailwind:watch": "npx tailwindcss -i ./src/renderer/css/config.css -o ./src/renderer/css/styles.css --watch",
     "package": "electron-packager .",
-    "forge": "electron-forge package",
     "dev": "concurrently \"npm run dev:react\" \"npm run dev:electron\"",
     "dev:react": "vite",
     "dev:electron": "electron .",
@@ -26,7 +25,9 @@
   "license": "GNU",
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "electron": "^34.1.1",
+    "electron-builder": "^25.1.8"
   },
  "dependencies": {
     "@fiahfy/icns": "^0.0.7",
@@ -53,8 +54,6 @@
     "dompurify": "^3.2.5",
     "dotenv": "^16.4.7",
     "dotenv-expand": "^12.0.1",
-    "electron": "^34.1.1",
-    "electron-builder": "^25.1.8",
     "engine-base": "^1.0.0",
     "events": "^3.3.0",
     "file-saver": "^2.0.5",

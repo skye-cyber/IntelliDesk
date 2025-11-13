@@ -1,243 +1,247 @@
 name: Build Electron App
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-    
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
 permissions:
-  contents: write
-      
+    contents: write
+    actions: write
+    packages: write
+
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    build:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.18.1'
-        # npm-version: '10.9.2'
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20.18.1"
+                  # npm-version: '10.9.2'
 
-    - name: Cache node modules
-      uses: actions/cache@v4
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+            - name: Cache node modules
+              uses: actions/cache@v4
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
-    - name: Install build tools (Linux only)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential
+            - name: Install build tools (Linux only)
+              if: runner.os == 'Linux'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y build-essential
 
-    - name: Install dependencies
-      run: npm install --no-cache --verbose --force --no-audit --production
+            - name: Install dependencies
+              run: npm install --no-cache --verbose --force --no-audit --production
 
-    - name: Install electron builder
-      run: npm install electron-builder --save
-    - name: install native dependencies(keytar)
-      run: npx electron-builder install-app-deps
-      
-    - name: Get current version from package.json
-      id: get_version
-      run: |
-        if [ "${{ runner.os }}" == "Windows" ]; then
-          echo "CURRENT_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
-        else
-          echo "CURRENT_VERSION=$(node -p 'require("./package.json").version')'" >> $GITHUB_ENV
-        fi
-      shell: bash
+            - name: Install electron builder
+              run: npm install electron-builder --save
+            - name: install native dependencies(keytar)
+              run: npx electron-builder install-app-deps
 
-    - name: Check for previous version
-      id: check_version
-      run: |
-        if [ -f last_version.txt ]; then
-          LAST_VERSION=$(cat last_version.txt)
-          echo "Last version: $LAST_VERSION"
-          echo "Current version: $CURRENT_VERSION"
-          if [ "$CURRENT_VERSION" == "$LAST_VERSION" ]; then
-            echo "No new version detected. Exiting."
-            exit 0
-          fi
-        else
-          echo "No previous version found. Proceeding with build."
-        fi
-      shell: bash
+            - name: Get current version from package.json
+              id: get_version
+              run: |
+                  if [ "${{ runner.os }}" == "Windows" ]; then
+                    echo "CURRENT_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+                  else
+                    echo "CURRENT_VERSION=$(node -p 'require("./package.json").version')'" >> $GITHUB_ENV
+                  fi
+              shell: bash
 
-    - name: Clean dist directory
-      run: rm -rf dist/*
-      shell: bash
+            - name: Check for previous version
+              id: check_version
+              run: |
+                  if [ -f last_version.txt ]; then
+                    LAST_VERSION=$(cat last_version.txt)
+                    echo "Last version: $LAST_VERSION"
+                    echo "Current version: $CURRENT_VERSION"
+                    if [ "$CURRENT_VERSION" == "$LAST_VERSION" ]; then
+                      echo "No new version detected. Exiting."
+                      exit 0
+                    fi
+                  else
+                    echo "No previous version found. Proceeding with build."
+                  fi
+              shell: bash
 
-    - name: Ensure build directory exists
-      run: mkdir -p dist
-      shell: bash
+            - name: Clean dist directory
+              run: rm -rf dist/*
+              shell: bash
 
-    - name: Remove conflicting LICENSE.md
-      run: |
-        LICENSE_PATH=$(pwd)/dist/resources/app.asar.unpacked/node_modules/keytar/LICENSE.md
-        if [ -f "$LICENSE_PATH" ]; then
-          echo "Removing conflicting LICENSE.md at $LICENSE_PATH"
-          rm -f "$LICENSE_PATH"
-        else
-          echo "LICENSE.md not found at $LICENSE_PATH"
-        fi
-      shell: bash
-  
-    - name: Build for specific platform
-      run: |
-        if [ "${{ runner.os }}" == "Linux" ]; then
-          # Build DEB separately
-          sudo npm run dist -- --linux deb --x64
-          sudo npm run dist -- --linux deb --arm64
+            - name: Ensure build directory exists
+              run: mkdir -p dist
+              shell: bash
 
-          # Build AppImage separately
-          sudo npm run dist -- --linux appimage --x64
-          sudo npm run dist -- --linux appimage --arm64
+            - name: Remove conflicting LICENSE.md
+              run: |
+                  LICENSE_PATH=$(pwd)/dist/resources/app.asar.unpacked/node_modules/keytar/LICENSE.md
+                  if [ -f "$LICENSE_PATH" ]; then
+                    echo "Removing conflicting LICENSE.md at $LICENSE_PATH"
+                    rm -f "$LICENSE_PATH"
+                  else
+                    echo "LICENSE.md not found at $LICENSE_PATH"
+                  fi
+              shell: bash
 
-          # Build SNAP separately
-          sudo npm run dist -- --linux snap
-        elif [ "${{ runner.os }}" == "macOS" ]; then
-          # Build the macOS target
-          sudo npm run dist -- --mac --x64
-          sudo npm run dist -- --mac --arm64
-        elif [ "${{ runner.os }}" == "Windows" ]; then
-          # Build the Windows target
-          npm run dist -- --win --x64
-          npm run dist -- --win --ia32
-          npm run dist -- --win --arm64
-        else
-          echo "Unsupported platform: ${{ runner.os }}"
-          exit 1
-        fi
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      shell: bash
+            - name: Build react
+              run: npm run build:react
 
-    - name: Check if build directory exists
-      run: |
-        if [ ! -d "dist" ]; then
-          echo "Error: dist directory not found."
-          exit 1
-        fi
-      shell: bash
+            - name: Build for specific platform
+              run: |
+                  if [ "${{ runner.os }}" == "Linux" ]; then
+                    # Build DEB separately
+                    sudo npm run build:electron -- --linux deb --x64
+                    sudo npm run build:electron -- --linux deb --arm64
 
-    - name: show dist content
-      run: |
-        if [ "${{ runner.os }}" == "Linux" ]; then
-        ls dist
-        fi
-      shell: bash
+                    # Build AppImage separately
+                    sudo npm run build:electron -- --linux appimage --x64
+                    sudo npm run build:electron -- --linux appimage --arm64
 
-    # Upload artifacts
-    # Upload .deb artifacts
-    - name: Upload DEB (x64)
-      if: runner.os == 'Linux' && runner.arch == 'x64'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-amd64
-        path: dist/*amd64.deb
-        if-no-files-found: error
+                    # Build SNAP separately
+                    sudo npm run build:electron -- --linux snap
+                  elif [ "${{ runner.os }}" == "macOS" ]; then
+                    # Build the macOS target
+                    sudo npm run build:electron -- --mac --x64
+                    sudo npm run build:electron -- --mac --arm64
+                  elif [ "${{ runner.os }}" == "Windows" ]; then
+                    # Build the Windows target
+                    npm run build:electron -- --win --x64
+                    npm run build:electron -- --win --ia32
+                    npm run build:electron -- --win --arm64
+                  else
+                    echo "Unsupported platform: ${{ runner.os }}"
+                    exit 1
+                  fi
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+              shell: bash
 
-    - name: Upload DEB (arm64)  
-      if: runner.os == 'Linux' && runner.arch == 'arm64'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-arm64
-        path: dist/*arm64.deb
-        if-no-files-found: error
+            - name: Check if build directory exists
+              run: |
+                  if [ ! -d "dist" ]; then
+                    echo "Error: dist directory not found."
+                    exit 1
+                  fi
+              shell: bash
 
-    # Upload AppImage
-    - name: Upload AppImage (x64)
-      if: runner.os == 'Linux' && runner.arch == 'x64'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-AppImage-x64
-        path: dist/*x86_64.AppImage
-        if-no-files-found: error
+            - name: show dist content
+              run: |
+                  if [ "${{ runner.os }}" == "Linux" ]; then
+                  ls dist
+                  fi
+              shell: bash
 
-    - name: Upload AppImage (arm64)
-      if: runner.os == 'Linux' && runner.arch == 'arm64'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-AppImage-arm64
-        path: dist/*arm64.AppImage
-        if-no-files-found: error
+            # Upload artifacts
+            # Upload .deb artifacts
+            - name: Upload DEB (x64)
+              if: runner.os == 'Linux' && runner.arch == 'x64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-amd64
+                  path: dist/*amd64.deb
+                  if-no-files-found: error
 
-    # Upload Snap
-    - name: Upload Snap
-      if: runner.os == 'Linux'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-Snap
-        path: dist/*.snap
-        if-no-files-found: error
+            - name: Upload DEB (arm64)
+              if: runner.os == 'Linux' && runner.arch == 'arm64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-arm64
+                  path: dist/*arm64.deb
+                  if-no-files-found: error
 
-    # Upload macOS .dmg (x64 + arm64)
-    - name: Upload macOS DMG (x64)
-      if: runner.os == 'macOS' && runner.arch == 'x64'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-macOS-x64
-        path: dist/*x64.dmg
-        if-no-files-found: error
+            # Upload AppImage
+            - name: Upload AppImage (x64)
+              if: runner.os == 'Linux' && runner.arch == 'x64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-AppImage-x64
+                  path: dist/*x86_64.AppImage
+                  if-no-files-found: error
 
-    - name: Upload macOS DMG (arm64)
-      if: runner.os == 'macOS' && runner.arch == 'arm64'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-macOS-arm64
-        path: dist/*arm64.dmg
-        if-no-files-found: error
+            - name: Upload AppImage (arm64)
+              if: runner.os == 'Linux' && runner.arch == 'arm64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-AppImage-arm64
+                  path: dist/*arm64.AppImage
+                  if-no-files-found: error
 
-    # Upload Windows NSIS and Portable
-    - name: Upload Windows Installer (NSIS x64)
-      if: runner.os == 'Windows' && runner.arch == 'x64'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Windows-NSIS-x64
-        path: dist/*Setup*.exe
-        if-no-files-found: error
+            # Upload Snap
+            - name: Upload Snap
+              if: runner.os == 'Linux'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-Snap
+                  path: dist/*.snap
+                  if-no-files-found: error
 
-    - name: Upload Windows Portable (x64)
-      if: runner.os == 'Windows' && runner.arch == 'x64'
-      uses: actions/upload-artifact@v4
-      with:
-        name: IntelliDesk-${{ env.CURRENT_VERSION }}-Windows-Portable-x64
-        path: dist/*portable*x64.exe
-        if-no-files-found: error
+            # Upload macOS .dmg (x64 + arm64)
+            - name: Upload macOS DMG (x64)
+              if: runner.os == 'macOS' && runner.arch == 'x64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-macOS-x64
+                  path: dist/*x64.dmg
+                  if-no-files-found: error
 
-    - name: Save current version
-      run: echo "${{ env.CURRENT_VERSION }}" > last_version.txt
-      shell: bash
+            - name: Upload macOS DMG (arm64)
+              if: runner.os == 'macOS' && runner.arch == 'arm64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-macOS-arm64
+                  path: dist/*arm64.dmg
+                  if-no-files-found: error
 
-    - name: Commit and push changes
-      run: |
-        git config --global core.autocrlf false
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            # Upload Windows NSIS and Portable
+            - name: Upload Windows Installer (NSIS x64)
+              if: runner.os == 'Windows' && runner.arch == 'x64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-Windows-NSIS-x64
+                  path: dist/*Setup*.exe
+                  if-no-files-found: error
 
-    - name: Check for changes
-      run: |
-        if [ -z "$(git diff --exit-code --quiet last_version.txt)" ]; then
-        echo "No changes detected in last_version.txt."
-        else
-        echo "Changes detected in last_version.txt. Proceeding with commit."
-        git add last_version.txt package-lock.json package.json
-        git commit -m "Update last_version.txt to ${{ env.CURRENT_VERSION }}"
-        git pull --rebase -X ours
-        git push
-        fi
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_PUSH }}
+            - name: Upload Windows Portable (x64)
+              if: runner.os == 'Windows' && runner.arch == 'x64'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: IntelliDesk-${{ env.CURRENT_VERSION }}-Windows-Portable-x64
+                  path: dist/*portable*x64.exe
+                  if-no-files-found: error
 
+            - name: Save current version
+              run: echo "${{ env.CURRENT_VERSION }}" > last_version.txt
+              shell: bash
+
+            - name: Commit and push changes
+              run: |
+                  git config --global core.autocrlf false
+                  git config --global user.name 'github-actions[bot]'
+                  git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+            - name: Check for changes
+              run: |
+                  if [ -z "$(git diff --exit-code --quiet last_version.txt)" ]; then
+                  echo "No changes detected in last_version.txt."
+                  else
+                  echo "Changes detected in last_version.txt. Proceeding with commit."
+                  git add last_version.txt package-lock.json package.json
+                  git commit -m "Update last_version.txt to ${{ env.CURRENT_VERSION }}"
+                  git pull --rebase -X ours
+                  git push
+                  fi
+              shell: bash
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GH_PUSH }}

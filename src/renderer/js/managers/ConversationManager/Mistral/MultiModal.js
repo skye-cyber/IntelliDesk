@@ -8,13 +8,15 @@ import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
 import { prep_user_input } from "./file_util";
 
+let ai_ms_pid
+
 export async function MistraMultimodal({ text, model_name = window.currentModel }) {
     if (!text?.trim() && !file_data_url) return console.log("Message, files are empty")
 
     const _Timer = new window.Timer();
 
-    //chatutil.hide_suggestions()
-    //console.log('vision')
+    StateManager.set('user-text', text)
+
     StateManager.set('processing', true);
 
     let message_id = GenerateId('ai-msg');
@@ -26,6 +28,9 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     StateManager.set('loader-element-id', loader_id)
 
     let message_portal = window.streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
+
+    // This shall be for errors
+    ai_ms_pid = message_portal
 
     // change send button appearance to processing status
     HandleProcessingEventChanges('show')
@@ -257,6 +262,12 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         window.reactPortalBridge.closeComponent(loader_id)
 
     } catch (error) {
+        HandleProcessingEventChanges("hide")
+
+        window.reactPortalBridge.closeComponent(StateManager.get('user_message_portal'))
+        window.streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
+        window.desk.api.popHistory('user')
+
         window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
         appIsDev
             ? handleDevErrors(error, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'), text, true)

@@ -87,7 +87,6 @@ export const StreamingPortalContainer = () => {
 
                 // Append the new data to the array
                 const actual_response = data?.actual_response
-                console.log(portalId, data)
                 if (actual_response) portalData.props.actual_response += actual_response
                 if (data.think_content) portalData.props.think_content = data.think_content
                 if (data.conversation_name) portalData.props.conversation_name = data.conversation_name
@@ -293,7 +292,7 @@ export const StreamingPortalContainer = () => {
 
                 // Find all portal IDs that match the prefix
                 portalDataRef.current.forEach((value, key) => {
-                    if (key.startsWith(portalId.id)) {
+                    if (key.startsWith(portalId?.id)) {
                         portalsToRemove.push(key);
                     }
                 });
@@ -314,7 +313,7 @@ export const StreamingPortalContainer = () => {
 
             } else {
                 // Original behavior - remove single portal
-                portalDataRef.current?.delete(portalId.id);
+                portalDataRef.current?.delete(portalId?.id);
                 setStreamingPortals(prev => {
                     const newMap = new Map(prev);
                     newMap?.delete(portalId);

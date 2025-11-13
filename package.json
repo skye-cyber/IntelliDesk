@@ -1,6 +1,6 @@
 {
   "name": "intellidesk",
-  "version": "1.2.6",
+  "version": "2.0.0",
   "description": "An application to interact with AI assistants for free.",
   "main": "src/main/index.js",
   "homepage": "src/renderer/home.html",

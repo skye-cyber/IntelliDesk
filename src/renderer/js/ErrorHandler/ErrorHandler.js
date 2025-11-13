@@ -464,24 +464,6 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null, 
     // Extract the message content before creating context
     let lastMessage = userContent;
 
-    /*
-     * try {
-        const conversationHistory = window.desk.api.getHistory();
-        const lastEntry = conversationHistory[0]?.chats?.slice(-1)[0];
-
-        if (lastEntry && lastEntry.role !== 'system') {
-            lastMessage = extractAndCleanContent(lastEntry.content);
-
-            if (lastMessage) {
-                text = lastMessage;
-                window.desk.api.popHistory();
-            }
-        }
-    } catch (err) {
-        console.warn('Could not extract last message:', err);
-    }
-    */
-
     const context = {
         user_message_pid,
         ai_message_pid,
@@ -499,10 +481,6 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null, 
     const unsubscribe = requestErrorHandler.onRetry((error, context) => {
         context = StateManager.get('retry-context')
         //console.log("Retry callback executed with context:", context);
-
-        //userMessage?.remove();
-        window.reactPortalBridge.closeComponent(user_message_pid)
-        window.reactPortalBridge.closeComponent(ai_message_pid)
 
         if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
 

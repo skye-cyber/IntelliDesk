@@ -7,3 +7,5 @@ reload.html
 *~
 node_modules/**
 .kateproject.notes
+build/**
+dist/**

@@ -135,7 +135,7 @@ export async function* _generateTextChunks(input, message = null, hf = false) {
 export async function* generateTextChunks(input, message = null, hf = false) {
     // Default test messages for different scenarios
     const testMessages = {
-        normal: "This is a test message for streaming simulation. It includes various punctuation marks, numbers like 123, and special characters!",
+        normal: "This is a $E = mc^2$ or (E = mc^2) test message for streaming simulation. It includes various punctuation marks, numbers like 123, and special characters!",
         xml: "<name>Test Conversation</name>This is the actual response content after the name tag.",
         code: "```javascript\n function example() {\n\t return 'Hello World';\n }\n // This is a code example\n```",
         long: "This is a much longer message designed to test streaming with multiple chunks and various edge cases including line breaks\nand special characters like <, >, &, and @ symbols.",

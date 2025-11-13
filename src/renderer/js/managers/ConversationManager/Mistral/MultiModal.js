@@ -256,6 +256,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
 
         // render diagrams from this response
         chatutil.render_math()
+        window.normaliZeMathDisplay()
 
         window.reactPortalBridge.closeComponent(loader_id)
 

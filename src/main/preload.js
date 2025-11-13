@@ -179,8 +179,13 @@ const api = {
 
         return data
     },
-    popHistory: () => {
-        ConversationHistory[0].chats.pop();
+    popHistory: (role = null) => {
+        if (!role) {
+            ConversationHistory[0].chats.pop();
+        } else if (ConversationHistory[0].chats.slice(-1).role === role) {
+            ConversationHistory[0].chats.pop();
+        }
+
     },
     getModel: () => {
         return ConversationHistory[0].metadata.model

@@ -22,7 +22,7 @@ export class ModalManager {
         message,
         type = "info",
         autoDismiss = true,
-        duration = 3000,
+        duration = 6000,
     ) {
         // Create message container if it doesn't exist
         let container = document.getElementById("message-container");

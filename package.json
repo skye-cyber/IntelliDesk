@@ -61,7 +61,7 @@
     "graphlib": "^2.1.8",
     "graphlib-dot": "^0.6.4",
     "gulp-util": "^1.0.0",
-    "highlight": "^0.2.4",
+    "highlight.js": "latest",
     "html-to-docx": "^1.8.0",
     "html-to-image": "^1.11.11",
     "html-to-pdf": "^0.1.11",

@@ -1,14 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
 
 export class ErrorHandler {
     constructor() {
-        this.container = null;
-        this.root = null;
         this.currentError = null;
         this.retryCount = 0;
-        this.maxRetries = 3;
+        this.maxRetries = 10;
         this.retryArgs = null;
+        this.retryCallback = null;
+        this.error_portal = null
     }
 
     showError({
@@ -18,124 +17,85 @@ export class ErrorHandler {
         callbackArgs = {},
         onClose = null,
         autoCloseDelay = 8000,
-        maxRetries = 3
+        maxRetries = 10
     }) {
 
         // Set text to the input section
         const input = document.getElementById("userInput")
-        if (input) input.textContent = StateManager.get('user-text')
+        if (input) input.innerHTML = StateManager.get('user-text')
 
         // Clean up any existing error
         this.hideError();
 
-        // Create container if it doesn't exist
-        if (!this.container) {
-            this.container = document.createElement('div');
-            this.container.id = 'error-modal-container';
-            document.body.appendChild(this.container);
-            this.root = ReactDOM.createRoot(this.container);
-        }
-
-        // Store retry configuration
+        // Store retry configuration - CRITICAL FIX
         this.maxRetries = maxRetries;
         this.retryArgs = callbackArgs;
+        this.retryCallback = retryCallback; // Store separately from currentError
 
         this.currentError = {
             title,
             message,
-            retryCallback,
+            retryCallback, // This can be null for final errors
             onClose,
             autoCloseDelay,
             maxRetries,
             retryCount: this.retryCount
         };
 
-        // Render the modal
-        this.root.render(
-            React.createElement(ErrorModal, {
-                error: this.currentError,
-                onRetry: () => this.handleRetry(),
-                onClose: () => {
-                    this.resetRetryCount();
-                    if (this.currentError?.onClose) {
-                        this.currentError.onClose();
-                    }
-                    this.hideError();
-                },
-                autoCloseDelay: this.currentError.autoCloseDelay
-            })
-        );
+        const error_portal = window.reactPortalBridge.showComponentInTarget("ErrorModal", "mainContainer", {
+            error: this.currentError,
+            onRetry: () => this.handleRetry(),
+            onClose: () => {
+                this.resetRetryCount();
+                if (this.currentError?.onClose) {
+                    this.currentError.onClose();
+                }
+                this.hideError();
+            },
+            autoCloseDelay: this.currentError.autoCloseDelay
+        }, "error")
+
+        this.error_portal = error_portal
     }
 
-    handleRetry() {
-        if (!this.currentError?.retryCallback) {
-            this.hideError();
-            return;
-        }
+    async handleRetry() {
+        // Use the stored retryCallback, not from currentError
+        const retryCallback = this.retryCallback;
+
+        // Hide the current modal immediately
+        this.hideError();
+
+        if (!retryCallback) return;
 
         try {
             // Execute the retry callback
-            const result = this.currentError.retryCallback(this.retryArgs);
+            await retryCallback(this.retryArgs);
 
-            // Handle promises if the callback is async
-            if (result instanceof Promise) {
-                result
-                    .then(() => {
-                        // Success - close the modal
-                        this.resetRetryCount();
-                        this.hideError();
-                    })
-                    .catch((retryError) => {
-                        // Retry failed - show new error or increment retry count
-                        this.retryCount++;
-
-                        if (this.retryCount >= this.maxRetries) {
-                            // Max retries exceeded - show final error
-                            this.showError({
-                                title: "Maximum Retries Exceeded",
-                                message: `Failed after ${this.maxRetries} attempts. ${retryError.message || 'Please try again later.'}`,
-                                retryCallback: null, // No more retries
-                                onClose: this.currentError?.onClose,
-                                autoCloseDelay: 10000
-                            });
-                        } else {
-                            // Show retry error with updated count
-                            this.showError({
-                                title: `Retry Failed (${this.retryCount}/${this.maxRetries})`,
-                                message: retryError.message || 'The operation failed. Would you like to try again?',
-                                retryCallback: this.currentError.retryCallback,
-                                callbackArgs: this.retryArgs,
-                                onClose: this.currentError?.onClose,
-                                autoCloseDelay: this.currentError.autoCloseDelay,
-                                maxRetries: this.maxRetries
-                            });
-                        }
-                    });
-            } else {
-                // Sync callback succeeded - close the modal
-                this.resetRetryCount();
-                this.hideError();
-            }
-        } catch (syncError) {
-            // Sync callback failed
+            // If we get here, the retry was successful
+            //this.resetRetryCount();
+            // No need to call hideError() again since we already hid it
+        } catch (error) {
+            // Retry failed - increment retry count
             this.retryCount++;
 
             if (this.retryCount >= this.maxRetries) {
+                // Max retries exceeded - show final error with no retry option
                 this.showError({
                     title: "Maximum Retries Exceeded",
-                    message: `Failed after ${this.maxRetries} attempts. ${syncError.message || 'Please try again later.'}`,
-                    retryCallback: null,
+                    message: `Failed after ${this.maxRetries} attempts. ${error.message || 'Please try again later.'}`,
+                    retryCallback: null, // No more retries
                     onClose: this.currentError?.onClose,
                     autoCloseDelay: 10000
                 });
             } else {
+                // Show retry error with updated count, preserving the original callback
                 this.showError({
                     title: `Retry Failed (${this.retryCount}/${this.maxRetries})`,
-                    message: syncError.message || 'The operation failed. Would you like to try again?',
-                    retryCallback: this.currentError.retryCallback,
+                    message: error.message || 'The operation failed. Would you like to try again?',
+                    retryCallback: retryCallback, // Use the original stored callback
                     callbackArgs: this.retryArgs,
                     onClose: this.currentError?.onClose,
-                    autoCloseDelay: this.currentError.autoCloseDelay,
+                    autoCloseDelay: this.currentError?.autoCloseDelay || 8000,
                     maxRetries: this.maxRetries
                 });
             }
@@ -144,29 +104,23 @@ export class ErrorHandler {
 
     resetRetryCount() {
         this.retryCount = 0;
+        this.retryCallback = null;
+        this.retryArgs = null;
     }
 
     hideError() {
-        if (this.root) {
-            this.root.unmount();
-            this.root = null;
-        }
-        if (this.container) {
-            this.container.remove();
-            this.container = null;
-        }
+        window.reactPortalBridge.closeComponent(this.error_portal)
         this.currentError = null;
-        // Note: We don't reset retryCount here to maintain state between retries
     }
 
     // Force reset everything (useful for component unmounting)
     destroy() {
         this.hideError();
         this.resetRetryCount();
-        this.retryArgs = null;
         this.maxRetries = 3;
     }
 }
+
 
 // Enhanced Error Modal Component
 export const ErrorModal = ({ error, onRetry, onClose, autoCloseDelay = 8000 }) => {

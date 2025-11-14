@@ -12,7 +12,8 @@ let ai_ms_pid
 export async function MistraChat({ text, model_name = window.currentModel }) {
     try {
         if (!text?.trim()) return console.log("Message is empty")
-        // Create Timer object
+
+            // Create Timer object
         const _Timer = new window.Timer();
 
         StateManager.set('user-text', text)
@@ -267,6 +268,8 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         window.normaliZeMathDisplay()
 
         window.reactPortalBridge.closeComponent(loader_id)
+
+        if (await appIsDev()) errorHandler.resetRetryCount()
     } catch (error) {
         HandleProcessingEventChanges("hide")
         window.desk.api.popHistory("user")

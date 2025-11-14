@@ -109,9 +109,10 @@ export const ModelSelector = ({ selectedModel = 'mistral-medium-latest', onModel
                 {
                     value: "codestral-latest", name: "codestral-latest", description: "Latest coding-focused model.", icon: "mistral", platform: "mitsral", recommended: true
                 },
-                {
+                /*{
                     value: "codestral-mamba-2407", name: "codestral-mamba-2407", description: "High-performance coding model designed for rapid code generation and debugging, optimized for software development environments.", icon: "mistral", platform: "mitsral"
                 },
+                */
                 {
                     value: "codestral-2501", name: "codestral-2501", description: "Advanced coding-focused model offering improved performance in programming-related tasks and queries.", icon: "mistral", platform: "mitsral"
                 },

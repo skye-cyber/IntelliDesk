@@ -48,7 +48,7 @@ jobs:
                 # Try system Python first (usually has distutils)
                 if /usr/bin/python3 -c "import distutils" 2>/dev/null; then
                     echo "Using system Python"
-                    npm config set python /usr/bin/python3
+                    export PYTHON=/usr/bin/python3
                 else
                     # Fallback to brew Python
                     echo "Installing Python via brew"
@@ -264,4 +264,5 @@ jobs:
                   fi
               shell: bash
               env:
+                  PYTHON: /usr/bin/python3
                   GITHUB_TOKEN: ${{ secrets.GH_PUSH }}

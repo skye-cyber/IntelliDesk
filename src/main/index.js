@@ -242,12 +242,18 @@ app.on('ready', async () => {
 
     tray.setToolTip('IntelliDesk');
     tray.setContextMenu(contextMenu);
+
+    // Restore window on tray double-click
+    tray.on('double-click', () => {
+        mainWindow.show();
+    });
 });
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit(); // Quit when all windows are closed, except on macOS
-    }
+app.on('window-all-closed', (event) => {
+    event.preventDefault();// ✅ don’t quit app when all windows closed
+    //if (process.platform !== 'darwin') {
+    //  app.quit(); // Quit when all windows are closed, except on macOS
+    //}
 });
 
 app.on('activate', () => {

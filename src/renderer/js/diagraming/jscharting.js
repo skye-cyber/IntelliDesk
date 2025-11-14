@@ -289,7 +289,7 @@ export class InterPreter {
     async getCodeFromBlock(selector) {
         //console.log("ID:", selector)
         const codeBlock = document.querySelector(selector);
-        if (!codeBlock) window.ModalManager.showMessage("Codeblock extraction error", 'error')
+        if (!codeBlock) return window.ModalManager.showMessage("Codeblock extraction error", 'error')
         const codeText = codeBlock.textContent;
         return codeText ? codeText : ''
     }

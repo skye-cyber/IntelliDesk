@@ -73,10 +73,11 @@ export class DotInterPreter {
         try {
             //console.log("ID:", selector)
             const codeBlock = document.querySelector(selector);
-            if (!codeBlock) window.ModalManager.showMessage("Codeblock extraction error", 'error')
+            if (!codeBlock) return window.ModalManager.showMessage("Codeblock extraction error", 'error')
             const codeText = codeBlock.textContent;
             return codeText ? codeText : ''
         } catch (err) {
+            //console.log(err)
             window.ModalManager.showMessage(err, 'error')
         }
     }
@@ -360,9 +361,9 @@ export class DotInterPreter {
             const diagId = `diag-VIZ-${Math.random().toString(30).substring(3, 9)}`;
 
             // Obtain container id or element
-            const portal_id = window.reactPortalBridge.showComponentInTarget("Diagram", 'diagram_canvas', { name: chartName, exportId: 'JSC', dgId: diagId, description: desc, content: svgElement })
+            const portal_id = window.reactPortalBridge.showComponentInTarget("Diagram", 'diagram_canvas', { name: chartName, exportId: 'VIZ', dgId: diagId, description: desc, content: svgElement })
 
-            const id = `JSC-${chartName}-${diagId}`
+            const id = `VIZ-${chartName}-${diagId}`
 
             console.log("Created dot diagram with id:", id, "using portal:", portal_id)
             //show success message

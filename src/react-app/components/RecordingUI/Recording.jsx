@@ -503,7 +503,7 @@ export const Recording = ({ isOpen, onToggle }) => {
 
             mediaRecorder.ondataavailable = event => {
                 audioChunks.push(event.data);
-                console.log("DataAvailable")
+                //console.log("DataAvailable")
             };
 
             mediaRecorder.onstop = async (event) => {
@@ -568,7 +568,7 @@ export const Recording = ({ isOpen, onToggle }) => {
             setIsRecording(false);
             setIsPaused(true);
             microphoneSVG.classList.remove('animate-pulse')
-            console.log("paused", isPaused)
+            //console.log("paused", isPaused)
         }
     }, [TimerInterval, isPaused, setIsPaused, setIsRecording])
 
@@ -584,7 +584,7 @@ export const Recording = ({ isOpen, onToggle }) => {
         setIsPaused(false);
 
         resumeMetadataTracking()
-        console.log("Resumed", isPaused)
+        //console.log("Resumed", isPaused)
     }, [TimerInterval, setIsPaused, setIsPaused, setIsRecording])
 
     // Function to stop recording
@@ -649,7 +649,7 @@ export const Recording = ({ isOpen, onToggle }) => {
             if (recordingTimeEl) {
                 recordingTimeEl.textContent = formattedTime;
             }
-            console.log("Update Timer", newElapsed, formattedTime, recordingTimeEl?.textContent);
+            //console.log("Update Timer", newElapsed, formattedTime, recordingTimeEl?.textContent);
         }, 1000);
 
         setTimerInterval(interval);
@@ -701,10 +701,10 @@ export const Recording = ({ isOpen, onToggle }) => {
     if (!isOpen) return null;
 
     return (
-        <div onClick={closeOnclick} id="recordingModal" className="hidden fixed inset-0 z-50 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-cyan-500/10 backdrop-blur-md overflow-y-auto transition-all duration-500">
+        <div onClick={closeOnclick} id="recordingModal" className="hidden fixed inset-0 z-50 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-cyan-500/10 backdrop-brightness-[0.5]  overflow-y-auto transition-all duration-500">
             <div className="relative flex items-center justify-center min-h-screen p-4">
                 {/* Animated Canvas Background */}
-                <canvas className="absolute md:max-w-md lg:max-w-lg xl:max-w-xl md:max-h-md lg:max-h-lg xl:max-h-xl z-[1] bg-gradient-to-br from-white to-gray-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-slate-600/50 transition-all duration-700 transform hover:scale-105" id="canvas"></canvas>
+                <canvas className="hidden absolute md:max-w-md lg:max-w-lg xl:max-w-xl md:max-h-md lg:max-h-lg xl:max-h-xl z-[1] bg-gradient-to-br from-white to-gray-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-slate-600/50 transition-all duration-700 transform hover:scale-105" id="canvas"></canvas>
 
                 {/* Recording Content */}
                 <section id="recorder-content" className="absolute z-10 w-full max-w-md">

@@ -73,7 +73,7 @@
     "jspdf": "^3.0.0",
     "jszip": "^3.10.1",
     "katex": "^0.16.22",
-    "keytar": "^7.9.0",
+    "keytar": "latest",
     "level": "^9.0.0",
     "levelup": "^5.1.1",
     "lightweight-charts": "^5.0.6",

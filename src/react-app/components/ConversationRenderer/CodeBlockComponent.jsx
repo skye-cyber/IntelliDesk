@@ -24,9 +24,9 @@ export const CodeBlockComponent = ({
 
     // Move these hooks outside of any conditions - call them unconditionally
     const handle_render = () => {
-        if (['dot-draw', 'dot'].includes(valid_language)) dot_interpreter.diagram_interpreter(codeblock_id, 'dot', false, 'click')
-        if (['json-draw', 'json-chart'].includes(valid_language)) chart_interpret.ChartsInterpreter(codeblock_id, 'json', true, 'click')
-        if (['html', 'svg'].includes(valid_language)) html_preview(this, { codeblock_id })
+        if (['dot-draw', 'dot'].includes(valid_language)) dot_interpreter.diagram_interpreter(`#${codeblock_id}`, 'dot', false, 'click')
+        if (['json-draw', 'json-chart'].includes(valid_language)) chart_interpret.ChartsInterpreter(`#${codeblock_id}`, 'json', true, 'click')
+        if (['html', 'svg'].includes(valid_language)) html_preview(this, `#${codeblock_id}`)
     }
 
     // Convert this to a regular function, not a hook

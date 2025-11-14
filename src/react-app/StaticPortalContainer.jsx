@@ -52,7 +52,7 @@ export const StaticPortalContainer = () => {
         const handleClosePortal = (event) => {
             const { id, prefix } = event.detail;
             const portalId = id
-            console.log("closing:", portalId)
+
             if (prefix) {
                 // Remove all portals that start with this portalId as prefix
                 setPortals(prev => prev.filter(portal => !portal?.id.startsWith(portalId)));

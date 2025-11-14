@@ -10,12 +10,12 @@ waitForElement('#chatArea', (el) => {
     window.streamingPortalBridge.registerStreamingComponent('chatArea', el);
 })
 
-/*
-waitForElement('#chat-container', (el) => {
-    window.reactPortalBridge.registerContainer('chatContainer', el);
-    window.streamingPortalBridge.registerStreamingComponent('chatContainer', el);
+
+waitForElement('#main-container', (el) => {
+    window.reactPortalBridge.registerContainer('"mainContainer"', el);
+    window.streamingPortalBridge.registerStreamingComponent('mainContainer', el);
 })
-*/
+
 
 waitForElement('#conversations', (el) => {
     window.reactPortalBridge.registerContainer('conversations', el);

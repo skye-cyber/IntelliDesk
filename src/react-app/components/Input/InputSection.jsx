@@ -41,8 +41,9 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 userInput.innerHTML = "";
                 // Adjust input field height
                 userInput.style.height = 'auto';
-                userInput.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight / 100) + 'px';
-                userInput.scrollTop = userInput.scrollHeight;
+                handleInputChange()
+                //userInput.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight / 100) + 'px';
+                //userInput.scrollTop = userInput.scrollHeight;
                 router.requestRouter(inputText, document.getElementById('chatArea'));
                 chatutil.hide_suggestions()
             }
@@ -192,6 +193,40 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             : closeTools()
     })
 
+    const adjustHeight = (element) => {
+        if (!element) return;
+
+        // Store current scroll position to prevent jumping
+        const currentScrollTop = window.pageYOffset;
+
+        // Reset to auto to get natural height
+        element.style.height = 'auto';
+
+        // Calculate content height
+        const contentHeight = element.scrollHeight;
+        const maxHeight = window.innerHeight * 0.28; // 28vh
+
+        // Apply calculated height
+        const newHeight = Math.max(48, Math.min(contentHeight, maxHeight)); // min 48px, max 28vh
+        element.style.height = newHeight + 'px';
+
+        // Manage overflow
+        element.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
+
+        // Restore scroll position
+        window.scrollTo(0, currentScrollTop);
+    };
+
+    const handleInputChange = useCallback((element, content) => {
+        setInputValue(content)
+        adjustHeight(element)
+    })
+
+    const handleInput = useCallback((el, content) => {
+        if (!content.trim()) el.innerHTML = ""
+
+    })
+
     useEffect(() => {
         chatutil.scrollToBottom(document.getElementById('chatArea'), false);
 
@@ -222,17 +257,18 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                     autoFocus={true}
                     data-placeholder="Message IntelliDesk 💫"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.textContent)} className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000 active:outline-none">
+                    onInput={(e) => handleInput(e.currentTarget, e.currentTarget.textContent)}
+                    onChange={(e) => handleInputChange(e.currentTarget, e.currentTarget.textContent)} className="w-full overflow-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000 active:outline-none">
                 </div>
 
-                <section id="userInputSection" className="absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
+                <section id="userInputSection" className="p-0 absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
                     <button onClick={toggleTool} title="open tools" className='ml-1 text-gray-600 dark:text-gray-200 cursor-pointer focus:outline-none active:ring-none'>
                         <svg className='bg-gray-100 dark:bg-[#0a0a1f]/0 rounded-full h-5 w-5 md:h-6 md:w-6 p-0 fill-gray-800 dark:fill-gray-200 hover:scale-[1.2] transition duration-500 ease-in-out focus:outline-none' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z" /></svg>
                     </button>
 
-                    <section>
+                    <section className=''>
                         {/* Send Button - Always prominent */}
-                        <button id="sendBtn" onClick={handleSend} className="flex relative items-center justify-center h-12 w-12 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2 mb-2" aria-label="Send message" title="Send message">
+                        <button id="sendBtn" onClick={handleSend} className="flex relative items-center justify-center h-10 w-10 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2 mb-2" aria-label="Send message" title="Send message">
                             <div id="normalSend" className="flex items-center justify-center h-full w-full">
                                 <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
@@ -265,9 +301,9 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeTools }) => {
     return (
         <section
-        id="tool-modal"
-        onMouseLeave={closeTools}
-        className='block absolute -left-12 bottom-12 z-[51] bg-gray-200 dark:bg-blend-700 rounded-md p-3 space-y-2 hidden animate-exit'>
+            id="tool-modal"
+            onMouseLeave={closeTools}
+            className='block absolute -left-12 bottom-12 z-[51] bg-gray-200 dark:bg-blend-700 rounded-md p-3 space-y-2 hidden animate-exit'>
             {/* Voice Recording */}
             <div onClick={onToggleRecording} className='flex gap-1 text-gray-800 dark:text-gray-200 items-center cursor-pointer hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm'>
                 <button id="microphone" className="flex items-center justify-center rounded-lg  transition-colors duration-300" title="Voice recording">
@@ -421,3 +457,70 @@ const ScrollToBottomButton = ({ onClick }) => (
         </svg>
     </button>
 );
+
+const AutoResizeTextarea = () => {
+    const [inputValue, setInputValue] = useState('');
+    const textareaRef = useRef(null);
+
+    const adjustHeight = () => {
+        const element = textareaRef.current;
+        if (!element) return;
+
+        // Store current scroll position to prevent jumping
+        const currentScrollTop = window.pageYOffset;
+
+        // Reset to auto to get natural height
+        element.style.height = 'auto';
+
+        // Calculate content height
+        const contentHeight = element.scrollHeight;
+        const maxHeight = window.innerHeight * 0.28; // 28vh
+
+        // Apply calculated height
+        const newHeight = Math.max(48, Math.min(contentHeight, maxHeight)); // min 48px, max 28vh
+        element.style.height = newHeight + 'px';
+
+        // Manage overflow
+        element.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
+
+        // Restore scroll position
+        window.scrollTo(0, currentScrollTop);
+    };
+
+    // Adjust on value change
+    useEffect(() => {
+        adjustHeight();
+    }, [inputValue]);
+
+    // Adjust on mount and window resize
+    useEffect(() => {
+        adjustHeight();
+
+        const handleResize = () => {
+            adjustHeight();
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+
+    return (
+        <div
+            ref={textareaRef}
+            id="userInput"
+            contentEditable="true"
+            role="textbox"
+            aria-label="Message input"
+            autoFocus={true}
+            data-placeholder="Message IntelliDesk 💫"
+            className="w-full overflow-auto scrollbar-hide py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-300 ease-in-out active:outline-none resize-none"
+            style={{
+                minHeight: '48px',
+                height: 'auto'
+            }}
+        />
+    );
+};
+
+export default AutoResizeTextarea;

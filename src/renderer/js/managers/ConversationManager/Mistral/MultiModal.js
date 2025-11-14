@@ -47,7 +47,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
             await mistral.client.chat.stream({
                 model: model_name,
                 messages: window.desk.api.getHistory(true),
-                max_tokens: 2000,
+                max_tokens: 3000,
             });
 
         let conversationName = null;
@@ -259,6 +259,8 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         window.normaliZeMathDisplay()
 
         window.reactPortalBridge.closeComponent(loader_id)
+
+        if (await appIsDev()) errorHandler.resetRetryCount()
 
     } catch (error) {
         HandleProcessingEventChanges("hide")

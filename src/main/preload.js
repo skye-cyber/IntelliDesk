@@ -184,6 +184,7 @@ const api = {
             ConversationHistory[0].chats.pop();
         } else if (ConversationHistory[0].chats?.slice(-1)[0]?.role === role) {
             ConversationHistory[0].chats.pop();
+            console.log("Done, resting!")
         }
 
     },

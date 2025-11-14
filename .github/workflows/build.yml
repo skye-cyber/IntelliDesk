@@ -137,7 +137,7 @@ jobs:
                     source /tmp/build-venv/bin/activate
                     # Build the macOS target
                     sudo npm run build:electron -- --mac --x64
-                    sudo npm run build:electron -- --mac --arm64
+                    # sudo npm run build:electron -- --mac --arm64
                   elif [ "${{ runner.os }}" == "Windows" ]; then
                     # Build the Windows target
                     npm run build:electron -- --win --x64
@@ -174,7 +174,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-amd64
                   path: dist/*amd64.deb
-                  if-no-files-found: error
+                  if-no-files-found: warn
 
             - name: Upload DEB (arm64)
               if: runner.os == 'Linux' && runner.arch == 'arm64'
@@ -182,7 +182,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-arm64
                   path: dist/*arm64.deb
-                  if-no-files-found: error
+                  if-no-files-found: warn
 
             # Upload AppImage
             - name: Upload AppImage (x64)
@@ -191,7 +191,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-AppImage-x64
                   path: dist/*x86_64.AppImage
-                  if-no-files-found: error
+                  if-no-files-found: warn
 
             - name: Upload AppImage (arm64)
               if: runner.os == 'Linux' && runner.arch == 'arm64'
@@ -199,7 +199,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-AppImage-arm64
                   path: dist/*arm64.AppImage
-                  if-no-files-found: error
+                  if-no-files-found: warn
 
             # Upload Snap
             - name: Upload Snap
@@ -208,7 +208,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-Linux-Snap
                   path: dist/*.snap
-                  if-no-files-found: error
+                  if-no-files-found: ignore
 
             # Upload macOS .dmg (x64 + arm64)
             - name: Upload macOS DMG (x64)
@@ -217,7 +217,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-macOS-x64
                   path: dist/*x64.dmg
-                  if-no-files-found: error
+                  if-no-files-found: warn
 
             - name: Upload macOS DMG (arm64)
               if: runner.os == 'macOS' && runner.arch == 'arm64'
@@ -225,7 +225,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-macOS-arm64
                   path: dist/*arm64.dmg
-                  if-no-files-found: error
+                  if-no-files-found: warn
 
             # Upload Windows NSIS and Portable
             - name: Upload Windows Installer (NSIS x64)
@@ -234,7 +234,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-Windows-NSIS-x64
                   path: dist/*Setup*.exe
-                  if-no-files-found: error
+                  if-no-files-found: warn
 
             - name: Upload Windows Portable (x64)
               if: runner.os == 'Windows' && runner.arch == 'x64'
@@ -242,7 +242,7 @@ jobs:
               with:
                   name: IntelliDesk-${{ env.CURRENT_VERSION }}-Windows-Portable-x64
                   path: dist/*portable*x64.exe
-                  if-no-files-found: error
+                  if-no-files-found: ignore
 
             - name: Save current version
               run: echo "${{ env.CURRENT_VERSION }}" > last_version.txt

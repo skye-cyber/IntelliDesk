@@ -32,10 +32,6 @@ import { StreamingPortalContainer } from './StreamingPortalContainer';
 import '../renderer/js/react-portal-bridge';
 import './PortalTargetRegister';
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM CONTENT LOADED")
-})
-
 const App = () => {
     //const { electron } = useElectron();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);

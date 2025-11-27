@@ -50,7 +50,13 @@ export class ChatManager {
                         if (!window.desk.api.stat(window.desk.api.joinPath(this.storagePath, file))) continue;
 
                         const metadata = window.desk.api.getmetadata(file)
-                        if(!metadata) continue;
+                        if (!metadata) {
+                            continue;
+                        }
+
+                        if (typeof (metadata.highlight) !== "string") {
+                            metadata.highlight = ""
+                        }
 
                         window.reactPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata }, 'chatItem')
 
@@ -292,23 +298,12 @@ export class ChatManager {
         ClosePrefixed()
 
         // Show loading modal immediately without awaiting
-        this.showLoadingModal('Preparing conversation');
+        await this.showLoadingModal('Preparing conversation');
 
         // Use requestAnimationFrame to ensure the modal has a chance to render
         await new Promise(resolve => requestAnimationFrame(resolve));
 
         try {
-            // Remove animation from previous item as the active item is changing
-            /*
-             if (this.activeItem) {
-                this.activeItem.classList.remove('animate-heartpulse');
-                this.activeItem.querySelector('#active-dot').classList.add('hidden');
-            }
-            this.activeItem = item;
-
-            item.classList.add('animate-heartpulse-slow');
-            item.querySelector('#active-dot').classList.remove('hidden');
-            */
 
             let [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
 
@@ -327,7 +322,9 @@ export class ChatManager {
             window.ModalManager.showMessage('Failed to load conversation', 'error');
         } finally {
             // Always hide the loading modal
-            await this.hideLoadingModal();
+            setTimeout(async () => {
+                await this.hideLoadingModal();
+            }, 700)
         }
     }
 }

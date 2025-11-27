@@ -7,11 +7,11 @@ const chatutil = new ChatUtil()
 export const ModelItem = ({ model, isSelected, onSelect }) => {
 
     const onModelSelect = useCallback(() => {
-        const selected_model = chatutil.get_multimodal_modesl().includes(window.currentModel)
+        const selected_model = chatutil.get_multimodal_models().includes(window.currentModel)
             ? 'multimodal'
             : 'chat'
 
-        const is_current_multimodal = chatutil.get_multimodal_modesl().includes(window.desk.api.getModel())
+        const is_current_multimodal = chatutil.get_multimodal_models().includes(window.desk.api.getModel())
             ? 'multimodal'
             : 'chat';
         if (selected_model !== is_current_multimodal) {

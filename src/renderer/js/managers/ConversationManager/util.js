@@ -120,7 +120,7 @@ export class ChatUtil {
         return codestral
     }
 
-    get_multimodal_modesl() {
+    get_multimodal_models() {
         return [
             "mistral-small-latest",
             "pixtral-12b-2409",

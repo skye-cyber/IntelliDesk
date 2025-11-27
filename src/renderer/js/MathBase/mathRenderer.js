@@ -1,6 +1,6 @@
-import 'katex/dist/katex.min.css';
+import '@math/katex/katex.min.css';
 //import katex from 'katex';
-import renderMathInElement from 'katex/contrib/auto-render';
+import renderMathInElement from '@math/katex/contrib/auto-render';
 
 // Make renderMathInElement globally available if needed
 window.renderMathInElement = renderMathInElement;
@@ -20,16 +20,16 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
         renderTimeouts.delete(containerSelector);  // Clear from the map once rendered
 
         if (window.renderMathInElement) {
-            window.renderMathInElement(element, {
+            renderMathInElement(element, {
                 delimiters: [
                     { left: '$$', right: '$$', display: true },
                     { left: '\\[', right: '\\]', display: true },
                     { left: '$', right: '$', display: false },
-                    { left: '\\(', right: '\\)', display: true },
+                    { left: '\\(', right: '\\)', display: false },
                 ],
                 throwOnError: false,
             });
-            //console.log('KaTeX rendering complete for', selector);
+            console.log('KaTeX rendering complete for', selector);
         } else {
             console.error('KaTeX auto-render extension not loaded.');
         }
@@ -44,6 +44,16 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
         const timeout = setTimeout(render, delay);
         renderTimeouts.set(containerSelector, timeout);
     }
+}
+
+export function leftalinemath(){
+    const roots = document.querySelectorAll('.katex-display')
+    roots?.forEach(root=>{
+        root?.querySelectorAll('.katex-html').forEach(el=>{
+            el?.classList.add('text-left')
+            console.log(el)
+        })
+    })
 }
 
 export function NormalizeCode(element) {

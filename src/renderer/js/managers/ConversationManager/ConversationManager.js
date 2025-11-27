@@ -46,7 +46,11 @@ export class ConversationManager {
 
         ClosePrefixed()
 
-        this.change_model()
+        if (!this.chatutil.get_multimodal_models().includes(window.currentModel)) {
+            model === "multimodal" ? this.change_model('mistral-small-latest') : ''
+        } else {
+            model === "chat" ? this.change_model() : ''
+        }
 
         if (model === 'multimodal') {
             conversationData[0].chats.forEach(message => {
@@ -55,7 +59,7 @@ export class ConversationManager {
                     if (message.role === "user") {
                         this.renderUserMessage(message.content, model);
                     } else if (message.role === "assistant") {
-                        this.renderAIMessage(message.content);
+                        this.renderAIMessage(message.content[0]?.text);
                     }
                 }
                 //window.debounceRenderKaTeX(null, null, true);
@@ -167,6 +171,8 @@ export class ConversationManager {
         let actualResponse = "";
         let thinkContent = "";
 
+        if(!content) return
+
         // Check whether it is a thinking model response ie if it has thinking tags.
         const hasThinkTag = content.includes("<think>");
 
@@ -177,7 +183,6 @@ export class ConversationManager {
         } else {
             actualResponse = content;
         }
-
         window.reactPortalBridge.showComponentInTarget('AiMessage', 'chatArea', { actual_response: actualResponse, isThinking: false, think_content: thinkContent }, 'ai_message');
     }
 }

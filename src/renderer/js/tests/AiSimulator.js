@@ -135,7 +135,7 @@ export async function* _generateTextChunks(input, message = null, hf = false) {
 export async function* generateTextChunks(input, message = null, hf = false) {
     // Default test messages for different scenarios
     const testMessages = {
-        normal: "This is a $E = mc^2$ or (E = mc^2) test message for streaming simulation. It includes various punctuation marks, numbers like 123, and special characters!",
+        normal: "Let's solve the given equations step by step.\n\n### First Equation\nStarting with:\n$$s \\times 2=(q \\times s)^{2}-(y s)^{2}$$\n $s \\times 2=(q \\times s)^{2}-y^{2}$\n $s z=q \\times s-y^{s}$\n $s z=q \\times s-y^{s}$\n\nWe can simplify the first equation:\n$s \\times 2 = (q \\times s)^2 - (y \\times s)^2$\n\nFactor out $ s^2 $ from the right side:\n$s \\times 2 = s^2 (q^2 - y^2)$\n\nDivide both sides by $ s $ (assuming \\$s \\neq 0$):\n$2 = s (q^2 - y^2)$\n\nSolve for \\( s \\):\n$s = \\frac{2}{q^2 - y^2}$\n\n### Second Equation\nNow, consider the second equation:\n$p x^{2} = (2 z - 4^{2} 4) z$\n\nSimplify the right side:\n$ p x^{2} = (2 z - 16) z $\n\nExpand the right side:\n$ p x^{2} = (2 z^2 - 16 z) $\n\nRearrange the equation to standard form:\n($p x^{2} + 16 z - 2 z^2) = 0$\n\nThis is a quadratic equation in terms of $ z $. To solve for $ z $, we can use the quadratic formula:\n$z = \\frac{-b \\pm \\sqrt{b^2 - 4 a c}}{2 a}$\n\nWhere $ a = -2$, $ b = 16 $, and $ c = p x^2 $:\n$z = \\frac{-16 \\pm \\sqrt{16^2 - 4 (-2) (p x^2)}}{2 (-2)}$\n\nSimplify under the square root:\n$z = \\frac{-16 \\pm \\sqrt{256 + 8 p x^2}}{-4}$\n\nThis gives us the solution for $ z $ in terms of $ p $ and $ x $.\n\n### Final Form\nTo reduce the second equation to the form $ x \\times y \\times z = $, we can express $ z $ in terms of $ x $ and $y$. However, the given equations do not directly provide a relationship between $ x $, $ y $, and $ z $ that can be simplified to $ x \\times y \\times z = $.\n\nTherefore, the simplified forms of the equations are:\n1. $ s = \\frac{2}{q^2 - y^2} $\n\n2. $ z = \\frac{-16 \\pm \\sqrt{256 + 8 p x^2}}{-4} $",
         xml: "<name>Test Conversation</name>This is the actual response content after the name tag.",
         code: "```javascript\n function example() {\n\t return 'Hello World';\n }\n // This is a code example\n```",
         long: "This is a much longer message designed to test streaming with multiple chunks and various edge cases including line breaks\nand special characters like <, >, &, and @ symbols.",
@@ -165,7 +165,7 @@ export async function* generateTextChunks(input, message = null, hf = false) {
         mixed: { size: () => Math.floor(Math.random() * 6) + 1, delay: () => Math.random() * 40 + 10 } // Random sizes and delays
     };
 
-    const config = chunkConfigs.normal; // Change this to test different streaming behaviors
+    const config = chunkConfigs.burst; // Change this to test different streaming behaviors
 
     let position = 0;
     const totalLength = message.length;

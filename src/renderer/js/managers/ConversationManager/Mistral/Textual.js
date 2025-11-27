@@ -6,6 +6,7 @@ import { generateTextChunks, generateTextChunksAdvanced } from '../../../tests/A
 import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
+import { leftalinemath } from "../../../MathBase/mathRenderer";
 
 let ai_ms_pid
 
@@ -13,7 +14,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
     try {
         if (!text?.trim()) return console.log("Message is empty")
 
-            // Create Timer object
+        // Create Timer object
         const _Timer = new window.Timer();
 
         StateManager.set('user-text', text)
@@ -216,6 +217,8 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
                 });
             }
 
+            chatutil.render_math(`${message_id}`, 2000)
+
             // Scroll to bottom
             chatutil.scrollToBottom(chatArea, true, 1000);
 
@@ -263,9 +266,9 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
             StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
         }
 
-        // Render diagrams
+        // Render diagrams--last round
         chatutil.render_math()
-        window.normaliZeMathDisplay()
+        setTimeout(() => { leftalinemath() }, 1000)
 
         window.reactPortalBridge.closeComponent(loader_id)
 

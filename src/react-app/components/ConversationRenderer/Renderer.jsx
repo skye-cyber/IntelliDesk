@@ -93,7 +93,8 @@ export const AiMessage = ({
         document.querySelector('.fold_svg')?.classList.toggle('rotate-180')
     })
 
-    chatutil.render_math(`.${message_id}`, 2000)
+    // chatutil.render_math(`.${message_id}`)
+    // chatutil.render_math()
 
     return (
         <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>

@@ -10,7 +10,7 @@ const chatutil = new ChatUtil()
 StateManager.set('processing', false)
 
 
-const multimodal = chatutil.get_multimodal_modesl()
+const multimodal = chatutil.get_multimodal_models()
 const ms_models = chatutil.get_models()
 
 export class Router {

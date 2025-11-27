@@ -167,7 +167,11 @@ const api = {
         ConversationHistory[0].chats.push(item)
 
         if (!ConversationHistory[0].metadata.highlight) {
-            ConversationHistory[0].metadata.highlight = item?.content.slice(0, 15)
+            if (ConversationHistory[0].metadata.model === "multimodal") {
+                ConversationHistory[0].metadata.highlight = item?.content?.type ? item?.content?.text.slice(0, 15) : ''
+            } else {
+                ConversationHistory[0].metadata.highlight = typof(item?.content) === "string" ?item?.content.slice(0, 15) : ''
+            }
         }
         if (ConversationHistory[0].metadata.type === "temporary") return console.log("In temporary chat Not saving!")
 

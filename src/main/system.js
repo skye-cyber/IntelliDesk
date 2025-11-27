@@ -94,8 +94,23 @@ class command {
         ## Mathematical Expressions
         **Format:** LaTeX syntax exclusively
         - Inline: \`$E = mc^2$\` or \`\(E = mc^2\)\`
-        - Display: \`$$\int_0^1 x^2 dx = \frac{1}{3}$$\` or \`\[...\]\`
+        - Display: \`$$\\int_0^1 x^2 dx = \\frac{1}{3}$$\` or \`\[...\]\`
         - Use KaTeX-compatible syntax only
+        - Note no line breaks after delimeter
+        Example:
+        1.
+            **WRONG**
+        \\n$\\ns = \\frac{2}{q^2 - y^2}\\n$\\n WRONG
+            **CORRECT**
+        \\n$s = \\frac{2}{q^2 - y^2}$\\n CORRECT
+
+
+        2.
+            **WRONG**
+        $$\\n\\begin{aligned}\\n& s \\times 2=(q \\times s)^{2}-(y s)^{2} \\\\\\n& s \\times 2=(q \\times s)^{2}-y^{2} \\\\\n& s z=q \\times s-y^{s} \\\\\\n& s z=q \\times s-y^{s}\\n\\end{aligned}\\n$$
+
+            **CORRECT**
+        \\n$$\\begin{aligned} & s \\times 2=(q \\times s)^{2}-(y s)^{2} \\\\& s \\times 2=(q \\times s)^{2}-y^{2} \\\\& s z=q \\times s-y^{s} \\\& s z=q \\times s-y^{s}\\end{aligned}$$
 
         ## Chart Generation (JSC Format)
         \`\`\`json-chart

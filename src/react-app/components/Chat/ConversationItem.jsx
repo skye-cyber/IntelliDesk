@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { chatmanager } from '../../../renderer/js/managers/ConversationManager/ChatManager';
 
 export const ConversationItem = ({ metadata, portal_id }) => {
+
     const onContextMenu = useCallback((event, id) => {
         // Prevent the default context menu
         event.preventDefault();
@@ -64,22 +65,35 @@ export const ConversationItem = ({ metadata, portal_id }) => {
         }
 
         chatmanager.activeItem = item
-        item.classList.add('animate-heartpulse-slow');
-        item.querySelector('#active-dot')?.classList.remove('hidden');
+        activate_item(item?.dataset?.id)
         chatmanager.renderConversationFromFile(metadata.id)
     });
 
-    const deactivate_item = () => {
-        document.addEventListener('NewConversationOpened', () => {
-            chatmanager.activeItem.classList.remove('animate-heartpulse-slow');
-            chatmanager.activeItem.querySelector('#active-dot')?.classList.remove('hidden');
-        })
+    const deactivate_item = (data_id=window.activeConversationId) => {
+        const item = document.querySelector(`[data-id^='${data_id}']`)
 
-        useEffect(() => {
-            document.addEventListener('NewConversationOpened', deactivate_item)
-            return () => document.removeEventListener('NewConversationOpened');
-        })
+        item.classList.remove('animate-heartpulse-slow');
+        item.querySelector('#active-dot')?.classList.add('hidden');
     }
+
+    const activate_item = (data_id) => {
+        const item = document.querySelector(`[data-id^='${data_id}']`)
+
+        item?.classList?.add('animate-heartpulse-slow');
+        item?.querySelector('#active-dot')?.classList?.remove('hidden');
+        window.activeConversationId = item?.dataset?.id
+    }
+    window.activate_item = activate_item
+
+    useEffect(() => {
+        if (window.activeConversationId) {
+            activate_item(window.activeConversationId)
+        }
+
+        document.addEventListener('NewConversationOpened', deactivate_item)
+        return () => document.removeEventListener('NewConversationOpened', deactivate_item);
+    })
+
 
 
     return (

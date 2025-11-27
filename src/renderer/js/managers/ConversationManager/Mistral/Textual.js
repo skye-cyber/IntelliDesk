@@ -14,7 +14,7 @@ let ai_ms_pid
 export async function MistraChat({ text, model_name = window.currentModel }) {
     try {
         if (!text?.trim()) return console.log("Message is empty")
-
+        console.log(text.replace(/(<br\s*[\d\S*]\/?>\s*){2,}/gi, '<br>'))
         // Create Timer object
         const _Timer = new window.Timer();
 
@@ -266,7 +266,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         }
 
         // Render diagrams--last round
-        message_id ? chatutil.render_math(`.${message_id}`) : renderAll_aimessages()
+        message_id ? chatutil.render_math(`${message_id}`) : renderAll_aimessages()
         setTimeout(() => { leftalinemath() }, 1000)
 
         window.reactPortalBridge.closeComponent(loader_id)

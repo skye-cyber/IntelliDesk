@@ -257,7 +257,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         }
 
         // render diagrams from this response
-        message_id ? chatutil.render_math(`.${message_id}`) : renderAll_aimessages()
+        message_id ? chatutil.render_math(`${message_id}`) : renderAll_aimessages()
         setTimeout(() => { leftalinemath() }, 1000)
 
         window.reactPortalBridge.closeComponent(loader_id)

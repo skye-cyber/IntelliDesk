@@ -64,7 +64,6 @@ export function leftalinemath() {
     roots?.forEach(root => {
         root?.querySelectorAll('.katex-html').forEach(el => {
             el?.classList.add('text-left')
-            console.log(el)
         })
     })
 }

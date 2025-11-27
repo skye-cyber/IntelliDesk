@@ -4,6 +4,9 @@ import { showDropZoneModal } from '@components/DropZone/util.js'
 import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
+import { CodeScopeDetector } from '../code/codeDetector';
+
 const chatutil = new ChatUtil()
 
 let router
@@ -15,11 +18,37 @@ import('@js/managers/router.js').then(({ Router }) => {
     window.app.router = router;
 })
 
+// Common code patterns for detection
+const CODE_PATTERNS = {
+    python: /^(def |class |import |from |print\(|if __name__|#)/m,
+    javascript: /^(function|const |let |var |import |export |console\.)/m,
+    java: /^(public|private|class |import |System\.out)/m,
+    html: /<(div|span|p|html|body|head)|<!DOCTYPE/,
+    css: /(\.[a-zA-Z]|#[a-zA-Z]|@media|margin|padding)/,
+    sql: /(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)/i,
+    generic: /(\{|\}|\(|\)|;|=>|->|\/\/|\/\*|\*\/)/
+};
+
+const LANGUAGE_EXTENSIONS = {
+    js: 'javascript',
+    py: 'python',
+    java: 'java',
+    html: 'html',
+    css: 'css',
+    sql: 'sql',
+    ts: 'typescript',
+    php: 'php',
+    rb: 'ruby'
+};
 
 export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
     // State management for the toggle
     const [isAIActive, setIsAIActive] = useState(false);
     const [inputValue, setInputValue] = useState('');
+    const [input, setInput] = useState('');
+    const [isCodeMode, setIsCodeMode] = useState(false);
+    const [detectedLanguage, setDetectedLanguage] = useState('');
+    const textareaRef = useRef(null);
 
     const showApiNotSetWarning = useCallback(() => {
         const ApiwarnModal = document.getElementById('ApiNotSetModal');
@@ -35,20 +64,43 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         } else {
             const userInput = document.getElementById('userInput');
 
-            const inputText = userInput.innerHTML.trim();
-            if (inputText && !StateManager.get('processing')) {
+            // const inputText = input //InputPurify(userInput.innerHTML.trim());
+            console.log(input)
+
+            if (input.trim() && !StateManager.get('processing')) {
                 // Reset the input field
                 userInput.innerHTML = "";
+                userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
+
+                const suggestionsEl = document.getElementById('suggestions');
+                if (suggestionsEl) suggestionsEl.classList.add('hidden');
+
                 // Adjust input field height
                 userInput.style.height = 'auto';
                 handleInputChange()
-                //userInput.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight / 100) + 'px';
-                //userInput.scrollTop = userInput.scrollHeight;
-                router.requestRouter(inputText, document.getElementById('chatArea'));
+                setInput('');
+                setDetectedLanguage('');
+
+                router.requestRouter(input, document.getElementById('chatArea'));
                 chatutil.hide_suggestions()
             }
         }
     })
+
+    const handlePaste = (e) => {
+        // Auto-detect code on paste
+        setTimeout(() => {
+            const detectedLang = detectCodeLanguage(input);
+            setDetectedLanguage(detectedLang);
+
+            // If it looks like code but isn't formatted, suggest it to the user
+            if (detectedLang !== 'text' && !input.includes('```')) {
+                // You could show a toast notification here
+                console.log('Detected code, consider using code blocks for better formatting');
+            }
+        }, 100);
+    };
+
     useEffect(() => {
         const routerWatcher = namespaceWatcher.waitFor('app.router', (routerInstance, timedOut) => {
             const userInput = document.getElementById('userInput');
@@ -80,8 +132,8 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
             // Add event listeners
 
-            userInput.addEventListener('keypress', handleEnterKey);
-
+            userInput.addEventListener('keypress', handleKeyDown);
+            userInput.addEventListener('paste', handlePaste)
 
             document.addEventListener('imageLoaded', handleImageLoaded);
 
@@ -102,13 +154,14 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             if (routerWatcher._handlers) {
                 const { handleEnterKey, handleImageLoaded, userInput } = routerWatcher._handlers;
                 userInput.removeEventListener('keydown', handleEnterKey);
+                userInput.removeEventListener('paste', handlePaste)
                 document.removeEventListener('imageLoaded', handleImageLoaded);
             }
 
             // Cancel the watcher
             routerWatcher.cancel();
         };
-    }, [handleSend]); // Add handleSend to dependencies if it's defined outside
+    }, [handleSend, handlePaste]);
 
 
     const shouldToggleCanvas = useCallback((event) => {
@@ -225,7 +278,116 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     const handleInput = useCallback((el, content) => {
         if (!content.trim()) el.innerHTML = ""
 
+        const value = el.value;
+        setInput(value);
+
+        // Auto-detect language when user types/pastes
+        if (value.length > 10) {
+            const detectedLang = detectCodeLanguage(value);
+            setDetectedLanguage(detectedLang);
+        }
     })
+
+    const detectCodeLanguage = (text) => {
+        // Check for existing code blocks first
+        const codeBlockMatch = text.match(/```(\w+)?/);
+        if (codeBlockMatch && codeBlockMatch[1]) {
+            return codeBlockMatch[1];
+        }
+
+        // Analyze the text for language patterns
+        for (const [lang, pattern] of Object.entries(CODE_PATTERNS)) {
+            if (pattern.test(text)) {
+                return lang;
+            }
+        }
+
+        return 'text';
+    };
+
+    const insertText = (textToInsert, wrapBefore = '', wrapAfter = '') => {
+        const textarea = textareaRef.current;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = input.substring(0, start);
+        const after = input.substring(end);
+
+        const newText = before + wrapBefore + textToInsert + wrapAfter + after;
+        setInput(newText);
+
+        // Set cursor position after inserted text
+        setTimeout(() => {
+            textarea.focus();
+            const newCursorPos = start + wrapBefore.length + textToInsert.length + wrapAfter.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
+    };
+
+    const handleCodeBlock = () => {
+        const selectedText = input.substring(
+            textareaRef.current.selectionStart,
+            textareaRef.current.selectionEnd
+        );
+
+        if (selectedText) {
+            // Wrap selected text in code blocks
+            const lang = detectedLanguage || 'text';
+            insertText(selectedText, `\`\`\`${lang}\n`, `\n\`\`\``);
+        } else {
+            // Insert empty code block at cursor
+            const lang = detectedLanguage || 'text';
+            insertText('', `\`\`\`${lang}\n`, `\n\`\`\``);
+        }
+    };
+
+    const handleInlineCode = () => {
+        const selectedText = input.substring(
+            textareaRef.current.selectionStart,
+            textareaRef.current.selectionEnd
+        );
+
+        if (selectedText) {
+            insertText(selectedText, '`', '`');
+        } else {
+            insertText('', '`', '`');
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        // Handle Tab key for indentation in code mode
+        if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            insertText('  ');
+            return;
+        }
+
+        // Cmd/Ctrl + Enter to send
+        const sendBtn = document.getElementById("sendBtn")
+
+        if (e.key === 'Enter' && !sendBtn.classList.contains('hidden') && !e.ctrlKey && !e.shiftKey) {
+            e.preventDefault()
+            handleSend();
+            return;
+        }
+
+        // Auto-close backticks for inline code
+        if (e.key === '`' && !isCodeMode) {
+            const textarea = textareaRef.current;
+            const start = textarea.selectionStart;
+            const before = input.substring(0, start);
+            const after = input.substring(start);
+
+            // Check if we're inside an inline code block
+            const backticksBefore = (before.match(/`/g) || []).length;
+            const backticksAfter = (after.match(/`/g) || []).length;
+
+            if (backticksBefore % 2 !== 0 && backticksAfter % 2 !== 0) {
+                // We're inside an inline code block, insert paired backtick
+                e.preventDefault();
+                insertText('`', '', '`');
+            }
+        }
+    };
 
     useEffect(() => {
         chatutil.scrollToBottom(document.getElementById('chatArea'), false);
@@ -255,7 +417,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                     role="textbox"
                     aria-label="Message input"
                     autoFocus={true}
-                    data-placeholder="Message IntelliDesk 💫"
+                    data-placeholder="Type your message... (Enter to send)"
                     value={inputValue}
                     onInput={(e) => handleInput(e.currentTarget, e.currentTarget.textContent)}
                     onChange={(e) => handleInputChange(e.currentTarget, e.currentTarget.textContent)} className="w-full overflow-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000 active:outline-none">
@@ -290,7 +452,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 </section>
             </section>
 
-            <Tools shouldToggleCanvas={shouldToggleCanvas} onAICanvasToggle={onAICanvasToggle} onToggleRecording={onToggleRecording} closeTools={closeTools} />
+            <Tools shouldToggleCanvas={shouldToggleCanvas} onAICanvasToggle={onAICanvasToggle} onToggleRecording={onToggleRecording} closeTools={closeTools} handleCodeBlock={handleCodeBlock} handleInlineCode={handleInlineCode} detectedLanguage={detectedLanguage} />
 
             {/* Scroll to bottom button */}
             <ScrollToBottomButton onClick={() => chatutil.scrollToBottom(document.getElementById('chatArea'), false)} />
@@ -298,12 +460,34 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     );
 };
 
-const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeTools }) => {
+const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeTools, handleInlineCode, handleCodeBlock, detectedLanguage }) => {
     return (
         <section
             id="tool-modal"
             onMouseLeave={closeTools}
             className='block absolute -left-12 bottom-12 z-[51] bg-gray-200 dark:bg-blend-700 rounded-md p-3 space-y-2 hidden animate-exit'>
+
+            <div className="toolbar">
+                <button
+                    type="button"
+                    onClick={handleInlineCode}
+                    className="toolbar-btn bg-none border border-[#ddd] rounded-md p-2 cursor-pointer m-2 font-mono text-lg hover:bg-[#e9ecef] hover:border-[#adb5bd]"
+                    title="Inline Code"
+                >
+                </button>
+                <button
+                    type="button"
+                    onClick={handleCodeBlock}
+                    className="toolbar-btn toolbar-btn bg-none border border-[#ddd] rounded-md p-2 cursor-pointer m-2 font-mono text-lg hover:bg-[#e9ecef] hover:border-[#adb5bd]"
+                    title="Code Block"
+                >
+                    {`</>`}
+                </button>
+                {detectedLanguage && detectedLanguage !== 'text' && (
+                    <span className="language-badge bg-[#6c757d] text-white p-2 rounded-md text-lg ml-auto">{detectedLanguage}</span>
+                )}
+            </div>
+
             {/* Voice Recording */}
             <div onClick={onToggleRecording} className='flex gap-1 text-gray-800 dark:text-gray-200 items-center cursor-pointer hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm'>
                 <button id="microphone" className="flex items-center justify-center rounded-lg  transition-colors duration-300" title="Voice recording">

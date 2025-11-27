@@ -162,7 +162,7 @@ export function copyBMan() {
 
 export function InputPurify(unsafe) {
     const cleanHTML = DOMPurify.sanitize(unsafe, {
-        ALLOWED_TAGS: ['br', 'strong', 'em'], // Allow paragraphs, line breaks, bold, italic, links
+        ALLOWED_TAGS: ['br', 'strong', 'em', 'h1', 'h2', 'h3', 'h4'], // Allow paragraphs, line breaks, bold, italic, links
         //ALLOWED_ATTR: ['href'], // Only allow the 'href' attribute (useful for 'a' tags)
         //ADD_TAGS: ['img'], // Add the image tag
         //ADD_ATTR: ['src', 'alt', 'data-id'] // Add these attributes (src/alt for img, data-id for any relevant tag)
@@ -178,6 +178,7 @@ export function InputPurify(unsafe) {
         // potentially separated by optional whitespace characters (\s*), and replaces
         // the entire sequence with a single regular space (' ').
         .replace(/(&nbsp;\s*){2,}/gi, ' ')
+        .replace(/\n+/g, '<br>')
         // Optional: Collapse sequences of regular spaces as well if they weren't handled by white-space: pre-wrap
         // (white-space: pre-wrap should handle regular spaces, but this is a fallback)
         .replace(/ {2,}/g, ' ')

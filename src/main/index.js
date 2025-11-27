@@ -62,8 +62,7 @@ ipcMain.on('desk.api-update-chat', (event, data) => {
 app.disableHardwareAcceleration()
 
 
-//Handle Documentation shortcut
-ipcMain.handle('show-documentation', () => {
+function show_documentation() {
     const _docWindow = new BrowserWindow({
         width: 800,
         height: 600,
@@ -76,7 +75,10 @@ ipcMain.handle('show-documentation', () => {
     isDev
         ? _docWindow.loadFile(path.join(__dirname, '../assets/documentation.html'))
         : _docWindow.loadFile(path.join(process.resourcesPath, './assets/documentation.html'));
-});
+}
+
+//Handle Documentation shortcut
+ipcMain.handle('show-documentation', () => show_documentation);
 
 const template = [
     {
@@ -230,6 +232,12 @@ app.on('ready', async () => {
                 } else {
                     createWindow();
                 }
+            }
+        },
+        {
+            label: 'Help',
+            click: () => {
+                show_documentation()
             }
         },
         {

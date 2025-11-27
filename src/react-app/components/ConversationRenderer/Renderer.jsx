@@ -6,7 +6,6 @@ import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../renderer/js/ChatExport/e
 import { markitdown } from './CodeHighlighter';
 import { CodeBlockRenderer } from './CodeBlockRenderer';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
-import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
 
 const chatutil = new ChatUtil()
 
@@ -53,7 +52,7 @@ export const UserMessage = ({
                 <div className="flex items-end gap-x-2 justify-end">
                     <div id="user_message" data-id={message_id} className={`${message_id} relative bg-gray-200 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-lg w-fit max-w-full md:max-w-[80%]`}>
                         <div className="prose whitespace-pre-wrap break-words max-w-full h-fit"
-                            dangerouslySetInnerHTML={{ __html: InputPurify(message) }}
+                            dangerouslySetInnerHTML={{ __html: message }}
                         ></div>
                     </div>
                 </div>
@@ -98,7 +97,7 @@ export const AiMessage = ({
         document.querySelector('.fold_svg')?.classList.toggle('rotate-180')
     })
 
-    //chatutil.render_math(`.${message_id}`)
+    //chatutil.render_math(`${message_id}`)
 
     return (
         <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>

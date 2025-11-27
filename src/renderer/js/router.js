@@ -28,7 +28,8 @@ sendBtn.addEventListener("click", () => {
     }
 });
 
-userInput.addEventListener("keydown", (e) => {
+/*
+ * userInput.addEventListener("keydown", (e) => {
     // When sendBtn is visible and the user presses Enter without shift
     if (!sendBtn.classList.contains('hidden') && e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -45,6 +46,7 @@ userInput.addEventListener("keydown", (e) => {
         }
     }
 });
+*/
 
 
 async function switchToVision() {

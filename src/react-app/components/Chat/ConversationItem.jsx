@@ -64,9 +64,9 @@ export const ConversationItem = ({ metadata, portal_id }) => {
             chatmanager.activeItem.querySelector('#active-dot').classList.add('hidden');
         }
 
+        chatmanager.renderConversationFromFile(metadata.id)
         chatmanager.activeItem = item
         activate_item(item?.dataset?.id)
-        chatmanager.renderConversationFromFile(metadata.id)
     });
 
     const deactivate_item = (data_id=window.activeConversationId) => {

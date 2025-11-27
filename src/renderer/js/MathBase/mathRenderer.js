@@ -10,9 +10,22 @@ window.renderMathInElement = renderMathInElement;
 
 const renderTimeouts = new Map();
 
-export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = false) {
-    const selector = containerSelector ? containerSelector : 'body'
-    let element = document.querySelector(selector);
+export const renderAll_aimessages = () => {
+    setTimeout(() => {
+        const targets = document.querySelectorAll('#ai_response')
+        targets.forEach(res => {
+            debounceRenderKaTeX(res, null, null, true, true)
+        })
+    }, 150)
+}
+
+export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = false, is_element = false) {
+
+    if (!containerSelector && !is_element) {
+        //console.log("containerSelector missing")
+        return renderAll_aimessages()
+    }
+    let element = is_element ? containerSelector : document.querySelector(containerSelector);
 
     if (!element) return;
 
@@ -29,7 +42,7 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
                 ],
                 throwOnError: false,
             });
-            console.log('KaTeX rendering complete for', selector);
+            //console.log('KaTeX rendering complete for', containerSelector);
         } else {
             console.error('KaTeX auto-render extension not loaded.');
         }
@@ -46,10 +59,10 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
     }
 }
 
-export function leftalinemath(){
+export function leftalinemath() {
     const roots = document.querySelectorAll('.katex-display')
-    roots?.forEach(root=>{
-        root?.querySelectorAll('.katex-html').forEach(el=>{
+    roots?.forEach(root => {
+        root?.querySelectorAll('.katex-html').forEach(el => {
             el?.classList.add('text-left')
             console.log(el)
         })

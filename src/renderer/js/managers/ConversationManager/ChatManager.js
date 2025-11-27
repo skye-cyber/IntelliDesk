@@ -322,9 +322,9 @@ export class ChatManager {
             window.ModalManager.showMessage('Failed to load conversation', 'error');
         } finally {
             // Always hide the loading modal
-            setTimeout(async () => {
+            //setTimeout(async () => {
                 await this.hideLoadingModal();
-            }, 700)
+            //}, 700)
         }
     }
 }

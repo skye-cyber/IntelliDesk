@@ -7,6 +7,7 @@ import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
+import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 
 let ai_ms_pid
 
@@ -25,7 +26,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
         const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, file_type: null, file_data_url: null, save: true }, 'user_message')
 
-        window.desk.api.addHistory({ role: "user", content: text });
+        //window.desk.api.addHistory({ role: "user", content: text });
 
         StateManager.set('user_message_portal', user_message_portal)
 
@@ -47,11 +48,11 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        const stream = await mistral.client.chat.stream({
+        const stream = generateTextChunks() /*await mistral.client.chat.stream({
             model: model_name,
             messages: window.desk.api.getHistory(true),
             max_tokens: 3000
-        });
+        });*/
 
 
         //const stream = generateTextChunks(text)
@@ -224,8 +225,6 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
             // Render mathjax immediately
             if (!message_id) message_id = window.StateManager.get("current_message_id", message_id)
-
-            chatutil.render_math(`.${message_id}`, 3000)
         }
 
         StateManager.set('processing', false);
@@ -261,13 +260,13 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
                     .replace("</continued>", "")
             })
         } else {
-            window.desk.api.addHistory({ role: "assistant", content: fullResponse });
+            //window.desk.api.addHistory({ role: "assistant", content: fullResponse });
             StateManager.set('ai_message_portal', message_portal)
             StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
         }
 
         // Render diagrams--last round
-        chatutil.render_math()
+        message_id ? chatutil.render_math(`.${message_id}`) : renderAll_aimessages()
         setTimeout(() => { leftalinemath() }, 1000)
 
         window.reactPortalBridge.closeComponent(loader_id)

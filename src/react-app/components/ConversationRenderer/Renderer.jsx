@@ -35,7 +35,12 @@ export function GenerateId(prefix = '', postfix = '', length = 6) {
     return id;
 }
 
-export const UserMessage = ({ message, filedata, save = true }) => {
+export const UserMessage = ({
+    message,
+    filedata,
+    save = true
+}) => {
+
     const message_id = GenerateId('user_msg')
 
     //if (save) window.desk.api.addHistory({ role: "user", content: message });
@@ -93,8 +98,7 @@ export const AiMessage = ({
         document.querySelector('.fold_svg')?.classList.toggle('rotate-180')
     })
 
-    // chatutil.render_math(`.${message_id}`)
-    // chatutil.render_math()
+    //chatutil.render_math(`.${message_id}`)
 
     return (
         <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>

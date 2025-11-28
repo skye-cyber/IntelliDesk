@@ -53,9 +53,22 @@ export class AutoCodeDetector {
         },
         bash: {
             patterns: [
-                /^(echo\s+(-e)?|cd\s+|ls\s+|mkdir\s+|cat\s+|grep\s+)/,
+                /echo\s*?/, //check echo + space
+                /;;/, //check ;;
+                /exit\s*?[1-9]?/, // check exit + number
+                /'?"?@\$'?"?/, // check "@$"
+                /shift/, // check shift
+                /[a-z?A-Z?1-9?'?"?-?_?\/?\\?]+\)\n?\s*?[a-zA-Z1-9'?"?\s*?]*;;/, // check loops ie
+                /help\|--help?\|-h\)/, // check help argument - > help|--help|-h)
+                /if\s*?\[\[[a-zA-Z1-9\$#\!]*?\]\]; then/, //check if [[ ... ]]; then
+                /^(echo\s+|cd\s+|ls\s+|mkdir\s+|cat\s+|grep\s+)/,
                 /(if\s+\[|\s+then\s*$|\s+fi\s*$|\s+do\s*$|\s+done\s*$)/,
-                /(\$\{|\$\(|\|\s*$|>\s*$|>>?\s*[1-9]?|fi|exit\s?[1-9]*?|\[\[|-ne|-qe|&&|;;|esac)/
+                /(\$\{|\$\(|\|\s*$|>\s*$|>>\s*$)/,
+                /(echo\s+(-e)?['?"?a-zA-Z1-9]*?)/,
+                /\s+?\|\|/, // check ||
+                /&>\s*?[\/a-zA-Z1-9]*?/, // check &> /dev/null
+                /fi|exit\s?[1-9]*?|\[\[|-ne|-qe|&&|;;|esac/, // check esac, ne, ;; fi, exit + space + number
+                /[\'\"]\$[a-zA-Z1-9\/?\\?_?-?]/ // check "$str" -> variable access
             ],
             extensions: ['sh', 'bash'],
             shebang: /^#!.*(bash|sh)/

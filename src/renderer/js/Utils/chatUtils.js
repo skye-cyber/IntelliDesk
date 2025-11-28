@@ -162,7 +162,7 @@ export function copyBMan() {
 
 export function InputPurify(unsafe) {
     const cleanHTML = DOMPurify.sanitize(unsafe, {
-        ALLOWED_TAGS: ['br', 'strong', 'em', 'h1', 'h2', 'h3', 'h4'], // Allow paragraphs, line breaks, bold, italic, links
+        ALLOWED_TAGS: ['br', 'strong', 'em'] // 'h1', 'h2', 'h3', 'h4'], // Allow paragraphs, line breaks, bold, italic, links
         //ALLOWED_ATTR: ['href'], // Only allow the 'href' attribute (useful for 'a' tags)
         //ADD_TAGS: ['img'], // Add the image tag
         //ADD_ATTR: ['src', 'alt', 'data-id'] // Add these attributes (src/alt for img, data-id for any relevant tag)
@@ -194,6 +194,16 @@ export function InputPurify(unsafe) {
     .replace(/'/g, "&#039;");
     */
 
+}
+
+export function unsafe(content){
+    return content
+    .replace("&amp;", '&')
+    .replace("&lt;", '<')
+    .replace("&gt;", '>')
+    .replace("&quot;", '"' )
+    .replace("&#039;", "'")
+    //.replace("&amp", '&')
 }
 
 export function HandleProcessingEventChanges(status) {

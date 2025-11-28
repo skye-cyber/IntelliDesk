@@ -26,7 +26,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
         const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, file_type: null, file_data_url: null, save: true }, 'user_message')
 
-        //window.desk.api.addHistory({ role: "user", content: text });
+        window.desk.api.addHistory({ role: "user", content: text });
 
         StateManager.set('user_message_portal', user_message_portal)
 
@@ -48,11 +48,11 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        const stream = generateTextChunks() /*await mistral.client.chat.stream({
+        const stream = await mistral.client.chat.stream({
             model: model_name,
             messages: window.desk.api.getHistory(true),
             max_tokens: 3000
-        });*/
+        });
 
 
         //const stream = generateTextChunks(text)
@@ -260,7 +260,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
                     .replace("</continued>", "")
             })
         } else {
-            //window.desk.api.addHistory({ role: "assistant", content: fullResponse });
+            window.desk.api.addHistory({ role: "assistant", content: fullResponse });
             StateManager.set('ai_message_portal', message_portal)
             StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
         }

@@ -4,8 +4,6 @@ import { showDropZoneModal } from '@components/DropZone/util.js'
 import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
-import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
-import { CodeScopeDetector } from '../code/codeDetector';
 import { AutoCodeDetector } from '../code/autoCodeDetector';
 
 const chatutil = new ChatUtil()
@@ -69,8 +67,13 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             if (inputValue.trim() && !StateManager.get('processing')) {
                 // Reset the input field
                 // Auto-format the text with code blocks before sending
-                const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(inputValue);
-                //console.log(formattedMessage)
+                const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(inputValue)
+                .replaceAll('&gt;', '>')
+                .replaceAll('&lt;', '<')
+                .replaceAll('&amp;', '&')
+                .replaceAll('&nbsp;', ' ')
+                .replaceAll('<br>', '\n')
+
                 userInput.innerHTML = "";
                 userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
 

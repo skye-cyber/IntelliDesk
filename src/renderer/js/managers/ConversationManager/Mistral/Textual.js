@@ -14,7 +14,7 @@ let ai_ms_pid
 export async function MistraChat({ text, model_name = window.currentModel }) {
     try {
         if (!text?.trim()) return console.log("Message is empty")
-        console.log(text.replace(/(<br\s*[\d\S*]\/?>\s*){2,}/gi, '<br>'))
+
         // Create Timer object
         const _Timer = new window.Timer();
 

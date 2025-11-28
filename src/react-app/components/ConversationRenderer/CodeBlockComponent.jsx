@@ -92,3 +92,15 @@ export const CodeBlockComponent = ({
     )
 
 }
+
+
+export const SimpleCodeBlockComponent = ({
+    highlighted,
+    valid_language,
+    codeblock_id = GenerateId('code-block'),
+}) => {
+
+    return (
+        <code data-value={codeblock_id} id={codeblock_id} className={`bg-blue-40 dark:bg-primary-700 ${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 border-none shadow-none block whitespace-pre-wrap font-code text-sm  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
+    )
+}

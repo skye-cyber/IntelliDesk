@@ -4,7 +4,7 @@ import { normalizeMathDelimiters } from '../../../renderer/js/MathBase/MathNorma
 import { toggleExportOptions } from '../../../renderer/js/ChatExport/export';
 import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../renderer/js/ChatExport/export';
 import { markitdown } from './CodeHighlighter';
-import { CodeBlockRenderer } from './CodeBlockRenderer';
+import { CodeBlockRenderer, SimpleUserCodeRenderer } from './CodeBlockRenderer';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 
 const chatutil = new ChatUtil()
@@ -40,6 +40,8 @@ export const UserMessage = ({
     save = true
 }) => {
 
+    const userContent = markitdown(message);
+
     const message_id = GenerateId('user_msg')
 
     //if (save) window.desk.api.addHistory({ role: "user", content: message });
@@ -50,10 +52,11 @@ export const UserMessage = ({
         <>
             <section className="block">
                 <div className="flex items-end gap-x-2 justify-end">
-                    <div id="user_message" data-id={message_id} className={`${message_id} relative bg-gray-200 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-lg w-fit max-w-full md:max-w-[80%]`}>
-                        <div className="prose whitespace-pre-wrap break-words max-w-full h-fit"
+                    <div id="user_message" data-id={message_id} className={`${message_id} relative bg-blue-100/70 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-none w-fit max-w-full md:max-w-[80%]`}>
+                        <div className="hidden prose whitespace-pre-wrap break-words max-w-full h-fit"
                             dangerouslySetInnerHTML={{ __html: message }}
                         ></div>
+                        <SimpleUserCodeRenderer htmlContent={userContent}/>
                     </div>
                 </div>
 

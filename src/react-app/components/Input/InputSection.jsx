@@ -6,6 +6,7 @@ import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
 import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
 import { CodeScopeDetector } from '../code/codeDetector';
+import { AutoCodeDetector } from '../code/autoCodeDetector';
 
 const chatutil = new ChatUtil()
 
@@ -20,13 +21,15 @@ import('@js/managers/router.js').then(({ Router }) => {
 
 // Common code patterns for detection
 const CODE_PATTERNS = {
-    python: /^(def |class |import |from |print\(|if __name__|#)/m,
-    javascript: /^(function|const |let |var |import |export |console\.)/m,
+    python: /^(def |class |import |from |print\(|if __name__|#|__init__\(|os|sys|subprocess|__new__\(|\)\s?->\s?[a-zA-Z]:|\(self\)|None|#![/a-zA-Z]+python[1-9]*?|@classmethod|@staticmethod|\([a-zA-Z]_?:\s?[a-zA-Z]\))/m,
+    javascript: /^(function|const |let |var |import |export |console\.|window\.)/m,
     java: /^(public|private|class |import |System\.out)/m,
     html: /<(div|span|p|html|body|head)|<!DOCTYPE/,
     css: /(\.[a-zA-Z]|#[a-zA-Z]|@media|margin|padding)/,
     sql: /(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)/i,
-    generic: /(\{|\}|\(|\)|;|=>|->|\/\/|\/\*|\*\/)/
+    generic: /(\{|\}|\(|\)|;|=>|->|\/\/|\/\*|\*\/)/,
+    react: /^(import\s {[a-zA-Z1-9]} |return \(<[a-zA-Z]\)|import)/,
+    bash: /(echo\s?(-e)?)\s?[\'\"[a-zA-Z1-9]?]?[a-zA-Z1-9]|\s*?\|\s*?|\>\>?[1-9]|[a-zA-Z1-9]\(\)\s\{|fi|exit\s?[1-9]*?|\[\[|-ne|-qe|&&|;;|esac/
 };
 
 const LANGUAGE_EXTENSIONS = {
@@ -38,7 +41,8 @@ const LANGUAGE_EXTENSIONS = {
     sql: 'sql',
     ts: 'typescript',
     php: 'php',
-    rb: 'ruby'
+    rb: 'ruby',
+    jsx: 'react'
 };
 
 export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
@@ -64,11 +68,11 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         } else {
             const userInput = document.getElementById('userInput');
 
-            // const inputText = input //InputPurify(userInput.innerHTML.trim());
-            console.log(input)
-
             if (input.trim() && !StateManager.get('processing')) {
                 // Reset the input field
+                // Auto-format the text with code blocks before sending
+                const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(input);
+                //console.log(formattedMessage)
                 userInput.innerHTML = "";
                 userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
 
@@ -81,25 +85,11 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 setInput('');
                 setDetectedLanguage('');
 
-                router.requestRouter(input, document.getElementById('chatArea'));
+                router.requestRouter(formattedMessage, document.getElementById('chatArea'));
                 chatutil.hide_suggestions()
             }
         }
     })
-
-    const handlePaste = (e) => {
-        // Auto-detect code on paste
-        setTimeout(() => {
-            const detectedLang = detectCodeLanguage(input);
-            setDetectedLanguage(detectedLang);
-
-            // If it looks like code but isn't formatted, suggest it to the user
-            if (detectedLang !== 'text' && !input.includes('```')) {
-                // You could show a toast notification here
-                console.log('Detected code, consider using code blocks for better formatting');
-            }
-        }, 100);
-    };
 
     useEffect(() => {
         const routerWatcher = namespaceWatcher.waitFor('app.router', (routerInstance, timedOut) => {
@@ -116,6 +106,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             // Enter key handler for send button
             const handleEnterKey = (e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
+                    console.log(e)
                     e.preventDefault();
                     handleSend();
                 }
@@ -129,11 +120,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                     console.error('Error in chooseRoute:', error);
                 }
             };
-
-            // Add event listeners
-
-            userInput.addEventListener('keypress', handleKeyDown);
-            userInput.addEventListener('paste', handlePaste)
 
             document.addEventListener('imageLoaded', handleImageLoaded);
 
@@ -154,14 +140,13 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             if (routerWatcher._handlers) {
                 const { handleEnterKey, handleImageLoaded, userInput } = routerWatcher._handlers;
                 userInput.removeEventListener('keydown', handleEnterKey);
-                userInput.removeEventListener('paste', handlePaste)
                 document.removeEventListener('imageLoaded', handleImageLoaded);
             }
 
             // Cancel the watcher
             routerWatcher.cancel();
         };
-    }, [handleSend, handlePaste]);
+    }, [handleSend]);
 
 
     const shouldToggleCanvas = useCallback((event) => {
@@ -275,18 +260,164 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         adjustHeight(element)
     })
 
-    const handleInput = useCallback((el, content) => {
-        if (!content.trim()) el.innerHTML = ""
+    const handleInput = useCallback((el) => {
+        const content = el.innerHTML;
+        el.value = content
+
+        if (!content) {
+            el.innerHTML = ""
+            e.value = ""
+            setInput("")
+        }
 
         const value = el.value;
         setInput(value);
 
+        return
+
         // Auto-detect language when user types/pastes
-        if (value.length > 10) {
+        /*
+         * if (value.length > 10) {
             const detectedLang = detectCodeLanguage(value);
+            console.log(detectedLang)
             setDetectedLanguage(detectedLang);
         }
+        */
     })
+
+    const handlePaste = async (el, e) => {
+        e.preventDefault();
+
+        try {
+            // Get clipboard data
+            const clipboardData = e.clipboardData || window.clipboardData;
+            const pastedText = clipboardData.getData('text');
+
+            if (!pastedText?.trim()) return;
+
+            // For contenteditable div
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0) return;
+
+            const range = selection.getRangeAt(0);
+
+            // Delete any selected content (handles in-place paste/replacement)
+            range.deleteContents();
+
+            // Insert the pasted text at cursor position
+            const textNode = document.createTextNode(pastedText);
+            range.insertNode(textNode);
+
+            // Move cursor to the end of the pasted content
+            const newRange = document.createRange();
+            newRange.setStartAfter(textNode);
+            newRange.setEndAfter(textNode);
+
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+
+            // Update React state with the new content
+            const newContent = el.innerHTML || el.innerText;
+            setInput(newContent);
+
+            // Ensure the element scrolls to show the cursor
+            el.scrollTop = el.scrollHeight;
+
+            // Auto-detect code language
+            setTimeout(() => {
+                const detectedLang = detectCodeLanguage(newContent);
+                setDetectedLanguage(detectedLang);
+                console.log('Detected language:', detectedLang);
+
+                // Show suggestion for unformatted code
+                if (detectedLang !== 'text' && !newContent.includes('```')) {
+                    console.log('Detected code, consider using code blocks for better formatting');
+                    window.ModalManager.showMessage('Detected code, consider using code blocks for better formatting', 'info')
+                }
+            }, 0);
+
+        } catch (error) {
+            console.error('Error handling paste:', error);
+
+            // Fallback: allow default paste behavior
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                selection.deleteFromDocument();
+                selection.getRangeAt(0).insertNode(document.createTextNode(''));
+            }
+        }
+    };
+
+    // Helper function to scroll textarea to cursor position
+    const scrollToCursor = (textarea) => {
+        // Calculate cursor position in pixels
+        const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
+        const charsPerLine = Math.floor(textarea.clientWidth / 8); // Approximate
+        const cursorLine = Math.floor(textarea.selectionStart / charsPerLine);
+        const scrollPos = cursorLine * lineHeight - textarea.clientHeight / 2;
+
+        textarea.scrollTop = Math.max(0, scrollPos);
+    };
+
+    // Helper function for code detection
+    const detectAndHandleCode = (text) => {
+        const detectedLang = detectCodeLanguage(text);
+        setDetectedLanguage(detectedLang);
+        console.log('Detected language:', detectedLang);
+
+        if (detectedLang !== 'text' && !text.includes('```')) {
+            console.log('Code detected - will auto-format when sent');
+            // Optional: Show subtle UI indication instead of console log
+            showCodeDetectionHint(detectedLang);
+        }
+    };
+
+    // Fallback paste handler
+    const handlePasteFallback = (textarea) => {
+        // Last resort - insert at cursor position manually
+        const cursorPos = textarea.selectionStart;
+        const currentValue = textarea.value;
+
+        // Just insert a placeholder and let user type
+        const placeholder = '[pasted content]';
+        const newValue = currentValue.substring(0, cursorPos) +
+            placeholder +
+            currentValue.substring(cursorPos);
+
+        setInput(newValue);
+        textarea.value = newValue;
+
+        setTimeout(() => {
+            textarea.focus();
+            const newPos = cursorPos + placeholder.length;
+            textarea.setSelectionRange(newPos, newPos);
+        }, 0);
+    };
+
+    // UI feedback for code detection
+    const showCodeDetectionHint = (language) => {
+        // You can implement a toast or status message here
+        const hintElement = document.createElement('div');
+        hintElement.className = 'code-detection-hint';
+        hintElement.textContent = `✅ ${language} code detected - will auto-format`;
+        hintElement.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        z-index: 1000;
+        animation: fadeInOut 3s ease-in-out;
+        `;
+
+        document.body.appendChild(hintElement);
+        setTimeout(() => {
+            document.body.removeChild(hintElement);
+        }, 3000);
+    };
 
     const detectCodeLanguage = (text) => {
         // Check for existing code blocks first
@@ -307,49 +438,69 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
     const insertText = (textToInsert, wrapBefore = '', wrapAfter = '') => {
         const textarea = textareaRef.current;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const before = input.substring(0, start);
-        const after = input.substring(end);
+        let { selectionStart, selectionEnd } = getSelection()
+
+        if (selectionStart === 0 && selectionEnd === 0) return
+
+        console.log(selectionEnd)
+        // Full selection if no selection
+        if (!selectionStart || selectionStart === selectionEnd) selectionStart = 0
+
+        const before = input.substring(0, selectionStart);
+        const after = input.substring(selectionEnd);
 
         const newText = before + wrapBefore + textToInsert + wrapAfter + after;
         setInput(newText);
 
+        //console.log(newText)
         // Set cursor position after inserted text
         setTimeout(() => {
             textarea.focus();
-            const newCursorPos = start + wrapBefore.length + textToInsert.length + wrapAfter.length;
-            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            const newCursorPos = selectionStart + wrapBefore.length + textToInsert.length + wrapAfter.length;
+            const selection = document.getSelection()
+            selection.addRange(new Range(newCursorPos, newCursorPos))
+            //selection.setPosition(newCursorPos)
+            //textarea?.setSelectionRange(newCursorPos, newCursorPos);
         }, 0);
     };
 
     const handleCodeBlock = () => {
+        let { selectionStart, selectionEnd } = getSelection
+
+        if (!selectionStart || selectionStart === selectionEnd) selectionStart = 0
+
         const selectedText = input.substring(
-            textareaRef.current.selectionStart,
-            textareaRef.current.selectionEnd
+            selectionStart,
+            selectionEnd
         );
 
         if (selectedText) {
             // Wrap selected text in code blocks
             const lang = detectedLanguage || 'text';
+            if (lang === 'text') return;
             insertText(selectedText, `\`\`\`${lang}\n`, `\n\`\`\``);
         } else {
             // Insert empty code block at cursor
             const lang = detectedLanguage || 'text';
+            if (lang === 'text') return;
             insertText('', `\`\`\`${lang}\n`, `\n\`\`\``);
         }
     };
 
     const handleInlineCode = () => {
+        let { selectionStart, selectionEnd } = getSelection()
+
+        if (!selectionStart || selectionStart === selectionEnd) selectionStart = 0
+
         const selectedText = input.substring(
-            textareaRef.current.selectionStart,
-            textareaRef.current.selectionEnd
+            selectionStart,
+            selectionEnd
         );
 
         if (selectedText) {
             insertText(selectedText, '`', '`');
         } else {
-            insertText('', '`', '`');
+            return //insertText('', '`', '`');
         }
     };
 
@@ -357,11 +508,11 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         // Handle Tab key for indentation in code mode
         if (e.key === 'Tab' && !e.shiftKey) {
             e.preventDefault();
-            insertText('  ');
+            insertText('    ');
             return;
         }
 
-        // Cmd/Ctrl + Enter to send
+        // Enter to send
         const sendBtn = document.getElementById("sendBtn")
 
         if (e.key === 'Enter' && !sendBtn.classList.contains('hidden') && !e.ctrlKey && !e.shiftKey) {
@@ -389,6 +540,19 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         }
     };
 
+    const getSelection = () => {
+        const selection = document.getSelection()
+        const range = selection?.getRangeAt(0)
+
+        return { selection: selection, selectionStart: range?.startOffset, selectionEnd: range.endOffset }
+    }
+
+    useEffect(() => {
+        const userInput = document.getElementById('userInput');
+        userInput.value = input
+        userInput.innerHTML = input
+    }, [input])
+
     useEffect(() => {
         chatutil.scrollToBottom(document.getElementById('chatArea'), false);
 
@@ -412,15 +576,21 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-500">
 
                 {/* Custom input field */}
-                <div id="userInput"
+                <div
+                    id="userInput"
+                    ref={textareaRef}
                     contentEditable="true"
                     role="textbox"
                     aria-label="Message input"
                     autoFocus={true}
                     data-placeholder="Type your message... (Enter to send)"
-                    value={inputValue}
-                    onInput={(e) => handleInput(e.currentTarget, e.currentTarget.textContent)}
-                    onChange={(e) => handleInputChange(e.currentTarget, e.currentTarget.textContent)} className="w-full overflow-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000 active:outline-none">
+                    value={input}
+                    onInput={(e) => handleInput(e.currentTarget)}
+                    onChange={(e) => handleInputChange(e.currentTarget, e.currentTarget.textContent)}
+                    onKeyDown={handleKeyDown}
+                    onPaste={(e) => handlePaste(e.currentTarget, e)}
+
+                    className="w-full overflow-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000 active:outline-none">
                 </div>
 
                 <section id="userInputSection" className="p-0 absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
@@ -467,21 +637,22 @@ const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeT
             onMouseLeave={closeTools}
             className='block absolute -left-12 bottom-12 z-[51] bg-gray-200 dark:bg-blend-700 rounded-md p-3 space-y-2 hidden animate-exit'>
 
-            <div className="toolbar">
+            <div id="code-toolbar" className="flex gap-1 border-none rounded-md transition-transform transition-all duration-500">
                 <button
                     type="button"
                     onClick={handleInlineCode}
-                    className="toolbar-btn bg-none border border-[#ddd] rounded-md p-2 cursor-pointer m-2 font-mono text-lg hover:bg-[#e9ecef] hover:border-[#adb5bd]"
+                    className="size-full bg-white border border-[#ddd] dark:border-blend-400 rounded-md p-1 cursor-pointer m-auto text-lg hover:bg-[#e9ecef] dark:bg-blend-600 dark:hover:bg-primary-600 hover:border-[#adb5bd] dark:shadow-xl"
                     title="Inline Code"
                 >
+                    <span className='text-green-500 dark:text-green-300'>{'<'}</span><span className='text-orange-500 dark:text-yellow-300'>{'<'}</span><span className='text-green-500 dark:text-green-300'>{'<'}</span>
                 </button>
                 <button
                     type="button"
                     onClick={handleCodeBlock}
-                    className="toolbar-btn toolbar-btn bg-none border border-[#ddd] rounded-md p-2 cursor-pointer m-2 font-mono text-lg hover:bg-[#e9ecef] hover:border-[#adb5bd]"
+                    className="size-full flex justify-center gap-0 bg-white dark:bg-blend-600 dark:shadow-xl border border-[#ddd] dark:border-blend-400 rounded-md p-1 cursor-pointer m-auto font-mono text-lg hover:bg-[#e9ecef] hover:border-[#adb5bd] dark:hover:border-blend-500 dark:hover:bg-secondary-600"
                     title="Code Block"
                 >
-                    {`</>`}
+                    <span className='text-green-500 dark:text-green-400'>{'<'}</span><span className='text-red-500 dark:text-red-500'>{`/`}</span><span className='text-blue-600 dark:text-sky-400'>{`>`}</span>
                 </button>
                 {detectedLanguage && detectedLanguage !== 'text' && (
                     <span className="language-badge bg-[#6c757d] text-white p-2 rounded-md text-lg ml-auto">{detectedLanguage}</span>

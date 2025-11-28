@@ -49,7 +49,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     // State management for the toggle
     const [isAIActive, setIsAIActive] = useState(false);
     const [inputValue, setInputValue] = useState('');
-    const [input, setInput] = useState('');
     const [isCodeMode, setIsCodeMode] = useState(false);
     const [detectedLanguage, setDetectedLanguage] = useState('');
     const textareaRef = useRef(null);
@@ -67,11 +66,10 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             showApiNotSetWarning()
         } else {
             const userInput = document.getElementById('userInput');
-
-            if (input.trim() && !StateManager.get('processing')) {
+            if (inputValue.trim() && !StateManager.get('processing')) {
                 // Reset the input field
                 // Auto-format the text with code blocks before sending
-                const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(input);
+                const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(inputValue);
                 //console.log(formattedMessage)
                 userInput.innerHTML = "";
                 userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
@@ -81,15 +79,15 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
                 // Adjust input field height
                 userInput.style.height = 'auto';
-                handleInputChange()
-                setInput('');
                 setDetectedLanguage('');
 
                 router.requestRouter(formattedMessage, document.getElementById('chatArea'));
                 chatutil.hide_suggestions()
+                adjustHeight(userInput)
             }
         }
     })
+
 
     useEffect(() => {
         const routerWatcher = namespaceWatcher.waitFor('app.router', (routerInstance, timedOut) => {
@@ -148,6 +146,69 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         };
     }, [handleSend]);
 
+    const adjustHeight = (element) => {
+        if (!element) return;
+
+        // Save current selection and cursor position
+        const selection = window.getSelection();
+        let range = null;
+        let startContainer = null;
+        let startOffset = 0;
+
+        if (selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
+            startContainer = range.startContainer;
+            startOffset = range.startOffset;
+        }
+
+        const currentScrollTop = window.pageYOffset;
+
+        // Calculate and apply new height
+        element.style.height = 'auto';
+        const contentHeight = element.scrollHeight;
+        const maxHeight = window.innerHeight * 0.28;
+        const newHeight = Math.max(48, Math.min(contentHeight, maxHeight));
+        element.style.height = newHeight + 'px';
+        element.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
+
+        // Restore scroll position
+        window.scrollTo(0, currentScrollTop);
+
+        // Restore cursor position more reliably
+        if (range && startContainer) {
+            try {
+                const newRange = document.createRange();
+                newRange.setStart(startContainer, startOffset);
+                newRange.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            } catch (e) {
+                // If restoration fails, place cursor at end as fallback
+                const newRange = document.createRange();
+                newRange.selectNodeContents(element);
+                newRange.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            }
+        }
+    };
+
+    useEffect(() => {
+        const observer = new MutationObserver((mutations) => {
+            setInputValue(textareaRef.current?.innerHTML || '');
+        });
+
+        if (textareaRef.current) {
+            observer.observe(textareaRef.current, {
+                childList: true, // Track node additions/removals
+                subtree: true, // Track all descendants
+                characterData: true // Track text changes
+            });
+        }
+        adjustHeight(textareaRef.current)
+
+        return () => observer.disconnect();
+    }, []);
 
     const shouldToggleCanvas = useCallback((event) => {
         //if (!event) return;
@@ -231,192 +292,39 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             : closeTools()
     })
 
-    const adjustHeight = (element) => {
-        if (!element) return;
 
-        // Store current scroll position to prevent jumping
-        const currentScrollTop = window.pageYOffset;
-
-        // Reset to auto to get natural height
-        element.style.height = 'auto';
-
-        // Calculate content height
-        const contentHeight = element.scrollHeight;
-        const maxHeight = window.innerHeight * 0.28; // 28vh
-
-        // Apply calculated height
-        const newHeight = Math.max(48, Math.min(contentHeight, maxHeight)); // min 48px, max 28vh
-        element.style.height = newHeight + 'px';
-
-        // Manage overflow
-        element.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
-
-        // Restore scroll position
-        window.scrollTo(0, currentScrollTop);
-    };
-
-    const handleInputChange = useCallback((element, content) => {
-        setInputValue(content)
-        adjustHeight(element)
-    })
-
-    const handleInput = useCallback((el) => {
-        const content = el.innerHTML;
-        el.value = content
-
-        if (!content) {
-            el.innerHTML = ""
-            e.value = ""
-            setInput("")
-        }
-
-        const value = el.value;
-        setInput(value);
-
-        return
-
-        // Auto-detect language when user types/pastes
-        /*
-         * if (value.length > 10) {
-            const detectedLang = detectCodeLanguage(value);
-            console.log(detectedLang)
-            setDetectedLanguage(detectedLang);
-        }
-        */
-    })
-
-    const handlePaste = async (el, e) => {
+    const handlePaste = (e) => {
         e.preventDefault();
 
-        try {
-            // Get clipboard data
-            const clipboardData = e.clipboardData || window.clipboardData;
-            const pastedText = clipboardData.getData('text');
+        // Get plain text from clipboard
+        const text = e.clipboardData.getData('text/plain');
 
-            if (!pastedText?.trim()) return;
+        // Get current selection
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
 
-            // For contenteditable div
-            const selection = window.getSelection();
-            if (selection.rangeCount === 0) return;
+        const range = selection.getRangeAt(0);
 
-            const range = selection.getRangeAt(0);
+        // Delete any selected content (like normal paste behavior)
+        range.deleteContents();
 
-            // Delete any selected content (handles in-place paste/replacement)
-            range.deleteContents();
+        // Insert the plain text
+        const textNode = document.createTextNode(text);
+        range.insertNode(textNode);
 
-            // Insert the pasted text at cursor position
-            const textNode = document.createTextNode(pastedText);
-            range.insertNode(textNode);
+        // Move cursor to after the inserted text (maintains original behavior)
+        range.setStartAfter(textNode);
+        range.collapse(true);
 
-            // Move cursor to the end of the pasted content
-            const newRange = document.createRange();
-            newRange.setStartAfter(textNode);
-            newRange.setEndAfter(textNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
 
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-
-            // Update React state with the new content
-            const newContent = el.innerHTML || el.innerText;
-            setInput(newContent);
-
-            // Ensure the element scrolls to show the cursor
-            el.scrollTop = el.scrollHeight;
-
-            // Auto-detect code language
-            setTimeout(() => {
-                const detectedLang = detectCodeLanguage(newContent);
-                setDetectedLanguage(detectedLang);
-                console.log('Detected language:', detectedLang);
-
-                // Show suggestion for unformatted code
-                if (detectedLang !== 'text' && !newContent.includes('```')) {
-                    console.log('Detected code, consider using code blocks for better formatting');
-                    window.ModalManager.showMessage('Detected code, consider using code blocks for better formatting', 'info')
-                }
-            }, 0);
-
-        } catch (error) {
-            console.error('Error handling paste:', error);
-
-            // Fallback: allow default paste behavior
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                selection.deleteFromDocument();
-                selection.getRangeAt(0).insertNode(document.createTextNode(''));
-            }
+        // Trigger change for your MutationObserver
+        if (textareaRef.current) {
+            const event = new Event('input', { bubbles: true });
+            textareaRef.current.dispatchEvent(event);
         }
-    };
-
-    // Helper function to scroll textarea to cursor position
-    const scrollToCursor = (textarea) => {
-        // Calculate cursor position in pixels
-        const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
-        const charsPerLine = Math.floor(textarea.clientWidth / 8); // Approximate
-        const cursorLine = Math.floor(textarea.selectionStart / charsPerLine);
-        const scrollPos = cursorLine * lineHeight - textarea.clientHeight / 2;
-
-        textarea.scrollTop = Math.max(0, scrollPos);
-    };
-
-    // Helper function for code detection
-    const detectAndHandleCode = (text) => {
-        const detectedLang = detectCodeLanguage(text);
-        setDetectedLanguage(detectedLang);
-        console.log('Detected language:', detectedLang);
-
-        if (detectedLang !== 'text' && !text.includes('```')) {
-            console.log('Code detected - will auto-format when sent');
-            // Optional: Show subtle UI indication instead of console log
-            showCodeDetectionHint(detectedLang);
-        }
-    };
-
-    // Fallback paste handler
-    const handlePasteFallback = (textarea) => {
-        // Last resort - insert at cursor position manually
-        const cursorPos = textarea.selectionStart;
-        const currentValue = textarea.value;
-
-        // Just insert a placeholder and let user type
-        const placeholder = '[pasted content]';
-        const newValue = currentValue.substring(0, cursorPos) +
-            placeholder +
-            currentValue.substring(cursorPos);
-
-        setInput(newValue);
-        textarea.value = newValue;
-
-        setTimeout(() => {
-            textarea.focus();
-            const newPos = cursorPos + placeholder.length;
-            textarea.setSelectionRange(newPos, newPos);
-        }, 0);
-    };
-
-    // UI feedback for code detection
-    const showCodeDetectionHint = (language) => {
-        // You can implement a toast or status message here
-        const hintElement = document.createElement('div');
-        hintElement.className = 'code-detection-hint';
-        hintElement.textContent = `✅ ${language} code detected - will auto-format`;
-        hintElement.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #10b981;
-        color: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 14px;
-        z-index: 1000;
-        animation: fadeInOut 3s ease-in-out;
-        `;
-
-        document.body.appendChild(hintElement);
-        setTimeout(() => {
-            document.body.removeChild(hintElement);
-        }, 3000);
+        adjustHeight(textareaRef.current)
     };
 
     const detectCodeLanguage = (text) => {
@@ -512,6 +420,13 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             return;
         }
 
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+
+            // Insert line break at cursor
+            document.execCommand('insertHTML', false, '<br><br>');
+        }
+
         // Enter to send
         const sendBtn = document.getElementById("sendBtn")
 
@@ -548,18 +463,20 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     }
 
     useEffect(() => {
-        const userInput = document.getElementById('userInput');
-        userInput.value = input
-        userInput.innerHTML = input
-    }, [input])
-
-    useEffect(() => {
         chatutil.scrollToBottom(document.getElementById('chatArea'), false);
+        const handleResize = () => {
+            adjustHeight(textareaRef.current);
+        };
+        const inputEl = document.getElementById('userInput')
 
+        //window.addEventListener('resize', handleResize);
+        document.addEventListener('input', () => { handleResize(inputEl) })
         document.addEventListener("open-tool", openTool)
         document.addEventListener("hide-tool", closeTools)
         document.addEventListener("toggle-tool", toggleTool)
         return () => {
+            //window.removeEventListener('resize', handleResize);
+            document.removeEventListener('input', () => { handleResize(inputEl) })
             document.removeEventListener("open-tool", openTool)
             document.removeEventListener("hide-tool", closeTools)
             document.removeEventListener("toggle-tool", toggleTool)
@@ -584,14 +501,10 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                     aria-label="Message input"
                     autoFocus={true}
                     data-placeholder="Type your message... (Enter to send)"
-                    value={input}
-                    onInput={(e) => handleInput(e.currentTarget)}
-                    onChange={(e) => handleInputChange(e.currentTarget, e.currentTarget.textContent)}
                     onKeyDown={handleKeyDown}
-                    onPaste={(e) => handlePaste(e.currentTarget, e)}
-
-                    className="w-full overflow-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000 active:outline-none">
-                </div>
+                    onPaste={handlePaste}
+                    className="h-fit min-h-[48px] h-auto max-h-[28vh] w-full overflow-y-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white pb-2 transition-all duration-1000 active:outline-none resize-none"
+                ></div>
 
                 <section id="userInputSection" className="p-0 absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
                     <button onClick={toggleTool} title="open tools" className='ml-1 text-gray-600 dark:text-gray-200 cursor-pointer focus:outline-none active:ring-none'>
@@ -844,7 +757,7 @@ const AutoResizeTextarea = () => {
 
     // Adjust on value change
     useEffect(() => {
-        adjustHeight();
+        adjustHeight(r);
     }, [inputValue]);
 
     // Adjust on mount and window resize

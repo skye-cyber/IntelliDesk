@@ -4,6 +4,7 @@ export class AutoCodeDetector {
         python: {
             patterns: [
                 /^(def\s+\w+\s*\(|class\s+\w+|import\s+\w+|from\s+\w+|if\s+__name__\s*==|\s+print\s*\(|\s+return\s+|#\s+|#![/a-zA-Z]+python[1-9]*?|@classmethod|@staticmethod|\([a-zA-Z]_?:\s?[a-zA-Z]\))/m,
+                /(__init__\(|os|sys|subprocess|__new__|\)\s?->\s?[a-zA-Z]:|\(self\)|None)/,
                 /(\:\s*$|\s+for\s+\w+\s+in\s+|\s+while\s+|\s+if\s+|\s+elif\s+|\s+else\s*:)/
             ],
             extensions: ['py'],
@@ -52,9 +53,9 @@ export class AutoCodeDetector {
         },
         bash: {
             patterns: [
-                /^(echo\s+|cd\s+|ls\s+|mkdir\s+|cat\s+|grep\s+)/,
+                /^(echo\s+(-e)?|cd\s+|ls\s+|mkdir\s+|cat\s+|grep\s+)/,
                 /(if\s+\[|\s+then\s*$|\s+fi\s*$|\s+do\s*$|\s+done\s*$)/,
-                /(\$\{|\$\(|\|\s*$|>\s*$|>>\s*$)/
+                /(\$\{|\$\(|\|\s*$|>\s*$|>>?\s*[1-9]?|fi|exit\s?[1-9]*?|\[\[|-ne|-qe|&&|;;|esac)/
             ],
             extensions: ['sh', 'bash'],
             shebang: /^#!.*(bash|sh)/

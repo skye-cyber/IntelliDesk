@@ -77,7 +77,7 @@ export const ConversationItem = ({ metadata, portal_id }) => {
     }
 
     const activate_item = (data_id) => {
-        const item = document.querySelector(`[data-id^='${data_id}']`)
+        const item = document.querySelector(`[data-id='${data_id}']`)
 
         item?.classList?.add('animate-heartpulse-slow');
         item?.querySelector('#active-dot')?.classList?.remove('hidden');

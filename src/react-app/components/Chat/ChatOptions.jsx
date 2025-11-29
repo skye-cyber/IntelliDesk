@@ -70,7 +70,7 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
                 if (document.getElementById('renameModal')?.classList.contains('translate-y-0')) {
                     hideRenameModal()
                 } else {
-                    if (!document.querySelector('[id^="confirm-dialog-"'))
+                    if (!document.querySelector('#dialog-content')?.classList?.contains('opacity-100'))
                         Manager.hideConversationOptions()
                 }
             }
@@ -91,6 +91,7 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
                 id="chatOptions-overlay"
                 className="fixed size-fit inset-0 z-40 hidden"
                 onClick={() => Manager.hideConversationOptions()}
+                onMouseLeave={Manager.hideConversationOptions}
             >
                 {/* Conversation Options Tooltip */}
                 <div

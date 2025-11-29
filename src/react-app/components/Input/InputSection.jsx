@@ -63,16 +63,16 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         if (!StateManager.get('api_key_ok')) {
             showApiNotSetWarning()
         } else {
-            const userInput = document.getElementById('userInput');
+            const userInput = textareaRef.current;
             if (inputValue.trim() && !StateManager.get('processing')) {
                 // Reset the input field
                 // Auto-format the text with code blocks before sending
                 const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(inputValue)
-                .replaceAll('&gt;', '>')
-                .replaceAll('&lt;', '<')
-                .replaceAll('&amp;', '&')
-                .replaceAll('&nbsp;', ' ')
-                .replaceAll('<br>', '\n')
+                    .replaceAll('&gt;', '>')
+                    .replaceAll('&lt;', '<')
+                    .replaceAll('&amp;', '&')
+                    .replaceAll('&nbsp;', ' ')
+                    .replaceAll('<br>', '\n')
 
                 userInput.innerHTML = "";
                 userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
@@ -104,15 +104,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 return;
             }
 
-            // Enter key handler for send button
-            const handleEnterKey = (e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                    console.log(e)
-                    e.preventDefault();
-                    handleSend();
-                }
-            };
-
             // Image loaded event handler
             const handleImageLoaded = async (event) => {
                 try {
@@ -126,7 +117,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
             // Store references for cleanup
             routerWatcher._handlers = {
-                handleEnterKey,
                 handleImageLoaded,
                 userInput
             };
@@ -198,7 +188,8 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
     useEffect(() => {
         const observer = new MutationObserver((mutations) => {
-            setInputValue(textareaRef.current?.innerHTML || '');
+            setInputValue(textareaRef.current?.innerHTML) //?.replace(/<\/?p>/, '').replace('</p>', '') || '');
+            if (!textareaRef.current?.innerHTML?.trim() || textareaRef.current?.innerHTML==='<br>' ) textareaRef.current.innerHTML = ""
         });
 
         if (textareaRef.current) {
@@ -300,7 +291,10 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         e.preventDefault();
 
         // Get plain text from clipboard
-        const text = e.clipboardData.getData('text/plain');
+        let text = e.clipboardData.getData('text/plain');
+        //text = text
+        //.replace(/\n+/, '\n') // collapse multiple linebreaks
+        //.replaceAll('\n', '<br>') // preserve linebreaks
 
         // Get current selection
         const selection = window.getSelection();
@@ -312,7 +306,10 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         range.deleteContents();
 
         // Insert the plain text
-        const textNode = document.createTextNode(text);
+        const textNode = document.createTextNode(text)
+        //document.createElement('p');
+        //textNode.innerHTML=text // To allow linebreaks
+
         range.insertNode(textNode);
 
         // Move cursor to after the inserted text (maintains original behavior)
@@ -425,7 +422,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
         if (e.ctrlKey && e.key === 'Enter') {
             e.preventDefault();
-
             // Insert line break at cursor
             document.execCommand('insertHTML', false, '<br><br>');
         }
@@ -440,7 +436,8 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         }
 
         // Auto-close backticks for inline code
-        if (e.key === '`' && !isCodeMode) {
+        /*
+         * if (e.key === '`' && !isCodeMode) {
             const textarea = textareaRef.current;
             const start = textarea.selectionStart;
             const before = input.substring(0, start);
@@ -456,6 +453,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 insertText('`', '', '`');
             }
         }
+        */
     };
 
     const getSelection = () => {
@@ -470,16 +468,15 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         const handleResize = () => {
             adjustHeight(textareaRef.current);
         };
-        const inputEl = document.getElementById('userInput')
 
         //window.addEventListener('resize', handleResize);
-        document.addEventListener('input', () => { handleResize(inputEl) })
+        textareaRef.current.addEventListener('input', () => { handleResize(textareaRef.current) })
         document.addEventListener("open-tool", openTool)
         document.addEventListener("hide-tool", closeTools)
         document.addEventListener("toggle-tool", toggleTool)
         return () => {
             //window.removeEventListener('resize', handleResize);
-            document.removeEventListener('input', () => { handleResize(inputEl) })
+            textareaRef.current.removeEventListener('input', () => { handleResize(textareaRef.current) })
             document.removeEventListener("open-tool", openTool)
             document.removeEventListener("hide-tool", closeTools)
             document.removeEventListener("toggle-tool", toggleTool)
@@ -503,7 +500,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                     role="textbox"
                     aria-label="Message input"
                     autoFocus={true}
-                    data-placeholder="Type your message... (Enter to send)"
+                    data-placeholder="Type your message... (Enter=send CTRL,SHIFT+Enter=newline)"
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
                     className="h-fit min-h-[48px] h-auto max-h-[28vh] w-full overflow-y-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white pb-2 transition-all duration-1000 active:outline-none resize-none"

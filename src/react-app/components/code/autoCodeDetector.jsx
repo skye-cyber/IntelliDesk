@@ -30,8 +30,9 @@ export class AutoCodeDetector {
         html: {
             patterns: [
                 /^<!DOCTYPE\s+html>/i,
-                /(<html|<head|body|div|span|p>|<[a-z]+\s+[^>]*>|<\/[a-z]+>)/i,
-                /(&[a-z]+;|&#x[0-9a-f]+;)/i
+                /(<html|<head|body|div|class|article|source|aside|header|h[1-9]|span|footer|p>|<[a-z]+\s+[^>]*>|<\/[a-z]+>)/i,
+                /(&[a-z]+;|&#x[0-9a-f]+;)/i,
+                /(class=|<br>)/
             ],
             extensions: ['html', 'htm']
         },
@@ -39,7 +40,9 @@ export class AutoCodeDetector {
             patterns: [
                 /(\.[a-zA-Z][\w-]*\s*\{|#[a-zA-Z][\w-]*\s*\{|@media|@keyframes)/,
                 /(margin|padding|color|font-size|width|height)\s*:/,
-                /(\{\s*$|\}\s*$|;\s*$)/
+                /(\{\s*$|\}\s*$|;\s*$)/,
+                /(margin-left|margin-right|margin-bottom|margin-top)/, // check margins
+                /(font-family|line-height|-webkit-[a-zA-Z-]*?:|:root|::selection|:focus|:hover)/
             ],
             extensions: ['css']
         },

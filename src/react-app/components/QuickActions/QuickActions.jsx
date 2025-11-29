@@ -5,9 +5,9 @@ export const QuickActions = () => {
 
     const mainActions = [
         //{ id: 'create-image', label: 'Create image', icon: 'image' },
-        { id: 'get-advice', label: 'Get advice', icon: 'advice', query: 'Give me advice on financial literacy' },
+        { id: 'draw', label: 'Draw', icon: 'advice', query: 'Create a <flowchart/bar-graph/network> ...' },
         { id: 'summarize', label: 'Summarize text', icon: 'summarize', query: 'Summarize the book Rich Dad Poor Dad in one page' },
-        { id: 'suprise', label: 'Surprise me', icon: 'surprise', query:'Surprise me with a story about yourself' },
+        { id: 'suprise', label: 'Surprise me', icon: 'surprise', query: 'Surprise me with a story about yourself' },
     ];
 
     const extraActions = [
@@ -54,7 +54,7 @@ export const QuickActions = () => {
                             <QuickActionButton key={action.id} id={action.id} action={action} onClick={triggerInput} />
                         ))}
 
-                        <div className="inline-block">
+                        <div className={`${showMore ? 'hidden' : 'inline-block'}`}>
                             <button
                                 onClick={() => setShowMore(!showMore)}
                                 className="relative flex h-[42px] items-center gap-1.5 rounded-full border border-token-border-light px-3 py-2 text-start text-[13px] shadow-md transition enabled:hover:bg-token-main-surface-secondary disabled:cursor-not-allowed xl:gap-2 xl:text-[14px]"

@@ -503,7 +503,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                     data-placeholder="Type your message... (Enter=send CTRL,SHIFT+Enter=newline)"
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
-                    className="h-fit min-h-[48px] h-auto max-h-[28vh] w-full overflow-y-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white pb-2 transition-all duration-1000 active:outline-none resize-none text-lg"
+                    className="h-fit min-h-[48px] h-auto max-h-[28vh] w-full overflow-y-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white pb-2 transition-all duration-1000 active:outline-none resize-none text-normal"
                 ></div>
 
                 <section id="userInputSection" className="p-0 absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">

@@ -68,7 +68,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
             const deltaContent = choice.delta.content;
 
             // Store raw content before any processing
-            const rawDelta = deltaContent;
+            let rawDelta = deltaContent;
             output += rawDelta;
             fullResponse += rawDelta;
 

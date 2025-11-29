@@ -7,6 +7,8 @@ import { FileItem } from './components/DropZone/dropzone';
 import { UploadeFileIndicator } from './components/DropZone/uploads';
 import { LoadingAnimation } from './components/StatusUI/StatusUI';
 import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
+import { Toast } from './components/StatusUI/actionToastsUI';
+import { ConfirmationDialog } from './components/StatusUI/confirmDialog';
 
 const componentRegistry = {
     Diagram,
@@ -16,7 +18,9 @@ const componentRegistry = {
     ConversationItem,
     FileItem,
     UploadeFileIndicator,
-    ErrorModal
+    ErrorModal,
+    Toast,
+    ConfirmationDialog
 };
 
 export const StaticPortalContainer = () => {

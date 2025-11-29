@@ -4,6 +4,8 @@ import { showDropZoneModal } from '@components/DropZone/util.js'
 import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { AutoCodeDetector } from '../code/autoCodeDetector';
+
 const chatutil = new ChatUtil()
 
 let router
@@ -15,11 +17,39 @@ import('@js/managers/router.js').then(({ Router }) => {
     window.app.router = router;
 })
 
+// Common code patterns for detection
+const CODE_PATTERNS = {
+    python: /^(def |class |import |from |print\(|if __name__|#|__init__\(|os|sys|subprocess|__new__\(|\)\s?->\s?[a-zA-Z]:|\(self\)|None|#![/a-zA-Z]+python[1-9]*?|@classmethod|@staticmethod|\([a-zA-Z]_?:\s?[a-zA-Z]\))/m,
+    javascript: /^(function|const |let |var |import |export |console\.|window\.)/m,
+    java: /^(public|private|class |import |System\.out)/m,
+    html: /<(div|span|p|html|body|head)|<!DOCTYPE/,
+    css: /(\.[a-zA-Z]|#[a-zA-Z]|@media|margin|padding)/,
+    sql: /(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)/i,
+    generic: /(\{|\}|\(|\)|;|=>|->|\/\/|\/\*|\*\/)/,
+    react: /^(import\s {[a-zA-Z1-9]} |return \(<[a-zA-Z]\)|import)/,
+    bash: /(echo\s?(-e)?)\s?[\'\"[a-zA-Z1-9]?]?[a-zA-Z1-9]|\s*?\|\s*?|\>\>?[1-9]|[a-zA-Z1-9]\(\)\s\{|fi|exit\s?[1-9]*?|\[\[|-ne|-qe|&&|;;|esac/
+};
+
+const LANGUAGE_EXTENSIONS = {
+    js: 'javascript',
+    py: 'python',
+    java: 'java',
+    html: 'html',
+    css: 'css',
+    sql: 'sql',
+    ts: 'typescript',
+    php: 'php',
+    rb: 'ruby',
+    jsx: 'react'
+};
 
 export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
     // State management for the toggle
     const [isAIActive, setIsAIActive] = useState(false);
     const [inputValue, setInputValue] = useState('');
+    const [isCodeMode, setIsCodeMode] = useState(false);
+    const [detectedLanguage, setDetectedLanguage] = useState('');
+    const textareaRef = useRef(null);
 
     const showApiNotSetWarning = useCallback(() => {
         const ApiwarnModal = document.getElementById('ApiNotSetModal');
@@ -33,22 +63,35 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         if (!StateManager.get('api_key_ok')) {
             showApiNotSetWarning()
         } else {
-            const userInput = document.getElementById('userInput');
-
-            const inputText = userInput.innerHTML.trim();
-            if (inputText && !StateManager.get('processing')) {
+            const userInput = textareaRef.current;
+            if (inputValue.trim() && !StateManager.get('processing')) {
                 // Reset the input field
+                // Auto-format the text with code blocks before sending
+                const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(inputValue)
+                    .replaceAll('&gt;', '>')
+                    .replaceAll('&lt;', '<')
+                    .replaceAll('&amp;', '&')
+                    .replaceAll('&nbsp;', ' ')
+                    .replaceAll('<br>', '\n')
+
                 userInput.innerHTML = "";
+                userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
+
+                const suggestionsEl = document.getElementById('suggestions');
+                if (suggestionsEl) suggestionsEl.classList.add('hidden');
+
                 // Adjust input field height
                 userInput.style.height = 'auto';
-                handleInputChange()
-                //userInput.style.height = Math.min(userInput.scrollHeight, 28 * window.innerHeight / 100) + 'px';
-                //userInput.scrollTop = userInput.scrollHeight;
-                router.requestRouter(inputText, document.getElementById('chatArea'));
+                setDetectedLanguage('');
+
+                router.requestRouter(formattedMessage, document.getElementById('chatArea'));
                 chatutil.hide_suggestions()
+                adjustHeight(userInput)
             }
         }
     })
+
+
     useEffect(() => {
         const routerWatcher = namespaceWatcher.waitFor('app.router', (routerInstance, timedOut) => {
             const userInput = document.getElementById('userInput');
@@ -61,14 +104,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 return;
             }
 
-            // Enter key handler for send button
-            const handleEnterKey = (e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                }
-            };
-
             // Image loaded event handler
             const handleImageLoaded = async (event) => {
                 try {
@@ -78,16 +113,10 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 }
             };
 
-            // Add event listeners
-
-            userInput.addEventListener('keypress', handleEnterKey);
-
-
             document.addEventListener('imageLoaded', handleImageLoaded);
 
             // Store references for cleanup
             routerWatcher._handlers = {
-                handleEnterKey,
                 handleImageLoaded,
                 userInput
             };
@@ -108,8 +137,72 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             // Cancel the watcher
             routerWatcher.cancel();
         };
-    }, [handleSend]); // Add handleSend to dependencies if it's defined outside
+    }, [handleSend]);
 
+    const adjustHeight = (element) => {
+        if (!element) return;
+
+        // Save current selection and cursor position
+        const selection = window.getSelection();
+        let range = null;
+        let startContainer = null;
+        let startOffset = 0;
+
+        if (selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
+            startContainer = range.startContainer;
+            startOffset = range.startOffset;
+        }
+
+        const currentScrollTop = window.pageYOffset;
+
+        // Calculate and apply new height
+        element.style.height = 'auto';
+        const contentHeight = element.scrollHeight;
+        const maxHeight = window.innerHeight * 0.28;
+        const newHeight = Math.max(48, Math.min(contentHeight, maxHeight));
+        element.style.height = newHeight + 'px';
+        element.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
+
+        // Restore scroll position
+        window.scrollTo(0, currentScrollTop);
+
+        // Restore cursor position more reliably
+        if (range && startContainer) {
+            try {
+                const newRange = document.createRange();
+                newRange.setStart(startContainer, startOffset);
+                newRange.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            } catch (e) {
+                // If restoration fails, place cursor at end as fallback
+                const newRange = document.createRange();
+                newRange.selectNodeContents(element);
+                newRange.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            }
+        }
+    };
+
+    useEffect(() => {
+        const observer = new MutationObserver((mutations) => {
+            setInputValue(textareaRef.current?.innerHTML) //?.replace(/<\/?p>/, '').replace('</p>', '') || '');
+            if (!textareaRef.current?.innerHTML?.trim() || textareaRef.current?.innerHTML==='<br>' ) textareaRef.current.innerHTML = ""
+        });
+
+        if (textareaRef.current) {
+            observer.observe(textareaRef.current, {
+                childList: true, // Track node additions/removals
+                subtree: true, // Track all descendants
+                characterData: true // Track text changes
+            });
+        }
+        adjustHeight(textareaRef.current)
+
+        return () => observer.disconnect();
+    }, []);
 
     const shouldToggleCanvas = useCallback((event) => {
         //if (!event) return;
@@ -193,47 +286,197 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             : closeTools()
     })
 
-    const adjustHeight = (element) => {
-        if (!element) return;
 
-        // Store current scroll position to prevent jumping
-        const currentScrollTop = window.pageYOffset;
+    const handlePaste = (e) => {
+        e.preventDefault();
 
-        // Reset to auto to get natural height
-        element.style.height = 'auto';
+        // Get plain text from clipboard
+        let text = e.clipboardData.getData('text/plain');
+        //text = text
+        //.replace(/\n+/, '\n') // collapse multiple linebreaks
+        //.replaceAll('\n', '<br>') // preserve linebreaks
 
-        // Calculate content height
-        const contentHeight = element.scrollHeight;
-        const maxHeight = window.innerHeight * 0.28; // 28vh
+        // Get current selection
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
 
-        // Apply calculated height
-        const newHeight = Math.max(48, Math.min(contentHeight, maxHeight)); // min 48px, max 28vh
-        element.style.height = newHeight + 'px';
+        const range = selection.getRangeAt(0);
 
-        // Manage overflow
-        element.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
+        // Delete any selected content (like normal paste behavior)
+        range.deleteContents();
 
-        // Restore scroll position
-        window.scrollTo(0, currentScrollTop);
+        // Insert the plain text
+        const textNode = document.createTextNode(text)
+        //document.createElement('p');
+        //textNode.innerHTML=text // To allow linebreaks
+
+        range.insertNode(textNode);
+
+        // Move cursor to after the inserted text (maintains original behavior)
+        range.setStartAfter(textNode);
+        range.collapse(true);
+
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        // Trigger change for your MutationObserver
+        if (textareaRef.current) {
+            const event = new Event('input', { bubbles: true });
+            textareaRef.current.dispatchEvent(event);
+        }
+        adjustHeight(textareaRef.current)
     };
 
-    const handleInputChange = useCallback((element, content) => {
-        setInputValue(content)
-        adjustHeight(element)
-    })
+    const detectCodeLanguage = (text) => {
+        // Check for existing code blocks first
+        const codeBlockMatch = text.match(/```(\w+)?/);
+        if (codeBlockMatch && codeBlockMatch[1]) {
+            return codeBlockMatch[1];
+        }
 
-    const handleInput = useCallback((el, content) => {
-        if (!content.trim()) el.innerHTML = ""
+        // Analyze the text for language patterns
+        for (const [lang, pattern] of Object.entries(CODE_PATTERNS)) {
+            if (pattern.test(text)) {
+                return lang;
+            }
+        }
 
-    })
+        return 'text';
+    };
+
+    const insertText = (textToInsert, wrapBefore = '', wrapAfter = '') => {
+        const textarea = textareaRef.current;
+        let { selectionStart, selectionEnd } = getSelection()
+
+        if (selectionStart === 0 && selectionEnd === 0) return
+
+        console.log(selectionEnd)
+        // Full selection if no selection
+        if (!selectionStart || selectionStart === selectionEnd) selectionStart = 0
+
+        const before = input.substring(0, selectionStart);
+        const after = input.substring(selectionEnd);
+
+        const newText = before + wrapBefore + textToInsert + wrapAfter + after;
+        setInput(newText);
+
+        //console.log(newText)
+        // Set cursor position after inserted text
+        setTimeout(() => {
+            textarea.focus();
+            const newCursorPos = selectionStart + wrapBefore.length + textToInsert.length + wrapAfter.length;
+            const selection = document.getSelection()
+            selection.addRange(new Range(newCursorPos, newCursorPos))
+            //selection.setPosition(newCursorPos)
+            //textarea?.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
+    };
+
+    const handleCodeBlock = () => {
+        let { selectionStart, selectionEnd } = getSelection
+
+        if (!selectionStart || selectionStart === selectionEnd) selectionStart = 0
+
+        const selectedText = input.substring(
+            selectionStart,
+            selectionEnd
+        );
+
+        if (selectedText) {
+            // Wrap selected text in code blocks
+            const lang = detectedLanguage || 'text';
+            if (lang === 'text') return;
+            insertText(selectedText, `\`\`\`${lang}\n`, `\n\`\`\``);
+        } else {
+            // Insert empty code block at cursor
+            const lang = detectedLanguage || 'text';
+            if (lang === 'text') return;
+            insertText('', `\`\`\`${lang}\n`, `\n\`\`\``);
+        }
+    };
+
+    const handleInlineCode = () => {
+        let { selectionStart, selectionEnd } = getSelection()
+
+        if (!selectionStart || selectionStart === selectionEnd) selectionStart = 0
+
+        const selectedText = input.substring(
+            selectionStart,
+            selectionEnd
+        );
+
+        if (selectedText) {
+            insertText(selectedText, '`', '`');
+        } else {
+            return //insertText('', '`', '`');
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        // Handle Tab key for indentation in code mode
+        if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            insertText('    ');
+            return;
+        }
+
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            // Insert line break at cursor
+            document.execCommand('insertHTML', false, '<br><br>');
+        }
+
+        // Enter to send
+        const sendBtn = document.getElementById("sendBtn")
+
+        if (e.key === 'Enter' && !sendBtn.classList.contains('hidden') && !e.ctrlKey && !e.shiftKey) {
+            e.preventDefault()
+            handleSend();
+            return;
+        }
+
+        // Auto-close backticks for inline code
+        /*
+         * if (e.key === '`' && !isCodeMode) {
+            const textarea = textareaRef.current;
+            const start = textarea.selectionStart;
+            const before = input.substring(0, start);
+            const after = input.substring(start);
+
+            // Check if we're inside an inline code block
+            const backticksBefore = (before.match(/`/g) || []).length;
+            const backticksAfter = (after.match(/`/g) || []).length;
+
+            if (backticksBefore % 2 !== 0 && backticksAfter % 2 !== 0) {
+                // We're inside an inline code block, insert paired backtick
+                e.preventDefault();
+                insertText('`', '', '`');
+            }
+        }
+        */
+    };
+
+    const getSelection = () => {
+        const selection = document.getSelection()
+        const range = selection?.getRangeAt(0)
+
+        return { selection: selection, selectionStart: range?.startOffset, selectionEnd: range.endOffset }
+    }
 
     useEffect(() => {
         chatutil.scrollToBottom(document.getElementById('chatArea'), false);
+        const handleResize = () => {
+            adjustHeight(textareaRef.current);
+        };
 
+        //window.addEventListener('resize', handleResize);
+        textareaRef.current.addEventListener('input', () => { handleResize(textareaRef.current) })
         document.addEventListener("open-tool", openTool)
         document.addEventListener("hide-tool", closeTools)
         document.addEventListener("toggle-tool", toggleTool)
         return () => {
+            //window.removeEventListener('resize', handleResize);
+            textareaRef.current.removeEventListener('input', () => { handleResize(textareaRef.current) })
             document.removeEventListener("open-tool", openTool)
             document.removeEventListener("hide-tool", closeTools)
             document.removeEventListener("toggle-tool", toggleTool)
@@ -250,16 +493,18 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 className="relative w-full sm:w-[70vw] xl:w-[50vw] space-x-4 transition-all duration-500">
 
                 {/* Custom input field */}
-                <div id="userInput"
+                <div
+                    id="userInput"
+                    ref={textareaRef}
                     contentEditable="true"
                     role="textbox"
                     aria-label="Message input"
                     autoFocus={true}
-                    data-placeholder="Message IntelliDesk 💫"
-                    value={inputValue}
-                    onInput={(e) => handleInput(e.currentTarget, e.currentTarget.textContent)}
-                    onChange={(e) => handleInputChange(e.currentTarget, e.currentTarget.textContent)} className="w-full overflow-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white max-h-[28vh] pb-2 transition-all duration-1000 active:outline-none">
-                </div>
+                    data-placeholder="Type your message... (Enter=send CTRL,SHIFT+Enter=newline)"
+                    onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
+                    className="h-fit min-h-[48px] h-auto max-h-[28vh] w-full overflow-y-auto scrollbar-custom scroll-smooth py-1 px-[4%] md:py-3 md:pl-[2%] md:pr-[7%] border border-teal-400 dark:border-teal-600 rounded-lg focus:outline-none dark:outline-teal-600 focus:border-2 bg-gray-50 dark:bg-gradient-to-br dark:from-[#0a0a1f] dark:to-[#0a0a1f] dark:text-white pb-2 transition-all duration-1000 active:outline-none resize-none text-lg"
+                ></div>
 
                 <section id="userInputSection" className="p-0 absolute right-[0.5px] -bottom-2 p-0 flex w-full rounded-b-md dark:border-teal-600 shadow-xl justify-between w-full">
                     <button onClick={toggleTool} title="open tools" className='ml-1 text-gray-600 dark:text-gray-200 cursor-pointer focus:outline-none active:ring-none'>
@@ -290,7 +535,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 </section>
             </section>
 
-            <Tools shouldToggleCanvas={shouldToggleCanvas} onAICanvasToggle={onAICanvasToggle} onToggleRecording={onToggleRecording} closeTools={closeTools} />
+            <Tools shouldToggleCanvas={shouldToggleCanvas} onAICanvasToggle={onAICanvasToggle} onToggleRecording={onToggleRecording} closeTools={closeTools} handleCodeBlock={handleCodeBlock} handleInlineCode={handleInlineCode} detectedLanguage={detectedLanguage} />
 
             {/* Scroll to bottom button */}
             <ScrollToBottomButton onClick={() => chatutil.scrollToBottom(document.getElementById('chatArea'), false)} />
@@ -298,12 +543,35 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     );
 };
 
-const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeTools }) => {
+const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeTools, handleInlineCode, handleCodeBlock, detectedLanguage }) => {
     return (
         <section
             id="tool-modal"
             onMouseLeave={closeTools}
             className='block absolute -left-12 bottom-12 z-[51] bg-gray-200 dark:bg-blend-700 rounded-md p-3 space-y-2 hidden animate-exit'>
+
+            <div id="code-toolbar" className="flex gap-1 border-none rounded-md transition-transform transition-all duration-500">
+                <button
+                    type="button"
+                    onClick={handleInlineCode}
+                    className="size-full bg-white border border-[#ddd] dark:border-blend-400 rounded-md p-1 cursor-pointer m-auto text-lg hover:bg-[#e9ecef] dark:bg-blend-600 dark:hover:bg-primary-600 hover:border-[#adb5bd] dark:shadow-xl"
+                    title="Inline Code"
+                >
+                    <span className='text-green-500 dark:text-green-300'>{'<'}</span><span className='text-orange-500 dark:text-yellow-300'>{'<'}</span><span className='text-green-500 dark:text-green-300'>{'<'}</span>
+                </button>
+                <button
+                    type="button"
+                    onClick={handleCodeBlock}
+                    className="size-full flex justify-center gap-0 bg-white dark:bg-blend-600 dark:shadow-xl border border-[#ddd] dark:border-blend-400 rounded-md p-1 cursor-pointer m-auto font-mono text-lg hover:bg-[#e9ecef] hover:border-[#adb5bd] dark:hover:border-blend-500 dark:hover:bg-secondary-600"
+                    title="Code Block"
+                >
+                    <span className='text-green-500 dark:text-green-400'>{'<'}</span><span className='text-red-500 dark:text-red-500'>{`/`}</span><span className='text-blue-600 dark:text-sky-400'>{`>`}</span>
+                </button>
+                {detectedLanguage && detectedLanguage !== 'text' && (
+                    <span className="language-badge bg-[#6c757d] text-white p-2 rounded-md text-lg ml-auto">{detectedLanguage}</span>
+                )}
+            </div>
+
             {/* Voice Recording */}
             <div onClick={onToggleRecording} className='flex gap-1 text-gray-800 dark:text-gray-200 items-center cursor-pointer hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm'>
                 <button id="microphone" className="flex items-center justify-center rounded-lg  transition-colors duration-300" title="Voice recording">
@@ -489,7 +757,7 @@ const AutoResizeTextarea = () => {
 
     // Adjust on value change
     useEffect(() => {
-        adjustHeight();
+        adjustHeight(r);
     }, [inputValue]);
 
     // Adjust on mount and window resize

@@ -7,6 +7,8 @@ import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
 import { prep_user_input } from "./file_util";
+import { leftalinemath } from "../../../MathBase/mathRenderer";
+import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 
 let ai_ms_pid
 
@@ -58,7 +60,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         let isThinking = false;
         let fullResponse = "";
         let hasfinishedThinking = false;
-        let firt_run = true;
+        let first_run = true;
 
         for await (const chunk of stream) {
             const choice = chunk?.data?.choices?.[0];
@@ -152,11 +154,11 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
 
             if (actualResponse.includes('<continued>') || actualResponse.includes('<continued')) {
                 // In first run set <continue> tag as chunk to avoid breaking due to stary chunks that may be part of it, rawDelta cannot be anything except for items in the tage
-                if (firt_run) {
+                if (first_run) {
                     rawDelta = "<continued>"
                     // Remove user message from interface
                     window.reactPortalBridge.closeComponent(user_message_portal)
-                    firt_run = false
+                    first_run = false
                 }
                 continued = true
 
@@ -205,13 +207,13 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
                 });
             }
 
+            chatutil.render_math(`${message_id}`, 2000)
+
             // Scroll to bottom
             chatutil.scrollToBottom(chatArea, true, 1000);
 
             // Render mathjax immediately
             if (!message_id) message_id = window.StateManager.get("current_message_id", message_id)
-
-            chatutil.render_math(`.${message_id}`, 3000)
         }
 
         StateManager.set('processing', false);
@@ -255,8 +257,8 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         }
 
         // render diagrams from this response
-        chatutil.render_math()
-        window.normaliZeMathDisplay()
+        message_id ? chatutil.render_math(`${message_id}`) : renderAll_aimessages()
+        setTimeout(() => { leftalinemath() }, 1000)
 
         window.reactPortalBridge.closeComponent(loader_id)
 

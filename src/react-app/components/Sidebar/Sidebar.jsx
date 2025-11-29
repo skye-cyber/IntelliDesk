@@ -143,8 +143,10 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         };
 
         const handleClick = (e) => {
+            e.stopPropagation()
             if (!document.getElementById('chatOptions-overlay')?.classList.contains('hidden')) return Manager.hideConversationOptions()
-            if (!document.getElementById('conversationPane')?.contains(e.target)) {
+
+            if (!document.getElementById('conversationPane')?.contains(e.target) && !document.getElementById('modelButton')?.contains(e.taget) && !e.target?.role!='menuitem') {
                 hidePanel();
             }
         };
@@ -153,14 +155,14 @@ export const Sidebar = ({ isOpen, onToggle }) => {
 
 
         document.addEventListener('keydown', handleEscape);
-        document.addEventListener('click', handleClick);
+        //document.addEventListener('click', handleClick);
         document.addEventListener('close-panel', hidePanel);
         document.addEventListener('open-panel', showPanel);
         document.addEventListener('toggle-panel', togglePanel);
 
         return () => {
             document.removeEventListener('keydown', handleEscape);
-            document.removeEventListener('click', handleClick);
+            //document.removeEventListener('click', handleClick);
             document.removeEventListener('close-panel', hidePanel);
             document.removeEventListener('open-panel', showPanel);
             document.removeEventListener('toggle-panel', togglePanel);
@@ -227,7 +229,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             <section data-action="options" className='ml-1 mt-0 space-y-0.5 text-gray-800 dark:text-white'>
                 <div onClick={() => {
                     StartNewConversation(
-                        chatutil.get_multimodal_modesl().includes(window.currentModel)
+                        chatutil.get_multimodal_models().includes(window.currentModel)
                             ? 'multimodal'
                             : 'chat')
 
@@ -242,7 +244,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </div>
                 <div onClick={() => {
                     StartNewConversation(
-                        (chatutil.get_multimodal_modesl().includes(window.currentModel)
+                        (chatutil.get_multimodal_models().includes(window.currentModel)
                             ? 'multimodal'
                             : 'chat'),
                         { type: "temporary" }

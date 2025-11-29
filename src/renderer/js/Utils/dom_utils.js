@@ -25,7 +25,6 @@ export function waitForElement(selector, callback, options = {}) {
 
     const checkExist = () => {
         if (hasResolved) return;
-
         const elements = multiple ?
         searchContext.querySelectorAll(selector) :
         searchContext.querySelector(selector);

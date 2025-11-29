@@ -40,6 +40,7 @@ export default defineConfig({
             '@main': resolve(__dirname, 'src/main'),
             '@icons': resolve(__dirname, 'src/icons'),
             '@js': resolve(__dirname, 'src/renderer/js'),
+            '@math': resolve(__dirname, 'src/renderer/js/MathBase'),
             '@css': resolve(__dirname, 'src/renderer/css'),
             '@fonts': resolve(__dirname, 'src/renderer/fonts'),
             crypto: require.resolve('crypto-browserify'),

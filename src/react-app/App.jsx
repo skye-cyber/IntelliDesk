@@ -32,15 +32,11 @@ import { StreamingPortalContainer } from './StreamingPortalContainer';
 import '../renderer/js/react-portal-bridge';
 import './PortalTargetRegister';
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM CONTENT LOADED")
-})
-
 const App = () => {
     //const { electron } = useElectron();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('mistral-medium-latest');
+    const [selectedModel, setSelectedModel] = useState('mistral-small-latest');
     const [isRecordingOn, setIsRecordingOn] = useState(false);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);

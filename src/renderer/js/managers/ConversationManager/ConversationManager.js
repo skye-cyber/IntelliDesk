@@ -1,8 +1,10 @@
-import { waitForElement } from "../../Utils/dom_utils";
+import { waitForElement, waitForElementSync } from "../../Utils/dom_utils";
 import { implementUserCopy, copyBMan } from "../../Utils/chatUtils";
 import { ChatUtil } from "./util";
 import { ChatDisplay } from "./util";
 import { ClosePrefixed } from "../../react-portal-bridge";
+//import { GenerateId } from "../../../../react-app/components/ConversationRenderer/Renderer";
+import { renderAll_aimessages } from "../../MathBase/mathRenderer";
 
 export class ConversationManager {
     constructor(storagePath) {
@@ -30,52 +32,53 @@ export class ConversationManager {
 
     change_model(value = 'mistral-large-latest') {
         try {
-            document.getElementById('modelButton').click()
-            const selector = document.getElementById('model-selector')
-            selector.classList.add('hidden')
-            waitForElement(`[data-value="${value}"]`, (el) => el.click())
-            selector?.classList?.remove('hidden')
-
+            waitForElement('#model-selector', (context) => {
+                waitForElement(`[data-value^="${value}"]`, (el) => el.click(), { context: context })
+            })
         } catch (err) {
-            selector?.classList?.remove('hidden')
+            console.log(err)
+            //selector?.classList?.add('hidden')
         }
     }
     // Render the conversation in the web interface
     renderConversation(conversationData, model = "chat") {
-        this.chatutil.hide_suggestions()
+        if (conversationData[0].chats) this.chatutil.hide_suggestions()
 
         ClosePrefixed()
-
-        this.change_model()
+        const vmodels = this.chatutil.get_multimodal_models()
 
         if (model === 'multimodal') {
+            if (!vmodels.includes(window.currentModel)) this.change_model('mistral-small-latest')
+
             conversationData[0].chats.forEach(message => {
 
                 if (message.content) {
                     if (message.role === "user") {
                         this.renderUserMessage(message.content, model);
                     } else if (message.role === "assistant") {
-                        this.renderAIMessage(message.content);
+                        this.renderAIMessage(message.content[0]?.text);
                     }
                 }
                 //window.debounceRenderKaTeX(null, null, true);
             });
-        }
+        } else {
 
-        conversationData[0].chats.forEach(message => {
-            const content = typeof message?.content === 'string'
-                ? message.content.trim()
-                : '';
+            conversationData[0].chats.forEach(message => {
+                vmodels.includes(window.currentModel) && window.currentModell !== 'mistral-small-latest' ? this.change_model() : ''
+                const content = typeof message?.content === 'string'
+                    ? message.content.trim()
+                    : '';
 
 
-            if (content) {
-                if (message.role === "user") {
-                    this.renderUserMessage(content, model);
-                } else if (message.role === "assistant") {
-                    this.renderAIMessage(content);
+                if (content) {
+                    if (message.role === "user") {
+                        this.renderUserMessage(content, model);
+                    } else if (message.role === "assistant") {
+                        this.renderAIMessage(content);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         // force gc
         conversationData = null
@@ -160,12 +163,15 @@ export class ConversationManager {
 
         if (userText) window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: userText, file_type: fileType, file_data_url: fileDataUrl, save: false }, 'user_message')
 
+        //const message_id = GenerateId('user_msg')
     }
 
     // Render text-based assistant message
     async renderAIMessage(content) {
         let actualResponse = "";
         let thinkContent = "";
+
+        if (!content) return
 
         // Check whether it is a thinking model response ie if it has thinking tags.
         const hasThinkTag = content.includes("<think>");
@@ -177,7 +183,6 @@ export class ConversationManager {
         } else {
             actualResponse = content;
         }
-
         window.reactPortalBridge.showComponentInTarget('AiMessage', 'chatArea', { actual_response: actualResponse, isThinking: false, think_content: thinkContent }, 'ai_message');
     }
 }

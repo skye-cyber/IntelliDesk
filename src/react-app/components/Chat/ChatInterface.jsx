@@ -122,7 +122,15 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                 <LoadingModal />
                 {/* Copy Feedback Modal */}
                 <CopyFeedbackModal />
+                {/* status display modals */}
+                <div data-portal-container='messageContainer'
+                    id='message-container'
+                    className='fixed top-20 right-6 z-50 space-y-3 max-w-sm w-full'>
+                </div>
+
             </div>
+            {/* confirm dialog */}
+            <div data-portal-container='ConfirmdialogContainer' id='confirm-dialog-container'></div>
         </section>
     );
 };

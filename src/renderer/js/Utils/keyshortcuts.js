@@ -1,3 +1,5 @@
+import { changeFontSize, resetFontSize } from "./zoom";
+
 document.addEventListener("keydown", event => {
     // 1) if it’s F11, do nothing here and let the browser/Electron handle it
     if (event.key === "F11" || event.code === "F11") {
@@ -34,5 +36,16 @@ document.addEventListener("keydown", event => {
     } else if ((event.altKey && (event.key === "A" || event.key === "a"))) {
         event.preventDefault();
         document.getElementById("autoScroll")?.click();
+    } else if (event.ctrlKey && event.key.toLocaleLowerCase() === '=') {
+        event.preventDefault();
+        changeFontSize(0.1)
+        // Decrease Font
+    } else if (event.ctrlKey && event.key.toLocaleLowerCase() === '-') {
+        event.preventDefault();
+        changeFontSize(-0.1)
+        // Reset font
+    } else if (event.ctrlKey && event.key.toLocaleLowerCase() === '0') {
+        event.preventDefault();
+        resetFontSize()
     }
 });

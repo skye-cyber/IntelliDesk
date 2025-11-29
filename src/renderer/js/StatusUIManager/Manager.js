@@ -1,14 +1,16 @@
+import { GenerateId } from "../../../react-app/components/ConversationRenderer/Renderer";
+
 export class ModalManager {
     constructor() {
-        this.dialogId = "confirm-dialog-" + Date.now();
+        this.messagePId = null
     }
 
     /**
      * Initialize all UI components
      */
     initialize() {
-        this.initializeMessages();
-        this.setupGlobalEventListeners();
+        //this.initializeMessages();
+        //this.setupGlobalEventListeners();
     }
 
     /**
@@ -25,134 +27,10 @@ export class ModalManager {
         duration = 6000,
     ) {
         // Create message container if it doesn't exist
-        let container = document.getElementById("message-container");
-        if (!container) {
-            container = document.createElement("div");
-            container.id = "message-container";
-            container.className =
-                "fixed top-20 right-6 z-50 space-y-3 max-w-sm w-full";
-            document.body.appendChild(container);
-        }
+        const messageId = GenerateId(type)
+        this.messagePId = window.reactPortalBridge.showComponentInTarget('Toast', 'messageContainer', { type: type, messageId: messageId, message: message, duration: duration, autoDismiss: autoDismiss }, "toast")
 
-        const messageId =
-            "msg-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9);
-
-        //typeConfig
-        const typeConfig = {
-            success: {
-                gradient: 'from-green-500 to-emerald-500',
-                glow: 'bg-green-500',
-                iconBg: 'bg-gradient-to-br from-green-500 to-emerald-600',
-                textColor: 'text-gray-900 dark:text-white',
-                progress: 'bg-gradient-to-r from-green-500 to-emerald-500',
-                icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>`
-            },
-            error: {
-                gradient: 'from-red-500 to-rose-500',
-                glow: 'bg-red-500',
-                iconBg: 'bg-gradient-to-br from-red-500 to-rose-600',
-                textColor: 'text-gray-900 dark:text-white',
-                progress: 'bg-gradient-to-r from-red-500 to-rose-500',
-                icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>`
-            },
-            warning: {
-                gradient: 'from-amber-500 to-orange-500',
-                glow: 'bg-amber-500',
-                iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600',
-                textColor: 'text-gray-900 dark:text-white',
-                progress: 'bg-gradient-to-r from-amber-500 to-orange-500',
-                icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                    </svg>`
-            },
-            info: {
-                gradient: 'from-blue-500 to-cyan-500',
-                glow: 'bg-blue-500',
-                iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-600',
-                textColor: 'text-gray-900 dark:text-white',
-                progress: 'bg-gradient-to-r from-blue-500 to-cyan-500',
-                icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>`
-            }
-        };
-
-        const messageHtml = `
-        <div id="${messageId}"
-            class="message-toast transform transition-all duration-500 ease-out opacity-0 translate-x-full backdrop-blur-lg"
-            data-message-id="${messageId}"
-            data-auto-dismiss="${autoDismiss}">
-            <div class="relative bg-white/95 dark:bg-primary-800/95 border border-gray-200/50 dark:border-accent-200/50 rounded-2xl shadow-2xl p-5 overflow-hidden backdrop-blur-lg">
-                <!-- Animated gradient background -->
-                <div class="absolute inset-0 bg-gradient-to-br ${typeConfig[type].gradient} opacity-5"></div>
-
-                <!-- Glow effect -->
-                <div class="absolute inset-0 ${typeConfig[type].glow} opacity-10 rounded-2xl"></div>
-
-                <!-- Message Content -->
-                <div class="flex items-start relative z-10">
-                    <!-- Animated Icon Container -->
-                    <div class="flex-shrink-0 mr-4">
-                        <div class="w-12 h-12 ${typeConfig[type].iconBg} rounded-2xl flex items-center justify-center shadow-lg icon-pulse">
-                            <div class="w-6 h-6 text-white">
-                                ${typeConfig[type].icon}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Message Text -->
-                    <div class="flex-1 min-w-0">
-                        <p class="text-base font-semibold ${typeConfig[type].textColor} leading-relaxed tracking-tight">
-                            ${this.escapeHtml(message)}
-                        </p>
-                    </div>
-
-                    <!-- Close Button -->
-                    <button type="button"
-                            class="ml-4 flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 hover:rotate-90 group"
-                            onclick="window.ModalManager.dismissMessage('${messageId}')">
-                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Progress Bar -->
-                ${autoDismiss
-                ? `
-                <div class="absolute bottom-0 left-4 right-4 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-4">
-                    <div class="h-full ${typeConfig[type].progress} progress-bar-smooth rounded-full"
-                        style="animation-duration: ${duration}ms"></div>
-                </div>
-                `
-                : ""
-            }
-            </div>
-        </div>
-        `;
-        container.insertAdjacentHTML("beforeend", messageHtml);
-        const newMessage = document.getElementById(messageId);
-
-        // Animate in
-        setTimeout(() => {
-            newMessage.style.transition =
-                "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
-            newMessage.classList.remove("opacity-0", "translate-x-full");
-            newMessage.classList.add("opacity-100", "translate-x-0");
-        }, 10);
-
-        // Auto-dismiss
-        if (autoDismiss) {
-            newMessage.dismissTimer = setTimeout(() => {
-                this.dismissMessage(messageId);
-            }, duration);
-        }
-
-        return messageId;
+        return this.messagePId;
     }
 
     /**
@@ -161,6 +39,8 @@ export class ModalManager {
      */
     dismissMessage(messageId) {
         const message = document.getElementById(messageId);
+        this.messagePId = message?.dataset?.pid
+
         if (!message) return;
 
         // Clear auto-dismiss timer
@@ -168,23 +48,10 @@ export class ModalManager {
             clearTimeout(message.dismissTimer);
         }
 
-        // Animate out
-        message.style.transition = "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
-        message.classList.remove("opacity-100", "translate-x-0");
-        message.classList.add("opacity-0", "translate-x-full", "scale-95");
-
         // Remove from DOM after animation
         setTimeout(() => {
-            if (message.parentNode) {
-                message.parentNode.removeChild(message);
-
-                // Remove container if no messages left
-                const container = document.getElementById("message-container");
-                if (container && container.children.length === 0) {
-                    container.remove();
-                }
-            }
-        }, 400);
+            if (this.messagePId) window.reactPortalBridge.closeComponent(this.messagePId)
+        }, 510);
     }
 
 
@@ -319,52 +186,10 @@ export class ModalManager {
         //document.querySelector('[id^="confirm-dialog-"')?.remove()
 
         return new Promise((resolve) => {
-            const dialogHtml = `
-                <div id="${this.dialogId}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div id='dialog-content' class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0">
-                        <div class="p-6 border-b border-gray-200">
-                            <h3 class="text-xl font-bold text-gray-900">${this.escapeHtml(title)}</h3>
-                        </div>
-                        <div class="p-6">
-                            <p class="text-gray-700 mb-6">${this.escapeHtml(message)}</p>
-                            <div class="flex space-x-3">
-                                <button type="button"
-                                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105"
-                                        onclick="window.ModalManager.hideConfirmDialog('${this.dialogId}', false)">
-                                    Cancel
-                                </button>
-                                <button type="button"
-                                        class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105"
-                                        onclick="window.ModalManager.hideConfirmDialog('${this.dialogId}', true)">
-                                    Confirm
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            const dialog_id = GenerateId('confirm-dialog');
 
-            document.body.insertAdjacentHTML("beforeend", dialogHtml);
-            const dialog = document.getElementById(this.dialogId);
-            const content = dialog.querySelector("#dialog-content");
+            this.messagePId = window.reactPortalBridge.showComponentInTarget('ConfirmationDialog', 'ConfirmdialogContainer', { title: title, message: message, dialog_id: dialog_id, resolve: resolve }, "confirm")
 
-            // Animate in
-            setTimeout(() => {
-                content.classList.remove("scale-95", "opacity-0");
-                content.classList.add("scale-100", "opacity-100");
-            }, 10);
-
-            // Store resolve function
-            dialog.resolveFunction = resolve;
-
-            // Escape key to cancel
-            const escapeHandler = (e) => {
-                if (e.key === "Escape") {
-                    this.hideConfirmDialog(this.dialogId, false);
-                }
-            };
-            document.addEventListener("keydown", escapeHandler);
-            dialog.escapeHandler = escapeHandler;
         });
     }
 
@@ -382,14 +207,9 @@ export class ModalManager {
         content.classList.remove("scale-100", "opacity-100");
         content.classList.add("scale-95", "opacity-0");
 
-        // Remove event listener
-        if (dialog.escapeHandler) {
-            document.removeEventListener("keydown", dialog.escapeHandler);
-        }
-
         // Resolve promise and remove dialog
         setTimeout(() => {
-            if (dialog.resolveFunction) {
+            if (dialog.resolvefunction) {
                 dialog.resolveFunction(confirmed);
             }
             dialog.remove();
@@ -472,17 +292,6 @@ export class ModalManager {
         }, 300);
     }
 
-
-    /**
-     * Escape HTML to prevent XSS
-     * @param {string} text - Text to escape
-     * @returns {string} Escaped text
-     */
-    escapeHtml(text) {
-        const div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
-    }
 }
 
 window.ModalManager = new ModalManager()

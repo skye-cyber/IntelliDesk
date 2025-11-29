@@ -6,6 +6,8 @@ import { generateTextChunks, generateTextChunksAdvanced } from '../../../tests/A
 import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
+import { leftalinemath } from "../../../MathBase/mathRenderer";
+import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 
 let ai_ms_pid
 
@@ -13,7 +15,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
     try {
         if (!text?.trim()) return console.log("Message is empty")
 
-            // Create Timer object
+        // Create Timer object
         const _Timer = new window.Timer();
 
         StateManager.set('user-text', text)
@@ -46,7 +48,8 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        const stream = await mistral.client.chat.stream({
+        const stream = //generateTextChunks()/*
+        await mistral.client.chat.stream({
             model: model_name,
             messages: window.desk.api.getHistory(true),
             max_tokens: 3000
@@ -62,7 +65,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         let isThinking = false;
         let fullResponse = "";
         let hasfinishedThinking = false;
-        let firt_run = true;
+        let first_run = true;
 
         for await (const chunk of stream) {
             const choice = chunk?.data?.choices?.[0];
@@ -163,11 +166,11 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
             if (actualResponse?.includes('<continued>') || actualResponse?.includes('<continued')) {
                 // In first run set <continue> tag as chunk to avoid breaking due to stary chunks that may be part of it, rawDelta cannot be anything except for items in the tage
-                if (firt_run) {
+                if (first_run) {
                     rawDelta = "<continued>"
                     // Remove user message from interface
                     window.reactPortalBridge.closeComponent(user_message_portal)
-                    firt_run = false
+                    first_run = false
                 }
                 continued = true
 
@@ -216,13 +219,13 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
                 });
             }
 
+            chatutil.render_math(`${message_id}`, 2000)
+
             // Scroll to bottom
             chatutil.scrollToBottom(chatArea, true, 1000);
 
             // Render mathjax immediately
             if (!message_id) message_id = window.StateManager.get("current_message_id", message_id)
-
-            chatutil.render_math(`.${message_id}`, 3000)
         }
 
         StateManager.set('processing', false);
@@ -263,9 +266,9 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
             StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
         }
 
-        // Render diagrams
-        chatutil.render_math()
-        window.normaliZeMathDisplay()
+        // Render diagrams--last round
+        message_id ? chatutil.render_math(`${message_id}`) : renderAll_aimessages()
+        setTimeout(() => { leftalinemath() }, 1000)
 
         window.reactPortalBridge.closeComponent(loader_id)
 

@@ -37,6 +37,15 @@ waitForElement('#userInputContainer', (el) => {
     //window.streamingPortalBridge.registerStreamingComponent('userInput-wrapper', el);
 })
 
+waitForElement('#message-container', (el) => {
+    window.reactPortalBridge.registerContainer('messageContainer', el);
+})
+
+
+waitForElement('#confirm-dialog-container', (el) => {
+    window.reactPortalBridge.registerContainer('ConfirmdialogContainer', el);
+})
+
 export function RegisterCanvas() {
     waitForElementSimple('#canvas-wrapper', (el) => {
         window.reactPortalBridge.registerContainer('code_canvas', el);

@@ -4,198 +4,178 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IntelliDesk - Help</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.17/dist/tailwind.min.css" rel="stylesheet">
+  <link rel='stylesheet' href='css/docstyle.css'>
   <style>
     body {
       background: linear-gradient(135deg, #00b4d8, #00ffcc);
       font-family: 'Arial', sans-serif;
     }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    .section {
-      margin-bottom: 2rem;
-    }
-    .section h2 {
-      font-size: 2rem;
-      color: #3498db;
-      margin-bottom: 1rem;
-    }
-    .section p {
-      font-size: 1.1rem;
-      color: #333;
-      margin-bottom: 1rem;
-    }
-    .shortcuts-table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-bottom: 1rem;
-    }
-    .shortcuts-table th, .shortcuts-table td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    .shortcuts-table th {
-      background-color: #f2f2f2;
-    }
-    .settings-table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-bottom: 1rem;
-    }
-    .settings-table th, .settings-table td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    .settings-table th {
-      background-color: #f2f2f2;
-    }
-    .conversation-pane {
-      background: white;
-      border: 1px solid #ddd;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-    .conversation-pane h3 {
-      font-size: 1.5rem;
-      color: #3498db;
-      margin-bottom: 1rem;
-    }
-    .conversation-pane p {
-      font-size: 1rem;
-      color: #333;
-    }
-    .example {
-      background: #f2f2f2;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-    .example code {
-      background: #e2e2e2;
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-    }
   </style>
 </head>
-<body>
-  <div class="container">
-    <div class="section">
-      <h2>Keyboard Shortcuts</h2>
-      <p>Here are the keyboard shortcuts available in IntelliDesk:</p>
-      <table class="shortcuts-table">
-        <thead>
-          <tr>
-            <th>Shortcut</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>CTRL+P / CTRL+p</code></td>
-            <td>Open Conversations Panel</td>
-          </tr>
-          <tr>
-            <td><code>CTRL+S / CTRL+s</code></td>
-            <td>Open Settings</td>
-          </tr>
-          <tr>
-            <td><code>ESC</code></td>
-            <td>Close Active Modal (Settings, File Uploads)</td>
-          </tr>
-          <tr>
-            <td><code>ALT+A / ALT+a</code></td>
-            <td>Toggle Autoscroll</td>
-          </tr>
-          <tr>
-            <td><code>CTL+D / CTL+d</code></td>
-            <td>Show this documentation</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<body class="min-h-screen p-0">
+  <div class="container w-screen h-screen max-w-4xl mx-auto bg-white rounded-none shadow-lg overflow-hidden">
+    <div class="p-8">
+      <!-- Header Section -->
+      <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-blue-600 mb-4">IntelliDesk Help Documentation</h1>
+        <p class="text-lg text-gray-700">Keyboard shortcuts and settings guide for IntelliDesk application</p>
+      </div>
 
-    <div class="section">
-      <h2>Settings</h2>
-      <p>Available settings in IntelliDesk:</p>
-      <table class="settings-table">
-        <thead>
-          <tr>
-            <th>Setting</th>
-            <th>Description</th>
-            <th>Default</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Mode/Theme</td>
-            <td>Switch between Dark and Light Mode</td>
-            <td>System Preference</td>
-          </tr>
-          <tr>
-            <td>Auto Scroll on Output for AI</td>
-            <td>Automatically scroll to the latest output from the AI</td>
-            <td>ON</td>
-          </tr>
-          <tr>
-            <td>Language</td>
-            <td>Select the language for the interface</td>
-            <td>English</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <!-- Keyboard Shortcuts Section -->
+      <div class="mb-10">
+        <h2 class="text-3xl font-semibold text-blue-500 mb-6 pb-2 border-b border-gray-200">Keyboard Shortcuts</h2>
+        <p class="text-gray-700 mb-6">Here are the keyboard shortcuts available in IntelliDesk:</p>
 
-    <div class="section">
-      <h2>Conversations Panel/Chats Help</h2>
-      <div class="conversation-pane">
-        <h3>Right-click on a Conversation</h3>
-        <p>Right-clicking on a conversation in the panel will show you options to:</p>
-        <ul>
-          <li>Delete the conversation</li>
-          <li>Rename the conversation</li>
-        </ul>
+        <div class="overflow-x-auto rounded-lg shadow">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shortcut</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">CTRL+P / CTRL+p</code></td>
+                <td class="px-6 py-4">Open Conversations Panel</td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">CTRL+S / CTRL+s</code></td>
+                <td class="px-6 py-4">Open Settings</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">ESC</code></td>
+                <td class="px-6 py-4">Close Active Modal (Settings, File Uploads)</td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">ALT+A / ALT+a</code></td>
+                <td class="px-6 py-4">Toggle Autoscroll</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">CTRL+F / CTRL+f</code></td>
+                <td class="px-6 py-4">Attach Files</td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">CTRL+N / CTRL+n</code></td>
+                <td class="px-6 py-4">New Conversation</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">CTRL + =</code></td>
+                <td class="px-6 py-4">Zoom In (Increase Font Size)</td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">CTRL + -</code></td>
+                <td class="px-6 py-4">Zoom Out (Decrease Font Size)</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">CTRL + 0</code></td>
+                <td class="px-6 py-4">Reset Zoom (Reset Font Size)</td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap"><code class="bg-gray-100 px-2 py-1 rounded text-sm">CTRL+D / CTRL+d</code></td>
+                <td class="px-6 py-4">Show this documentation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <div class="section">
-      <h2>Examples</h2>
-      <p>Here are some examples of how to use the shortcuts and settings:</p>
-      <div class="example">
-        <h3>Open Conversations Panel</h3>
-        <p>To open the conversations panel, press <code>CTRL+P</code> or <code>CTRL+p</code>.</p>
+      <!-- Settings Section -->
+      <div class="mb-10">
+        <h2 class="text-3xl font-semibold text-blue-500 mb-6 pb-2 border-b border-gray-200">Settings</h2>
+        <p class="text-gray-700 mb-6">Available settings in IntelliDesk:</p>
+
+        <div class="overflow-x-auto rounded-lg shadow">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Setting</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap font-medium">Mode/Theme</td>
+                <td class="px-6 py-4">Switch between Dark and Light Mode</td>
+                <td class="px-6 py-4">System Preference</td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap font-medium">Auto Scroll on Output for AI</td>
+                <td class="px-6 py-4">Automatically scroll to the latest output from the AI</td>
+                <td class="px-6 py-4">ON</td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap font-medium">Language</td>
+                <td class="px-6 py-4">Select the language for the interface</td>
+                <td class="px-6 py-4">English</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="example">
-        <h3>Open Settings</h3>
-        <p>To open the settings, press <code>CTRL+S</code> or <code>CTRL+s</code>.</p>
+
+      <!-- Conversations Panel Help Section -->
+      <div class="mb-10">
+        <h2 class="text-3xl font-semibold text-blue-500 mb-6 pb-2 border-b border-gray-200">Conversations Panel/Chats Help</h2>
+        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h3 class="text-xl font-medium text-blue-500 mb-4">Right-click on a Conversation</h3>
+          <p class="text-gray-700 mb-4">Right-clicking on a conversation in the panel will show you options to:</p>
+          <ul class="list-disc pl-6 text-gray-700 space-y-2">
+            <li>Delete the conversation</li>
+            <li>Rename the conversation</li>
+            <li>Pin important conversations</li>
+            <li>Export conversation as text file</li>
+          </ul>
+        </div>
       </div>
-      <div class="example">
-        <h3>Close Active Modal</h3>
-        <p>To close the active modal (such as settings or file uploads), press <code>ESC</code>.</p>
-      </div>
-      <div class="example">
-        <h3>Change Theme</h3>
-        <p>To change the theme, navigate to the settings and select either <code>Dark Mode</code> or <code>Light Mode</code>.</p>
-      </div>
-      <div class="example">
-        <h3>Toggle Auto Scroll</h3>
-        <p>To toggle auto-scroll, navigate to the settings and switch the <code>Auto Scroll on Output for AI</code> option.</p>
-      </div>
-      <div class="example">
-        <h3>Change Language</h3>
-        <p>To change the language, navigate to the settings and select your preferred language.</p>
-      </div>
-      <div class="example">
-        <h3>Right-click on Conversation</h3>
-        <p>To manage conversations, right-click on a conversation in the panel and select <code>Delete</code> or <code>Rename</code>.</p>
+
+      <!-- Examples Section -->
+      <div>
+        <h2 class="text-3xl font-semibold text-blue-500 mb-6 pb-2 border-b border-gray-200">Examples</h2>
+        <p class="text-gray-700 mb-6">Here are some examples of how to use the shortcuts and settings:</p>
+
+        <div class="space-y-6">
+          <div class="bg-gray-50 p-5 rounded-lg border-l-4 border-blue-500">
+            <h3 class="text-xl font-medium text-gray-800 mb-2">Open Conversations Panel</h3>
+            <p class="text-gray-700">To open the conversations panel, press <code class="bg-gray-200 px-2 py-1 rounded text-sm">CTRL+P</code> or <code class="bg-gray-200 px-2 py-1 rounded text-sm">CTRL+p</code>.</p>
+          </div>
+
+          <div class="bg-gray-50 p-5 rounded-lg border-l-4 border-blue-500">
+            <h3 class="text-xl font-medium text-gray-800 mb-2">Open Settings</h3>
+            <p class="text-gray-700">To open the settings, press <code class="bg-gray-200 px-2 py-1 rounded text-sm">CTRL+S</code> or <code class="bg-gray-200 px-2 py-1 rounded text-sm">CTRL+s</code>.</p>
+          </div>
+
+          <div class="bg-gray-50 p-5 rounded-lg border-l-4 border-blue-500">
+            <h3 class="text-xl font-medium text-gray-800 mb-2">Close Active Modal</h3>
+            <p class="text-gray-700">To close the active modal (such as settings or file uploads), press <code class="bg-gray-200 px-2 py-1 rounded text-sm">ESC</code>.</p>
+          </div>
+
+          <div class="bg-gray-50 p-5 rounded-lg border-l-4 border-blue-500">
+            <h3 class="text-xl font-medium text-gray-800 mb-2">Zoom Controls</h3>
+            <p class="text-gray-700">To adjust the zoom level of the content area:</p>
+            <ul class="list-disc pl-6 mt-2 text-gray-700">
+              <li>Zoom in: <code class="bg-gray-200 px-2 py-1 rounded text-sm">CTRL + =</code></li>
+              <li>Zoom out: <code class="bg-gray-200 px-2 py-1 rounded text-sm">CTRL + -</code></li>
+              <li>Reset zoom: <code class="bg-gray-200 px-2 py-1 rounded text-sm">CTRL + 0</code></li>
+            </ul>
+          </div>
+
+          <div class="bg-gray-50 p-5 rounded-lg border-l-4 border-blue-500">
+            <h3 class="text-xl font-medium text-gray-800 mb-2">Toggle Auto Scroll</h3>
+            <p class="text-gray-700">To toggle auto-scroll, press <code class="bg-gray-200 px-2 py-1 rounded text-sm">ALT+A</code> or navigate to the settings and switch the <code class="bg-gray-200 px-2 py-1 rounded text-sm">Auto Scroll on Output for AI</code> option.</p>
+          </div>
+
+          <div class="bg-gray-50 p-5 rounded-lg border-l-4 border-blue-500">
+            <h3 class="text-xl font-medium text-gray-800 mb-2">Attach Files</h3>
+            <p class="text-gray-700">To quickly attach files to your conversation, press <code class="bg-gray-200 px-2 py-1 rounded text-sm">CTRL+F</code>.</p>
+          </div>
+
+          <div class="bg-gray-50 p-5 rounded-lg border-l-4 border-blue-500">
+            <h3 class="text-xl font-medium text-gray-800 mb-2">Right-click on Conversation</h3>
+            <p class="text-gray-700">To manage conversations, right-click on a conversation in the panel and select options like <code class="bg-gray-200 px-2 py-1 rounded text-sm">Delete</code> or <code class="bg-gray-200 px-2 py-1 rounded text-sm">Rename</code>.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

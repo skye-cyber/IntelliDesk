@@ -48,7 +48,8 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        const stream = await mistral.client.chat.stream({
+        const stream = //generateTextChunks()/*
+        await mistral.client.chat.stream({
             model: model_name,
             messages: window.desk.api.getHistory(true),
             max_tokens: 3000
@@ -64,7 +65,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         let isThinking = false;
         let fullResponse = "";
         let hasfinishedThinking = false;
-        let firt_run = true;
+        let first_run = true;
 
         for await (const chunk of stream) {
             const choice = chunk?.data?.choices?.[0];
@@ -165,11 +166,11 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
             if (actualResponse?.includes('<continued>') || actualResponse?.includes('<continued')) {
                 // In first run set <continue> tag as chunk to avoid breaking due to stary chunks that may be part of it, rawDelta cannot be anything except for items in the tage
-                if (firt_run) {
+                if (first_run) {
                     rawDelta = "<continued>"
                     // Remove user message from interface
                     window.reactPortalBridge.closeComponent(user_message_portal)
-                    firt_run = false
+                    first_run = false
                 }
                 continued = true
 

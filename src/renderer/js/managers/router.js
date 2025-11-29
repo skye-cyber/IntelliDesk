@@ -32,14 +32,12 @@ export class Router {
 
     change_model(value = 'mistral-large-latest') {
         try {
-            document.getElementById('modelButton').click()
-            const selector = document.getElementById('model-selector')
-            selector.classList.add('hidden')
-            waitForElement(`[data-value="${value}"]`, (el) => el.click())
-            selector?.classList?.remove('hidden')
-
+            waitForElement('#model-selector', (context) => {
+                waitForElement(`[data-value^="${value}"]`, (el) => el.click(), { context: context })
+            })
         } catch (err) {
-            selector?.classList?.remove('hidden')
+            console.log(err)
+            //selector?.classList?.add('hidden')
         }
     }
 

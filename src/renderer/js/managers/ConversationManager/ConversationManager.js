@@ -31,19 +31,13 @@ export class ConversationManager {
     }
 
     change_model(value = 'mistral-large-latest') {
-        let selector
-
         try {
-            console.log(value)
-            document.getElementById('modelButton').click()
-            selector = document.getElementById('model-selector')
-            selector?.classList.add('hidden')
-            waitForElement(`[data-value="${value}"]`, (el) => el.click())
+            waitForElement('#model-selector', (context) => {
+                waitForElement(`[data-value^="${value}"]`, (el) => el.click(), { context: context })
+            })
         } catch (err) {
             console.log(err)
             //selector?.classList?.add('hidden')
-        } finally {
-            selector?.classList?.add('hidden')
         }
     }
     // Render the conversation in the web interface
@@ -70,7 +64,7 @@ export class ConversationManager {
         } else {
 
             conversationData[0].chats.forEach(message => {
-                vmodels.includes(window.currentModel) && window.currentModell!=='mistral-small-latest' ? this.change_model() : ''
+                vmodels.includes(window.currentModel) && window.currentModell !== 'mistral-small-latest' ? this.change_model() : ''
                 const content = typeof message?.content === 'string'
                     ? message.content.trim()
                     : '';

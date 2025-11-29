@@ -227,10 +227,11 @@ app.on('ready', async () => {
         {
             label: 'Show',
             click: () => {
-                if (mainWindow) {
-                    mainWindow.show();
-                } else {
+                const windows = BrowserWindow.getAllWindows();
+                if (windows.length === 0) {
                     createWindow();
+                } else {
+                    windows[0].show();
                 }
             }
         },
@@ -263,6 +264,24 @@ app.on('window-all-closed', (event) => {
     //  app.quit(); // Quit when all windows are closed, except on macOS
     //}
 });
+
+// Handle window close properly - ONLY if mainWindow exists
+if (mainWindow) {
+    mainWindow.on('close', (event) => {
+        if (process.platform !== 'darwin') {
+            // On Windows/Linux, hide instead of close
+            event.preventDefault();
+            mainWindow.hide();
+        }
+        // On macOS, let the close happen normally
+    });
+
+    mainWindow.on('closed', () => {
+        // Remove references to prevent memory leaks
+        mainWindow.removeAllListeners();
+    });
+}
+
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

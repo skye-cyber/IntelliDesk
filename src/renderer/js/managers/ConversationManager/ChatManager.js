@@ -77,6 +77,8 @@ export class ChatManager {
             document.dispatchEvent(new CustomEvent('hide-loading'));
             console.error('Error reading conversation files:', err);
             return false
+        }finally{
+            window.gc = true
         }
     }
 
@@ -126,13 +128,6 @@ export class ChatManager {
         const years = Math.floor(months / 12);
 
         return `${years}y`;
-    }
-
-    /**
-     * DEPRECATED In favour of preload handler via api
-     */
-    setupIPCRecievers() {
-        // DEPRECATED:
     }
 
     async checkAndCreateDirectory() {
@@ -234,11 +229,13 @@ export class ChatManager {
     async hideLoadingModal() {
         const loadingModal = document.getElementById('loadingModal');
         const modalMainBox = document.getElementById('modalMainBox');
+        setTimeout(()=>{
         modalMainBox.classList.remove('animate-enter')
         modalMainBox.classList.add('animate-exit');
         setTimeout(() => {
             loadingModal.classList.add('hidden');
-        }, 310)
+        }, 0)
+        }, 300)
     }
 
     async RenameConversation(name, id = null) {
@@ -309,7 +306,7 @@ export class ChatManager {
 
             if (conversationData) {
                 window.desk.api.setConversation(conversationData, conversationId);  // Set global
-                this.conversationManager.renderConversation(conversationData, model);
+                await this.conversationManager.renderConversation(conversationData, model);
 
                 // Clear references
                 conversationData = null;
@@ -322,9 +319,8 @@ export class ChatManager {
             window.ModalManager.showMessage('Failed to load conversation', 'error');
         } finally {
             // Always hide the loading modal
-            //setTimeout(async () => {
-                await this.hideLoadingModal();
-            //}, 700)
+            await this.hideLoadingModal();
+            window.gc= true
         }
     }
 }

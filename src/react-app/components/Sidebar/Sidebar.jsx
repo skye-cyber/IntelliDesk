@@ -36,7 +36,10 @@ export const Sidebar = ({ isOpen, onToggle }) => {
 
     useEffect(() => {
         const ConversationSection = document.getElementById('conversations');
-        Manager.fetchConversations(ConversationSection);
+        setTimeout(() => {
+            Manager.fetchConversations(ConversationSection);
+        }, 2000)
+
     }, [isOpen]);
 
     const showPanel = useCallback(() => {
@@ -146,7 +149,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             e.stopPropagation()
             if (!document.getElementById('chatOptions-overlay')?.classList.contains('hidden')) return Manager.hideConversationOptions()
 
-            if (!document.getElementById('conversationPane')?.contains(e.target) && !document.getElementById('modelButton')?.contains(e.taget) && !e.target?.role!='menuitem') {
+            if (!document.getElementById('conversationPane')?.contains(e.target) && !document.getElementById('modelButton')?.contains(e.taget) && !e.target?.role != 'menuitem') {
                 hidePanel();
             }
         };

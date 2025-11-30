@@ -26,19 +26,20 @@ const conversation_root = path.join(os.homedir(), '.IntelliDesk/.store')
 
 let system_command = new command(profile).standard()
 
-let ConversationHistory = [
-    {
-        metadata: {
-            model: 'chat',
-            type: 'normal',
-            name: '',
-            id: ConversationId,
-            timestamp: getformatDateTime(),
-            highlight: ''
-        },
-        chats: []
-    }
-]
+let ConversationHistory =
+{
+    metadata: {
+        model: 'chat',
+        type: 'normal',
+        name: '',
+        id: ConversationId,
+        created_at: getformatDateTime(),
+        updated_at: getformatDateTime(),
+        highlight: ''
+    },
+    chats: []
+}
+
 
 const api = {
     getDownloadsPath: () => {
@@ -65,8 +66,8 @@ const api = {
             let dataToSave = JSON.parse(JSON.stringify(data));
 
             // Remove system instructions from clone only
-            if (dataToSave[0].chats[0].role === 'system') {
-                dataToSave[0].chats.shift();
+            if (dataToSave.chats[0].role === 'system') {
+                dataToSave.chats.shift();
             }
 
             dataToSave = api.clean(dataToSave);
@@ -86,8 +87,8 @@ const api = {
             let jdata = rdata ? JSON.parse(rdata) : '';
 
             // Add compartibility feature to maintain conversations instegrity!
-            if (jdata[0]?.chats[0].role === "system") {
-                jdata[0].chats.shift()
+            if (jdata?.chats[0].role === "system") {
+                jdata.chats.shift()
             }
             return jdata
         } catch (err) {
@@ -136,7 +137,7 @@ const api = {
             let data = await api.read(fpath)
             if (!data) return false
 
-            data[0].metadata.name = name
+            data.metadata.name = name
 
             api.saveConversation(data, id)
             return true
@@ -162,38 +163,57 @@ const api = {
         }
     },
     addHistory: (item) => {
-        if (!typeof (item) === "object") return console.log("Invalid conversation item")
+        try {
+            if (!typeof (item) === "object") return console.log("Invalid conversation item")
 
-        ConversationHistory[0].chats.push(item)
+            ConversationHistory.chats.push(item)
 
-        if (!ConversationHistory[0].metadata.highlight) {
-            if (ConversationHistory[0].metadata.model === "multimodal") {
-                ConversationHistory[0].metadata.highlight = item?.content?.type ? item?.content?.text.slice(0, 15) : ''
-            } else {
-                ConversationHistory[0].metadata.highlight = typeof(item?.content) === "string" ?item?.content.slice(0, 15) : ''
+            if (!ConversationHistory.metadata.highlight) {
+                if (ConversationHistory.metadata.model === "multimodal") {
+                    if (item?.content?.type && typeof (item?.content?.text) === "string") {
+                        highlight = item?.content?.split(' ').slice(0, 8).join(' ')
+                        ConversationHistory.metadata.highlight = highlight
+                    }
+                } else {
+                    if (typeof (item?.content) === "string") {
+                        highlight = item?.content?.split(' ').slice(0, 8).join(' ')
+                        ConversationHistory.metadata.highlight = highlight
+                    }
+                }
             }
-        }
-        if (ConversationHistory[0].metadata.type === "temporary") return console.log("In temporary chat Not saving!")
+            if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving!")
 
-        // Save to file
-        api.saveConversation(ConversationHistory)
+            // Update update created_at
+            ConversationHistory.metadata.updated_at = getformatDateTime()
+            // Save to file
+            api.saveConversation(ConversationHistory)
+            return true
+        } catch (err) {
+            return false
+        }
     },
     getHistory: (filter = false) => {
-        const data = filter ? ConversationHistory[0].chats : ConversationHistory;
+        const data = filter ? ConversationHistory.chats : ConversationHistory;
 
         return data
     },
     popHistory: (role = null) => {
-        if (!role) {
-            ConversationHistory[0].chats.pop();
-        } else if (ConversationHistory[0].chats?.slice(-1)[0]?.role === role) {
-            ConversationHistory[0].chats.pop();
-            //console.log("Done, resting!")
+        try {
+            if (!role) {
+                ConversationHistory.chats.pop();
+            } else if (ConversationHistory.chats?.slice(-1)[0]?.role === role) {
+                ConversationHistory.chats.pop();
+                //console.log("Done, resting!")
+            }
+            // Update update created_at
+            ConversationHistory.metadata.updated_at = getformatDateTime()
+            return true
+        } catch (err) {
+            return false
         }
-
     },
     getModel: () => {
-        return ConversationHistory[0].metadata.model
+        return ConversationHistory.metadata.model
     },
     setModel: (model) => {
         try {
@@ -201,10 +221,10 @@ const api = {
 
             if (!['chat', 'multimodal'].includes(model)) return
 
-            ConversationHistory[0].metadata.model = model
+            ConversationHistory.metadata.model = model
 
-            if (ConversationHistory[0].chats[0].role === 'system') {
-                ConversationHistory[0].chats[0] = (model === "multimodal")
+            if (ConversationHistory.chats[0].role === 'system') {
+                ConversationHistory.chats[0] = (model === "multimodal")
                     ? { role: "system", content: [{ type: "text", text: system_command }] }
                     : { role: "system", content: system_command }
             }
@@ -214,66 +234,70 @@ const api = {
         }
     },
     clean: (chats) => {
-        return chats
-            .map(chat => {
-                const cleaned_chats = chat.chats
-                    .map(item => {
-                        let content = item?.content;
+        try {
+            return chats
+                .map(chat => {
+                    const cleaned_chats = chat.chats
+                        .map(item => {
+                            let content = item?.content;
 
-                        // Handle array-type content
-                        if (Array.isArray(content)) {
-                            content = content
-                                .map(part => {
-                                    let text = part?.text || '';
+                            // Handle array-type content
+                            if (Array.isArray(content)) {
+                                content = content
+                                    .map(part => {
+                                        let text = part?.text || '';
 
-                                    // Apply your slice rule
-                                    if (text.slice(-1) === ']') {
-                                        text = text.substring(0, text.length - 22);
-                                    }
+                                        // Apply your slice rule
+                                        if (text.slice(-1) === ']') {
+                                            text = text.substring(0, text.length - 22);
+                                        }
 
-                                    text = text.trim();
-                                    return text ? { type: part?.type || 'text', text } : null;
-                                })
-                                .filter(Boolean);
-                        }
-
-                        // Handle string-type content
-                        else if (typeof content === 'string') {
-                            if (content.slice(-1) === ']') {
-                                content = content.substring(0, content.length - 22);
+                                        text = text.trim();
+                                        return text ? { type: part?.type || 'text', text } : null;
+                                    })
+                                    .filter(Boolean);
                             }
-                            content = content.trim();
-                        }
 
-                        // Invalid or empty content
-                        else {
-                            content = '';
-                        }
+                            // Handle string-type content
+                            else if (typeof content === 'string') {
+                                if (content.slice(-1) === ']') {
+                                    content = content.substring(0, content.length - 22);
+                                }
+                                content = content.trim();
+                            }
 
-                        // Skip empty entries
-                        const isEmpty =
-                            (Array.isArray(content) && content.length === 0) ||
-                            (typeof content === 'string' && !content);
+                            // Invalid or empty content
+                            else {
+                                content = '';
+                            }
 
-                        if (isEmpty) return null;
+                            // Skip empty entries
+                            const isEmpty =
+                                (Array.isArray(content) && content.length === 0) ||
+                                (typeof content === 'string' && !content);
 
-                        return { role: item.role, content };
-                    })
-                    .filter(Boolean); // remove nulls
+                            if (isEmpty) return null;
 
-                // Skip chats with no messages
-                if (!cleaned_chats.length) return null;
+                            return { role: item.role, content };
+                        })
+                        .filter(Boolean); // remove nulls
 
-                return { ...chat, chats: cleaned_chats };
-            })
-            .filter(Boolean); // remove empty chat objects
+                    // Skip chats with no messages
+                    if (!cleaned_chats.length) return null;
+
+                    return { ...chat, chats: cleaned_chats };
+                })
+                .filter(Boolean); // remove empty chat objects
+        } catch (err) {
+            return false
+        }
     },
     getmetadata: (file) => {
         try {
             const fpath = path.join(conversation_root, file)
             if (!api.stat(fpath)) return;
             const rdata = fs.readFileSync(fpath, 'utf-8')
-            return rdata ? JSON.parse(rdata)[0]?.metadata : ''
+            return rdata ? JSON.parse(rdata)?.metadata : ''
         } catch (err) {
             return false
         }
@@ -281,8 +305,8 @@ const api = {
     updateName: (name, save = true) => {
         try {
             if (!name?.trim()) return false;
-            console.log("Rename conversation to:", name)
-            ConversationHistory[0].metadata.name = name
+            //console.log("Rename conversation to:", name)
+            ConversationHistory.metadata.name = name
             if (save) api.saveConversation(ConversationHistory)
             return true
         } catch (err) {
@@ -292,10 +316,10 @@ const api = {
     updateContinueHistory: (item) => {
         try {
             if (!item) return console.log('Conversation item is null')
-            //console.log(ConversationHistory[0].chats.slice(-1)[0])
-            if (ConversationHistory[0].chats.slice(-1)[0].role === "user") api.popHistory() // Remove user message
+            //console.log(ConversationHistory.chats.slice(-1)[0])
+            if (ConversationHistory.chats.slice(-1)[0].role === "user") api.popHistory() // Remove user message
 
-            if (ConversationHistory[0].chats.slice(-1)[0].role === "assistant") {
+            if (ConversationHistory.chats.slice(-1)[0].role === "assistant") {
                 const target_ai_response = JSON.parse(JSON.stringify(ConversationHistory))[0].chats.slice(-1)[0] // Clone content to avoid mutation
                 api.popHistory() // Remove the ai response
 
@@ -315,63 +339,71 @@ const api = {
         }
     },
     clearAllImages: (history) => {
-        // Convert history to array and process each message
-        return history[0].chats.map(item => {
-            // Extract text content only and filter out image content
-            const cleanedContent = item.content.filter(val => val.type === "text").map(textContent => ({
-                ...textContent,
-                // Optional: Process text further if needed
-                text: textContent.text.trim() // Remove extra whitespace
-            }));
+        try {
+            // Convert history to array and process each message
+            return history.chats.map(item => {
+                // Extract text content only and filter out image content
+                const cleanedContent = item.content.filter(val => val.type === "text").map(textContent => ({
+                    ...textContent,
+                    // Optional: Process text further if needed
+                    text: textContent.text.trim() // Remove extra whitespace
+                }));
 
-            // Return the cleaned item with only text content
-            return {
-                ...item,
-                content: cleanedContent
-            };
-        });
+                // Return the cleaned item with only text content
+                return {
+                    ...item,
+                    content: cleanedContent
+                };
+            });
+        } catch (err) {
+            return false
+        }
     },
     clearImages: (history) => {
-        // Clean all messages by removing non-text content
-        console.log(history[0].chats)
-        const cleanedHistory = history[0].chats.map(item => {
-            const cleanedContent = item.content
-                .filter(val => val.type === "text")
-                .map(textContent => ({
-                    ...textContent,
-                    // Remove extra whitespace from text
-                    text: textContent.text.trim()
-                }));
-            return {
-                ...item,
-                content: cleanedContent
-            };
-        });
+        try {
+            // Clean all messages by removing non-text content
+            const cleanedHistory = history.chats.map(item => {
+                const cleanedContent = item.content
+                    .filter(val => val.type === "text")
+                    .map(textContent => ({
+                        ...textContent,
+                        // Remove extra whitespace from text
+                        text: textContent.text.trim()
+                    }));
+                return {
+                    ...item,
+                    content: cleanedContent
+                };
+            });
 
-        // Access the original last message before cleaning
-        const lastMessage = history[history.length - 1];
+            // Access the original last message before cleaning
+            const lastMessage = history.chats[history.chats.length - 1];
 
-        // Assuming messages have a property (for example: role) that distinguishes user messages,
-        // and if the user message contains any image data
-        if (
-            lastMessage &&
-            lastMessage.role === "user" &&  // adjust property if your structure differs
-            lastMessage.content.some(val => ["image_url", "file_url"].includes(val.type))
-        ) {
-            // Replace the cleaned version of the last message with the original last message
-            cleanedHistory[cleanedHistory.length - 1] = lastMessage;
+            // Messages have a property role that distinguishes user messages,
+            // and if the user message contains any image data
+            if (
+                lastMessage &&
+                lastMessage.role === "user" &&  // adjust property if your structure differs
+                lastMessage.content.some(val => ["image_url", "file_url"].includes(val.type))
+            ) {
+                // Replace the cleaned version of the last message with the original last message
+                cleanedHistory.chats[cleanedHistory.chats.length - 1] = lastMessage;
+            }
+
+            return cleanedHistory;
+        } catch (err) {
+            return false
         }
-
-        return cleanedHistory;
     },
     CreateNew: (conversation, model) => {
         if (!ConversationId) ConversationId = api.generateUUID()
-        ConversationHistory[0].chats = conversation
-        ConversationHistory[0].metadata =
+        ConversationHistory.chats = conversation
+        ConversationHistory.metadata =
         {
             model: model,
             id: ConversationId,
-            timestamp: getformatDateTime()
+            created_at: getformatDateTime(),
+            updated_at: getformatDateTime()
         }
         api.saveConversation(ConversationHistory)
     },
@@ -379,12 +411,13 @@ const api = {
         const filePath = `${conversation_root}/${conversationId}.json`;
         //console.log(JSON.stringify(conversationData))
         try {
-            if (ConversationHistory[0].metadata.type === "temporary") return console.log("In temporary chat Not saving")
+            if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving")
             //console.log("Saving: " + conversationId + filePath)
             await api.write(filePath, conversationData);
             return filePath
         } catch (err) {
             console.error('Error saving conversation:', err);
+            return false
         }
     },
     generateUUID: () => {
@@ -407,9 +440,9 @@ const api = {
     },
     setConversation: (data, id) => {
         //api.saveConversation(data, data[0].metadata.id)
-        if (data[0].chats[0]?.role !== 'system') data[0].chats.unshift({ role: 'system', content: system_command })
+        if (data.chats[0]?.role !== 'system') data.chats.unshift({ role: 'system', content: system_command })
         ConversationHistory = data;
-        ConversationId = id ? id : data[0].metadata.id;
+        ConversationId = id ? id : data.metadata.id;
     },
     send: (channel, data) => {
         // List of valid channels
@@ -462,15 +495,15 @@ const api = {
             if (err) throw err;
             data = JSON.parse(data);
             //for (let [i, res] of data.e)
-            data[0].chats.forEach(res => {
+            data.chats.forEach(res => {
                 // console.log(data)
                 if (res.role === "user") {
 
-                    if (data[data.indexOf(res) + 1].role !== "assistant") {
-                        console.log("Pair: !index", data.indexOf(res) + 1)
-                        data.slice(data.indexOf(res), data.indexOf(res) + 1).values()
-                    } else if (data[data.indexOf(res) + 1].role === "assistant") {
-                        console.log("Pair: OK", data.indexOf(res))
+                    if (data.chats[data.chats.indexOf(res) + 1].role !== "assistant") {
+                        console.log("Pair: !index", data.chats.indexOf(res) + 1)
+                        data.chats.slice(data.chats.indexOf(res), data.chats.indexOf(res) + 1).values()
+                    } else if (data.chats[data.chats.indexOf(res) + 1].role === "assistant") {
+                        console.log("Pair: OK", data.chats.indexOf(res))
                     }
                 }
             })
@@ -652,10 +685,10 @@ contextBridge.exposeInMainWorld('desk', {
 
 document.addEventListener('DOMContentLoaded', function() {
     //initialize conversation histories when is ready/loaded
-    ConversationHistory[0].chats = [{ role: "system", content: system_command }];
+    ConversationHistory.chats = [{ role: "system", content: system_command }];
     ConversationId = api.generateUUID()
 
-    ConversationHistory[0].metadata.id = ConversationId
+    ConversationHistory.metadata.id = ConversationId
 })
 
 document.addEventListener('NewConversation', function(e) {
@@ -663,11 +696,11 @@ document.addEventListener('NewConversation', function(e) {
 
     const details = e.detail
 
-    if (details?.type?.toLocaleLowerCase() === "temporary") ConversationHistory[0].metadata.type = "temporary";
+    if (details?.type?.toLocaleLowerCase() === "temporary") ConversationHistory.metadata.type = "temporary";
 
     ConversationId = api.generateUUID()
-    ConversationHistory[0].chats = [{ role: "system", content: system_command }]
-    ConversationHistory[0].metadata.id = ConversationId
+    ConversationHistory.chats = [{ role: "system", content: system_command }]
+    ConversationHistory.metadata.id = ConversationId
 })
 
 

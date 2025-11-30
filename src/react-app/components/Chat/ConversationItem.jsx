@@ -119,7 +119,7 @@ export const ConversationItem = ({ metadata, portal_id }) => {
                         <h3 id="chat-name" className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                             {metadata?.name || metadata?.id}
                         </h3>
-                        <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{chatmanager.formatRelativeTime(metadata?.timestamp)}</span>
+                        <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{chatmanager.formatRelativeTime(metadata?.created_at)}</span>
                     </div>
                     <p id="chat-highlight" className="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
                         {metadata?.highlight}

@@ -48,7 +48,7 @@ export const Message = ({ message }) => {
         <div className={`text-xs mt-2 ${
             message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
         }`}>
-        {message.timestamp.toLocaleTimeString()}
+        {message.created_at.toLocaleTimeString()}
         </div>
         </div>
         </div>

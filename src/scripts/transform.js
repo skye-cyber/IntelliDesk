@@ -10,7 +10,8 @@ let schema = [
             model: 'chat',
             name: '',
             id: '',
-            timestamp: '',
+            created_at: '',
+            update_at: '',
             highlight: ''
         },
         chats: []
@@ -29,7 +30,7 @@ async function transformFn() {
         const files = await fs.readdir(dpath);
         for (let i = 0; i < files.length; i++) {
             const file = files[i]
-            console.log("Processing:", i,'Name:', file)
+            console.log("Processing:", i, 'Name:', file)
             const filePath = path.join(dpath, file);
             const data = await fs.readFile(filePath, 'utf-8')
             let content = JSON.parse(data)
@@ -65,7 +66,7 @@ async function transformFn() {
                 model: file.startsWith('C') ? 'chat' : 'multimodal',
                 name: name,
                 id: id,
-                timestamp: (name.length > 2 && datePattern.test(name)) ? name : '',
+                created_at: (name.length > 2 && datePattern.test(name)) ? name : '',
                 highlight: stripHtmlTags(highlight)
             }
             //console.log(schema[0].chats)
@@ -77,4 +78,42 @@ async function transformFn() {
     }
 }
 
-transformFn()
+//transformFn()
+//const fpath = path.join(os.homedir(), '.IntelliDesk/.store')
+
+async function transformST() {
+    const data = await fs.readFile('conversations.json', 'utf-8')
+    const tdata = JSON.stringify(JSON.parse(data), null, 2)
+    fs.writeFile('transformed_conversations.json', tdata);
+}
+
+//transformST()
+
+
+function hasFiles(item) {
+    console.log(item.key)
+    const res = item?.filter(i => i?.message.files.length > 0)
+
+    console.log(res)
+    return res
+}
+
+async function transformDS() {
+    const raw_data = await fs.readFile('transformed_conversations.json', 'utf-8')
+    const data = JSON.parse(raw_data)
+    //for (let i = 0; i < files.length; i++)
+    data.forEach(conv => {
+        schema[0].metadata = {
+            model: hasFiles(conv.mapping) ? 'multimodal' : 'chat',
+            name: '',
+            id: conv.id,
+            created_at: conv.inserted_at,
+            highlight: conv.title,
+            update_at: conv.updated_at
+        }
+        console.log(schema)
+        return
+    })
+}
+
+transformDS()

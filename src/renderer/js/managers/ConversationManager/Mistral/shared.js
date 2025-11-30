@@ -2,6 +2,7 @@ import { Mistral } from '@mistralai/mistralai';
 import { CanvasUtil } from '../../Canvas/CanvasUtils';
 import { ChatUtil, ChatDisplay } from '../util';
 import { MistralIntegration } from './MistralIntegration';
+import { StateManager } from '../../StatesManager';
 
 export const chatdisplay = new ChatDisplay()
 export const chatutil = new ChatUtil()

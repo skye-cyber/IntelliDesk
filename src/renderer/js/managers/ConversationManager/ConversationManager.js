@@ -1,10 +1,7 @@
-import { waitForElement, waitForElementSync } from "../../Utils/dom_utils";
-import { implementUserCopy, copyBMan } from "../../Utils/chatUtils";
+import { waitForElement } from "../../Utils/dom_utils";
 import { ChatUtil } from "./util";
 import { ChatDisplay } from "./util";
 import { ClosePrefixed } from "../../react-portal-bridge";
-//import { GenerateId } from "../../../../react-app/components/ConversationRenderer/Renderer";
-import { renderAll_aimessages } from "../../MathBase/mathRenderer";
 
 export class ConversationManager {
     constructor(storagePath) {
@@ -22,7 +19,7 @@ export class ConversationManager {
             if (window.desk.api.stat(filePath)) {
                 const data = await window.desk.api.read(filePath);
 
-                return [data, data[0]?.metadata?.model || 'chat']
+                return [data, data?.metadata?.model || 'chat']
             }
         } catch (err) {
             console.error('Error loading conversation:', err);
@@ -42,7 +39,7 @@ export class ConversationManager {
     }
     // Render the conversation in the web interface
     renderConversation(conversationData, model = "chat") {
-        if (conversationData[0].chats) this.chatutil.hide_suggestions()
+        if (conversationData.chats) this.chatutil.hide_suggestions()
 
         ClosePrefixed()
         const vmodels = this.chatutil.get_multimodal_models()
@@ -50,7 +47,7 @@ export class ConversationManager {
         if (model === 'multimodal') {
             if (!vmodels.includes(window.currentModel)) this.change_model('mistral-small-latest')
 
-            conversationData[0].chats.forEach(message => {
+            conversationData.chats.forEach(message => {
 
                 if (message.content) {
                     if (message.role === "user") {
@@ -63,7 +60,7 @@ export class ConversationManager {
             });
         } else {
 
-            conversationData[0].chats.forEach(message => {
+            conversationData.chats.forEach(message => {
                 vmodels.includes(window.currentModel) && window.currentModell !== 'mistral-small-latest' ? this.change_model() : ''
                 const content = typeof message?.content === 'string'
                     ? message.content.trim()

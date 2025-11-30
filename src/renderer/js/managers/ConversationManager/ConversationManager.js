@@ -38,48 +38,54 @@ export class ConversationManager {
         }
     }
     // Render the conversation in the web interface
-    renderConversation(conversationData, model = "chat") {
-        if (conversationData.chats) this.chatutil.hide_suggestions()
+    async renderConversation(conversationData, model = "chat") {
+        try {
+            if (conversationData.chats) this.chatutil.hide_suggestions()
 
-        ClosePrefixed()
-        const vmodels = this.chatutil.get_multimodal_models()
+            ClosePrefixed()
+            const vmodels = this.chatutil.get_multimodal_models()
 
-        if (model === 'multimodal') {
-            if (!vmodels.includes(window.currentModel)) this.change_model('mistral-small-latest')
+            if (model === 'multimodal') {
+                if (!vmodels.includes(window.currentModel)) this.change_model('mistral-small-latest')
 
-            conversationData.chats.forEach(message => {
+                conversationData.chats.forEach(message => {
 
-                if (message.content) {
-                    if (message.role === "user") {
-                        this.renderUserMessage(message.content, model);
-                    } else if (message.role === "assistant") {
-                        this.renderAIMessage(message.content[0]?.text);
+                    if (message.content) {
+                        if (message.role === "user") {
+                            this.renderUserMessage(message.content, model);
+                        } else if (message.role === "assistant") {
+                            this.renderAIMessage(message.content[0]?.text);
+                        }
                     }
-                }
-                //window.debounceRenderKaTeX(null, null, true);
-            });
-        } else {
+                    //window.debounceRenderKaTeX(null, null, true);
+                });
+            } else {
 
-            conversationData.chats.forEach(message => {
-                vmodels.includes(window.currentModel) && window.currentModell !== 'mistral-small-latest' ? this.change_model() : ''
-                const content = typeof message?.content === 'string'
-                    ? message.content.trim()
-                    : '';
+                conversationData.chats.forEach(message => {
+                    vmodels.includes(window.currentModel) && window.currentModell !== 'mistral-small-latest' ? this.change_model() : ''
+                    const content = typeof message?.content === 'string'
+                        ? message.content.trim()
+                        : '';
 
 
-                if (content) {
-                    if (message.role === "user") {
-                        this.renderUserMessage(content, model);
-                    } else if (message.role === "assistant") {
-                        this.renderAIMessage(content);
+                    if (content) {
+                        if (message.role === "user") {
+                            this.renderUserMessage(content, model);
+                        } else if (message.role === "assistant") {
+                            this.renderAIMessage(content);
+                        }
                     }
-                }
-            });
+                });
+            }
+
+            // force gc
+            conversationData = null
+            window.gc
+            this.chatutil.render_math()
+        } catch (err) {
+            console.log(err)
+            window.ModalManager.showMessage('Failed to load conversation', 'error');
         }
-
-        // force gc
-        conversationData = null
-        this.chatutil.render_math()
     }
 
     // Get file type from message content

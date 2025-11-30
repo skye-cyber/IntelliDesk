@@ -4,19 +4,18 @@ const os = require('os');
 
 const dpath = path.join(os.homedir(), '.IntelliDesk/.store')
 
-let schema = [
-    {
-        metadata: {
-            model: 'chat',
-            name: '',
-            id: '',
-            created_at: '',
-            update_at: '',
-            highlight: ''
-        },
-        chats: []
-    }
-]
+let schema =
+{
+    metadata: {
+        model: 'chat',
+        name: '',
+        id: '',
+        created_at: '',
+        update_at: '',
+        highlight: ''
+    },
+    chats: []
+}
 
 const datePattern = /^\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/;
 
@@ -39,7 +38,7 @@ async function transformFn() {
             let highlight = ''
 
             try {
-                if (content[0].role === 'system') {
+                if (content.role === 'system') {
                     content.shift()
                 }
                 if (file.startsWith('C')) {
@@ -61,24 +60,23 @@ async function transformFn() {
                     .replace(/[\r\n]+/g, '') //Replace \n between word with space
                 : '';
 
-            schema[0].chats = content
-            schema[0].metadata = {
+            schema.chats = content
+            schema.metadata = {
                 model: file.startsWith('C') ? 'chat' : 'multimodal',
                 name: name,
                 id: id,
                 created_at: (name.length > 2 && datePattern.test(name)) ? name : '',
                 highlight: stripHtmlTags(highlight)
             }
-            //console.log(schema[0].chats)
-
-            await fs.writeFile(filePath, JSON.stringify(schema))
+            //console.log(schema.chats)
+            await fs.writeFile(filePath, JSON.stringify(content))
         }
     } catch (err) {
         console.error('Error:', err);
     }
 }
 
-//transformFn()
+
 //const fpath = path.join(os.homedir(), '.IntelliDesk/.store')
 
 async function transformST() {
@@ -103,7 +101,7 @@ async function transformDS() {
     const data = JSON.parse(raw_data)
     //for (let i = 0; i < files.length; i++)
     data.forEach(conv => {
-        schema[0].metadata = {
+        schema.metadata = {
             model: hasFiles(conv.mapping) ? 'multimodal' : 'chat',
             name: '',
             id: conv.id,
@@ -111,9 +109,69 @@ async function transformDS() {
             highlight: conv.title,
             update_at: conv.updated_at
         }
-        console.log(schema)
         return
     })
 }
 
-transformDS()
+
+function getformatDateTime(reverse = false) {
+    // Step 1: Create a Date object
+    const now = new Date();
+
+    // Step 2: Extract the components
+    const year = now.getFullYear().toString().slice(-2); // Get the last two digits of the year
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is 0-based, so add 1
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    // Step 3: Combine the components
+    const formattedDateTime = reverse === true
+        ? `${hours}:${minutes} ${day}-${month}-20${year}`
+        : `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
+
+    return formattedDateTime;
+}
+
+//transformDS()
+//transformFn()
+
+const code = require('../react-app/components/code/autoCodeDetector.js')
+
+async function transformUFn() {
+    try {
+        const files = await fs.readdir('cache');
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i]
+            console.log("Index:", i, 'File:', file)
+            const filePath = path.join(__dirname, 'cache', file)
+
+            const data = await fs.readFile(filePath, 'utf-8')
+            let content = JSON.parse(data)
+
+            const chats = content.chats.map(chat => {
+                let formattedMessage = chat.content
+                if (chat.role === 'user') {
+                    formattedMessage = code.AutoCodeDetector.autoFormatCodeBlocks(chat.content)
+                        //.replaceAll('&gt;', '>')
+                        //.replaceAll('&lt;', '<')
+                        //.replaceAll('&amp;', '&')
+                        //.replaceAll('&nbsp;', ' ')
+                        //.replaceAll('<br>', '\n')
+
+                }
+                return {
+                    ...chat,
+                    content: formattedMessage
+                }
+            })
+            content.chats = chats
+            const tdata = JSON.stringify(content, null, 2)
+            fs.writeFile(`cache/${file}`, tdata);
+        }
+    } catch (err) {
+        console.log(err)
+    }
+}
+transformUFn()

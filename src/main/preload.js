@@ -171,12 +171,12 @@ const api = {
             if (!ConversationHistory.metadata.highlight) {
                 if (ConversationHistory.metadata.model === "multimodal") {
                     if (item?.content?.type && typeof (item?.content?.text) === "string") {
-                        highlight = item?.content?.split(' ').slice(0, 10).join(' ')
+                        highlight = item?.content?.split(' ').slice(0, 8).join(' ')
                         ConversationHistory.metadata.highlight = highlight
                     }
                 } else {
                     if (typeof (item?.content) === "string") {
-                        highlight = item?.content?.split(' ').slice(0, 10).join(' ')
+                        highlight = item?.content?.split(' ').slice(0, 8).join(' ')
                         ConversationHistory.metadata.highlight = highlight
                     }
                 }

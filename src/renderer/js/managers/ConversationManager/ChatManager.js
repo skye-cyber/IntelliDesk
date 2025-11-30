@@ -87,25 +87,42 @@ export class ChatManager {
      * into a short relative time like "10min", "2h", "3d", etc.
      */
     formatRelativeTime(code) {
-        const datePattern = /^\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/;
         if (!code) return 'invalid';
 
-        if (code.toLocaleLowerCase().startsWith("v-") || code.toLocaleLowerCase().startsWith("v-")) {
-            if (!datePattern.test(code.slice(2))) {
+        let date;
+
+        // Handle ISO format (2025-07-27T02:20:05.779000+08:00)
+        if (code.includes('T') && code.includes(':')) {
+            try {
+                date = new Date(code);
+                if (isNaN(date.getTime())) {
+                    return "Invalid";
+                }
+            } catch {
                 return "Invalid";
             }
-            code = code.slice(2)
+        }
+        // Handle custom format (v-25-07-27-02-20-05 or 25-07-27-02-20-05)
+        else {
+            const datePattern = /^\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/;
+
+            if (code.toLowerCase().startsWith("v-")) {
+                if (!datePattern.test(code.slice(2))) {
+                    return "Invalid";
+                }
+                code = code.slice(2);
+            } else if (!datePattern.test(code)) {
+                return "Invalid";
+            }
+
+            const parts = code.split("-").map(Number);
+            if (parts.length < 6) return "Invalid";
+
+            const [yy, MM, dd, hh, mm, ss] = parts;
+            const fullYear = 2000 + yy;
+            date = new Date(fullYear, MM - 1, dd, hh, mm, ss);
         }
 
-        const parts = code.split("-");
-
-        if (parts.length < 6) return "Invalid";
-
-        const [yy, MM, dd, hh, mm, ss] = parts.map(Number);
-        const fullYear = 2000 + yy; // years starting from 2024
-
-        // Construct date (assume UTC)
-        const date = new Date(fullYear, MM - 1, dd, hh, mm, ss);
         const diff = Date.now() - date.getTime();
         const seconds = Math.floor(diff / 1000);
 
@@ -126,7 +143,6 @@ export class ChatManager {
         if (months < 12) return `${months}m`;
 
         const years = Math.floor(months / 12);
-
         return `${years}y`;
     }
 

@@ -149,6 +149,8 @@ async function transformUFn() {
 
             const data = await fs.readFile(filePath, 'utf-8')
             let content = JSON.parse(data)
+            //content.metadata.created_at = getformatDateTime(content.metadata.created_at)
+            //content.metadata.updated_at = getformatDateTime(content.metadata.updated_at)
 
             const chats = content.chats.map(chat => {
                 let formattedMessage = chat.content

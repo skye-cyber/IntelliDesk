@@ -4,7 +4,7 @@ const path = require('path');
 const os = require('os');
 const { Buffer } = require('node:buffer');
 const { command } = require('./system.js')
-const { getformatDateTime } = require('./utils.js')
+const { getformatDateTime } = require('./utils.js');
 
 let ConversationId = "";
 
@@ -74,10 +74,10 @@ const api = {
             const fileData = JSON.stringify(dataToSave, null, 2);
 
             fs.writeFileSync(path, fileData);
-            return true;
+            return ConversationHistory;
         } catch (err) {
             console.log(err);
-            return false;
+            return ConversationHistory;
         }
     },
     read: async (fpath) => {
@@ -93,7 +93,6 @@ const api = {
             return jdata
         } catch (err) {
             console.log(err);
-            return false;
         }
     },
     readDir: async (dir) => {
@@ -135,7 +134,7 @@ const api = {
             const fpath = path.join(base_dir, `${id}.json`)
 
             let data = await api.read(fpath)
-            if (!data) return false
+            if (!data) return ConversationHistory
 
             data.metadata.name = name
 
@@ -143,7 +142,7 @@ const api = {
             return true
         } catch (err) {
             console.log(err)
-            return false
+            return ConversationHistory
         }
     },
     deleteChat: (id, base_dir = conversation_root) => {
@@ -187,9 +186,9 @@ const api = {
             ConversationHistory.metadata.updated_at = getformatDateTime()
             // Save to file
             api.saveConversation(ConversationHistory)
-            return true
+            return ConversationHistory
         } catch (err) {
-            return false
+            return ConversationHistory
         }
     },
     getHistory: (filter = false) => {
@@ -207,9 +206,9 @@ const api = {
             }
             // Update update created_at
             ConversationHistory.metadata.updated_at = getformatDateTime()
-            return true
+            return ConversationHistory
         } catch (err) {
-            return false
+            return ConversationHistory
         }
     },
     getModel: () => {
@@ -230,66 +229,66 @@ const api = {
             }
         } catch (error) {
             console.log(error)
-            return false
+            return ConversationHistory
         }
     },
-    clean: (chats) => {
+    clean: (data) => {
         try {
-            return chats
-                .map(chat => {
-                    const cleaned_chats = chat.chats
-                        .map(item => {
-                            let content = item?.content;
+            // Handle single conversation object instead of array
+            const chat = data;
+            const cleaned_chats = chat.chats
+                .map(item => {
+                    let content = item?.content;
 
-                            // Handle array-type content
-                            if (Array.isArray(content)) {
-                                content = content
-                                    .map(part => {
-                                        let text = part?.text || '';
+                    // Handle array-type content
+                    if (Array.isArray(content)) {
+                        content = content
+                            .map(part => {
+                                let text = part?.text || '';
 
-                                        // Apply your slice rule
-                                        if (text.slice(-1) === ']') {
-                                            text = text.substring(0, text.length - 22);
-                                        }
-
-                                        text = text.trim();
-                                        return text ? { type: part?.type || 'text', text } : null;
-                                    })
-                                    .filter(Boolean);
-                            }
-
-                            // Handle string-type content
-                            else if (typeof content === 'string') {
-                                if (content.slice(-1) === ']') {
-                                    content = content.substring(0, content.length - 22);
+                                // Apply your slice rule
+                                if (text.slice(-1) === ']') {
+                                    text = text.substring(0, text.length - 22);
                                 }
-                                content = content.trim();
-                            }
 
-                            // Invalid or empty content
-                            else {
-                                content = '';
-                            }
+                                text = text.trim();
+                                return text ? { type: part?.type || 'text', text } : null;
+                            })
+                            .filter(Boolean);
+                    }
 
-                            // Skip empty entries
-                            const isEmpty =
-                                (Array.isArray(content) && content.length === 0) ||
-                                (typeof content === 'string' && !content);
+                    // Handle string-type content
+                    else if (typeof content === 'string') {
+                        if (content.slice(-1) === ']') {
+                            content = content.substring(0, content.length - 22);
+                        }
+                        content = content.trim();
+                    }
 
-                            if (isEmpty) return null;
+                    // Invalid or empty content
+                    else {
+                        content = '';
+                    }
 
-                            return { role: item.role, content };
-                        })
-                        .filter(Boolean); // remove nulls
+                    // Skip empty entries
+                    const isEmpty =
+                        (Array.isArray(content) && content.length === 0) ||
+                        (typeof content === 'string' && !content);
 
-                    // Skip chats with no messages
-                    if (!cleaned_chats.length) return null;
+                    if (isEmpty) return null;
 
-                    return { ...chat, chats: cleaned_chats };
+                    return { role: item.role, content };
                 })
-                .filter(Boolean); // remove empty chat objects
+                .filter(Boolean); // remove nulls
+
+            // If no valid chats, return null or handle as needed
+            if (!cleaned_chats.length) return null;
+
+            return { ...chat, chats: cleaned_chats };
         } catch (err) {
-            return false
+            console.log(err);
+            // Return the original data or handle error appropriately
+            return data;
         }
     },
     getmetadata: (file) => {
@@ -299,18 +298,19 @@ const api = {
             const rdata = fs.readFileSync(fpath, 'utf-8')
             return rdata ? JSON.parse(rdata)?.metadata : ''
         } catch (err) {
-            return false
+            console.log(err)
         }
     },
     updateName: (name, save = true) => {
         try {
-            if (!name?.trim()) return false;
+            if (!name?.trim()) return ConversationHistory;
             //console.log("Rename conversation to:", name)
             ConversationHistory.metadata.name = name
             if (save) api.saveConversation(ConversationHistory)
-            return true
+            console.log(ConversationHistory)
+            return ConversationHistory
         } catch (err) {
-            return false
+            return ConversationHistory
         }
     },
     updateContinueHistory: (item) => {
@@ -406,6 +406,7 @@ const api = {
             updated_at: getformatDateTime()
         }
         api.saveConversation(ConversationHistory)
+        console.log(ConversationHistory)
     },
     saveConversation: async (conversationData, conversationId = ConversationId) => {
         const filePath = `${conversation_root}/${conversationId}.json`;
@@ -417,7 +418,7 @@ const api = {
             return filePath
         } catch (err) {
             console.error('Error saving conversation:', err);
-            return false
+            return filePath
         }
     },
     generateUUID: () => {

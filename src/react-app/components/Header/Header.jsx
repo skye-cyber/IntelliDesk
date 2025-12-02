@@ -25,7 +25,6 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     }
 
     function openSelectorModal() {
-        console.log("Opening")
         const selector = document.getElementById('model-selector')
         selector.classList.remove('translate-x-[100vw]', 'opacity-0')
         selector.classList.add('translate-x-0', 'opacity-100')
@@ -59,7 +58,6 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
         if (isModelDropdownOpen || document.getElementById('model-selector')?.classList.contains('translate-x-0')) {
             hideSelectorModal()
         } else {
-            console.log("Toggling", e.currentTarget)
             openSelectorModal()
         }
     })

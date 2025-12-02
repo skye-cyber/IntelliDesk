@@ -57,8 +57,6 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 }
                 document.querySelectorAll("#code-actions")?.forEach(item =>{
                     item.classList.replace('xl:w-[98.9%]', 'xl:w-[80.9%]')
-                    console.log(item)
-
                 })
             });
         });

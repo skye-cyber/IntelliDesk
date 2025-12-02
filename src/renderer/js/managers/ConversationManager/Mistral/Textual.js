@@ -48,12 +48,12 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
-        const stream = generateTextChunks()/*
+        const stream = //generateTextChunks()
         await mistral.client.chat.stream({
             model: model_name,
             messages: window.desk.api.getHistory(true),
             max_tokens: 3000
-        });*/
+        });
 
 
         //const stream = generateTextChunks(text)

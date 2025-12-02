@@ -50,7 +50,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
                 model: model_name,
                 messages: window.desk.api.getHistory(true),
                 max_tokens: 3000,
-            };
+            })
 
         let conversationName = null;
         let continued = false;

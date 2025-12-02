@@ -45,22 +45,21 @@
 
 /* ===== DARK THEME (Optimized for #12142a background) ===== */
 .dark .hljs {
-    background-color: #12142a;
-    border: 1px solid #2a2d4a;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background-color: #09091d;
+    border: 1px solid #23263e;
 }
 
 /* Syntax Elements - Dark Theme */
-.dark .hljs-keyword { color: #00ffff; font-weight: 600; }
+.dark .hljs-keyword { color: #ff55ff; font-weight: 600; }
 .dark .hljs-built_in { color: #50fa7b; }
 .dark .hljs-string { color: #f1fa8c; }
 .dark .hljs-number { color: #bd93f9; }
-.dark .hljs-comment { color: #6272a4; font-style: italic; }
+.dark .hljs-comment { color: #aaaaff; font-style: italic; }
 .dark .hljs-function { color: #8be9fd; }
 .dark .hljs-params { color: #f8f8f2; }
 .dark .hljs-variable { color: #ffb86c; }
 .dark .hljs-class { color: #ffb86c; font-weight: 600; }
-.dark .hljs-title { color: #8be9fd; font-weight: 600; }
+.dark .hljs-title { color: #00ffff; font-weight: 600; }
 .dark .hljs-attribute { color: #50fa7b; }
 .dark .hljs-symbol { color: #ff79c6; }
 .dark .hljs-bullet { color: #f8f8f2; }

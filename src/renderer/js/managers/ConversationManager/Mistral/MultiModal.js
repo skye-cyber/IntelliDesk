@@ -45,12 +45,12 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     const { user_message_portal, userContent } = prep_user_input(text)
 
     try {
-        const stream = //generateTextChunks(text)
+        const stream = generateTextChunks(text)/*
             await mistral.client.chat.stream({
                 model: model_name,
                 messages: window.desk.api.getHistory(true),
                 max_tokens: 3000,
-            });
+            });*/
 
         let conversationName = null;
         let continued = false;

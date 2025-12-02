@@ -47,7 +47,7 @@ export function prep_user_input(text, options = {}) {
 
     StateManager.set('user_message_portal', user_message_portal)
 
-    console.log('Prepared user content:', userContent);
+    //console.log('Prepared user content:', userContent);
     return { user_message_portal: user_message_portal, userContent: userContent };
 }
 

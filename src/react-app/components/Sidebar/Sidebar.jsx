@@ -55,6 +55,11 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                     container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')
                     container.classList.add('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]');
                 }
+                document.querySelectorAll("#code-actions")?.forEach(item =>{
+                    item.classList.replace('xl:w-[98.9%]', 'xl:w-[80.9%]')
+                    console.log(item)
+
+                })
             });
         });
         window.StateManager.set("sidebar-open", true)
@@ -71,6 +76,9 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                     container.classList.remove('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
                     container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]');
                 }
+                document.querySelectorAll("#code-actions")?.forEach(item =>{
+                    item.classList.replace('xl:w-[80.9%]', 'xl:w-[98.9%]')
+                })
             });
         });
         window.StateManager.set("sidebar-open", false)

@@ -19,7 +19,7 @@ renderer.code = function(code) {
 
     if (typeof code !== "string" || code.trim() === "") {
         console.warn("Empty or invalid code provided:", code);
-        code = "// No code provided"; // Default fallback for empty code
+        code = ""; // Default fallback for empty code
 
     }
 

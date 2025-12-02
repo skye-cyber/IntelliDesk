@@ -307,7 +307,6 @@ const api = {
             //console.log("Rename conversation to:", name)
             ConversationHistory.metadata.name = name
             if (save) api.saveConversation(ConversationHistory)
-            console.log(ConversationHistory)
             return ConversationHistory
         } catch (err) {
             return ConversationHistory
@@ -345,7 +344,7 @@ const api = {
                 // Extract text content only and filter out image content
                 const cleanedContent = item.content.filter(val => val.type === "text").map(textContent => ({
                     ...textContent,
-                    // Optional: Process text further if needed
+                    // Process text further
                     text: textContent.text.trim() // Remove extra whitespace
                 }));
 
@@ -406,7 +405,6 @@ const api = {
             updated_at: getformatDateTime()
         }
         api.saveConversation(ConversationHistory)
-        console.log(ConversationHistory)
     },
     saveConversation: async (conversationData, conversationId = ConversationId) => {
         const filePath = `${conversation_root}/${conversationId}.json`;

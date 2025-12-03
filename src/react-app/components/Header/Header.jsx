@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ModelSelector } from '../ModelSelector/ModelSelector';
 
-window.currentModel = 'mistral-large-latest'
+window.currentModel = 'mistral-small-latest'
 
 export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);

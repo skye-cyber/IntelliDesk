@@ -105,8 +105,9 @@ export function handleFiles(files) {
     }
 
     // switch model to multi-modal
-    const model = "mistral-small-latest"
+    const model = "pixtral-large-2411"
     new Router().change_model(model)
+    console.log("changing model")
 
     if (ignored > 0) window.ModalManager.showMessage(` ${ignored} Unsupported ${(ignored > 1) ? "files were" : "file was"} ignored!`, "warning");
 

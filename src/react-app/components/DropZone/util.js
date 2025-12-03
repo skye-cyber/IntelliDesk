@@ -54,7 +54,7 @@ export function closePreview() {
 window.filedata = [{ name: '', size: '', type: '', url: '' }]
 
 export function handleFiles(files) {
-    const previewContainer = document.getElementById('uploadedFiles');
+    //const previewContainer = document.getElementById('uploadedFiles');
 
     let ignored = 0
 
@@ -94,14 +94,13 @@ export function handleFiles(files) {
 
         reader.onload = (e) => {
             const filedataurl = e.target.result;
-            filedata.push({ file: file, name: file.name, type: getFileType(file.name)?.toLocaleLowerCase(), is_image: fileType === "image", url: filedataurl, size: file.size })
+            filedata.push({ file: file, name: file.name, type: getFileType(file.name)?.toLocaleLowerCase(), is_image: fileType === "image", url: filedataurl, size: file.size, used: false })
         };
         reader.readAsDataURL(file);
 
         uploaded_file.push(file.name)
-
+        console.log(filedata)
         window.filedata = filedata
-
     }
 
     // switch model to multi-modal

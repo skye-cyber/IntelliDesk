@@ -32,9 +32,7 @@ export class Router {
 
     change_model(value = 'mistral-medium-latest') {
         try {
-            console.log(value)
             if (window.currentModel === value) return
-            console.log('...')
             waitForElement('#model-selector', (context) => {
                 waitForElement(`[data-value^="${value}"]`, (el) => el.click(), { context: context })
             })

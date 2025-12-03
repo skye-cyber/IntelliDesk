@@ -99,14 +99,12 @@ export function handleFiles(files) {
         reader.readAsDataURL(file);
 
         uploaded_file.push(file.name)
-        console.log(filedata)
         window.filedata = filedata
     }
 
     // switch model to multi-modal
     const model = "pixtral-large-2411"
     new Router().change_model(model)
-    console.log("changing model")
 
     if (ignored > 0) window.ModalManager.showMessage(` ${ignored} Unsupported ${(ignored > 1) ? "files were" : "file was"} ignored!`, "warning");
 

@@ -216,9 +216,8 @@ export function prep_user_input_simple(text) {
  * Mark file as use
  */
 export function MarkasUsed(file) {
-    console.log("Mark:", file)
+    // console.log("Mark:", file)
     window?.filedata?.map(filedata => {
         if (filedata === file) filedata.used = true
-    })
-    console.log(window.filedata)
+    });
 }

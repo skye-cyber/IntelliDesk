@@ -1,7 +1,7 @@
 import { Mistarlclient, mistral, appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
-import { GenerateId } from '../../../../../react-app/components/ConversationRenderer/Renderer';
+import { GenerateId } from "../../../../../react-app/components/ConversationRenderer/utils";
 import { generateTextChunks, generateTextChunksAdvanced } from '../../../tests/AiSimulator';
 import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";

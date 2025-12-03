@@ -4,7 +4,7 @@ import { showDropZoneModal } from '@components/DropZone/util.js'
 import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
-import { AutoCodeDetector } from '../code/autoCodeDetector';
+import { AutoCodeDetector } from '../Code/autoCodeDetector';
 
 const chatutil = new ChatUtil()
 

@@ -3,37 +3,13 @@ import { CopyMessage } from '../../../renderer/js/Utils/chatUtils';
 import { normalizeMathDelimiters } from '../../../renderer/js/MathBase/MathNormalize';
 import { toggleExportOptions } from '../../../renderer/js/ChatExport/export';
 import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../renderer/js/ChatExport/export';
-import { markitdown } from './CodeHighlighter';
-import { CodeBlockRenderer, SimpleUserCodeRenderer } from './CodeBlockRenderer';
+import { markitdown } from '../Code/CodeHighlighter';
+import { CodeBlockRenderer, SimpleUserCodeRenderer } from '../Code/CodeBlockRenderer';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
-import { unsafe } from '../../../renderer/js/Utils/chatUtils';
+// import { unsafe } from '../../../renderer/js/Utils/chatUtils';
+import { GenerateId } from './utils';
 
 const chatutil = new ChatUtil()
-
-export function GenerateId(prefix = '', postfix = '', length = 6) {
-    // Generate a random alphanumeric string (letters + digits) for valid class/ID characters
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-    let randomStr = '';
-    for (let i = 0; i < length; i++) {
-        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    // Build id ensuring no extra hyphens when prefix or postfix are empty
-    let id = '';
-    if (prefix) {
-        id += prefix;
-    }
-    if (prefix && randomStr) {
-        id += '-';
-    }
-    id += randomStr;
-    if (postfix) {
-        id += '-' + postfix;
-    }
-
-    return id;
-}
 
 export const UserMessage = ({
     message,
@@ -101,7 +77,7 @@ export const AiMessage = ({
 
     return (
         <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
-            <section id="ai_response" className="relative w-fit max-w-full lg:max-w-5xl mb-[2vh] p-2">
+            <section id="ai_response" className="relative w-fit max-w-full mb-[2vh] p-2">
                 {
                     actual_response ?
                         (

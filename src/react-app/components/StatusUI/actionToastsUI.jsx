@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { GenerateId } from '../ConversationRenderer/Renderer';
+import { GenerateId } from '../ConversationRenderer/utils';
 
 const typeConfig = {
     success: {

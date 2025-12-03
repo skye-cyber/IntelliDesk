@@ -1,7 +1,7 @@
 import { Mistarlclient, mistral, appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
-import { GenerateId } from '../../../../../react-app/components/ConversationRenderer/Renderer';
+import { GenerateId } from "../../../../../react-app/components/ConversationRenderer/utils";
 import { generateTextChunks } from '../../../tests/AiSimulator';
 import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
@@ -257,7 +257,12 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         }
 
         // render diagrams from this response
-        message_id ? chatutil.render_math(`${message_id}`) : renderAll_aimessages()
+        if (message_id) {
+            chatutil.render_math(`${message_id}`)
+        } else {
+            chatutil.render_math()
+            renderAll_aimessages()
+        }
         setTimeout(() => { leftalinemath() }, 1000)
 
         window.reactPortalBridge.closeComponent(loader_id)

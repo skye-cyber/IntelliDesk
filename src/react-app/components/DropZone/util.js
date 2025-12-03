@@ -54,7 +54,7 @@ export function closePreview() {
 window.filedata = [{ name: '', size: '', type: '', url: '' }]
 
 export function handleFiles(files) {
-    const previewContainer = document.getElementById('uploadedFiles');
+    //const previewContainer = document.getElementById('uploadedFiles');
 
     let ignored = 0
 
@@ -94,18 +94,16 @@ export function handleFiles(files) {
 
         reader.onload = (e) => {
             const filedataurl = e.target.result;
-            filedata.push({ file: file, name: file.name, type: getFileType(file.name)?.toLocaleLowerCase(), is_image: fileType === "image", url: filedataurl, size: file.size })
+            filedata.push({ file: file, name: file.name, type: getFileType(file.name)?.toLocaleLowerCase(), is_image: fileType === "image", url: filedataurl, size: file.size, used: false })
         };
         reader.readAsDataURL(file);
 
         uploaded_file.push(file.name)
-
         window.filedata = filedata
-
     }
 
     // switch model to multi-modal
-    const model = "mistral-small-latest"
+    const model = "pixtral-large-2411"
     new Router().change_model(model)
 
     if (ignored > 0) window.ModalManager.showMessage(` ${ignored} Unsupported ${(ignored > 1) ? "files were" : "file was"} ignored!`, "warning");

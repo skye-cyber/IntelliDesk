@@ -1,6 +1,6 @@
 import React from 'react';
 import { CodeBlockComponent, SimpleCodeBlockComponent } from './CodeBlockComponent'
-import { GenerateId } from './Renderer';
+import { GenerateId } from '../ConversationRenderer/utils';
 
 export const CodeBlockRenderer = ({ htmlContent }) => {
     const parsedContent = React.useMemo(() => {

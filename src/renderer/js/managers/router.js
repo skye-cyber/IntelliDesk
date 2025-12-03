@@ -30,8 +30,9 @@ export class Router {
         }
     }
 
-    change_model(value = 'mistral-large-latest') {
+    change_model(value = 'mistral-medium-latest') {
         try {
+            if (window.currentModel === value) return
             waitForElement('#model-selector', (context) => {
                 waitForElement(`[data-value^="${value}"]`, (el) => el.click(), { context: context })
             })
@@ -43,18 +44,16 @@ export class Router {
 
     async chooseRoute(event) {
         //document.querySelector(`[data-value="mistral-small-latest"]`).click();
-        const fileDataUrl = event.detail.fileDataUrl;
         const text = event.detail.text;
-        const fileType = event.detail.fileType
-
-        //switch to vision model
-        const res = await this.switchToVision()
-
         const modelName = window.currentModel;
+        //switch to vision model
+        /*
+         * const res = await this.switchToVision()
 
         if (!res === true) {
             console.log('fail')
         }
+        */
 
         if (ms_models.includes(modelName)) {
             MistraMultimodal({ text: text, model_name: modelName });
@@ -63,7 +62,8 @@ export class Router {
         }
     }
 
-    routeToMistral(text, modelName = null, file_type = null, fileDataUrl = null) {
+    routeToMistral(text, modelName = null) {
+        console.log(modelName)
         if (!text) window.ModalManager.showMessage("No text provided", "error")
         if (multimodal.includes(modelName)) {
             return MistraMultimodal({ text: text, model_name: modelName })

@@ -4,7 +4,7 @@ import { chart_interpret } from '../../../renderer/js/diagraming/jscharting';
 import { handleCodeCopy } from '../../../renderer/js/Utils/chatUtils';
 import { openInCanvas } from '../../../renderer/js/managers/Canvas/CanvasUtils';
 import { CanvasUtil } from '../../../renderer/js/managers/Canvas/CanvasUtils';
-import { GenerateId } from './Renderer';
+import { GenerateId } from '../ConversationRenderer/utils';
 import { html_preview } from '../../../renderer/js/managers/Canvas/html_render';
 import { exportCodeToFile } from '../../../renderer/js/Utils/exportCodeUtils';
 
@@ -41,8 +41,8 @@ export const CodeBlockComponent = ({
     }
 
     return (
-        <div className="w-[99.99%] xl:w-[85%] block bg-gray-200 dark:bg-zinc-800  rounded-md transition-colors duration-100">
-            <section id="code-actions" className="flex justify-between w-full lg:w-[76.3%] xl:w-[80.9%] bg-gray-200 rounded-t-md dark:bg-zinc-800 box-border transition-colors duration-700">
+        <div className="w-full block bg-gray-200 dark:bg-zinc-800  rounded-md transition-colors duration-100">
+            <section id="code-actions" className="flex justify-between w-full bg-gray-200 rounded-t-md dark:bg-zinc-800 box-border transition-colors duration-700">
                 {/* Language */}
                 <p className="code-language p-1 justify-start rounded-md text-slate-950 dark:text-white rounded-lg font-normal text-sm cursor-pointer opacity-80 hover:opacity-50">
                     {valid_language}

@@ -1,7 +1,7 @@
 import { Mistarlclient, mistral, appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
-import { GenerateId } from '../../../../../react-app/components/ConversationRenderer/Renderer';
+import { GenerateId } from "../../../../../react-app/components/ConversationRenderer/utils";
 import { generateTextChunks, generateTextChunksAdvanced } from '../../../tests/AiSimulator';
 import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
@@ -49,11 +49,11 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         StateManager.set('processing', true);
 
         const stream = //generateTextChunks()
-        await mistral.client.chat.stream({
-            model: model_name,
-            messages: window.desk.api.getHistory(true),
-            max_tokens: 3000
-        });
+            await mistral.client.chat.stream({
+                model: model_name,
+                messages: window.desk.api.getHistory(true),
+                max_tokens: 3000
+            });
 
 
         //const stream = generateTextChunks(text)
@@ -267,7 +267,12 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
         }
 
         // Render diagrams--last round
-        message_id ? chatutil.render_math(`${message_id}`) : renderAll_aimessages()
+        if (message_id) {
+            chatutil.render_math(`${message_id}`)
+        } else {
+            chatutil.render_math()
+            renderAll_aimessages()
+        }
         setTimeout(() => { leftalinemath() }, 1000)
 
         window.reactPortalBridge.closeComponent(loader_id)

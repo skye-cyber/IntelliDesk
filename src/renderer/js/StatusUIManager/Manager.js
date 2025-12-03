@@ -1,4 +1,4 @@
-import { GenerateId } from "../../../react-app/components/ConversationRenderer/Renderer";
+import { GenerateId } from "../../../react-app/components/ConversationRenderer/utils";
 
 export class ModalManager {
     constructor() {

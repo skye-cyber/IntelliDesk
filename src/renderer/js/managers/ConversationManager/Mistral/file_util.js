@@ -24,6 +24,7 @@ export function prep_user_input(text, options = {}) {
 
     // Process files if available
     if (filedata.length >= 1) {
+
         const { validFiles, rejectedFiles } = validateFiles(filedata, {
             maxFiles,
             maxFileSize,
@@ -39,6 +40,8 @@ export function prep_user_input(text, options = {}) {
             const fileContent = processFilesByType(validFiles);
             userContent = [...userContent, ...fileContent];
         }
+        // Mark file as use
+        filedata.forEach(file => MarkasUsed(file))
     }
 
     const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, filedata: userContent.filter(c => c.type !== "text") }, 'user_message')
@@ -62,6 +65,10 @@ export function validateFiles(filedata, constraints) {
     for (const file of filedata) {
         const rejectionReasons = [];
 
+        // Check if file was appended to conversation
+        if (file.used) {
+            rejectionReasons.push(`File already used/exists in current conversation`);
+        }
         // Check file count
         if (validFiles.length >= constraints.maxFiles) {
             rejectionReasons.push(`Maximum ${constraints.maxFiles} files allowed`);
@@ -203,4 +210,14 @@ export function prep_user_input_simple(text) {
     }
 
     return userContent;
+}
+
+/**
+ * Mark file as use
+ */
+export function MarkasUsed(file) {
+    // console.log("Mark:", file)
+    window?.filedata?.map(filedata => {
+        if (filedata === file) filedata.used = true
+    });
 }

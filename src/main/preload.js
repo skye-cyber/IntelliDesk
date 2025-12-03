@@ -70,7 +70,7 @@ const api = {
                 dataToSave.chats.shift();
             }
 
-            dataToSave = api.clean(dataToSave);
+            //dataToSave = api.clean(dataToSave); // Do not clear doc/image data
             const fileData = JSON.stringify(dataToSave, null, 2);
 
             fs.writeFileSync(path, fileData);
@@ -233,6 +233,7 @@ const api = {
         }
     },
     clean: (data) => {
+        // Removes documents from the conversation data
         try {
             // Handle single conversation object instead of array
             const chat = data;

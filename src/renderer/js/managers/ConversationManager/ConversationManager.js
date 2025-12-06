@@ -44,7 +44,7 @@ export class ConversationManager {
 
             ClosePrefixed()
             const vmodels = this.chatutil.get_multimodal_models()
-
+            console.log(model)
             if (model === 'multimodal') {
                 if (!vmodels.includes(window.currentModel)) this.change_model('mistral-small-latest')
 
@@ -63,10 +63,12 @@ export class ConversationManager {
 
                 conversationData.chats.forEach(message => {
                     vmodels.includes(window.currentModel) && window.currentModell !== 'mistral-small-latest' ? this.change_model() : ''
-                    const content = typeof message?.content === 'string'
-                        ? message.content.trim()
-                        : '';
-
+                    let content
+                    if (typeof message?.content === 'string') {
+                        content = message.content?.trim();
+                    } else {
+                        content = message?.content.length > 0 ? message?.content[0]?.text : '';
+                    }
 
                     if (content) {
                         if (message.role === "user") {

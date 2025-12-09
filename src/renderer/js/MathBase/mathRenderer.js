@@ -29,6 +29,8 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
 
     if (!element) return;
 
+    element.innerHTML = mathStandadize(element.innerHTML)
+
     const render = () => {
         renderTimeouts.delete(containerSelector);  // Clear from the map once rendered
 
@@ -72,9 +74,20 @@ export function NormalizeCode(element) {
     const targetList = element ? element.querySelectorAll('code') : document.querySelectorAll('code');
     for (const x in targetList) {
         x
-            .replace(`$`, `\[`)
+            .replace(/\$\$(?=[\s\S]*?(?:\\|[\d\^+\-*/]))([\s\S]*?)\$\$/g, `\[`)
             .replace(`$`, `\]`)
     }
 }
+
+export function mathStandadize(content) {
+    // Remove linebreak after opening $$ and before closing $$ ie $$\n...\n$$
+    content = content
+        .replace(
+            /\$\$(?=[\s\S]*?(?:\\|[\d\^+\-*/]))([\s\S]*?)\$\$/g,
+            (_, expr) => `$$${expr.replace(/\n/g, '').trim()}$$`
+        );
+    return content
+}
+
 window.debounceRenderKaTeX = debounceRenderKaTeX
 window.NormalizeCode = NormalizeCode

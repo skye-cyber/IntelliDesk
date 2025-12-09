@@ -127,9 +127,10 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             if (!value) return chat.classList.remove('hidden')
 
             //Perform search
-            const name = chat.dataset?.id?.toLowerCase() || "";
+            const name = chat.dataset?.name?.toLowerCase() || "";
+            const id = chat.dataset?.id?.toLowerCase() || "";
             const highlight = chat.dataset?.highlight?.toLowerCase() || "";
-            const match = parts.some(part => name.includes(part) || highlight.includes(part));
+            const match = parts.some(part => name.includes(part) || name.includes(part) || highlight.includes(part));
             chat.classList.toggle('hidden', !match);
         });
     }, []);

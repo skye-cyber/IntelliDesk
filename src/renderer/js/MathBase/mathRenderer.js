@@ -29,7 +29,7 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
 
     if (!element) return;
 
-    element.innerHTML = mathStandadize(element.innerHTML)
+    //element.innerHTML = mathStandardize(element.innerHTML)
 
     const render = () => {
         renderTimeouts.delete(containerSelector);  // Clear from the map once rendered
@@ -79,14 +79,32 @@ export function NormalizeCode(element) {
     }
 }
 
-export function mathStandadize(content) {
-    // Remove linebreak after opening $$ and before closing $$ ie $$\n...\n$$
-    content = content
-        .replace(
-            /\$\$(?=[\s\S]*?(?:\\|[\d\^+\-*/]))([\s\S]*?)\$\$/g,
-            (_, expr) => `$$${expr.replace(/\n/g, '').trim()}$$`
-        );
-    return content
+export function mathStandardize(content) {
+    // Regex to detect and skip code blocks
+    //const codeBlockRegex = /(```[\s\S]*?```)|(    [\s\S]*?\n(?!\s))/g;
+    //no greedy ``` match-match `...`
+    const codeBlockRegex = /(```(?:[^`]|`(?!``))*```)|(    [\s\S]*?\n(?!\s))|(`[\s\S]*?`)/g;
+    //Extend the regex to support custom code block delimiters, if necessary:
+    //const codeBlockRegex = /(```[\s\S]*?```)|(    [\s\S]*?\n(?!\s))|(:::code[\s\S]*?:::)/g;
+
+
+    // Replace code blocks with a placeholder
+    const placeholders = [];
+    content = content.replace(codeBlockRegex, (match) => {
+        placeholders.push(match);
+        return `__CODE_BLOCK_${placeholders.length - 1}__`;
+    });
+
+    // Remove linebreaks after opening $$ and before closing $$
+    content = content.replace(
+        /\$\$\s*\n([\s\S]*?)\n\s*\$\$/g,
+                              (_, expr) => `$$${expr.trim()}$$`
+    );
+
+    // Restore code blocks
+    content = content.replace(/__CODE_BLOCK_(\d+)__/g, (_, index) => placeholders[index]);
+
+    return content;
 }
 
 window.debounceRenderKaTeX = debounceRenderKaTeX

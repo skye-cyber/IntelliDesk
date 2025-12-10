@@ -8,6 +8,8 @@ import { CodeBlockRenderer, SimpleUserCodeRenderer } from '../Code/CodeBlockRend
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 // import { unsafe } from '../../../renderer/js/Utils/chatUtils';
 import { GenerateId } from './utils';
+import { mathStandardize } from '../../../renderer/js/MathBase/mathRenderer';
+import { normalizeCodeBlocks } from '../../../renderer/js/Code/codeNormalize';
 
 const chatutil = new ChatUtil()
 
@@ -57,7 +59,9 @@ export const AiMessage = ({
 
     //console.log(actual_response)
     try {
-        processedHtml = markitdown(actual_response);
+        // Normalize code
+        actual_response = normalizeCodeBlocks(actual_response)
+        processedHtml = markitdown(mathStandardize(actual_response))
     } catch (err) {
         //console.log(err)
     }

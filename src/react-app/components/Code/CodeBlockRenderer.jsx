@@ -1,7 +1,7 @@
 import React from 'react';
 import { CodeBlockComponent, SimpleCodeBlockComponent } from './CodeBlockComponent'
 import { GenerateId } from '../ConversationRenderer/utils';
-
+import { mathStandardize } from '../../../renderer/js/MathBase/mathRenderer';
 export const CodeBlockRenderer = ({ htmlContent }) => {
     const parsedContent = React.useMemo(() => {
         if (!htmlContent) return null;

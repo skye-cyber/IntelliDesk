@@ -29,7 +29,7 @@ let system_command = new command(profile).standard()
 let ConversationHistory =
 {
     metadata: {
-        model: 'chat',
+        model: 'multimodal',
         type: 'normal',
         name: '',
         id: ConversationId,
@@ -169,13 +169,13 @@ const api = {
 
             if (!ConversationHistory.metadata.highlight) {
                 if (ConversationHistory.metadata.model === "multimodal") {
-                    if (item?.content?.type && typeof (item?.content?.text) === "string") {
-                        highlight = item?.content?.split(' ').slice(0, 8).join(' ')
+                    if (item?.content.length > 0 && item?.content[0].text && typeof (item?.content[0].text) === "string") {
+                        const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replaceAll('`', '')
                         ConversationHistory.metadata.highlight = highlight
                     }
                 } else {
                     if (typeof (item?.content) === "string") {
-                        highlight = item?.content?.split(' ').slice(0, 8).join(' ')
+                        const highlight = item?.content?.split(' ').slice(0, 8).join(' ').replaceAll('`', '')
                         ConversationHistory.metadata.highlight = highlight
                     }
                 }
@@ -299,7 +299,7 @@ const api = {
             const rdata = fs.readFileSync(fpath, 'utf-8')
             return rdata ? JSON.parse(rdata)?.metadata : ''
         } catch (err) {
-            console.log(err)
+            console.log(err, file)
         }
     },
     updateName: (name, save = true) => {

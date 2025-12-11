@@ -147,37 +147,23 @@ export class ChatManager {
     }
 
     dateStrDisplay(dstr) {
-        if (!dstr) return
-
-        const date = this.loadDate(dstr)
-        const now = new Date()
-        const diff = Date.now() - date.getTime();
-
+        if (!dstr) return;
+        const date = this.loadDate(dstr);
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
         const seconds = Math.floor(diff / 1000);
+        const days = Math.floor(seconds / 86400);
+        const year = date.getFullYear();
+        const thisYear = now.getFullYear();
+        const month = date.getMonth();
+        const currentMonth = now.getMonth();
 
-        const hours = Math.floor(seconds / 60 * 60);
-        if (hours < 24) return 'Today';
-        if (hours <= 48) return 'Yesterday'
-
-        const year = date.getFullYear() //.toString() //.slice(-2); // Get the last two digits of the year
-
-        const thisyear = now.getFullYear()
-        const currentMonth = (now.getMonth() + 1) //.toString().padStart(2, '0')
-
-        const month = (date.getMonth() + 1)//.padStart(2, '0'); // Month is 0-based, so add 1
-
-        const day = String(date.getDate()).padStart(2, '0');
-
-        const days = Math.floor(hours / 24);
-        if (days <= 7) return 'Last 7 Days'
-        if (days === 1) return 'Yesterday';
-        //if (days <= 30) return 'This month';
-        //if (days <= 60) return 'Last month';
-
-        if (month === currentMonth && year === thisyear) return "This month"
-        if (month === currentMonth - 1 && year === thisyear) return "Last month"
-
-        return `${month}/${year}`
+        if (days < 1) return 'Today';
+        if (days < 2) return 'Yesterday';
+        if (days <= 7) return 'Last 7 Days';
+        if (month === currentMonth && year === thisYear) return 'This month';
+        if (month === currentMonth - 1 && year === thisYear) return 'Last month';
+        return `${month + 1}/${year}`;
     }
 
     /**

@@ -1,11 +1,12 @@
 import { ConversationLoader } from './ConversationLoader.js'
 import { ClosePrefixed } from '../../react-portal-bridge.js';
 
-//InputPurify = window.InputPurify;
-
-function colorMap() {
-    //
+async function ChatsCheck() {
+    let files = await window.desk.api.readDir(window.desk.api.joinPath(window.desk.api.home_dir(), '.IntelliDesk/.store'));
+    (files.length > 0) ? window.StateManager.set('chatsExist', true) : window.StateManager.set('chatsExist', false)
+    files = null
 }
+ChatsCheck()
 
 export class ChatManager {
     constructor() {
@@ -14,10 +15,36 @@ export class ChatManager {
         this.conversationManager = new ConversationLoader(this.storagePath);
         this.activeItem
         //this.init()
+
+        this.splitstr
     }
 
     _get_conversation_id() {
         return this._get_conversation_id
+    }
+
+    async sortFn(fl) {
+        const metadata = await window.desk.api.getmetadata(fl)
+        const datetime = metadata?.updated_at ? metadata?.updated_at : metadata?.created_at
+
+        if (!datetime) return -1
+        const date = this.loadDate(datetime)
+        const datestr = date.toLocaleDateString().split('/').reverse().toString().replaceAll(',', '')
+        const intdate = Number(datestr)
+
+        return intdate ? intdate : -1
+    }
+
+    async sortFiles(files) {
+        const filesWithSortValues = await Promise.all(files.map(async (file) => {
+            const sortValue = await this.sortFn(file);
+            return { file, sortValue };
+        }));
+
+        filesWithSortValues.sort((a, b) => a.sortValue - b.sortValue);
+
+        files = filesWithSortValues.map((obj) => obj.file);
+        return files.reverse()
     }
 
     // Function to fetch conversation files and display their IDs
@@ -26,11 +53,18 @@ export class ChatManager {
         try {
             let files = await window.desk.api.readDir(this.storagePath);
             if (files.length > 0) {
-                // Hide only if there are files/conversation items
-                document.getElementById('empty-conversations').classList.add('hidden');
 
-                // Define the colors you want to cycle through
+                // Define the colors you want to cycle through//
+
+                // close
                 window.reactPortalBridge.closeComponent('chatItem', true)
+
+                // sort files for time-based display
+                //files = files.sort((a, b) => this.sortFn(a) - this.sortFn(b))
+
+                files = await this.sortFiles(files).catch((error) => {
+                    console.error('Error sorting files:', error);
+                });
 
                 for (let [index, file] of files.entries()) {
                     if (window.desk.api.getExt(file) === '.json') {
@@ -45,6 +79,11 @@ export class ChatManager {
                         if (typeof (metadata.highlight) !== "string") {
                             metadata.highlight = ""
                         }
+                        // Date split
+                        const datestr = this.dateStrDisplay(metadata.updated_at)
+                        //console.log(datestr?.split('/')[1], this.splitstr?.split('/')[1])
+                        if (datestr && datestr !== this.splitstr ) window.reactPortalBridge.showComponentInTarget('DateSplit', 'conversations', { displaystr: datestr }, 'chatItem')
+                        this.splitstr = datestr
 
                         window.reactPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata }, 'chatItem')
 
@@ -65,19 +104,13 @@ export class ChatManager {
             document.dispatchEvent(new CustomEvent('hide-loading'));
             console.error('Error reading conversation files:', err);
             return false
-        }finally{
+        } finally {
             window.gc = true
         }
     }
 
-    /**
-     * Converts a timestamp like "24-12-21-10-43-39"
-     * into a short relative time like "10min", "2h", "3d", etc.
-     */
-    formatRelativeTime(code) {
-        if (!code) return 'invalid';
-
-        let date;
+    loadDate(code) {
+        let date
 
         // Handle ISO format (2025-07-27T02:20:05.779000+08:00)
         if (code.includes('T') && code.includes(':')) {
@@ -110,6 +143,51 @@ export class ChatManager {
             const fullYear = 2000 + yy;
             date = new Date(fullYear, MM - 1, dd, hh, mm, ss);
         }
+        return date
+    }
+
+    dateStrDisplay(dstr) {
+        if (!dstr) return
+
+        const date = this.loadDate(dstr)
+        const now = new Date()
+        const diff = Date.now() - date.getTime();
+
+        const seconds = Math.floor(diff / 1000);
+
+        const hours = Math.floor(seconds / 60 * 60);
+        if (hours < 24) return 'Today';
+        if (hours <= 48) return 'Yesterday'
+
+        const year = date.getFullYear() //.toString() //.slice(-2); // Get the last two digits of the year
+
+        const thisyear = now.getFullYear()
+        const currentMonth = (now.getMonth() + 1) //.toString().padStart(2, '0')
+
+        const month = (date.getMonth() + 1)//.padStart(2, '0'); // Month is 0-based, so add 1
+
+        const day = String(date.getDate()).padStart(2, '0');
+
+        const days = Math.floor(hours / 24);
+        if (days <= 7) return 'Last 7 Days'
+        if (days === 1) return 'Yesterday';
+        //if (days <= 30) return 'This month';
+        //if (days <= 60) return 'Last month';
+
+        if (month === currentMonth && year === thisyear) return "This month"
+        if (month === currentMonth - 1 && year === thisyear) return "Last month"
+
+        return `${month}/${year}`
+    }
+
+    /**
+     * Converts a timestamp like "24-12-21-10-43-39"
+     * into a short relative time like "10min", "2h", "3d", etc.
+     */
+    formatRelativeTime(code) {
+        if (!code) return 'invalid';
+
+        const date = this.loadDate(code)
 
         const diff = Date.now() - date.getTime();
         const seconds = Math.floor(diff / 1000);
@@ -233,12 +311,12 @@ export class ChatManager {
     async hideLoadingModal() {
         const loadingModal = document.getElementById('loadingModal');
         const modalMainBox = document.getElementById('modalMainBox');
-        setTimeout(()=>{
-        modalMainBox.classList.remove('animate-enter')
-        modalMainBox.classList.add('animate-exit');
         setTimeout(() => {
-            loadingModal.classList.add('hidden');
-        }, 0)
+            modalMainBox.classList.remove('animate-enter')
+            modalMainBox.classList.add('animate-exit');
+            setTimeout(() => {
+                loadingModal.classList.add('hidden');
+            }, 0)
         }, 300)
     }
 
@@ -324,7 +402,7 @@ export class ChatManager {
         } finally {
             // Always hide the loading modal
             await this.hideLoadingModal();
-            window.gc= true
+            window.gc = true
         }
     }
 }

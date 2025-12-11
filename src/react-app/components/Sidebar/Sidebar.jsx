@@ -310,6 +310,6 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             <ErrorBoundary>
                 <ChatOptions isOpen={true} onToggle={null} />
             </ErrorBoundary>
-        </div >
+        </div>
     );
 };

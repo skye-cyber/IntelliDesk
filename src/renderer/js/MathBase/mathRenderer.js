@@ -98,13 +98,35 @@ export function mathStandardize(content) {
     // Remove linebreaks after opening $$ and before closing $$
     content = content.replace(
         /\$\$\s*\n([\s\S]*?)\n\s*\$\$/g,
-                              (_, expr) => `$$${expr.trim()}$$`
+        (_, expr) => `$$${expr.trim()}$$`
     );
 
     // Restore code blocks
     content = content.replace(/__CODE_BLOCK_(\d+)__/g, (_, index) => placeholders[index]);
 
     return content;
+}
+
+export function mathStandardize_(content) {
+    // Regex to detect and skip code blocks
+    const codeBlockRegex = /(```(?:[^`]|`(?!``))*```)|(    [\s\S]*?\n(?!\s))|(`[\s\S]*?`)/g;
+
+        // Replace code blocks with a placeholder
+        const placeholders = [];
+        content = content.replace(codeBlockRegex, (match) => {
+            placeholders.push(match);
+            return `__CODE_BLOCK_${placeholders.length - 1}__`;
+        });
+
+        // Remove linebreaks after opening $$ and before closing $$
+        content = content.replace(/\$\$\s*\n([\s\S]*?)\n\s*\$\$/g, (_, expr) => `$$${expr.trim()}$$`);
+        content = content.replace(/\n\s*(\$\$)/g, '$1'); // remove newline before closing $$
+        content = content.replace(/(\$\$)\s*\n/g, '$1'); // remove newline after opening $$
+
+        // Restore code blocks
+        content = content.replace(/__CODE_BLOCK_(\d+)__/g, (_, index) => placeholders[index]);
+
+        return content;
 }
 
 window.debounceRenderKaTeX = debounceRenderKaTeX

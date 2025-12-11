@@ -7,7 +7,7 @@ export function normalizeCodeBlocks(content) {
     const codeBlockRegex = /```([\s\S]*?)\n([\s\S]*?)```/g;
 
     return content.replace(codeBlockRegex, (match, language, codeContent) => {
-        // If no language is specified, replace with "text"
+        // If no language is specified, replace with "plain"
         if (!language.trim()) {
             return `\`\`\`plain\n\n${codeContent}\`\`\``;
         } else {

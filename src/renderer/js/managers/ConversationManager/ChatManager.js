@@ -1,5 +1,4 @@
-import { waitForElement } from '../../Utils/dom_utils.js';
-import { ConversationManager } from './ConversationManager.js'
+import { ConversationLoader } from './ConversationLoader.js'
 import { ClosePrefixed } from '../../react-portal-bridge.js';
 
 //InputPurify = window.InputPurify;
@@ -12,20 +11,9 @@ export class ChatManager {
     constructor() {
         this.currentConversationId;
         this.storagePath = window.desk.api.joinPath(window.desk.api.home_dir(), '.IntelliDesk/.store');
-        this.conversationManager = new ConversationManager(this.storagePath);
+        this.conversationManager = new ConversationLoader(this.storagePath);
         this.activeItem
         //this.init()
-    }
-
-    init() {
-        //const cl = this.fetchConversations
-        document.addEventListener('NewConversationOpened', function() {
-            //waitForElement('#conversations', (el) => cl(el));
-        })
-
-        //this.checkAndCreateDirectory();
-
-        return this
     }
 
     _get_conversation_id() {

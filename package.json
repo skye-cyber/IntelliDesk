@@ -32,7 +32,7 @@
  "dependencies": {
     "@fiahfy/icns": "^0.0.7",
     "@hpcc-js/wasm-graphviz": "^1.7.0",
-    "@huggingface/inference": "^4.13.2",
+    "@huggingface/inference": "^4.13.3",
     "@mistralai/mistralai": "^1.5.0",
     "@vitejs/plugin-react": "^5.1.0",
     "assert": "^2.1.0",

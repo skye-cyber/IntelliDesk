@@ -130,8 +130,9 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             const name = chat.dataset?.name?.toLowerCase() || "";
             const id = chat.dataset?.id?.toLowerCase() || "";
             const highlight = chat.dataset?.highlight?.toLowerCase() || "";
-            const match = parts.some(part => name.includes(part) || name.includes(part) || highlight.includes(part));
-            chat.classList.toggle('hidden', !match);
+            //const match = parts.some(part => name.includes(part) || id.includes(part) || highlight.includes(part));
+            const fmatch = name.includes(value) || id.includes(value) || highlight.includes(value);
+            chat.classList.toggle('hidden', !fmatch);
         });
     }, []);
 

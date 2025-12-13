@@ -44,7 +44,7 @@ export class ConversationLoader {
 
             ClosePrefixed()
             const vmodels = this.chatutil.get_multimodal_models()
-            console.log(model)
+
             if (model === 'multimodal') {
                 if (!vmodels.includes(window.currentModel)) this.change_model('mistral-small-latest')
 

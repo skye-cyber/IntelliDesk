@@ -44,7 +44,7 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
                 ],
                 throwOnError: false,
             });
-            //console.log('KaTeX rendering complete for', containerSelector);
+            //console.log('KaTeX rendering complete for', contain- Calculate $P(Edible=Yes | Color=Red, Flavor=Grape)$:\n     $$\n     P(Edible=Yes | Color=Red, Flavor=Grape) = \\frac{P(Color=Red, Flavor=Grape | Edible=Yes) \\cdot P(Edible=Yes)}{P(Color=Red, Flavor=Grape)}\n     $$\n     Using the dataset:\n     $$\n     P(Edible=Yes | Color=Red, Flavor=Grape) = \\frac{1/6 \\cdot 6/10}{3/10} = \\frac{1}{3}\n     $$\nerSelector);
         } else {
             console.error('KaTeX auto-render extension not loaded.');
         }
@@ -79,54 +79,105 @@ export function NormalizeCode(element) {
     }
 }
 
+
 export function mathStandardize(content) {
-    // Regex to detect and skip code blocks
-    //const codeBlockRegex = /(```[\s\S]*?```)|(    [\s\S]*?\n(?!\s))/g;
-    //no greedy ``` match-match `...`
-    const codeBlockRegex = /(```(?:[^`]|`(?!``))*```)|(    [\s\S]*?\n(?!\s))|(`[\s\S]*?`)/g;
-    //Extend the regex to support custom code block delimiters, if necessary:
-    //const codeBlockRegex = /(```[\s\S]*?```)|(    [\s\S]*?\n(?!\s))|(:::code[\s\S]*?:::)/g;
+    /**
+     * Standardizes math expressions by removing unnecessary linebreaks in $$ blocks.
+     * Preserves all code blocks (fenced and inline) and handles edge cases.
+     */
 
+    let result = '';
+    let i = 0;
+    const len = content.length;
 
-    // Replace code blocks with a placeholder
-    const placeholders = [];
-    content = content.replace(codeBlockRegex, (match) => {
-        placeholders.push(match);
-        return `__CODE_BLOCK_${placeholders.length - 1}__`;
-    });
+    while (i < len) {
+        // Check for code blocks first (they have highest priority)
+        if (content[i] === '`') {
+            // Count consecutive backticks
+            let backtickCount = 1;
+            while (i + backtickCount < len && content[i + backtickCount] === '`') {
+                backtickCount++;
+            }
 
-    // Remove linebreaks after opening $$ and before closing $$
-    content = content.replace(
-        /\$\$\s*\n([\s\S]*?)\n\s*\$\$/g,
-        (_, expr) => `$$${expr.trim()}$$`
-    );
+            // If we have at least 3 backticks, it's a fenced code block
+            if (backtickCount >= 3) {
+                // Find the closing fence
+                let j = i + backtickCount;
+                let foundClosing = false;
 
-    // Restore code blocks
-    content = content.replace(/__CODE_BLOCK_(\d+)__/g, (_, index) => placeholders[index]);
+                while (j <= len - backtickCount) {
+                    if (content.substring(j, j + backtickCount) === '`'.repeat(backtickCount)) {
+                        // Found closing fence, copy everything as-is
+                        result += content.substring(i, j + backtickCount);
+                        i = j + backtickCount;
+                        foundClosing = true;
+                        break;
+                    }
+                    j++;
+                }
 
-    return content;
-}
+                if (!foundClosing) {
+                    // Unclosed code block, copy remaining
+                    result += content.substring(i);
+                    i = len;
+                }
+                continue;
+            }
+            // Single backtick - inline code
+            else if (backtickCount === 1) {
+                // Find closing backtick
+                let j = i + 1;
+                while (j < len && content[j] !== '`') {
+                    j++;
+                }
 
-export function mathStandardize_(content) {
-    // Regex to detect and skip code blocks
-    const codeBlockRegex = /(```(?:[^`]|`(?!``))*```)|(    [\s\S]*?\n(?!\s))|(`[\s\S]*?`)/g;
+                if (j < len) {
+                    // Found closing backtick
+                    result += content.substring(i, j + 1);
+                    i = j + 1;
+                    continue;
+                }
+            }
+        }
 
-        // Replace code blocks with a placeholder
-        const placeholders = [];
-        content = content.replace(codeBlockRegex, (match) => {
-            placeholders.push(match);
-            return `__CODE_BLOCK_${placeholders.length - 1}__`;
-        });
+        // Check for math blocks ($$)
+        if (content.substring(i, i + 2) === '$$') {
+            // Find closing $$
+            let j = i + 2;
+            let foundClosing = false;
 
-        // Remove linebreaks after opening $$ and before closing $$
-        content = content.replace(/\$\$\s*\n([\s\S]*?)\n\s*\$\$/g, (_, expr) => `$$${expr.trim()}$$`);
-        content = content.replace(/\n\s*(\$\$)/g, '$1'); // remove newline before closing $$
-        content = content.replace(/(\$\$)\s*\n/g, '$1'); // remove newline after opening $$
+            while (j <= len - 2) {
+                if (content.substring(j, j + 2) === '$$') {
+                    // Extract math content
+                    let mathContent = content.substring(i + 2, j);
 
-        // Restore code blocks
-        content = content.replace(/__CODE_BLOCK_(\d+)__/g, (_, index) => placeholders[index]);
+                    // Clean up linebreaks
+                    mathContent = mathContent
+                    .replace(/^\s*\n/, '')  // Remove leading linebreak
+                    .replace(/\n\s*$/, ''); // Remove trailing linebreak
 
-        return content;
+                    result += `$$${mathContent}$$`;
+                    i = j + 2;
+                    foundClosing = true;
+                    break;
+                }
+                j++;
+            }
+
+            if (!foundClosing) {
+                // Unclosed math block, copy as-is
+                result += content.substring(i);
+                i = len;
+            }
+            continue;
+        }
+
+        // Regular character
+        result += content[i];
+        i++;
+    }
+
+    return result;
 }
 
 window.debounceRenderKaTeX = debounceRenderKaTeX

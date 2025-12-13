@@ -141,32 +141,25 @@ export class ConversationLoader {
 
     // Render user message
     renderUserMessage(content, model = 'chat') {
-        const fileType = this.getFileType(content);
-        var fileDataUrl = null;
         var userText = null;
 
-        if (fileType) {
-            fileDataUrl = this.getFileUrl(content);
-        }
+        const files = content.filter(c => c.type === "document_url")
 
         if (model.toLocaleLowerCase() === 'multimodal') {
 
             // Check if content is an array and has at least one element before accessing content[0]
             if (content && content?.length > 0 && content[0]?.text) {
-                const lastChar = content[0]?.text?.slice(-1) || '';
-                if (lastChar === ']') {
-                    userText = content[0]?.text?.substring(0, content[0]?.text?.length - 22);
-                } else {
-                    userText = content[0]?.text;
-                }
+                userText = content[0]?.text;
+                files
+
             } else {
                 userText = ''; // Set a default if the content is missing
             }
         } else {
-            userText = content?.slice(-1) === ']' ? content?.substring(0, content?.length - 22) : content
+            userText = content
         }
 
-        if (userText) window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: userText, file_type: fileType, file_data_url: fileDataUrl, save: false }, 'user_message')
+        if (userText) window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: userText, files: files, save: false }, 'user_message')
 
         //const message_id = GenerateId('user_msg')
     }

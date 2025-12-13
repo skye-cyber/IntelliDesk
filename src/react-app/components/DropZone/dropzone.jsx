@@ -239,7 +239,43 @@ export const DropZone = ({ isOpen, onToggle }) => {
             <input
                 multiple
                 className="absolute opacity-0"
-                accept=".txt, .doc, .docx, .rtf, .md, .markdown, .epub, .mobi, .pdf, .png, .jpg, .jpeg, .svg, .gif, .bmp, .py "
+                accept="
+            // Text Documents
+            .txt,.doc,.docx,.rtf,.odt,
+
+            // Markup/Markdown
+            .md,.markdown,.html,.htm,.xml,
+
+            // Ebooks
+            .epub,.mobi,
+
+            // PDF
+            .pdf,
+
+            // Images
+            .png,.jpg,.jpeg,.gif,.bmp,.webp,.svg,.ico,.tiff,
+
+            // Code/Data
+            .py,.js,.jsx,.ts,.tsx,.json,.csv,.yaml,.yml,.toml,.ini,
+
+            // Archives
+            .zip,.tar,.gz,.rar,.7z,
+
+            // Spreadsheets
+            .xls,.xlsx,.ods,.csv,
+
+            // Presentations
+            .ppt,.pptx,.odp,
+
+            // Audio/Video
+            .mp3,.mp4,.wav,.avi,.mov,.flac,.ogg,
+
+            // Scripts/Config
+            .sh,.bash,.zsh,.sql,
+
+            // Design Files
+            .fig,.sketch,.ai,.psd,.xd
+            "
                 type="file"
                 id="fileInput"
             />

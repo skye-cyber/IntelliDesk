@@ -14,6 +14,8 @@ export function prep_user_input(text, options = {}) {
     const filedata = window.filedata || [];
     let userContent = [];
 
+    console.log(filedata)
+
     // Always include text content
     if (text && text.trim()) {
         userContent.push({
@@ -44,7 +46,7 @@ export function prep_user_input(text, options = {}) {
         filedata.forEach(file => MarkasUsed(file))
     }
 
-    const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, filedata: userContent.filter(c => c.type !== "text") }, 'user_message')
+    const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, files: userContent.filter(c => c.type !== "text") }, 'user_message')
 
     window.desk.api.addHistory({ role: "user", content: userContent });
 
@@ -110,6 +112,7 @@ export function validateFiles(filedata, constraints) {
 export function processFilesByType(files) {
     const content = [];
     const filesByType = groupFilesByType(files);
+    console.log(filesByType)
 
     // Handle images
     if (filesByType.image && filesByType.image.length > 0) {
@@ -160,8 +163,9 @@ export function processFilesByType(files) {
 export function groupFilesByType(files) {
     return files.reduce((groups, file) => {
         let type = file.type // Default to document if type missing
-        if (!type && typeof (file.is_image) === 'bolean') {
-            type = file.is_image ? "image" : "document"
+
+        if (type === 'image' || file.is_image) {
+            type = 'image'
         } else {
             type = "document"
         }

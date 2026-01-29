@@ -4,7 +4,7 @@ import indellidesk from '@assets/intellidesk.png';
 import { waitForElement } from '../../../renderer/js/Utils/dom_utils';
 import { ChatOptions } from '@components/Chat/ChatOptions.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
-import { ClosePrefixed } from '../../../renderer/js/react-portal-bridge';
+import { ClosePrefixed } from '../../../renderer/js/PortalBridge';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 import { MessageList } from '../Chat/MessageList';
 

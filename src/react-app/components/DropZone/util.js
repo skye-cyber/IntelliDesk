@@ -1,5 +1,7 @@
 import { waitForElement } from "../../../renderer/js/Utils/dom_utils";
 import { Router } from "../../../renderer/js/managers/router";
+import { modalmanager } from "../../../renderer/js/StatusUIManager/Manager";
+import { staticPortalBridge } from "../../../renderer/js/PortalBridge";
 
 // Update show/hide functions with new animations
 export function showDropZoneModal() {
@@ -85,7 +87,7 @@ export function handleFiles(files) {
         Uploaded += 1;
 
         // Create a list item for the file
-        window.reactPortalBridge.showComponentInTarget('FileItem', 'FilePreview', { file: file, is_image: fileType === 'image' }, "uploade_files")
+        staticPortalBridge.showComponentInTarget('FileItem', 'FilePreview', { file: file, is_image: fileType === 'image' }, "uploade_files")
 
         const reader = new FileReader();
 
@@ -106,16 +108,16 @@ export function handleFiles(files) {
     const model = "mistral-small-latest"
     new Router().change_model(model)
 
-    if (ignored > 0) window.ModalManager.showMessage(` ${ignored} Unsupported ${(ignored > 1) ? "files were" : "file was"} ignored!`, "warning");
+    if (ignored > 0) modalmanager.showMessage(` ${ignored} Unsupported ${(ignored > 1) ? "files were" : "file was"} ignored!`, "warning");
 
     if (Uploaded > 0) {
-        window.ModalManager.showMessage(`${Uploaded} ${(Uploaded > 1) ? "files" : "file"} uploaded successfully`, "success");
+        modalmanager.showMessage(`${Uploaded} ${(Uploaded > 1) ? "files" : "file"} uploaded successfully`, "success");
     } else {
         waitForElement('#EmptyDisplay', (el) => el.classList.remove('hidden'))
     }
 
     setTimeout(() => {
-        window.reactPortalBridge.showComponentInTarget('UploadeFileIndicator', 'userInputContainer', {}, "file_count")
+        staticPortalBridge.showComponentInTarget('UploadeFileIndicator', 'userInputContainer', {}, "file_count")
     }, 1000)
 }
 
@@ -164,9 +166,9 @@ export function submitFilesAndText() {
         suggestions ? suggestions.classList.add('hidden') : '';
     } else {
         if (!imageDataUrl) {
-            window.ModalManager.showMessage("Please select a file!", "warning");
+            modalmanager.showMessage("Please select a file!", "warning");
         } else if (!text) {
-            window.ModalManager.showMessag("Please Enter a prompt relating to the upload", "warn");
+            modalmanager.showMessag("Please Enter a prompt relating to the upload", "warn");
         }
     }
 }

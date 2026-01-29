@@ -292,20 +292,20 @@ app.on('activate', () => {
 
 const SERVICE_NAME = 'com.intellidesk.app'
 
-// IPC handler to save keys
-ipcMain.handle('save-keys', async (event, keys) => {
-    const { mistralKey, huggingfaceKey } = keys;
-    if (mistralKey) {
-        await keytar.setPassword(SERVICE_NAME, 'mistral', mistralKey);
-    }
-    if (huggingfaceKey) {
-        await keytar.setPassword(SERVICE_NAME, 'huggingface', huggingfaceKey);
-    }
+// IPC handler to save keyschains
+ipcMain.handle('save-key-chain', async (event, chain) => {
+    await keytar.setPassword(SERVICE_NAME, 'mistral', chain);
     return { success: true };
 });
 
-// IPC handler for keys reset
-ipcMain.handle('reset-keys', async (event, accounts) => {
+// IPC handler to retrieve keyschains
+ipcMain.handle('get-key-chain', async (event, service = 'mistral') => {
+    const MistralKeyChain = await keytar.getPassword(SERVICE_NAME, service) || null;
+    return { MistralKeyChain }
+});
+
+// IPC handler for keyschains reset
+ipcMain.handle('reset-key-chain', async (event, accounts) => {
     accounts.forEach(async (account) => {
         try {
             await keytar.deletePassword(SERVICE_NAME, account);
@@ -316,18 +316,6 @@ ipcMain.handle('reset-keys', async (event, accounts) => {
     return { success: true };
 });
 
-// IPC handler to retrieve keys
-ipcMain.handle('get-keys', async (event, keyType) => {
-    const mistralKey = await keytar.getPassword(SERVICE_NAME, 'mistral') || null;
-    const huggingfaceKey = await keytar.getPassword(SERVICE_NAME, 'huggingface') || null;
-    if (keyType) {
-        return (keyType === "mistral") ? { mistralKey } : { huggingfaceKey };
-
-    } else {
-        //console.log({ mistralKey, huggingfaceKey })
-        return { mistralKey, huggingfaceKey };
-    }
-});
 
 ipcMain.handle('save-dg-As-PNG', async (event, buffer, path) => {
     try {

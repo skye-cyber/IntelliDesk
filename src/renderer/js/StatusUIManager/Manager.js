@@ -1,4 +1,5 @@
 import { GenerateId } from "../../../react-app/components/ConversationRenderer/utils";
+import { staticPortalBridge } from "../PortalBridge";
 
 export class ModalManager {
     constructor() {
@@ -28,7 +29,7 @@ export class ModalManager {
     ) {
         // Create message container if it doesn't exist
         const messageId = GenerateId(type)
-        this.messagePId = window.reactPortalBridge.showComponentInTarget('Toast', 'messageContainer', { type: type, messageId: messageId, message: message, duration: duration, autoDismiss: autoDismiss }, "toast")
+        this.messagePId = staticPortalBridge.showComponentInTarget('Toast', 'messageContainer', { type: type, messageId: messageId, message: message, duration: duration, autoDismiss: autoDismiss }, "toast")
 
         return this.messagePId;
     }
@@ -50,7 +51,7 @@ export class ModalManager {
 
         // Remove from DOM after animation
         setTimeout(() => {
-            if (this.messagePId) window.reactPortalBridge.closeComponent(this.messagePId)
+            if (this.messagePId) staticPortalBridge.closeComponent(this.messagePId)
         }, 510);
     }
 
@@ -188,7 +189,7 @@ export class ModalManager {
         return new Promise((resolve) => {
             const dialog_id = GenerateId('confirm-dialog');
 
-            this.messagePId = window.reactPortalBridge.showComponentInTarget('ConfirmationDialog', 'ConfirmdialogContainer', { title: title, message: message, dialog_id: dialog_id, resolve: resolve }, "confirm")
+            this.messagePId = staticPortalBridge.showComponentInTarget('ConfirmationDialog', 'confirm-dialog-container', { title: title, message: message, dialog_id: dialog_id, resolve: resolve }, "confirm")
 
         });
     }
@@ -238,7 +239,7 @@ export class ModalManager {
                 ? `
             <button type="button"
             class="text-gray-400 hover:text-gray-600 transition-colors"
-            onclick="window.ModalManager.hideModal('${modalId}')">
+            onclick="ModalManager.hideModal('${modalId}')">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -294,4 +295,4 @@ export class ModalManager {
 
 }
 
-window.ModalManager = new ModalManager()
+export const modalmanager = new ModalManager()

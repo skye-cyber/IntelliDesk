@@ -2,6 +2,7 @@ import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { SettingToggle } from '@components/Settings/toggle.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
+import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
 
 export const Settings = ({ isOpen, onToggle }) => {
     const [preferenceChange, setPreferenceChange] = useState(false);
@@ -31,7 +32,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                 setTheme(savedSettings.data.theme)
                 updateCanvasTheme()
             } catch (error) {
-                window.ModalManager.showMessage(`Failed to load settings: ${error}`, 'error');
+                modalmanager.showMessage(`Failed to load settings: ${error}`, 'error');
             }
         };
         loadSettings();
@@ -140,7 +141,7 @@ export const Settings = ({ isOpen, onToggle }) => {
             await window.desk.api.savePreference(newSettings);
             SuccessModal.success('Your preferences have been saved successfully!');
         } catch (error) {
-            window.ModalManager.showMessage('Failed to save preferences', 'error');
+            modalmanager.showMessage('Failed to save preferences', 'error');
         }
     }, [settings]);
 
@@ -169,7 +170,7 @@ export const Settings = ({ isOpen, onToggle }) => {
         const prefContent = document.getElementById('pref-content');
         const prefContentSection = document.getElementById('prefContentSection')
 
-        const confirmed = await window.ModalManager.confirm("This action cannot be undone", "Delete preferences?")
+        const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete preferences?")
 
         if (!confirmed) return;
 
@@ -186,10 +187,10 @@ export const Settings = ({ isOpen, onToggle }) => {
 
                 SuccessModal.success('Your preferences have been deleted successfully!');
             } else {
-                window.ModalManager.showMessage('Failed to delete preferences', 'error');
+                modalmanager.showMessage('Failed to delete preferences', 'error');
             }
         } catch (error) {
-            window.ModalManager.showMessage(`Failed to delete preferences: ${error.message}`, 'error');
+            modalmanager.showMessage(`Failed to delete preferences: ${error.message}`, 'error');
         }
     }, [settings])
 
@@ -210,7 +211,7 @@ export const Settings = ({ isOpen, onToggle }) => {
             prefContentSection.classList.remove('hidden');
         }
         if (saved) {
-            window.ModalManager.showMessage("Settings updated successfully", 'success')
+            modalmanager.showMessage("Settings updated successfully", 'success')
         }
     })
 
@@ -253,7 +254,7 @@ export const Settings = ({ isOpen, onToggle }) => {
     })
 
     const handleResetSettings = useCallback(async () => {
-        const confirmed = await window.ModalManager.confirm("This action cannot be undone", "Delete preferences?");
+        const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete preferences?");
         if (!confirmed) return;
 
         try {
@@ -272,7 +273,7 @@ export const Settings = ({ isOpen, onToggle }) => {
             await window.desk.api.savePreference(newSettings);
             SuccessModal.success('Your preferences have been deleted successfully!');
         } catch (error) {
-            window.ModalManager.showMessage('Failed to delete preferences', 'error');
+            modalmanager.showMessage('Failed to delete preferences', 'error');
         }
     }, [settings])
 

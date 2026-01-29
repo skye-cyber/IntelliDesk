@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { CloseDropZone, openPreview, closePreview, handleFiles, formatFileSize, getFileType } from './util.js'
 import { MistraMultimodal } from '../../../renderer/js/managers/ConversationManager/Mistral/MultiModal.js';
+import { staticPortalBridge } from '../../../renderer/js/PortalBridge.js';
 
 export const DropZone = ({ isOpen, onToggle }) => {
 
@@ -363,7 +364,7 @@ export const FileItem = ({ file, portal_id }) => {
         window.filedata = window.filedata.filter(file => file.name !== name);
 
         // Close the portal component
-        window.reactPortalBridge.closeComponent(portal_id);
+        staticPortalBridge.closeComponent(portal_id);
     }, []);
 
     return (

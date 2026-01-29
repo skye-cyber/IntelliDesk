@@ -1,0 +1,195 @@
+const os = require('os');
+const path = require('path');
+const fs = require('fs');
+
+
+/**
+ * Manage Agent mode configuration for tool use etc
+ */
+class AgentConfigManager {
+    constructor() {
+        this.config_file = path.join(os.homedir(), '.IntelliDesk/.config/agent_mode_config.json')
+
+        this.default_config = {
+            tool_paths: [],
+            mcp_servers: [],
+            enabled_tools: [],
+            disabled_tools: [],
+            skill_paths: [],
+            tools: {
+                bash: {
+                    permission: "always",
+                    max_output_bytes: 16000,
+                    default_timeout: 30,
+                    allowlist: [
+                        "echo",
+                        "find",
+                        "git diff",
+                        "git log",
+                        "git status",
+                        "tree",
+                        "whoami",
+                        "cat",
+                        "file",
+                        "head",
+                        "ls",
+                        "pwd",
+                        "stat",
+                        "tail",
+                        "uname",
+                        "wc",
+                        "which"
+                    ],
+                    denylist: [
+                        "gdb",
+                        "pdb",
+                        "passwd",
+                        "nano",
+                        "vim",
+                        "vi",
+                        "emacs",
+                        "bash -i",
+                        "sh -i",
+                        "zsh -i",
+                        "fish -i",
+                        "dash -i",
+                        "screen",
+                        "tmux"
+                    ],
+                    denylist_standalone: [
+                        "python",
+                        "python3",
+                        "ipython",
+                        "bash",
+                        "sh",
+                        "nohup",
+                        "vi",
+                        "vim",
+                        "emacs",
+                        "nano",
+                        "su"
+                    ],
+                },
+                grep: {
+                    permission: "always",
+                    allowlist: [],
+                    denylist: [],
+                    max_output_bytes: 64000,
+                    default_max_matches: 100,
+                    default_timeout: 60,
+                    exclude_patterns: [
+                        ".venv/",
+                        "venv/",
+                        ".env/",
+                        "env/",
+                        "node_modules/",
+                        ".git/",
+                        "__pycache__/",
+                        ".pytest_cache/",
+                        ".mypy_cache/",
+                        ".tox/",
+                        ".nox/",
+                        ".coverage/",
+                        "htmlcov/",
+                        "dist/",
+                        "build/",
+                        ".idea/",
+                        ".vscode/",
+                        "*.egg-info",
+                        "*.pyc",
+                        "*.pyo",
+                        "*.pyd",
+                        ".DS_Store",
+                        "Thumbs.db"
+                    ],
+                    codeignore_file: ".intellideskignore"
+                },
+                search_replace: {
+                    permission: "always",
+                    allowlist: [],
+                    denylist: [],
+                    max_content_size: 100000,
+                    create_backup: false,
+                    fuzzy_threshold: 0.9
+                },
+                todo: {
+                    permission: "always",
+                    allowlist: [],
+                    denylist: [],
+                    max_todos: 100
+                },
+                write_file: {
+                    permission: "always",
+                    allowlist: [],
+                    denylist: [],
+                    max_write_bytes: 64000,
+                    create_parent_dirs: true
+                },
+                read_file: {
+                    permission: "always",
+                    allowlist: [],
+                    denylist: [],
+                    max_read_bytes: 64000,
+                    max_state_history: 10
+                }
+            },
+        }
+        this.config = this.default_config
+    }
+    /**
+     * @param {JSON} config New config
+     * @returns  {this} this
+     */
+    set_config(config) {
+        let new_config = config
+
+        if (typeof config === 'string') {
+            new_config = JSON.parse(config)
+        } else if (typeof config === 'json') {
+            new_config = config
+        }
+        if (!new_config) return this
+
+        this.config = new_config
+
+        return this
+    }
+    /**
+     * Check if local config file exist and create it in not
+     */
+    check_local_config() {
+        if (!fs.statfsSync(this.config_file)) {
+            return this.write_config()
+        }
+        return true
+    }
+    get_config() {
+        const config = this.read_config()
+        return JSON.parse(config)
+    }
+    write_config() {
+        fs.writeFile(this.config_file, JSON.stringify(this.config), (err) => {
+            console.log("Error writing to local config:", err)
+            return false
+        })
+        return True
+    }
+    update_local_config() {
+        const local_config = this.get_config()
+        if (local_config !== this.config) {
+            return this.write_config()
+        }
+        return true
+    }
+    read_config() {
+        this.check_local_config()
+        return fs.readFile(this.config_file)
+    }
+    validate_config() {
+        //
+    }
+}
+
+const agent = new AgentConfigManager()
+
+module.exports = { agent }

@@ -1,9 +1,11 @@
 import { ConversationLoader } from './ConversationLoader.js'
-import { ClosePrefixed } from '../../react-portal-bridge.js';
+import { ClosePrefixed, staticPortalBridge } from '../../PortalBridge';
+import { modalmanager } from '../../StatusUIManager/Manager.js';
+import { StateManager } from '../StatesManager.js';
 
 async function ChatsCheck() {
     let files = await window.desk.api.readDir(window.desk.api.joinPath(window.desk.api.home_dir(), '.IntelliDesk/.store'));
-    (files.length > 0) ? window.StateManager.set('chatsExist', true) : window.StateManager.set('chatsExist', false)
+    (files.length > 0) ? StateManager.set('chatsExist', true) : StateManager.set('chatsExist', false)
     files = null
 }
 ChatsCheck()
@@ -57,7 +59,7 @@ export class ChatManager {
                 // Define the colors you want to cycle through//
 
                 // close
-                window.reactPortalBridge.closeComponent('chatItem', true)
+                staticPortalBridge.closeComponent('chatItem', true)
 
                 // sort files for time-based display
                 //files = files.sort((a, b) => this.sortFn(a) - this.sortFn(b))
@@ -82,10 +84,10 @@ export class ChatManager {
                         // Date split
                         const datestr = this.dateStrDisplay(metadata.updated_at)
                         //console.log(datestr?.split('/')[1], this.splitstr?.split('/')[1])
-                        if (datestr && datestr !== this.splitstr ) window.reactPortalBridge.showComponentInTarget('DateSplit', 'conversations', { displaystr: datestr }, 'chatItem')
+                        if (datestr && datestr !== this.splitstr ) staticPortalBridge.showComponentInTarget('DateSplit', 'conversations', { displaystr: datestr }, 'chatItem')
                         this.splitstr = datestr
 
-                        window.reactPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata }, 'chatItem')
+                        staticPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata }, 'chatItem')
 
                         document.dispatchEvent(new CustomEvent('hide-loading'));
 
@@ -380,11 +382,11 @@ export class ChatManager {
                 conversationData = null;
                 model = null;
             } else {
-                window.ModalManager.showMessage(`Conversation ${conversationId} not found.`, 'warning');
+                modalmanager.showMessage(`Conversation ${conversationId} not found.`, 'warning');
             }
         } catch (error) {
             console.error('Error loading conversation:', error);
-            window.ModalManager.showMessage('Failed to load conversation', 'error');
+            modalmanager.showMessage('Failed to load conversation', 'error');
         } finally {
             // Always hide the loading modal
             await this.hideLoadingModal();

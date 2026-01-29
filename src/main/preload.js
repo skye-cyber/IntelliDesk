@@ -5,6 +5,7 @@ const os = require('os');
 const { Buffer } = require('node:buffer');
 const { command } = require('./system.js')
 const { getformatDateTime } = require('./utils.js');
+const { agent } = require('./config.js')
 
 let ConversationId = "";
 
@@ -622,15 +623,21 @@ const api = {
 };
 
 const api2 = {
+    // Deprecated key apis
     saveKeys: async (keys) => ipcRenderer.invoke('save-keys', keys),
     getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),
     resetKeys: async (accounts) => ipcRenderer.invoke('reset-keys', accounts),
+
+    // Key chain apis
+    saveKeyChain: async (keychain) => ipcRenderer.invoke('save-key-chain', keychain),
+    getKeyChain: async (account = 'mistral') => ipcRenderer.invoke('get-key-chain', account),
+    resetKeyChain: async (accounts) => ipcRenderer.invoke('reset-key-chain', accounts),
+
     appVersion: async () => ipcRenderer.invoke('get-app-version',),
     appIsDev: async () => ipcRenderer.invoke('get-dev-status',),
 
     // Chat functionality
-    sendChatMessage: (message, model, options) =>
-        ipcRenderer.invoke('send-chat-message', { message, model, options }),
+    sendChatMessage: (message, model, options) => ipcRenderer.invoke('send-chat-message', { message, model, options }),
 
     // File dialogs
     showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
@@ -680,7 +687,8 @@ const api2 = {
 
 contextBridge.exposeInMainWorld('desk', {
     api,
-    api2
+    api2,
+    agent
 });
 
 document.addEventListener('DOMContentLoaded', function() {

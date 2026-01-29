@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { ChatManager } from '@js/managers/ConversationManager/ChatManager';
+import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
+import { staticPortalBridge } from '../../../renderer/js/PortalBridge';
 
 const Manager = new ChatManager()
 
 export const ChatOptions = ({ isOpen, onToggle }) => {
 
     const confirmDeletion = useCallback(async () => {
-        const confirmed = await window.ModalManager.confirm("Are you sure you want to delete this item?", "Confirm Deletion")
+        const confirmed = await modalmanager.confirm("Are you sure you want to delete this item?", "Confirm Deletion")
         if (confirmed) {
             const overlay = document.getElementById('chatOptions-overlay');
             const currentConversationId = overlay.dataset.id
@@ -14,9 +16,9 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
 
             Manager.currentConversationId = currentConversationId
             if (Manager.DeleteConversation(currentConversationId)) {
-                window.reactPortalBridge.closeComponent(potalId)
+                staticPortalBridge.closeComponent(potalId)
             }
-            window.ModalManager.showMessage('File deleted successfully!', 'success')
+            modalmanager.showMessage('File deleted successfully!', 'success')
         }
     })
 
@@ -54,7 +56,7 @@ export const ChatOptions = ({ isOpen, onToggle }) => {
 
         if (Manager.RenameConversation(newName, currentConversationId)) {
             document.querySelector(`[data-id^="${currentConversationId}"]`).dataset.name = newName
-            window.ModalManager.showMessage('File renamed successfully!', 'success')
+            modalmanager.showMessage('File renamed successfully!', 'success')
         }
         hideRenameModal()
     })

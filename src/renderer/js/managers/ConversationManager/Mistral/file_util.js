@@ -1,3 +1,5 @@
+import { staticPortalBridge } from "../../../PortalBridge";
+
 /**
  * Prepares user input content with file attachments
  * @param {string} text - The user's text message
@@ -46,7 +48,7 @@ export function prep_user_input(text, options = {}) {
         filedata.forEach(file => MarkasUsed(file))
     }
 
-    const user_message_portal = window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, files: userContent.filter(c => c.type !== "text") }, 'user_message')
+    const user_message_portal = staticPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, files: userContent.filter(c => c.type !== "text") }, 'user_message')
 
     window.desk.api.addHistory({ role: "user", content: userContent });
 

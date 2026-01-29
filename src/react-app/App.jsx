@@ -29,7 +29,7 @@ import '@js/ChatExport/export';
 import '@js/Utils/keyshortcuts';
 import { StaticPortalContainer } from './StaticPortalContainer';
 import { StreamingPortalContainer } from './StreamingPortalContainer';
-import '../renderer/js/react-portal-bridge';
+import '../renderer/js/PortalBridge';
 import './PortalTargetRegister';
 
 const App = () => {

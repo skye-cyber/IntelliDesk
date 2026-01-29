@@ -2,11 +2,12 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { toJpeg } from 'html-to-image';
 import { saveAs } from 'file-saver';
+import { modalmanager } from '../StatusUIManager/Manager';
 
 export async function HTML2Word(event, selector) {
     event.preventDefault();
 
-    window.ModalManager.startLoader("Exporting message to word...")
+    modalmanager.startLoader("Exporting message to word...")
     const par = getParents(event);
     toggleExportOptions(par, true, true);
     const element = document.querySelector(selector);
@@ -24,7 +25,7 @@ export async function HTML2Word(event, selector) {
             const docx = await htmlToDocx(element.outerHTML);
             saveAs(docx, 'output.docx');
         } catch (err) {
-            window.ModalManager.hideLoader()
+            modalmanager.hideLoader()
             console.error('Error creating Word document:', err);
             // Fallback to plain text
             exportAsPlainText(element);
@@ -32,7 +33,7 @@ export async function HTML2Word(event, selector) {
     } else {
         console.error('Element not found for the given selector:', selector);
     }
-    window.ModalManager.hideLoader()
+    modalmanager.hideLoader()
 }
 
 
@@ -68,7 +69,7 @@ function exportAsPlainText(element) {
 
 export function HTML2Pdf(event, selector) {
     event.preventDefault(); // Prevent the default action of the anchor tag
-    window.ModalManager.startLoader("Exporting message to pdf...")
+    modalmanager.startLoader("Exporting message to pdf...")
 
     const par = getParents(event);
     toggleExportOptions(par, true, true); // Hide export options
@@ -105,19 +106,19 @@ export function HTML2Pdf(event, selector) {
 
             pdf.save('output.pdf');
         }).catch((err) => {
-            window.ModalManager.hideLoader()
+            modalmanager.hideLoader()
             console.error('Error creating PDF:', err);
         });
     } else {
         console.error('Element not found for the given selector:', selector);
     }
-    window.ModalManager.hideLoader()
+    modalmanager.hideLoader()
 }
 
 export function HTML2Jpg(event, selector) {
     event.preventDefault();
 
-    window.ModalManager.startLoader("Exporting message to jpg...")
+    modalmanager.startLoader("Exporting message to jpg...")
 
     const par = getParents(event);
     toggleExportOptions(par, true, true);
@@ -151,11 +152,11 @@ export function HTML2Jpg(event, selector) {
         })
         .catch((error) => {
             console.error('Error creating image:', error);
-            window.ModalManager.hideLoader()
+            modalmanager.hideLoader()
 
         });
 
-        window.ModalManager.hideLoader()
+        modalmanager.hideLoader()
 
 }
 

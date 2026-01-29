@@ -1,7 +1,9 @@
 import { waitForElement } from "../../Utils/dom_utils";
 import { ChatUtil } from "./util";
 import { ChatDisplay } from "./util";
-import { ClosePrefixed } from "../../react-portal-bridge";
+import { ClosePrefixed } from "../../PortalBridge";
+import { modalmanager } from "../../StatusUIManager/Manager";
+import { staticPortalBridge } from "../../PortalBridge";
 
 export class ConversationLoader {
     constructor(storagePath) {
@@ -86,7 +88,7 @@ export class ConversationLoader {
             this.chatutil.render_math()
         } catch (err) {
             console.log(err)
-            window.ModalManager.showMessage('Failed to load conversation', 'error');
+            modalmanager.showMessage('Failed to load conversation', 'error');
         }
     }
 
@@ -159,7 +161,7 @@ export class ConversationLoader {
             userText = content
         }
 
-        if (userText) window.reactPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: userText, files: files, save: false }, 'user_message')
+        if (userText) staticPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: userText, files: files, save: false }, 'user_message')
 
         //const message_id = GenerateId('user_msg')
     }
@@ -181,7 +183,7 @@ export class ConversationLoader {
         } else {
             actualResponse = content;
         }
-        window.reactPortalBridge.showComponentInTarget('AiMessage', 'chatArea', { actual_response: actualResponse, isThinking: false, think_content: thinkContent }, 'ai_message');
+        staticPortalBridge.showComponentInTarget('AiMessage', 'chatArea', { actual_response: actualResponse, isThinking: false, think_content: thinkContent }, 'ai_message');
     }
 }
 

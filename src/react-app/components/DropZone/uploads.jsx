@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import { staticPortalBridge } from "../../../renderer/js/PortalBridge";
 
 export const UploadeFileIndicator = ({ portal_id }) => {
 
@@ -6,8 +7,8 @@ export const UploadeFileIndicator = ({ portal_id }) => {
         // Filter out files whose name matches the given name
         window.filedata = []
         // Close the portal component
-        window.reactPortalBridge.closeComponent('uploade_files', true);
-        window.reactPortalBridge.closeComponent(portal_id);
+        staticPortalBridge.closeComponent('uploade_files', true);
+        staticPortalBridge.closeComponent(portal_id);
 
     }, []);
 

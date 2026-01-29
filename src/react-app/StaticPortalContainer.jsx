@@ -7,9 +7,9 @@ import { FileItem } from './components/DropZone/dropzone';
 import { UploadeFileIndicator } from './components/DropZone/uploads';
 import { LoadingAnimation } from './components/StatusUI/StatusUI';
 import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
-import { Toast } from './components/StatusUI/actionToastsUI';
 import { ConfirmationDialog } from './components/StatusUI/confirmDialog';
 import { DateSplit } from './components/Chat/datesplit';
+import { Toast } from './components/StatusUI/ToastsUI';
 
 const componentRegistry = {
     Diagram,

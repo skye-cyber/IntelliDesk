@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { GenerateId } from '../ConversationRenderer/utils';
+import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
+import { staticPortalBridge } from '../../../renderer/js/PortalBridge';
 
 const typeConfig = {
     success: {
@@ -8,6 +10,7 @@ const typeConfig = {
         iconBg: 'bg-gradient-to-br from-green-500 to-emerald-600',
         textColor: 'text-gray-900 dark:text-white',
         progress: 'bg-gradient-to-r from-green-500 to-emerald-500',
+        closeBtn: 'bg-[#00aa7f]/20 dark:bg-[#005039]'
     },
     error: {
         gradient: 'from-red-500 to-rose-500',
@@ -15,6 +18,7 @@ const typeConfig = {
         iconBg: 'bg-gradient-to-br from-red-500 to-rose-600',
         textColor: 'text-gray-900 dark:text-white',
         progress: 'bg-gradient-to-r from-red-500 to-rose-500',
+        closeBtn: 'bg-[#ff0000]/20 dark:bg-[#550000]'
     },
     warning: {
         gradient: 'from-amber-500 to-orange-500',
@@ -22,6 +26,7 @@ const typeConfig = {
         iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600',
         textColor: 'text-gray-900 dark:text-white',
         progress: 'bg-gradient-to-r from-amber-500 to-orange-500',
+        closeBtn: 'bg-[#ffaa00]/20 dark:bg-[#634200]'
     },
     info: {
         gradient: 'from-blue-500 to-cyan-500',
@@ -29,6 +34,7 @@ const typeConfig = {
         iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-600',
         textColor: 'text-gray-900 dark:text-white',
         progress: 'bg-gradient-to-r from-blue-500 to-cyan-500',
+        closeBtn: 'bg-[#55aaff]/20 dark:bg-[#002368]'
     }
 };
 
@@ -52,9 +58,15 @@ export const Toast = ({ type, message, messageId, duration = null, autoDismiss =
         if (!shown) {
             fadeIn()
         }
+
+        setInterval(() => {
+            if (!duration || duration < 1000) return clearInterval()
+            duration = duration - 1000
+        }, 1000)
+
         if (autoDismiss && duration) {
             setdismissTimer(setTimeout(() => {
-                if (!portal_id) return window.ModalManager.dismissMessage(messageId)
+                if (!portal_id) return modalmanager.dismissMessage(messageId)
                 closePortal()
             }, duration))
         }
@@ -70,23 +82,24 @@ export const Toast = ({ type, message, messageId, duration = null, autoDismiss =
                 portalRef.current?.classList?.add("opacity-0", "translate-x-full", "scale-95");
 
                 setTimeout(() => {
-                    window.reactPortalBridge.closeComponent(portal_id)
+                    staticPortalBridge.closeComponent(portal_id)
                 }, 510);
             }
         } else {
-            window.ModalManager.dismissMessage(messageId)
+            modalmanager.dismissMessage(messageId)
         }
     })
 
     return (
-        <div id={messageId}
+        <div
+            id={messageId}
             ref={portalRef}
             data-pid={portal_id}
             dismisstimer={dismissTimer}
-            className="message-toast transform transition-all duration-500 ease-in-out opacity-0 translate-x-full backdrop-blur-lg"
+            className="message-toast transform transition-all duration-500 ease-in-out opacity-0 translate-x-full backdrop-blur-lg mb-2"
             data-message-id={messageId}
             data-auto-dismiss={autoDismiss}>
-            <div className="relative bg-white/95 dark:bg-primary-800/95 border border-secondary-400/50 dark:border-accent-200/50 rounded-2xl shadow-2xl p-5 overflow-hidden backdrop-blur-lg">
+            <div className={`relative bg-white/95 ${type === 'success' ? 'dark:bg-[#28783a]/95' : type === 'info' ? 'dark:bg-[#002d87]/95' : type === 'warning' ? 'dark:bg-[#986500]/95' : 'dark:bg-[#830000]/95'} border border-secondary-400/50 dark:border-accent-200/50 rounded-2xl shadow-2xl p-5 overflow-hidden backdrop-blur-lg`}>
                 {/* Animated gradient background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${typeConfig[type].gradient} opacity-5`}></div>
 
@@ -105,15 +118,16 @@ export const Toast = ({ type, message, messageId, duration = null, autoDismiss =
                     </div>
 
                     {/* Message Text */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 font-handwriting">
                         <p className={`text-base font-semibold ${typeConfig[type].textColor} leading-relaxed tracking-tight`}>
-                            {message}
+                            {String(message)}
                         </p>
                     </div>
 
                     {/* Close Button */}
-                    <button type="button"
-                        className="ml-4 flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-primary-800 hover:bg-gray-200 dark:hover:bg-primary-700 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 hover:rotate-90 group"
+                    <button
+                        type="button"
+                        className={`ml-4 flex-shrink-0 w-8 h-8 ${typeConfig[type].closeBtn} hover:bg-gray-200 dark:hover:bg-primary-700 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 hover:rotate-90 group`}
                         onClick={closePortal}>
                         <svg className="w-4 h-4 text-gray-700 dark:text-gray-200 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors stroke-current dark:stroke-primary-200" fill="none" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -163,3 +177,68 @@ export const StatusSVG = ({ status }) => {
     }
 }
 
+export const CopyFeedback = ({ text = {
+    head: 'Copied to clipboard',
+    body: 'Ready to paste anywhere'
+} }) => {
+
+    const modalRef = useRef(null)
+    const titleRef = useRef(null)
+
+    // Function to show the modal
+    const showFeedback = useCallback(() => {
+        // Slide modal to 20% height and make it visible after 1 second
+        setTimeout(() => {
+            modalRef.current.classList.add('top-1/5', 'opacity-100', 'pointer-events-auto');
+        }, 500); // 1 second delay
+
+        // Slide modal to the left and fade out after 4 seconds
+        setTimeout(() => {
+            modalRef.current.classList.remove('top-1/5', 'left-1/2', '-translate-x-1/2');
+            modalRef.current.classList.add('left-0', '-translate-x-[100vw]', 'opacity-0', 'pointer-events-none');
+
+        }, 4000);
+
+        // Reset transform after fully fading out and moving off-screen
+        setTimeout(() => {
+            modalRef.current.classList.remove('left-0', '-translate-x-[100vw]', 'opacity-0', 'pointer-events-none');
+            modalRef.current.classList.add('top-0', 'left-1/2', '-translate-x-1/2', 'pointer-events-none');
+        }, 1000); // 1s for fade out
+    })
+
+    useEffect(() => {
+        document.addEventListener('show-copy-feedback', showFeedback)
+        return () => {
+            document.removeEventListener('show-copy-feedback', showFeedback)
+        }
+    })
+
+    return (
+        <div ref={modalRef} id="copyModal" className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 opacity-0 pointer-events-none transition-all duration-500 ease-in-out">
+            <div className="bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 border border-gray-200/60 dark:border-slate-600/50 rounded-2xl shadow-2xl shadow-black/20 backdrop-blur-xl p-4 min-w-[280px]">
+                {/* Animated Success Icon */}
+                <div className="flex items-center justify-center space-x-3">
+                    <div className="relative">
+                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        {/* Pulse Ring */}
+                        <div className="absolute inset-0 border-2 border-emerald-400/30 rounded-full animate-ping-slow"></div>
+                    </div>
+
+                    <div className="text-left">
+                        <p ref={titleRef} id="copy-title" className="font-semibold text-gray-900 dark:text-white text-sm">{text.head}</p>
+                        <p id="copy-body" className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{text.body}</p>
+                    </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div id="copy-progress" className="mt-3 h-0.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-emerald-400 to-green-500 animate-progress"></div>
+                </div>
+            </div>
+        </div>
+    )
+};

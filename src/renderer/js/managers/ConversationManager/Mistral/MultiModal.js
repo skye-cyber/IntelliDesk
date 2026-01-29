@@ -1,4 +1,5 @@
-import { Mistarlclient, mistral, appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
+import { appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
+import { clientmanager } from "./ClientManager";
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
 import { GenerateId } from "../../../../../react-app/components/ConversationRenderer/utils";
@@ -9,6 +10,7 @@ import errorHandler from "../../../../../react-app/components/ErrorHandler/Error
 import { prep_user_input } from "./file_util";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
 import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
+import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge";
 
 let ai_ms_pid
 
@@ -25,11 +27,11 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     const export_id = GenerateId('export')
     const fold_id = GenerateId('fold')
 
-    const loader_id = window.reactPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea', {}, "loader")
+    const loader_id = staticPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea', {}, "loader")
 
     StateManager.set('loader-element-id', loader_id)
 
-    let message_portal = window.streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
+    let message_portal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
 
     // This shall be for errors
     ai_ms_pid = message_portal
@@ -46,7 +48,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
 
     try {
         const stream = //generateTextChunks(text)
-            await mistral.client.chat.stream({
+            await clientmanager.MistralClient.client.chat.stream({
                 model: model_name,
                 messages: window.desk.api.getHistory(true),
                 max_tokens: 3000,
@@ -157,7 +159,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
                 if (first_run) {
                     rawDelta = "<continued>"
                     // Remove user message from interface
-                    window.reactPortalBridge.closeComponent(user_message_portal)
+                    staticPortalBridge.closeComponent(user_message_portal)
                     first_run = false
                 }
                 continued = true
@@ -166,12 +168,12 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
 
                 // th now created portal and resuse the previous
                 if (target_message_portal) {
-                    window.streamingPortalBridge.closeStreamingPortal(message_portal)
+                    streamingPortalBridge.closeStreamingPortal(message_portal)
                 } else {
                     target_message_portal = message_portal
                 }
 
-                window.streamingPortalBridge.appendToStreamingPortal(target_message_portal, {
+                streamingPortalBridge.appendToStreamingPortal(target_message_portal, {
                     actual_response: rawDelta,
                     isThinking: isThinking,
                     think_content: thinkContent,
@@ -196,7 +198,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
                         }
                     });
             } else {
-                window.streamingPortalBridge.updateStreamingPortal(message_portal, {
+                streamingPortalBridge.updateStreamingPortal(message_portal, {
                     actual_response: actualResponse,
                     isThinking: isThinking,
                     think_content: thinkContent,
@@ -265,7 +267,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         }
         setTimeout(() => { leftalinemath() }, 1000)
 
-        window.reactPortalBridge.closeComponent(loader_id)
+        staticPortalBridge.closeComponent(loader_id)
 
         if (await appIsDev()) errorHandler.resetRetryCount()
 
@@ -273,9 +275,9 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
         HandleProcessingEventChanges("hide")
         window.desk.api.popHistory('user')
 
-        window.reactPortalBridge.closeComponent(StateManager.get('user_message_portal'))
-        window.streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
-        window.reactPortalBridge.closeComponent(StateManager.get('loader-element-id'))
+        staticPortalBridge.closeComponent(StateManager.get('user_message_portal'))
+        streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
+        staticPortalBridge.closeComponent(StateManager.get('loader-element-id'))
 
         await appIsDev()
             ? handleDevErrors(error, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'), text, true)

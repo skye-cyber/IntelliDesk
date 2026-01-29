@@ -1,5 +1,3 @@
-import { Mistral } from "@mistralai/mistralai";
-
 export class MistralIntegration {
     constructor(apiKey) {
         this.client = new Mistral({ apiKey: apiKey });
@@ -45,6 +43,34 @@ export class MistralIntegration {
                             }
                         },
                         required: ["query"]
+                    }
+                }
+            },
+            run_command: {
+                type: "function",
+                function: {
+                    name: "bash",
+                    description: "Run a one-off bash command and capture its output.",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            command: {
+                                type: "string"
+                            },
+                            timeout: {
+                                anyOf: [
+                                    {
+                                        type: "integer"
+                                    },
+                                    {
+                                        type: "null"
+                                    }
+                                ],
+                                default: null,
+                                description: "Override the default command timeout."
+                            }
+                        },
+                        required: ["command"]
                     }
                 }
             },
@@ -115,6 +141,201 @@ export class MistralIntegration {
                             }
                         },
                         required: ["operation", "path"]
+                    }
+                }
+            },
+            grep: {
+                type: "function",
+                function: {
+                    name: "grep",
+                    description: "Recursively search files for a regex pattern using ripgrep (rg) or grep. Respects .gitignore and .codeignore files by default when using ripgrep.",
+                    parameters: {
+                        properties: {
+                            type: "object",
+                            pattern: {
+                                type: "string"
+                            },
+                            path: {
+                                default: ".",
+                                type: "string"
+                            },
+                            max_matches: {
+                                anyOf: [
+                                    {
+                                        type: "integer"
+                                    },
+                                    {
+                                        type: "null"
+                                    }
+                                ],
+                                default: null,
+                                description: "Override the default maximum number of matches."
+                            },
+                            use_default_ignore: {
+                                default: true,
+                                description: "Whether to respect .gitignore and .ignore files.",
+                                type: "boolean"
+                            }
+                        },
+                        required: ["pattern"],
+                    }
+                }
+            },
+            search_replace: {
+                type: "function",
+                function: {
+                    name: "search_replace",
+                    description: "Replace sections of files using SEARCH/REPLACE blocks. Supports fuzzy matching and detailed error reporting. Format: <<<<<<< SEARCH\\n[text]\\n=======\\n[replacement]\\n>>>>>>> REPLACE",
+                    parameters: {
+                        properties: {
+                            "file_path": {
+                                type: "string"
+                            },
+                            content: {
+                                type: "string"
+                            }
+                        },
+                        required: [
+                            "file_path",
+                            "content"
+                        ],
+                        type: "object"
+                    }
+                }
+            },
+            todo: {
+                type: "function",
+                function: {
+                    name: "todo",
+                    description: "Manage todos. Use action='read' to view, action='write' with complete list to update.",
+                    parameters: {
+                        $defs: {
+                            TodoItem: {
+                                properties: {
+                                    id: {
+                                        type: "string"
+                                    },
+                                    content: {
+                                        type: "string"
+                                    },
+                                    status: {
+                                        $ref: "#/$defs/TodoStatus",
+                                        default: "pending"
+                                    },
+                                    priority: {
+                                        $ref: "#/$defs/TodoPriority",
+                                        default: "medium"
+                                    }
+                                },
+                                required: [
+                                    "id",
+                                    "content"
+                                ],
+                                type: "object"
+                            },
+                            TodoPriority: {
+                                enum: [
+                                    "low",
+                                    "medium",
+                                    "high"
+                                ],
+                                type: "string"
+                            },
+                            TodoStatus: {
+                                enum: [
+                                    "pending",
+                                    "in_progress",
+                                    "completed",
+                                    "cancelled"
+                                ],
+                                type: "string"
+                            }
+                        },
+                        properties: {
+                            action: {
+                                description: "Either 'read' or 'write'",
+                                type: "string"
+                            },
+                            todos: {
+                                anyOf: [
+                                    {
+                                        "items": {
+                                            $ref: "#/$defs/TodoItem"
+                                        },
+                                        type: "array"
+                                    },
+                                    {
+                                        type: "null"
+                                    }
+                                ],
+                                default: null,
+                                description: "Complete list of todos when writing."
+                            }
+                        },
+                        required: [
+                            "action"
+                        ],
+                        type: "object"
+                    }
+                }
+            },
+            write_file: {
+                type: "function",
+                function: {
+                    name: "write_file",
+                    description: "Create or overwrite a UTF-8 file. Fails if file exists unless 'overwrite=True'.",
+                    parameters: {
+                        properties: {
+                            "path": {
+                                type: "string"
+                            },
+                            content: {
+                                type: "string"
+                            },
+                            "overwrite": {
+                                default: false,
+                                description: "Must be set to true to overwrite an existing file.",
+                                type: "boolean"
+                            }
+                        },
+                        required: [
+                            "path",
+                            "content"
+                        ],
+                        type: "object"
+                    }
+                }
+            },
+            read_file: {
+                type: "function",
+                function: {
+                    name: "read_file",
+                    description: "Read a UTF-8 file, returning content from a specific line range. Reading is capped by a byte limit for safety.",
+                    parameters: {
+                        properties: {
+                            type: "object",
+                            "path": { type: "string" },
+                            "offset": {
+                                default: 0,
+                                description: "Line number to start reading from (0-indexed, inclusive).",
+                                type: "integer"
+                            },
+                            "limit": {
+                                anyOf: [
+                                    {
+                                        type: "integer"
+                                    },
+                                    {
+                                        type: "null"
+                                    }
+                                ],
+                                default: null,
+                                description: "Maximum number of lines to read."
+                            }
+                        },
+                        required: [
+                            "path"
+                        ]
                     }
                 }
             }

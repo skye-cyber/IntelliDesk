@@ -1,4 +1,5 @@
 import { waitForElement } from "../Utils/dom_utils";
+import { modalmanager } from "../StatusUIManager/Manager";
 
 let diagToggle;
 let diagView;
@@ -37,7 +38,7 @@ export function closediagViewModal() {
 export async function exportSvgToPng(svgElementId, outputFileName = `${svgElementId}.png`) {
     let button_content = null
     let export_button = document.querySelector(`[data-value^=${svgElementId}]`)
-    if (export_button) button_content = window.ModalManager.showLoading(export_button, 'exporting')
+    if (export_button) button_content = modalmanager.showLoading(export_button, 'exporting')
 
     try {
 
@@ -106,18 +107,18 @@ export async function exportSvgToPng(svgElementId, outputFileName = `${svgElemen
 
         // Show success modal on success
         if (result === true) {
-            window.ModalManager.showMessage(`Export successful: name=${outputFileName}`, 'success');
+            modalmanager.showMessage(`Export successful: name=${outputFileName}`, 'success');
 
         } else {
-            window.ModalManager.showMessage('Error saving image', 'error');
+            modalmanager.showMessage('Error saving image', 'error');
         }
     } catch (err) {
         console.error(err);
-        window.ModalManager.showMessage(err, 'error');
+        modalmanager.showMessage(err, 'error');
     }
     finally {
-        //window.ModalManager.hideLoader()
-        if (export_button) window.ModalManager.hideLoading(export_button, button_content)
+        //modalmanager.hideLoader()
+        if (export_button) modalmanager.hideLoading(export_button, button_content)
     }
 }
 

@@ -154,6 +154,7 @@ module.exports = {
             'bounce-600': 'bounce 0.5s 600ms infinite',
             'heartpulse': 'heartpulse 1s infinite',
             'heartpulse-slow': 'heartpulse-slow 1s infinite',
+            'heartpulse-super': 'heartpulse-super 1.2s infinite',
             'spin-50': 'spin 0.5s linear infinite',
             'spin': 'spin 1s linear infinite',
             'reload-100': 'spin 1s linear infinite',
@@ -188,6 +189,11 @@ module.exports = {
             'heartpulse-slow': {
                 '0%': { transform: 'scale(1)' },
                 '50%': { transform: 'scale(1.05)' },
+                '100%': { transform: 'scale(1)' },
+            },
+            'heartpulse-super': {
+                '0%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.4)' },
                 '100%': { transform: 'scale(1)' },
             },
             spin: {

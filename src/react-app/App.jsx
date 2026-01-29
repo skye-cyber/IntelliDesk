@@ -14,9 +14,9 @@ import '@js/Timer/timer.js'
 import { DiagramUi } from '@components/DiagramUI/diagram.jsx'
 import { Settings } from '@components/Settings/Settings.jsx';
 import { StatusUI } from '@components/StatusUI/StatusUI.jsx';
-import '@js/StatusUIManager/SuccessModal.js'
+//import '@js/StatusUIManager/SuccessModal.js'
 import '@js/StatusUIManager/Manager.js'
-import { APIKeysManager } from '@components/ApiManager/api.jsx';
+import { APIKeysManager } from './components/ApiManager/api';
 import { DropZone } from '@components/DropZone/dropzone.jsx'
 import { NotificationFlyer, Notifcation } from '@components/Notifications/Notification.jsx'
 import '@js/MathBase/MathNormalize.js';

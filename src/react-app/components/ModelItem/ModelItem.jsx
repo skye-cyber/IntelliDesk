@@ -1,13 +1,14 @@
 import React, { useCallback } from 'react';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 import { StartNewConversation } from '../Sidebar/Sidebar';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
 
 const chatutil = new ChatUtil()
 
 export const ModelItem = ({ model, isSelected, onSelect }) => {
 
     const onModelSelect = useCallback(() => {
-        const selected_model = chatutil.get_multimodal_models().includes(window.currentModel)
+        const selected_model = chatutil.get_multimodal_models().includes(StateManager.get('currentModel'))
             ? 'multimodal'
             : 'chat'
 

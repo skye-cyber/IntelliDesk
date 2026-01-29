@@ -4,6 +4,7 @@ import { ChatDisplay } from "./util";
 import { ClosePrefixed } from "../../PortalBridge";
 import { modalmanager } from "../../StatusUIManager/Manager";
 import { staticPortalBridge } from "../../PortalBridge";
+import { StateManager } from "../StatesManager";
 
 export class ConversationManager {
     constructor(storagePath) {
@@ -48,7 +49,7 @@ export class ConversationManager {
             const vmodels = this.chatutil.get_multimodal_models()
 
             if (model === 'multimodal') {
-                if (!vmodels.includes(window.currentModel)) this.change_model('mistral-small-latest')
+                if (!vmodels.includes(StateManager.get('currentModel'))) this.change_model('mistral-small-latest')
 
                 conversationData.chats.forEach(message => {
 
@@ -64,7 +65,7 @@ export class ConversationManager {
             } else {
 
                 conversationData.chats.forEach(message => {
-                    vmodels.includes(window.currentModel) && window.currentModell !== 'mistral-small-latest' ? this.change_model() : ''
+                    vmodels.includes(StateManager.get('currentModel')) && StateManager.get('currentModel')l !== 'mistral-small-latest' ? this.change_model() : ''
                     const content = typeof message?.content === 'string'
                         ? message.content.trim()
                         : '';

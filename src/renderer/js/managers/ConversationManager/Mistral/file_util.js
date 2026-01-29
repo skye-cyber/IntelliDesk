@@ -1,4 +1,5 @@
 import { staticPortalBridge } from "../../../PortalBridge";
+import { StateManager } from "../../StatesManager";
 
 /**
  * Prepares user input content with file attachments
@@ -13,10 +14,10 @@ export function prep_user_input(text, options = {}) {
         allowMixedTypes = false
     } = options;
 
-    const filedata = window.filedata || [];
+    const files = StateManager.get('uploaded_files') || [];
     let userContent = [];
 
-    console.log(filedata)
+    console.log(files)
 
     // Always include text content
     if (text && text.trim()) {
@@ -27,9 +28,9 @@ export function prep_user_input(text, options = {}) {
     }
 
     // Process files if available
-    if (filedata.length >= 1) {
+    if (files.length >= 1) {
 
-        const { validFiles, rejectedFiles } = validateFiles(filedata, {
+        const { validFiles, rejectedFiles } = validateFiles(files, {
             maxFiles,
             maxFileSize,
             allowMixedTypes
@@ -45,7 +46,7 @@ export function prep_user_input(text, options = {}) {
             userContent = [...userContent, ...fileContent];
         }
         // Mark file as use
-        filedata.forEach(file => MarkasUsed(file))
+        files.forEach(file => MarkasUsed(file))
     }
 
     const user_message_portal = staticPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, files: userContent.filter(c => c.type !== "text") }, 'user_message')
@@ -61,12 +62,12 @@ export function prep_user_input(text, options = {}) {
 /**
  * Validates files based on constraints
  */
-export function validateFiles(filedata, constraints) {
+export function validateFiles(files, constraints) {
     const validFiles = [];
     const rejectedFiles = [];
     const seenTypes = new Set();
 
-    for (const file of filedata) {
+    for (const file of files) {
         const rejectionReasons = [];
 
         // Check if file was appended to conversation
@@ -182,7 +183,7 @@ export function groupFilesByType(files) {
 }
 
 export function prep_user_input_simple(text) {
-    const filedata = window.filedata || [];
+    const files = StateManager.get('uploaded_files') || [];
     const userContent = [];
 
     // Add text content
@@ -194,7 +195,7 @@ export function prep_user_input_simple(text) {
     }
 
     // Add file content with basic validation
-    const validFiles = filedata.slice(0, 5).filter(file =>
+    const validFiles = files.slice(0, 5).filter(file =>
         file.url && file.type && file.size <= 20 * 1024 * 1024
     );
 
@@ -223,7 +224,7 @@ export function prep_user_input_simple(text) {
  */
 export function MarkasUsed(file) {
     // console.log("Mark:", file)
-    window?.filedata?.map(filedata => {
-        if (filedata === file) filedata.used = true
+    StateManager.get('uploaded_files')?.map(files => {
+        if (files === file) files.used = true
     });
 }

@@ -6,6 +6,8 @@ export const chatdisplay = new ChatDisplay()
 export const chatutil = new ChatUtil()
 export const canvasutil = new CanvasUtil()
 
+StateManager.set('uploaded_files', [])
+
 // export let MISTRAL_API_KEY = null
 export let MISTRAL_API_KEY_CHAIN = [] // Allow key rotation incase of hitting quota limit
 
@@ -35,8 +37,7 @@ StateManager.set('ai_message_pid', null)
  */
 
 async function loadApiKeyChain() {
-    const chain = await window.desk.api2.getKeyChain('mistral');
-    MISTRAL_API_KEY_CHAIN = chain.MistralKeyChain; // Assign to global variable
+    const MISTRAL_API_KEY_CHAIN = await window.desk.api2.getKeyChain('mistral');
     console.log("Loaded KEYCHAIN:", MISTRAL_API_KEY_CHAIN)
 }
 

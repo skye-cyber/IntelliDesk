@@ -300,8 +300,8 @@ ipcMain.handle('save-key-chain', async (event, chain) => {
 
 // IPC handler to retrieve keyschains
 ipcMain.handle('get-key-chain', async (event, service = 'mistral') => {
-    const MistralKeyChain = await keytar.getPassword(SERVICE_NAME, service) || null;
-    return { MistralKeyChain }
+    const MistralKeyChain = await keytar.getPassword(SERVICE_NAME, service) || [];
+    return MistralKeyChain
 });
 
 // IPC handler for keyschains reset

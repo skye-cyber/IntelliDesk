@@ -2,7 +2,6 @@ import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
 import { ApiNotSetWarning } from './Modals/warn';
 import { SuggestApiKeyConfig } from './Modals/suggestion';
-import { successhandler } from '../../../renderer/js/StatusUIManager/SuccessModal';
 import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
 
 StateManager.set('api_key_ok', false)
@@ -10,11 +9,19 @@ StateManager.set('api_key_ok', false)
 export const APIKeysManager = ({ isOpen, onToggle }) => {
 
     //const [huggingfaceKey, sethuggingfaceKey] = useState('');
-    const [MistralKeyChain, setMistralKeyChain] = useState('')
+    const [MistralKeyChain, setMistralKeyChain] = useState({
+        keys: [
+            { value: 'HUHUJIKKhfhsjhdoashdsduovifkdk', status: 'active' },
+            { value: 'xclkUUUgjhdgfjdcvnvsdvncvvjUx', status: 'ready' },
+            { value: 'hfdhgfasdygYDFUKEFJHYYWUEWKEH', status: 'ready' },
+            { value: 'asjkfasdafhsdljchdfsasdkjdIuk', status: 'disabled' },
+        ]
+    })
     const mistralKeyRef = useRef(null)
 
 
     useEffect(() => {
+        if (MistralKeyChain.length > 0) return
         loadKeyChain()
     })
 
@@ -91,21 +98,21 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         }
 
         // Only update changed/edited fields, marked by mask *
-        MistralKeyChain = MistralKeyChain.includes('*') ? null : MistralKeyChain;
+        chain = chain.includes('*') ? null : chain;
         //huggingfaceKey = huggingfaceKey.includes('*') ? null : huggingfaceKey;
         //saveKeys({mistralKey, huggingfaceKey}, task)
-        SaveKeyChain({ MistralKeyChain, task })
+        SaveKeyChain({ chain, task })
     })
 
     const SaveKeyChain = useCallback(async (keyStore, task = 'create') => {
-        const { MistralKeyChain } = keyStore
+        const { chain } = keyStore
 
         // Exit if no changes were made
         if (!keyStore) {
             return
         }
 
-        if (MistralKeyChain) {
+        if (chain) {
             const result = await window.desk.api2.saveKeyChain(keyStore);
             if (result.success) {
                 //Load keys after saving
@@ -131,10 +138,16 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
     // Load keys from keytar via the preload API and mask them
     const loadKeyChain = useCallback(async () => {
         const mistralApiField = document.getElementById('mistralKeyMan');
+        const raw_chain = await window.desk.api2.getKeyChain('mistral') || [];
 
-        const { raw_chain } = await window.desk.api2.getKeyChain('mistral') || {};
+        if (!raw_chain) return
 
-        const chain = JSON.parse(raw_chain)
+        let chain
+        try {
+            chain = JSON.parse(raw_chain)
+        } catch (err) {
+            chain = [raw_chain]
+        }
 
         if (chain) StateManager.set('api_key_ok', true)
 
@@ -145,7 +158,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
             //showApiQueryModal();
         } else {
             mistralApiField.value = MistralKeyChain ? maskKey(chain[0]) : '';
-            setMistralKeyChain(chain)
+            // setMistralKeyChain(chain)
         }
     })
 
@@ -229,34 +242,6 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         }, 300)
     })
 
-    const SuccessModal = useCallback((action = "close", message = null, timeout = null, restart = false) => {
-        const msgSection = document.getElementById('success-message');
-        const sucessModal = document.getElementById('successModal');
-        const modalBox = document.getElementById('successModalContent');
-
-        //Deactivate restart button if restart not required
-        (restart === true) ? document.getElementById('restartBt').classList.remove('hidden') : '';
-
-        if (action === "show") {
-            if (message) {
-                msgSection.textContent = message;
-            }
-            sucessModal.classList.remove('hidden', 'animate-exit');
-            modalBox.classList.remove('hidden', 'pointer-events-none');
-            modalBox.classList.add('animate-enter');
-
-            //Close modal after timeout if provided
-            if (timeout) {
-                setTimeout(() => SuccessModal('close'), timeout);
-            }
-        } else {
-            msgSection.textContent = 'Operation Succeeded';
-            modalBox.classList.remove('animate-enter');
-            modalBox.classList.add('animate-exit');
-            setTimeout(() => sucessModal.classList.add('hidden', 'pointer-events-none'), 300);
-        }
-    })
-
     function closeWarningQuery() {
         closeWarningModal()
         //showApiQueryModal()
@@ -265,6 +250,18 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
     function closeNotSetQuery() {
         closeApiNotSetWarning()
         //showApiQueryModal()
+    }
+
+    function onKeyEdit(key) {
+        //
+    }
+
+    function onKeyDelete(key) {
+        //
+    }
+
+    function onKeyDisable(key) {
+        //
     }
 
     const setMistralKey = useCallback((value) => {
@@ -371,8 +368,8 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
             </div>
 
             {/* Key Management Modal */}
-            <div id="apiKeyManPage" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden">
-                <div id="apiManContent" className="relative w-full max-w-2xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl backdrop-blur-lg transform transition-all duration-500 translate-y-8 opacity-0">
+            <div id="apiKeyManPage" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hiddenx">
+                <div id="apiManContent" className="relative w-full max-w-2xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl backdrop-blur-lg transform transition-all duration-500 translate-y-8 opacity-100">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
                         <div className="flex items-center justify-between">
@@ -406,11 +403,25 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
 
                     {/* Content */}
                     <div className="p-6 space-y-6">
+                        {/*API keychain Display*/}
+                        <section className='space-y-3'>
+                            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                <span>API Key Chain</span>
+                            </label>
+                            <div className="container grid grid-cols-1 sm:grid-cols-2 items-center gap-1 space-y-1 bg-gray-100 dark:bg-primary-950 w-fit h-fit max-h-42 max-w-full p-2 rounded-lg border border-t-2 dark:border-primary-300">
+                                {
+                                    MistralKeyChain.keys.map((key, index) => {
+                                        return <APIkey key={index} apikey={key} onDelete={onKeyDelete} onEdit={onKeyEdit} onDisable={onKeyDisable} maskFn={maskKey} />
+                                    })
+                                }
+                            </div>
+                        </section>
                         {/* Mistral API Key */}
                         <div className="space-y-3">
                             <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                <span>Mistral API Key</span>
+                                <span>New API Key</span>
                             </label>
                             <div className="relative group">
                                 <input
@@ -498,3 +509,19 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
 
     );
 };
+
+const APIkey = ({ apikey, maskFn, onDelete, onEdit, onDisable }) => {
+    const dotColors = {
+        ready: 'bg-orange-500',
+        active: 'bg-green-500 animate-heartpulse-super ease-in-out',
+        disabled: 'bg-[#ff0000]'
+    }
+    return (
+        <div>
+            <label className="flex items-center space-x-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <div className={`ml-2 w-2 h-2 ${dotColors[apikey.status]} rounded-full`}></div>
+                <span>{apikey.value}</span>
+            </label>
+        </div>
+    )
+}

@@ -13,7 +13,7 @@ import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge
 
 let ai_ms_pid
 
-export async function MistraChat({ text, model_name = window.currentModel }) {
+export async function MistraChat({ text, model_name = StateManager.get('currentModel') }) {
     try {
         if (!text?.trim()) return console.log("Message is empty")
 
@@ -162,7 +162,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
 
                 waitForElement('#code-view', (el) => {
                     el.innerHTML = StateManager.get('codeBuffer').code;
-                    window.canvasUpdate();
+                    StateManager.get('canvasUpdate')();
                 });
             }
 
@@ -227,7 +227,7 @@ export async function MistraChat({ text, model_name = window.currentModel }) {
             chatutil.scrollToBottom(chatArea, true, 1000);
 
             // Render mathjax immediately
-            if (!message_id) message_id = window.StateManager.get("current_message_id", message_id)
+            if (!message_id) message_id = StateManager.get("current_message_id", message_id)
         }
 
         StateManager.set('processing', false);

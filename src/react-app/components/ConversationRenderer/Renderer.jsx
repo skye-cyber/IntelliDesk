@@ -10,6 +10,7 @@ import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util
 import { GenerateId } from './utils';
 import { mathStandardize } from '../../../renderer/js/MathBase/mathRenderer';
 import { normalizeCodeBlocks } from '../../../renderer/js/Code/codeNormalize';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
 
 const chatutil = new ChatUtil()
 
@@ -66,7 +67,7 @@ export const AiMessage = ({
         //console.log(err)
     }
 
-    window.StateManager.set("current_message_id", message_id)
+    StateManager.set("current_message_id", message_id)
 
     const processedThinkHtml = think_content ? markitdown(normalizeMathDelimiters(think_content)) : null;
 

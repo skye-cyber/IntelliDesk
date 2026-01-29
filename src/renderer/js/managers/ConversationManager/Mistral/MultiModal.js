@@ -14,7 +14,7 @@ import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge
 
 let ai_ms_pid
 
-export async function MistraMultimodal({ text, model_name = window.currentModel }) {
+export async function MistraMultimodal({ text, model_name = StateManager.get('currentModel') }) {
     if (!text?.trim() && !file_data_url) return console.log("Message, files are empty")
 
     const _Timer = new window.Timer();
@@ -47,6 +47,14 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
     const { user_message_portal, userContent } = prep_user_input(text)
 
     try {
+        if (!clientmanager.MistralClient.client) {
+            throw {
+                origin: 'Mistral Client Call',
+                message: 'Mistral client is not fully configured',
+                type: 'Initialization', errorType: 'RuntimeError',
+                stack: 'MistraMultimodal\n at MistralClient.client.chat.stream'}
+        }
+
         const stream = //generateTextChunks(text)
             await clientmanager.MistralClient.client.chat.stream({
                 model: model_name,
@@ -150,7 +158,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
 
                 waitForElement('#code-view', (el) => {
                     el.innerHTML = StateManager.get('codeBuffer').code;
-                    window.canvasUpdate();
+                    StateManager.get('canvasUpdate')();
                 });
             }
 
@@ -215,7 +223,7 @@ export async function MistraMultimodal({ text, model_name = window.currentModel 
             chatutil.scrollToBottom(chatArea, true, 1000);
 
             // Render mathjax immediately
-            if (!message_id) message_id = window.StateManager.get("current_message_id", message_id)
+            if (!message_id) message_id = StateManager.get("current_message_id", message_id)
         }
 
         StateManager.set('processing', false);

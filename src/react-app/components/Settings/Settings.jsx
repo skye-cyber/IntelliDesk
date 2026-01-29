@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { SettingToggle } from '@components/Settings/toggle.jsx';
+import { SettingToggle } from '@components/Settings/settings_toggle.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
@@ -139,7 +139,7 @@ export const Settings = ({ isOpen, onToggle }) => {
 
         try {
             await window.desk.api.savePreference(newSettings);
-            SuccessModal.success('Your preferences have been saved successfully!');
+            modalmanager.showMessage('Your preferences have been saved successfully!');
         } catch (error) {
             modalmanager.showMessage('Failed to save preferences', 'error');
         }
@@ -185,7 +185,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                 prefInputSection.classList.remove('hidden'); //Show input section
                 prefInput.value = "";
 
-                SuccessModal.success('Your preferences have been deleted successfully!');
+                modalmanager.showMessage('Your preferences have been deleted successfully!');
             } else {
                 modalmanager.showMessage('Failed to delete preferences', 'error');
             }
@@ -271,7 +271,7 @@ export const Settings = ({ isOpen, onToggle }) => {
             setSettings(newSettings);
 
             await window.desk.api.savePreference(newSettings);
-            SuccessModal.success('Your preferences have been deleted successfully!');
+            modalmanager.showMessage('Your preferences have been deleted successfully!');
         } catch (error) {
             modalmanager.showMessage('Failed to delete preferences', 'error');
         }

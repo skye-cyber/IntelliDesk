@@ -2,11 +2,12 @@ import { waitForElement } from "../../../renderer/js/Utils/dom_utils";
 import { Router } from "../../../renderer/js/managers/router";
 import { modalmanager } from "../../../renderer/js/StatusUIManager/Manager";
 import { staticPortalBridge } from "../../../renderer/js/PortalBridge";
+import { StateManager } from "../../../renderer/js/managers/StatesManager";
 
 // Update show/hide functions with new animations
 export function showDropZoneModal() {
-    const modal = document.getElementById('dropZoneModal');
-    const content = document.getElementById('dropZoneContent');
+    const modal = document.getElementById('dropzoneContainer');
+    const content = document.getElementById('dropzoneContent');
 
     modal.classList.remove('hidden');
     setTimeout(() => {
@@ -16,8 +17,8 @@ export function showDropZoneModal() {
 }
 
 export function CloseDropZone() {
-    const modal = document.getElementById('dropZoneModal');
-    const content = document.getElementById('dropZoneContent');
+    const modal = document.getElementById('dropzoneContainer');
+    const content = document.getElementById('dropzoneContent');
 
     content.classList.remove('scale-100', 'opacity-100');
     content.classList.add('scale-95', 'opacity-0');
@@ -53,16 +54,16 @@ export function closePreview() {
 }
 
 
-window.filedata = [{ name: '', size: '', type: '', url: '' }]
+StateManager.set('uploaded_files', [{ name: '', size: '', type: '', url: '' }])
 
 export function handleFiles(files) {
     //const previewContainer = document.getElementById('uploadedFiles');
 
     let ignored = 0
 
-    window.filedata = []
+    StateManager.set('uploaded_files', [])
 
-    let filedata = []
+    let file_uploads = []
     let uploaded_file = []
     let Uploaded = 0
     //Create a list to hold file urls
@@ -87,21 +88,19 @@ export function handleFiles(files) {
         Uploaded += 1;
 
         // Create a list item for the file
-        staticPortalBridge.showComponentInTarget('FileItem', 'FilePreview', { file: file, is_image: fileType === 'image' }, "uploade_files")
+        staticPortalBridge.showComponentInTarget('FileItem', 'FilePreview', { file: file, is_image: fileType === 'image' }, "uploaded_files")
 
         const reader = new FileReader();
 
 
-        window.AllfileTypes = fileType //AllfileTypes
-
         reader.onload = (e) => {
-            const filedataurl = e.target.result;
-            filedata.push({ file: file, name: file.name, type: getFileType(file.name)?.toLocaleLowerCase(), is_image: fileType === "image", url: filedataurl, size: file.size, used: false })
+            const file_url = e.target.result;
+            file_uploads.push({ file: file, name: file.name, type: getFileType(file.name)?.toLocaleLowerCase(), is_image: fileType === "image", url: file_url, size: file.size, used: false })
         };
         reader.readAsDataURL(file);
 
         uploaded_file.push(file.name)
-        window.filedata = filedata
+        StateManager.set('uploaded_files', file_uploads)
     }
 
     // switch model to multi-modal
@@ -168,7 +167,7 @@ export function submitFilesAndText() {
         if (!imageDataUrl) {
             modalmanager.showMessage("Please select a file!", "warning");
         } else if (!text) {
-            modalmanager.showMessag("Please Enter a prompt relating to the upload", "warn");
+            modalmanager.showMessage("Please Enter a prompt relating to the upload", "warn");
         }
     }
 }

@@ -33,7 +33,7 @@ export class Router {
 
     change_model(value = 'mistral-medium-latest') {
         try {
-            if (window.currentModel === value) return
+            if (StateManager.get('currentModel') === value) return
             waitForElement('#model-selector', (context) => {
                 waitForElement(`[data-value^="${value}"]`, (el) => el.click(), { context: context })
             })
@@ -46,7 +46,7 @@ export class Router {
     async chooseRoute(event) {
         //document.querySelector(`[data-value="mistral-small-latest"]`).click();
         const text = event.detail.text;
-        const modelName = window.currentModel;
+        const modelName = StateManager.get('currentModel');
         //switch to vision model
         /*
          * const res = await this.switchToVision()
@@ -90,7 +90,7 @@ export class Router {
         StateManager.set('codeBuffer', null);
 
         if (StateManager.get('processing') === true) return;
-        const model = window.currentModel;
+        const model = StateManager.get('currentModel');
 
         //Intercept image generation
         if (StateManager.get('imageGen', true)

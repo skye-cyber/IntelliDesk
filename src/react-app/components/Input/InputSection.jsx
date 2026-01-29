@@ -59,10 +59,13 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         ApiWarnContent.classList.add('animate-enter')
     })
 
-    const handleSend = useCallback(() => {
+    const handleSend = useCallback((input_text = null) => {
         if (!StateManager.get('api_key_ok')) {
             showApiNotSetWarning()
         } else {
+
+            if(input_text) setInputValue(input_text)
+
             const userInput = textareaRef.current;
             if (inputValue.trim() && !StateManager.get('processing')) {
                 // Reset the input field
@@ -90,6 +93,8 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             }
         }
     })
+
+    StateManager.set('onSend', handleSend)
 
 
     useEffect(() => {
@@ -189,7 +194,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     useEffect(() => {
         const observer = new MutationObserver((mutations) => {
             setInputValue(textareaRef.current?.innerHTML) //?.replace(/<\/?p>/, '').replace('</p>', '') || '');
-            if (!textareaRef.current?.innerHTML?.trim() || textareaRef.current?.innerHTML==='<br>' ) textareaRef.current.innerHTML = ""
+            if (!textareaRef.current?.innerHTML?.trim() || textareaRef.current?.innerHTML === '<br>') textareaRef.current.innerHTML = ""
         });
 
         if (textareaRef.current) {

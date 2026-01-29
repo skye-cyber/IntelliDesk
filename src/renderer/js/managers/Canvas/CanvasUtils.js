@@ -1,5 +1,6 @@
 import { waitForElement } from "../../Utils/dom_utils";
 import { ChatDisplay } from "../ConversationManager/util";
+import { StateManager } from "../StatesManager";
 
 export class ResizeClassToggler {
     constructor(target, toggleTarget, breakpoint = 640, className = 'sm:flex') {
@@ -83,7 +84,7 @@ export function openInCanvas(id) {
     waitForElement('#code-view', (el) => {
         el.innerHTML = code
         chatdisplay.chats_size_adjust()
-        window.canvasUpdate()
+        StateManager.get('canvasUpdate')()
     });
 }
 

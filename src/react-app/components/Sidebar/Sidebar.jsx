@@ -7,10 +7,11 @@ import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { ClosePrefixed } from '../../../renderer/js/PortalBridge';
 import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
 import { MessageList } from '../Chat/MessageList';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
 
 const chatutil = new ChatUtil()
 
-window.StateManager.set("sidebar-open", false)
+StateManager.set("sidebar-open", false)
 
 const Manager = new ChatManager();
 export const StartNewConversation = (model, details = {}) => {
@@ -57,7 +58,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 }
             });
         });
-        window.StateManager.set("sidebar-open", true)
+        StateManager.set("sidebar-open", true)
     }, [onToggle]);
 
     const hidePanel = useCallback(() => {
@@ -73,7 +74,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 }
             });
         });
-        window.StateManager.set("sidebar-open", false)
+        StateManager.set("sidebar-open", false)
     }, []);
 
     const togglePanel = useCallback(() => {
@@ -234,7 +235,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             <section data-action="options" className='ml-1 mt-0 space-y-0.5 text-gray-800 dark:text-white'>
                 <div onClick={() => {
                     StartNewConversation(
-                        chatutil.get_multimodal_models().includes(window.currentModel)
+                        chatutil.get_multimodal_models().includes(StateManager.get('currentModel'))
                             ? 'multimodal'
                             : 'chat')
 
@@ -249,7 +250,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </div>
                 <div onClick={() => {
                     StartNewConversation(
-                        (chatutil.get_multimodal_models().includes(window.currentModel)
+                        (chatutil.get_multimodal_models().includes(StateManager.get('currentModel'))
                             ? 'multimodal'
                             : 'chat'),
                         { type: "temporary" }

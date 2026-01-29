@@ -485,7 +485,7 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null, 
         //if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
 
         if (context.is_multimodal) {
-            router.routeToMistral(context.userContent, window.currentModel);
+            router.routeToMistral(context.userContent, StateManager.get('currentModel'));
         } else {
             // Use the extracted lastMessage
             router.requestRouter(context.lastMessage?.trim());

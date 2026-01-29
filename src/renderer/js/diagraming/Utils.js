@@ -121,7 +121,3 @@ export async function exportSvgToPng(svgElementId, outputFileName = `${svgElemen
         if (export_button) modalmanager.hideLoading(export_button, button_content)
     }
 }
-
-
-window.closediagViewModal = closediagViewModal;
-window.exportSvgToPng = exportSvgToPng;

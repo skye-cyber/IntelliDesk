@@ -10,18 +10,13 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
 
     //const [huggingfaceKey, sethuggingfaceKey] = useState('');
     const [MistralKeyChain, setMistralKeyChain] = useState({
-        keys: [
-            { value: 'HUHUJIKKhfhsjhdoashdsduovifkdk', status: 'active' },
-            { value: 'xclkUUUgjhdgfjdcvnvsdvncvvjUx', status: 'enabled' },
-            { value: 'hfdhgfasdygYDFUKEFJHYYWUEWKEH', status: 'enabled' },
-            { value: 'asjkfasdafhsdljchdfsasdkjdIuk', status: 'disabled' },
-        ]
+        keys: []
     })
-    const mistralKeyRef = useRef(null)
-
+    const mistralAddKeyRef = useRef(null)
+    const mistralNewKeyRef = useRef(null)
 
     useEffect(() => {
-        if (MistralKeyChain.length > 0) return
+        if (MistralKeyChain.keys.length > 0) return
         loadKeyChain()
     })
 
@@ -68,7 +63,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
 
         modal.classList.remove('hidden');
         setTimeout(() => {
-            content.classList.remove('translate-y-8', 'opacity-0');
+            content.classList.remove('translate-y-full', 'opacity-0');
             content.classList.add('translate-y-0', 'opacity-100');
         }, 10);
     })
@@ -79,41 +74,17 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         const content = document.getElementById('apiManContent');
 
         content.classList.remove('translate-y-0', 'opacity-100');
-        content.classList.add('translate-y-8', 'opacity-0');
+        content.classList.add('translate-y-full', 'opacity-0');
         setTimeout(() => {
             modal.classList.add('hidden');
-        }, 510);
+        }, 300);
     })
 
-    // Save keys using keytar via the preload API
-    const HandleKeyChainSave = useCallback(async (task = 'create') => {
-        let chain;
-        //let huggingfaceKey
-        if (task === 'create') {
-            chain = mistralKeyRef.value
-            //huggingfaceKey = document.getElementById('huggingfaceKey').value
-        } else {
-            chain = mistralKeyRef.value
-            //huggingfaceKey = document.getElementById('huggingfaceKeyMan').value
-        }
-
-        // Only update changed/edited fields, marked by mask *
-        chain = chain.includes('*') ? null : chain;
-        //huggingfaceKey = huggingfaceKey.includes('*') ? null : huggingfaceKey;
-        //saveKeys({mistralKey, huggingfaceKey}, task)
-        SaveKeyChain({ chain, task })
-    })
-
-    const SaveKeyChain = useCallback(async (keyStore, task = 'create') => {
-        const { chain } = keyStore
-
+    const SaveKeyChain = useCallback(async () => {
         // Exit if no changes were made
-        if (!keyStore) {
-            return
-        }
 
-        if (chain) {
-            const result = await window.desk.api2.saveKeyChain(keyStore);
+        if (MistralKeyChain?.keys.length > 0) {
+            const result = await window.desk.api2.saveKeyChain(JSON.stringify(MistralKeyChain));
             if (result.success) {
                 //Load keys after saving
                 loadKeyChain();
@@ -125,20 +96,15 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                 //Close Api query modal
                 closeApiQueryModal();
 
-                // if taskis update, close manpage modal
-                (task === "update") ? hideApiManModal() : '';
-
-                modalmanager.showMessage(`API Keys ${(task === 'updated') ? 'updated' : 'saved'} successfully.`, 'success');
+                modalmanager.showMessage('API Key chain saved successfully.', 'success');
             }
         } else {
-            console.log('No keys set')
             showApiNotSetWarning();
         }
     })
     // Load keys from keytar via the preload API and mask them
     const loadKeyChain = useCallback(async () => {
-        const mistralApiField = document.getElementById('mistralKeyMan');
-        const raw_chain = await window.desk.api2.getKeyChain('mistral') || [];
+        const raw_chain = await window.desk.api2.getKeyChain() || [];
 
         if (!raw_chain) return
 
@@ -146,19 +112,20 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         try {
             chain = JSON.parse(raw_chain)
         } catch (err) {
-            chain = [raw_chain]
+            /*
+            chain = {
+                keys: [
+                    { value: raw_chain, status: 'active' }
+                ]
+            }
+            */
         }
 
-        if (chain) StateManager.set('api_key_ok', true)
-
-
-        if (!chain) {
-            mistralApiField.value = "";
-            showWarningModal();
-            //showApiQueryModal();
+        if (chain && chain.keys.length > 0) {
+            StateManager.set('api_key_ok', true)
+            setMistralKeyChain({ keys: chain.keys })
         } else {
-            mistralApiField.value = MistralKeyChain ? maskKey(chain[0]) : '';
-            // setMistralKeyChain(chain)
+            showWarningModal();
         }
     })
 
@@ -184,13 +151,13 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
 
     // Reset keys (clear inputs)
     const resetKeys = useCallback(async () => {
-        document.getElementById('mistralKey').value = '';
-        document.getElementById('mistralKeyMan').value = '';
-
         const result = await window.desk.api2.resetKeyChain(['mistral']);
 
-        if (result) modalmanager.showMessage('API Keys reset successfully.', 'success');
-        StateManager.set('api_key_ok', false)
+        if (result) {
+            modalmanager.showMessage('API Keys reset successfully.', 'success');
+            StateManager.set('api_key_ok', false)
+            openApiModal()
+        }
     })
 
     const openApiModal = useCallback(() => {
@@ -253,8 +220,10 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
     }
 
     const onKeyDelete = useCallback((key) => {
-        const chain = MistralKeyChain.keys.filter(api => api.value != key.value)
-        setMistralKeyChain({ keys: chain })
+        if (MistralKeyChain.keys.length === 1) resetKeys()
+
+        const chain = { keys: MistralKeyChain.keys.filter(api => api.value != key.value) }
+        setMistralKeyChain(chain)
     })
 
     const onKeyDisable = useCallback((key) => {
@@ -263,14 +232,25 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
             return api
         })
 
-        setMistralKeyChain({keys: chain})
-        console.log(chain)
+        setMistralKeyChain({ keys: chain })
+    })
+
+    const onNewKey = useCallback((new_key) => {
+        const isValidKey = MistralKeyChain.keys.every((key) => key.value != new_key)
+        if (!isValidKey) return modalmanager.showMessage('The key already exists. Ignoring', 'warn')
+
+        const chain = MistralKeyChain.keys
+        chain.push({ value: new_key, status: 'enabled' })
+
+        setMistralKeyChain({ keys: chain })
+        SaveKeyChain()
+        //modalmanager.showMessage('Key Chain update with 1 addition', 'info')
     })
 
 
     return (
         <section>
-            <div id="apiKeyModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300 hidden">
+            <div id="apiKeyModal" className="fixed inset-0 bg-black/60 backdrop-brightness-50 flex items-center justify-center z-50 p-4 transition-all duration-300 hidden">
                 <div id="apiKeyModalContent" className="bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all duration-300 scale-95 opacity-0 backdrop-blur-lg">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
@@ -301,10 +281,17 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                             </label>
                             <div className="relative group">
                                 <input
+                                    ref={mistralNewKeyRef}
                                     id="mistralKey"
                                     type="password"
                                     defaultValue=''
-                                    onChange={(e) => setMistralKeyChain(e.target.value)}
+                                    //onChange={(e) => setMistralKeyChain(e.target.value)}
+                                    onKeyUp={(e) => {
+                                        if (e.key === 'Enter' && e.target.value) {
+                                            onNewKey(e.target.value)
+                                            e.target.value = ''
+                                        }
+                                    }}
                                     placeholder="mk-..."
                                     className="w-full px-4 py-3 text-black dark:text-white bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-mono text-sm"
                                 />
@@ -354,7 +341,12 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                             </button>
                             <button
                                 id="HandleKeysaveBt"
-                                onClick={() => HandleKeyChainSave('create')}
+                                onClick={(e) => {
+                                    if (mistralNewKeyRef.current.value) {
+                                        onNewKey(mistralNewKeyRef.current.value)
+                                        e.target.value = ''
+                                    }
+                                }}
                                 className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -367,9 +359,9 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                 </div>
             </div>
 
-            {/* Key Management Modal */}
-            <div id="apiKeyManPage" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hiddenx">
-                <div id="apiManContent" className="relative w-full max-w-2xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl backdrop-blur-lg transform transition-all duration-500 translate-y-0 opacity-100">
+            {/* KeyChain Management Modal */}
+            <div id="apiKeyManPage" className="fixed inset-0 bg-black/60 backdrop-brightness-50 flex items-center justify-center z-50 p-4 transition-all duration-100 hidden">
+                <div id="apiManContent" className="relative w-full max-w-2xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl backdrop-blur-lg transform transition-all duration-300 translate-y-full opacity-0">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-4 py-2 lg:py-4 rounded-t-2xl">
                         <div className="flex items-center justify-between">
@@ -409,9 +401,9 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                                 <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                                 <span>API Key Chain</span><span><span className='text-orange-400'>(</span><span className='tracking-wider'>{MistralKeyChain.keys.length}</span><span className='text-pink-400'>)</span></span>
                             </label>
-                            <div className="bg-white/80 dark:bg-primary-900/80 backdrop-blur-sm rounded-xl shadow-balanced-lg overflow-hidden border border-gray-200 dark:border-b-2 dark:border-cyber-500/50 dark:border-t-primary-200/50 h-32 overflow-y-auto scroll-smooth scrollbar-custom">
+                            <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-primary-900/80 dark:primary-900/80 backdrop-blur-sm rounded-xl shadow-balanced-lg overflow-hidden border border-gray-500 border-b-2 dark:border-cyber-500/50 dark:border-t-primary-200/50 h-32 overflow-y-auto scroll-smooth scrollbar-custom">
                                 <table className='divide-y divide-gray-200 dark:divide-gray-600/50 w-full'>
-                                    <thead className="sticky z-30 top-0 left-0 right-0 bg-gray-200 dark:bg-primary-950">
+                                    <thead className="sticky z-30 top-0 left-0 right-0 bg-gradient-to-r from-purple-500/30 to-blue-500/30 dark:from-primary-950 dark:to-primary-950">
                                         <tr className='divide-x divide-gray-700/80'>
                                             <th className="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-white">Key</th>
                                             <th className="px-2 py-2 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
@@ -436,13 +428,19 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                             </label>
                             <div className="relative group">
                                 <input
-                                    ref={mistralKeyRef}
+                                    ref={mistralAddKeyRef}
                                     id="mistralKeyMan"
                                     type="password"
                                     defaultValue=''
-                                    onChange={(e) => setMistralKeyChain(e.target.value)}
+                                    //onChange={(e) => setMistralKeyChain(e.target.value)}
+                                    onKeyUp={(e) => {
+                                        if (e.key === 'Enter' && e.target.value) {
+                                            onNewKey(e.target.value)
+                                            e.target.value = ''
+                                        }
+                                    }}
                                     placeholder="Enter your Mistral API key (mk-...)"
-                                    className="w-full px-4 py-3 text-black dark:text-white bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all duration-200 font-mono text-sm"
+                                    className="w-full px-4 py-3 text-black dark:text-white bg-white dark:bg-gray-800 border-2 border-orange-200 dark:border-orange-800 rounded-xl focus:border-orange-500 focus:border-orange-500 dark:focus:border-orange-400 focus:ring-none focus:outline-none transition-all duration-500 font-mono text-sm ease-in-out"
                                 />
                                 <button
                                     type="button"
@@ -456,7 +454,6 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                                 </button>
                             </div>
                         </div>
-
 
                         {/* Security Information */}
                         <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200/50 dark:border-blue-700/50 rounded-xl p-4">
@@ -498,7 +495,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={() => HandleKeyChainSave('update')}
+                                    onClick={() => SaveKeyChain()}
                                     className="px-6 py-3 bg-gradient-to-r from-primary-500 to-purple-600 hover:from-purple-600 hover:to-primary-700 text-white rounded-xl font-medium transition-all duration-500 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -543,7 +540,7 @@ const APIkey = ({ apikey, maskFn, onDelete, onDisable }) => {
         <tr className='hover:bg-gray-50/50 dark:hover:bg-[#aa55ff]/10 transition-colors'>
             <td className="flex items-center space-x-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <div className={`ml-2 w-2 h-2 ${dotColors[apikey.status].bg} ${dotColors[apikey.status].animation} rounded-full`}></div>
-                <span className='truncate'>{apikey.value}</span>
+                <span className='truncate font-mono'>{apikey.value}</span>
             </td>
             {/* Status */}
             <td>
@@ -552,14 +549,14 @@ const APIkey = ({ apikey, maskFn, onDelete, onDisable }) => {
             {/* Actions */}
             <td className='flex space-x-3'>
                 {/*Delete*/}
-                <button onClick={() => onDelete(apikey)} className='flex space-x-1 text-red-400 text-[15px]'>
+                <button onClick={() => onDelete(apikey)} className='flex space-x-1 text-red-500 dark:text-red-400 text-[15px]'>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.981-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     <span>Delete</span>
                 </button>
                 {/*Disable*/}
-                <button onClick={() => onDisable(apikey)} className={`flex text-[15px] space-x-2 ${apikey.status !== 'disabled' ? 'text-red-400' : 'text-green-400'}`}>
+                <button onClick={() => onDisable(apikey)} className={`flex text-[15px] space-x-2 ${apikey.status !== 'disabled' ? 'text-red-500 dark:text-red-400' : 'text-green-500 dark:text-green-400'}`}>
                     {apikey.status !== 'disabled' ? 'Disable' : 'Enable'}
                 </button>
             </td>

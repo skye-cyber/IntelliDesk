@@ -64,7 +64,6 @@ export class Router {
     }
 
     routeToMistral(text, modelName = null) {
-        console.log(modelName)
         if (!text) modalmanager.showMessage("No text provided", "error")
         if (multimodal.includes(modelName)) {
             return MistraMultimodal({ text: text, model_name: modelName })

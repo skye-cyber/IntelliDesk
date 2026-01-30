@@ -20,7 +20,7 @@ export const MessageList = ({ }) => {
         <div
             id="conversations"
             data-portal-container="conversations"
-            className="verbose-hide hidden h-[64vh] overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth">
+            className="verbose-hide hidden h-[64vh] overflow-x-hidden overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth">
             {/* Empty State */}
             <div id="chatsempty" className={`${StateManager.get('chatsExist')
                 ? 'hidden' : 'flex-col'} items-center justify-center py-12 px-4 text-center`}>

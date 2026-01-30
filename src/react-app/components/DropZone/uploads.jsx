@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { staticPortalBridge } from "../../../renderer/js/PortalBridge";
 import { StateManager } from "../../../renderer/js/managers/StatesManager";
 
-export const UploadeFileIndicator = ({ portal_id }) => {
+export const UploadedFileIndicator = ({ portal_id }) => {
 
     const clearFiles = useCallback(() => {
         // Filter out files whose name matches the given name

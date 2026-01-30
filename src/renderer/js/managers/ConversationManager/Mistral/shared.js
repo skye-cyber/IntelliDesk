@@ -9,7 +9,7 @@ export const canvasutil = new CanvasUtil()
 StateManager.set('uploaded_files', [])
 
 // export let MISTRAL_API_KEY = null
-export let MISTRAL_API_KEY_CHAIN = [] // Allow key rotation incase of hitting quota limit
+export let MISTRAL_API_KEY_CHAIN // Allow key rotation incase of hitting quota limit
 
 let globalIsDev = false;
 
@@ -36,9 +36,15 @@ StateManager.set('ai_message_pid', null)
  * }
  */
 
-async function loadApiKeyChain() {
-    const MISTRAL_API_KEY_CHAIN = await window.desk.api2.getKeyChain('mistral');
-    console.log("Loaded KEYCHAIN:", MISTRAL_API_KEY_CHAIN)
+export async function loadApiKeyChain() {
+    try {
+        const chain = await window.desk.api2.getKeyChain('mistral');
+        const MISTRAL_API_KEY_CHAIN = JSON.parse(chain)
+        // Return only the keys that are usable ie not disabled
+        const usable_chain = {keys: MISTRAL_API_KEY_CHAIN.keys.filter(key => key.status != 'disabled')}
+
+        return usable_chain
+    } catch (err) { }
 }
 
 await loadApiKeyChain()

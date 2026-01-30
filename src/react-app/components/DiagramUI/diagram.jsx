@@ -95,7 +95,7 @@ export const DiagramUi = ({ isOpen, onClose, content }) => {
                 <div className="relative flex-1 flex bg-white dark:bg-slate-900">
                     {/* Diagram Canvas */}
                     <div className="flex-1 p-6 overflow-x-hidden">
-                        <div id="diag-modal-content" data-portal-container="diagram" className="react-portal-root flex justify-center items-center space-x-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-700/50 min-h-full h-[50vh] block space-y-2 p-4 backdrop-blur-sm shadow-2xl overflow-y-auto overflow-x-hidden scrollbar-custom scroll-smooth">
+                        <div id="diag-modal-content" data-portal-container="diagram" className="data-portal-root flex justify-center items-center space-x-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-700/50 min-h-full h-[50vh] block space-y-2 p-4 backdrop-blur-sm shadow-2xl overflow-y-auto overflow-x-hidden scrollbar-custom scroll-smooth">
                             <div id="diag-placeholder" className="text-center text-slate-400">
                                 <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-slate-700 to-slate-600 rounded-2xl flex items-center justify-center shadow-inner">
                                     <svg className="w-10 h-10 text-cyan-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">

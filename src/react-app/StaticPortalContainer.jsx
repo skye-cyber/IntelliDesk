@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import { UserMessage, AiMessage } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { FileItem } from './components/DropZone/dropzone';
-import { UploadeFileIndicator } from './components/DropZone/uploads';
+import { UploadedFileIndicator } from './components/DropZone/uploads';
 import { LoadingAnimation } from './components/StatusUI/StatusUI';
 import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
 import { ConfirmationDialog } from './components/StatusUI/confirmDialog';
@@ -18,7 +18,7 @@ const componentRegistry = {
     LoadingAnimation,
     ConversationItem,
     FileItem,
-    UploadeFileIndicator,
+    UploadedFileIndicator,
     ErrorModal,
     Toast,
     ConfirmationDialog,
@@ -32,7 +32,6 @@ export const StaticPortalContainer = () => {
     useEffect(() => {
         const handleShowPortal = (event) => {
             const { portalId, componentType, props } = event.detail;
-
             setPortals(prev => [...prev, {
                 id: portalId,
                 componentType,
@@ -43,6 +42,7 @@ export const StaticPortalContainer = () => {
 
         const handleShowTargetedPortal = (event) => {
             const { portalId, componentType, containerId, props } = event.detail;
+
             setTargetedPortals(prev => {
                 const newMap = new Map(prev);
                 const containerPortals = newMap.get(containerId) || [];
@@ -97,16 +97,16 @@ export const StaticPortalContainer = () => {
             });
         };
 
-        document.addEventListener('react-portal-show', handleShowPortal);
-        document.addEventListener('react-portal-show-targeted', handleShowTargetedPortal);
-        document.addEventListener('react-portal-close', handleClosePortal);
-        document.addEventListener('react-portal-close-container', handleCloseContainer);
+        document.addEventListener('data-portal-show', handleShowPortal);
+        document.addEventListener('data-portal-show-targeted', handleShowTargetedPortal);
+        document.addEventListener('data-portal-close', handleClosePortal);
+        document.addEventListener('data-portal-close-container', handleCloseContainer);
 
         return () => {
-            document.removeEventListener('react-portal-show', handleShowPortal);
-            document.removeEventListener('react-portal-show-targeted', handleShowTargetedPortal);
-            document.removeEventListener('react-portal-close', handleClosePortal);
-            document.removeEventListener('react-portal-close-container', handleCloseContainer);
+            document.removeEventListener('data-portal-show', handleShowPortal);
+            document.removeEventListener('data-portal-show-targeted', handleShowTargetedPortal);
+            document.removeEventListener('data-portal-close', handleClosePortal);
+            document.removeEventListener('data-portal-close-container', handleCloseContainer);
         };
     }, []);
 
@@ -157,9 +157,10 @@ export const StaticPortalContainer = () => {
                     return null;
                 }
 
-                const portalRoot = containerElement.querySelector('.react-portal-root');
+                const portalRoot = containerElement.querySelector('.data-portal-root');
+
                 if (!portalRoot) {
-                    console.warn(`Container .react-portal-root not found in ${containerId}`);
+                    console.warn(`Container .data-portal-root not found in ${containerId}`);
                     return null;
                 }
 

@@ -30,8 +30,9 @@ export const ConfirmationDialog = ({ title, message, dialog_id, portal_id, resol
                 // Resolve promise and close dialog portal
                 setTimeout(() => {
                     staticPortalBridge.closeComponent(portal_id)
+                    portalRef.current.remove()
                     resolve(confirmed)
-                }, 510);
+                }, 500);
             }
         } else {
             //modalmanager.hideConfirmDialog(dialog_id, confirmed, resolve)

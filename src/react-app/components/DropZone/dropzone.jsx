@@ -124,11 +124,11 @@ export const DropZone = ({ isOpen, onToggle }) => {
                 ref={dropzoneContainer}
                 onClick={shouldClose}
                 id="dropzoneContainer"
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-40 p-2 transition-all duration-300 hidden">
+                className="fixed inset-0 bg-black/60 backdrop-brightness-50 flex items-center justify-center z-[51] p-2 transition-all duration-300 hidden">
                 <div
                     ref={dropzoneContent}
                     id="dropzoneContent"
-                    className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-4xl h-[95vh] backdrop-blur-lg transform transition-all duration-500 scale-95 opacity-0">
+                    className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-3xl h-[95vh] backdrop-blur-lg transform transition-all duration-500 scale-95 opacity-0">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
                         <div className="flex items-center justify-between">
@@ -161,18 +161,18 @@ export const DropZone = ({ isOpen, onToggle }) => {
                     </div>
 
                     {/* Dropzone Area */}
-                    <div className="p-6 h-[calc(85vh-200px)]">
+                    <div className="p-2 h-[calc(86vh-200px)]">
                         <div
                             ref={dropZoneRef}
                             id="dropZone"
-                            className="relative border-3 border-dashed border-blue-300 dark:border-blue-600 rounded-2xl w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 hover:from-blue-100/50 hover:to-purple-100/50 dark:hover:from-blue-800/20 dark:hover:to-purple-800/20 transition-all duration-300 group cursor-pointer"
+                            className="relative flex flex-col items-center justify-center border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-2xl w-full h-full p-3 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 hover:from-blue-100/50 hover:to-purple-100/50 dark:hover:from-blue-800/20 dark:hover:to-purple-800/20 transition-all duration-300 group cursor-pointer"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Animated Background */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent dark:via-white/2 group-hover:via-white/10 transition-all duration-1000 transform -translate-x-full group-hover:translate-x-full"></div>
+                            <div className="hidden absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent dark:via-white/2 group-hover:via-white/10 transition-all duration-1000 transform -translate-x-full group-hover:translate-x-full"></div>
 
                             {/* Main Content */}
-                            <div className="relative z-10 text-center p-8">
+                            <div className="text-center p-8">
                                 {/* Animated Icon */}
                                 <div className="w-fit h-fit p-3 bg-gradient-to-br from-sky-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,7 +319,7 @@ export const FilePreview = ({ shouldClosePreview, closePreview, preview_ref }) =
                 ref={preview_ref}
                 onClick={shouldClosePreview}
                 id="previewModal"
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden opacity-0" >
+                className="fixed inset-0 bg-black/60 backdrop-brightness-100 flex items-center justify-center z-[51] p-4 transition-all duration-500 hidden opacity-0" >
                 <div id="modalContent" className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] backdrop-blur-lg transform transition-all duration-500 animate-exit">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">

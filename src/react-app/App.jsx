@@ -46,7 +46,8 @@ const App = () => {
     return (
         <ErrorBoundary>
             <MainLayout>
-                <div data-portal-container="main-container" id="main-container" className='flex flex-1 overflow-hidden max-w-full'>
+                <div data-portal-container="mainContainer" id="main-container"  className='flex flex-1 overflow-hidden max-w-full'>
+                    <span className='data-portal-root fixed z-[99]'></span>
                     <div className='flex flex-shrink'>
                         <ErrorBoundary>
                             <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />

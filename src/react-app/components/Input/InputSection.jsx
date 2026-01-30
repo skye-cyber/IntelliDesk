@@ -68,6 +68,9 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
             const userInput = textareaRef.current;
             if (inputValue.trim() && !StateManager.get('processing')) {
+                // Avail orginal text for retries incase of errors
+                StateManager.set('userInputText', inputValue.trim())
+
                 // Reset the input field
                 // Auto-format the text with code blocks before sending
                 const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(inputValue)

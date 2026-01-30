@@ -10,9 +10,9 @@ class StaticPortalBridge {
         this.portalContainers.set(containerId, domElement);
 
         // Create a portal root inside the target container if it doesn't exist
-        if (!domElement.querySelector('.react-portal-root')) {
+        if (!domElement.querySelector('.data-portal-root')) {
             const portalRoot = document.createElement('div');
-            portalRoot.className = 'react-portal-root';
+            portalRoot.className = 'data-portal-root';
             domElement.appendChild(portalRoot);
         }
     }
@@ -21,6 +21,11 @@ class StaticPortalBridge {
     showComponentInTarget(componentType, containerId, props = {}, portal_prefix = '') {
         const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+        props = {
+            ...props,
+            portal_id: portalId
+        }
+
         if (!this.portalContainers.has(containerId)) {
             //console.warn(`Container ${containerId} not registered. Falling back to global.`);
             return this.showComponent(componentType, props);
@@ -28,9 +33,10 @@ class StaticPortalBridge {
 
         props.portal_id = portalId
 
-        const event = new CustomEvent('react-portal-show-targeted', {
+        const event = new CustomEvent('data-portal-show-targeted', {
             detail: { portalId, componentType, containerId, props }
         });
+
         document.dispatchEvent(event);
 
         return portalId;
@@ -40,7 +46,7 @@ class StaticPortalBridge {
     showComponent(componentType, props = {}, portal_prefix = '') {
         const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-        const event = new CustomEvent('react-portal-show', {
+        const event = new CustomEvent('data-portal-show', {
             detail: { portalId, componentType, props }
         });
         document.dispatchEvent(event);
@@ -49,7 +55,7 @@ class StaticPortalBridge {
     }
 
     closeComponent(portalId, prefix = false) {
-        const event = new CustomEvent('react-portal-close', {
+        const event = new CustomEvent('data-portal-close', {
             detail: { id: portalId, prefix: prefix }
         });
         document.dispatchEvent(event);
@@ -57,7 +63,7 @@ class StaticPortalBridge {
 
     // Close all components in a specific container
     closeAllInContainer(containerId) {
-        const event = new CustomEvent('react-portal-close-container', {
+        const event = new CustomEvent('data-portal-close-container', {
             detail: { containerId }
         });
         document.dispatchEvent(event);

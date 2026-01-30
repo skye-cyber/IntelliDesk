@@ -125,7 +125,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                 {/* status display modals */}
                 <div data-portal-container='messageContainer'
                     id='message-container'
-                    className='fixed top-20 right-6 z-50 space-y-3 max-w-sm w-full'>
+                    className='fixed top-2 right-2 z-[99] space-y-3 max-w-sm w-full'>
                 </div>
 
             </div>

@@ -301,3 +301,4 @@ export const ErrorModal = ({ error, onRetry, onClose, autoCloseDelay = 8000 }) =
 const errorHandler = new ErrorHandler();
 
 export default errorHandler;
+

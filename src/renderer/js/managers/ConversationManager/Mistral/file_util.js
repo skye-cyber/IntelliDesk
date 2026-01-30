@@ -17,8 +17,6 @@ export function prep_user_input(text, options = {}) {
     const files = StateManager.get('uploaded_files') || [];
     let userContent = [];
 
-    console.log(files)
-
     // Always include text content
     if (text && text.trim()) {
         userContent.push({

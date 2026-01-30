@@ -623,11 +623,6 @@ const api = {
 };
 
 const api2 = {
-    // Deprecated key apis
-    saveKeys: async (keys) => ipcRenderer.invoke('save-keys', keys),
-    getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),
-    resetKeys: async (accounts) => ipcRenderer.invoke('reset-keys', accounts),
-
     // Key chain apis
     saveKeyChain: async (keychain) => ipcRenderer.invoke('save-key-chain', keychain),
     getKeyChain: async (account = 'mistral') => ipcRenderer.invoke('get-key-chain', account),

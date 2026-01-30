@@ -82,12 +82,17 @@ export class ChatManager {
                             metadata.highlight = ""
                         }
                         // Date split
-                        const datestr = this.dateStrDisplay(metadata.updated_at)
+                        let datestr = this.dateStrDisplay(metadata.updated_at)
                         //console.log(datestr?.split('/')[1], this.splitstr?.split('/')[1])
-                        if (datestr && datestr !== this.splitstr ) staticPortalBridge.showComponentInTarget('DateSplit', 'conversations', { displaystr: datestr }, 'chatItem')
+                        if (datestr && datestr !== this.splitstr) {
+                            //staticPortalBridge.showComponentInTarget('DateSplit', 'conversations', { displaystr: datestr }, 'chatItem')
+                        }else{
+                            datestr = null
+                        }
+
                         this.splitstr = datestr
 
-                        staticPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata }, 'chatItem')
+                        staticPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata, datestr: datestr }, 'chatItem')
 
                         document.dispatchEvent(new CustomEvent('hide-loading'));
 
@@ -341,8 +346,7 @@ export class ChatManager {
             if (_delete) {
                 await this.hideLoadingModal();
                 this.hideConversationOptions();
-                window.showDeletionStatus("text-red-400", `Deleted ${this.currentConversationId}`);
-                console.log(`Deleted ${this.currentConversationId}`);
+                //console.log(`Deleted ${this.currentConversationId}`);
             } else {
                 this.hideConversationOptions();
             }

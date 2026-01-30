@@ -116,7 +116,7 @@ export function handleFiles(files) {
     }
 
     setTimeout(() => {
-        staticPortalBridge.showComponentInTarget('UploadeFileIndicator', 'userInputContainer', {}, "file_count")
+        staticPortalBridge.showComponentInTarget('UploadedFileIndicator', 'userInputContainer', {}, "file_count")
     }, 1000)
 }
 

@@ -126,7 +126,7 @@ export class ConversationLoader {
     getFileUrl(content) {
         try {
             // Find all items with type "image_url"
-            const fileMessages = content.filter(item => item.type === "image_url");
+            const fileMessages = content?.filter(item => item.type === "image_url");
 
             // Extract all URLs from the image_url properties
             return fileMessages.map(fileMessage => fileMessage.imageUrl.url);
@@ -146,9 +146,9 @@ export class ConversationLoader {
     renderUserMessage(content, model = 'chat') {
         var userText = null;
 
-        const files = content.filter(c => c.type === "document_url")
-
+        let files
         if (model.toLocaleLowerCase() === 'multimodal') {
+            files = content.filter(c => c.type === "document_url")
 
             // Check if content is an array and has at least one element before accessing content[0]
             if (content && content?.length > 0 && content[0]?.text) {

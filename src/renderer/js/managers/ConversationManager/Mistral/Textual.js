@@ -3,13 +3,13 @@ import { clientmanager } from "./ClientManager";
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
 import { GenerateId } from "../../../../../react-app/components/ConversationRenderer/utils";
-import { generateTextChunks, generateTextChunksAdvanced } from '../../../tests/AiSimulator';
-import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
 import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge";
+import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
+import { timer } from "../../../Timer/timer";
 
 let ai_ms_pid
 
@@ -18,7 +18,7 @@ export async function MistraChat({ text, model_name = StateManager.get('currentM
         if (!text?.trim()) return console.log("Message is empty")
 
         // Create Timer object
-        const _Timer = new window.Timer();
+        const _Timer = timer;
 
         StateManager.set('user-text', text)
 
@@ -50,8 +50,16 @@ export async function MistraChat({ text, model_name = StateManager.get('currentM
         HandleProcessingEventChanges('show')
         StateManager.set('processing', true);
 
+        if (!clientmanager.MistralClient.chat) {
+            throw {
+                origin: 'Mistral Client Call',
+                message: 'Mistral client is not fully configured',
+                type: 'Initialization', errorType: 'RuntimeError',
+                stack: 'MistralChat\n at MistralClient.client.chat.stream'}
+        }
+
         const stream = //generateTextChunks()
-            await clientmanager.MistralClient.client.chat.stream({
+            await clientmanager.MistralClient.chat.stream({
                 model: model_name,
                 messages: window.desk.api.getHistory(true),
                 max_tokens: 3000
@@ -281,15 +289,7 @@ export async function MistraChat({ text, model_name = StateManager.get('currentM
 
         if (await appIsDev()) errorHandler.resetRetryCount()
     } catch (error) {
-        HandleProcessingEventChanges("hide")
-        window.desk.api.popHistory("user")
-        staticPortalBridge.closeComponent(StateManager.get('user_message_portal'))
-        streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
-        staticPortalBridge.closeComponent(StateManager.get('loader-element-id'))
-        //console.log(error)
-        await appIsDev()
-            ? handleDevErrors(error, StateManager.get('user_message_portal'), StateManager.get('ai_message_portal'), text)
-            : errorHandler.showError({ title: error?.name, message: error.message || error, retryCallback: MistraChat, callbackArgs: { text: text, model_name: model_name } })
+        await BaseErrorHandler(error, ai_ms_pid, MistraChat)
     }
 }
 

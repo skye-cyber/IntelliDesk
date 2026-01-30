@@ -52,4 +52,4 @@ export class Timer {
 	}
 }
 
-window.Timer = Timer
+export const timer = new Timer()

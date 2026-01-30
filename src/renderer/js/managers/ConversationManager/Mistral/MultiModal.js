@@ -3,21 +3,20 @@ import { clientmanager } from "./ClientManager";
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
 import { GenerateId } from "../../../../../react-app/components/ConversationRenderer/utils";
-import { generateTextChunks } from '../../../tests/AiSimulator';
-import { handleDevErrors } from '../../../ErrorHandler/ErrorHandler';
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
 import { prep_user_input } from "./file_util";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
 import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge";
+import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
+import { timer } from "../../../Timer/timer";
 
 let ai_ms_pid
 
 export async function MistraMultimodal({ text, model_name = StateManager.get('currentModel') }) {
-    if (!text?.trim() && !file_data_url) return console.log("Message, files are empty")
 
-    const _Timer = new window.Timer();
+    const _Timer = timer;
 
     StateManager.set('user-text', text)
 
@@ -47,20 +46,21 @@ export async function MistraMultimodal({ text, model_name = StateManager.get('cu
     const { user_message_portal, userContent } = prep_user_input(text)
 
     try {
-        if (!clientmanager.MistralClient.client) {
+        if (!clientmanager.MistralClient?.chat) {
             throw {
                 origin: 'Mistral Client Call',
                 message: 'Mistral client is not fully configured',
                 type: 'Initialization', errorType: 'RuntimeError',
-                stack: 'MistraMultimodal\n at MistralClient.client.chat.stream'}
+                stack: 'MistraMultimodal\n at MistralClient.client.chat.stream'
+            }
         }
 
         const stream = //generateTextChunks(text)
-            await clientmanager.MistralClient.client.chat.stream({
-                model: model_name,
-                messages: window.desk.api.getHistory(true),
-                max_tokens: 3000,
-            })
+        await clientmanager.MistralClient.chat.stream({
+            model: model_name,
+            messages: window.desk.api.getHistory(true),
+                                                      max_tokens: 3000,
+        })
 
         let conversationName = null;
         let continued = false;
@@ -190,21 +190,21 @@ export async function MistraMultimodal({ text, model_name = StateManager.get('cu
                     fold_id: fold_id,
                     conversation_name: conversationName
                 },
-                    {
-                        replace: {
-                            target_props: ["actual_response"],
-                            repvalues: [
-                                {
-                                    pattern: "<continued>",
-                                    repl: "\n"
+                {
+                    replace: {
+                        target_props: ["actual_response"],
+                        repvalues: [
+                            {
+                                pattern: "<continued>",
+                                repl: "\n"
 
-                                }, {
-                                    pattern: "</continued>",
-                                    repl: ""
-                                }
-                            ]
-                        }
-                    });
+                            }, {
+                                pattern: "</continued>",
+                                repl: ""
+                            }
+                        ]
+                    }
+                });
             } else {
                 streamingPortalBridge.updateStreamingPortal(message_portal, {
                     actual_response: actualResponse,
@@ -230,14 +230,14 @@ export async function MistraMultimodal({ text, model_name = StateManager.get('cu
 
         if (conversationName && conversationName !== "null") window.desk.api.updateName(conversationName, false)
 
-        if (canvasutil.isCanvasOn()) {
-            if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();
-            // normalize canvas
-            canvasutil.NormalizeCanvasCode();
-        }
+            if (canvasutil.isCanvasOn()) {
+                if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();
+                // normalize canvas
+                canvasutil.NormalizeCanvasCode();
+            }
 
-        //stop timer
-        _Timer.trackTime("stop");
+            //stop timer
+            _Timer.trackTime("stop");
 
         // Reset send button appearance
         HandleProcessingEventChanges('hide')
@@ -256,8 +256,8 @@ export async function MistraMultimodal({ text, model_name = StateManager.get('cu
                 role: "assistant",
                 content: [{
                     type: "text", text: fullResponse
-                        .replace("<continued>", "")
-                        .replace("</continued>", "")
+                    .replace("<continued>", "")
+                    .replace("</continued>", "")
                 }]
             })
         } else {
@@ -280,15 +280,6 @@ export async function MistraMultimodal({ text, model_name = StateManager.get('cu
         if (await appIsDev()) errorHandler.resetRetryCount()
 
     } catch (error) {
-        HandleProcessingEventChanges("hide")
-        window.desk.api.popHistory('user')
-
-        staticPortalBridge.closeComponent(StateManager.get('user_message_portal'))
-        streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
-        staticPortalBridge.closeComponent(StateManager.get('loader-element-id'))
-
-        await appIsDev()
-            ? handleDevErrors(error, StateManager.get('user_message_pid'), StateManager.get('ai_message_pid'), text, true)
-            : errorHandler.showError({ title: error.name, message: error.message || error, retryCallback: MistraMultimodal, callbackArgs: { text: text, model_name: model_name } })
+        await BaseErrorHandler(error, ai_ms_pid, MistraMultimodal)
     }
 }

@@ -12,8 +12,8 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
     const [MistralKeyChain, setMistralKeyChain] = useState({
         keys: [
             { value: 'HUHUJIKKhfhsjhdoashdsduovifkdk', status: 'active' },
-            { value: 'xclkUUUgjhdgfjdcvnvsdvncvvjUx', status: 'ready' },
-            { value: 'hfdhgfasdygYDFUKEFJHYYWUEWKEH', status: 'ready' },
+            { value: 'xclkUUUgjhdgfjdcvnvsdvncvvjUx', status: 'enabled' },
+            { value: 'hfdhgfasdygYDFUKEFJHYYWUEWKEH', status: 'enabled' },
             { value: 'asjkfasdafhsdljchdfsasdkjdIuk', status: 'disabled' },
         ]
     })
@@ -252,21 +252,21 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         //showApiQueryModal()
     }
 
-    function onKeyEdit(key) {
-        //
-    }
-
-    function onKeyDelete(key) {
-        //
-    }
-
-    function onKeyDisable(key) {
-        //
-    }
-
-    const setMistralKey = useCallback((value) => {
-        //document.getElementById('mistralKey').value = value;
+    const onKeyDelete = useCallback((key) => {
+        const chain = MistralKeyChain.keys.filter(api => api.value != key.value)
+        setMistralKeyChain({ keys: chain })
     })
+
+    const onKeyDisable = useCallback((key) => {
+        const chain = MistralKeyChain.keys.map(api => {
+            if (api.value == key.value) api.status = (['enabled', 'active'].includes(api.status)) ? 'disabled' : 'enabled'
+            return api
+        })
+
+        setMistralKeyChain({keys: chain})
+        console.log(chain)
+    })
+
 
     return (
         <section>
@@ -369,9 +369,9 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
 
             {/* Key Management Modal */}
             <div id="apiKeyManPage" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hiddenx">
-                <div id="apiManContent" className="relative w-full max-w-2xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl backdrop-blur-lg transform transition-all duration-500 translate-y-8 opacity-100">
+                <div id="apiManContent" className="relative w-full max-w-2xl bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl backdrop-blur-lg transform transition-all duration-500 translate-y-0 opacity-100">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
+                    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-4 py-2 lg:py-4 rounded-t-2xl">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                                 <div className="p-2 bg-blue-500/10 rounded-xl">
@@ -402,19 +402,30 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                     </div>
 
                     {/* Content */}
-                    <div className="p-6 space-y-6">
+                    <div className="p-3 lg:p-6 space-y-4 lg:space-y-6">
                         {/*API keychain Display*/}
                         <section className='space-y-3'>
                             <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                <span>API Key Chain</span>
+                                <span>API Key Chain</span><span><span className='text-orange-400'>(</span><span className='tracking-wider'>{MistralKeyChain.keys.length}</span><span className='text-pink-400'>)</span></span>
                             </label>
-                            <div className="container grid grid-cols-1 sm:grid-cols-2 items-center gap-1 space-y-1 bg-gray-100 dark:bg-primary-950 w-fit h-fit max-h-42 max-w-full p-2 rounded-lg border border-t-2 dark:border-primary-300">
-                                {
-                                    MistralKeyChain.keys.map((key, index) => {
-                                        return <APIkey key={index} apikey={key} onDelete={onKeyDelete} onEdit={onKeyEdit} onDisable={onKeyDisable} maskFn={maskKey} />
-                                    })
-                                }
+                            <div className="bg-white/80 dark:bg-primary-900/80 backdrop-blur-sm rounded-xl shadow-balanced-lg overflow-hidden border border-gray-200 dark:border-b-2 dark:border-cyber-500/50 dark:border-t-primary-200/50 h-32 overflow-y-auto scroll-smooth scrollbar-custom">
+                                <table className='divide-y divide-gray-200 dark:divide-gray-600/50 w-full'>
+                                    <thead className="sticky z-30 top-0 left-0 right-0 bg-gray-200 dark:bg-primary-950">
+                                        <tr className='divide-x divide-gray-700/80'>
+                                            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-white">Key</th>
+                                            <th className="px-2 py-2 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
+                                            <th className="px-2 py-2 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-600/50 p-2 rounded-lg">
+                                        {
+                                            MistralKeyChain.keys.map((key, index) => {
+                                                return <APIkey key={index} apikey={key} onDelete={onKeyDelete} onDisable={onKeyDisable} maskFn={maskKey} />
+                                            })
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
                         </section>
                         {/* Mistral API Key */}
@@ -466,11 +477,11 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                     </div>
 
                     {/* Footer */}
-                    <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6 rounded-b-2xl">
+                    <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6 py-2 rounded-b-2xl">
                         <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
                             <button
                                 onClick={resetKeys}
-                                className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-50 dark:hover:bg-slate-900 hover:border rounded-2xl border-gray-400 dark:border-primary-200 hover:translate-y-2 transition-all duration-500 font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={!MistralKeyChain}
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -488,7 +499,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
                                 </button>
                                 <button
                                     onClick={() => HandleKeyChainSave('update')}
-                                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                                    className="px-6 py-3 bg-gradient-to-r from-primary-500 to-purple-600 hover:from-purple-600 hover:to-primary-700 text-white rounded-xl font-medium transition-all duration-500 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -510,18 +521,48 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
     );
 };
 
-const APIkey = ({ apikey, maskFn, onDelete, onEdit, onDisable }) => {
+const APIkey = ({ apikey, maskFn, onDelete, onDisable }) => {
     const dotColors = {
-        ready: 'bg-orange-500',
-        active: 'bg-green-500 animate-heartpulse-super ease-in-out',
-        disabled: 'bg-[#ff0000]'
+        enabled: {
+            bg: 'bg-orange-500',
+            text: 'text-orange-500',
+            animation: ''
+        },
+        active: {
+            bg: 'bg-green-500',
+            text: 'text-green-500',
+            animation: 'animate-heartpulse-super ease-in-out'
+        },
+        disabled: {
+            bg: 'bg-[#ff0000]',
+            text: 'text-red-500',
+            animation: ''
+        }
     }
     return (
-        <div>
-            <label className="flex items-center space-x-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <div className={`ml-2 w-2 h-2 ${dotColors[apikey.status]} rounded-full`}></div>
-                <span>{apikey.value}</span>
-            </label>
-        </div>
+        <tr className='hover:bg-gray-50/50 dark:hover:bg-[#aa55ff]/10 transition-colors'>
+            <td className="flex items-center space-x-1 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <div className={`ml-2 w-2 h-2 ${dotColors[apikey.status].bg} ${dotColors[apikey.status].animation} rounded-full`}></div>
+                <span className='truncate'>{apikey.value}</span>
+            </td>
+            {/* Status */}
+            <td>
+                <span className={`${dotColors[apikey.status].text} text-xs font-handwriting`}>{apikey.status}</span>
+            </td>
+            {/* Actions */}
+            <td className='flex space-x-3'>
+                {/*Delete*/}
+                <button onClick={() => onDelete(apikey)} className='flex space-x-1 text-red-400 text-[15px]'>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.981-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Delete</span>
+                </button>
+                {/*Disable*/}
+                <button onClick={() => onDisable(apikey)} className={`flex text-[15px] space-x-2 ${apikey.status !== 'disabled' ? 'text-red-400' : 'text-green-400'}`}>
+                    {apikey.status !== 'disabled' ? 'Disable' : 'Enable'}
+                </button>
+            </td>
+        </tr>
     )
 }

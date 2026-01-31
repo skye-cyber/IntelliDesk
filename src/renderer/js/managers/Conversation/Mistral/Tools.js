@@ -1,18 +1,23 @@
 export class ToolsIntegration {
     constructor(apiKey) {
         this.client = new Mistral({ apiKey: apiKey });
+        this.toolManager = require('./ToolManager').default;
         this.availableFunctions = new Map();
         this.registerCoreFunctions();
     }
 
     // Register all available functions
     registerCoreFunctions() {
-        this.registerFunction('search_web', this.searchWeb.bind(this));
-        this.registerFunction('get_weather', this.getWeather.bind(this));
-        this.registerFunction('calculate', this.calculate.bind(this));
-        this.registerFunction('file_operations', this.fileOperations.bind(this));
-        this.registerFunction('database_query', this.databaseQuery.bind(this));
-        this.registerFunction('send_message', this.sendMessage.bind(this));
+        // Register tools from tool manager
+        this.toolManager.tools.forEach((tool, name) => {
+            this.registerFunction(name, this.createToolWrapper(tool));
+        });
+    }
+
+    createToolWrapper(tool) {
+        return async (params) => {
+            return this.toolManager.executeTool(tool.name, params);
+        };
     }
 
     registerFunction(name, fn, schema) {
@@ -351,124 +356,18 @@ export class ToolsIntegration {
         };
     }
 
-    // Core function implementations
-    async searchWeb({ query, max_results = 5 }) {
-        try {
-            // Integrate with your search API or use Mistral's search
-            const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=${max_results}`);
-            if (!response.ok) throw new Error('Search failed');
+    // Tool functions are now handled by individual tool classes
+    // through the ToolManager
 
-            const results = await response.json();
-            return {
-                success: true,
-                results: results.slice(0, max_results),
-                summary: `Found ${results.length} results for "${query}"`
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message,
-                fallback: `I searched for "${query}" but encountered an error.`
-            };
-        }
+    getAvailableToolSchemas() {
+        return this.toolManager.getAvailableToolSchemas();
     }
 
-    async getWeather({ location, unit = "celsius" }) {
-        try {
-            // Replace with your weather API
-            const response = await fetch(`/api/weather?location=${encodeURIComponent(location)}&unit=${unit}`);
-            const weatherData = await response.json();
-
-            return {
-                location,
-                temperature: weatherData.temp,
-                unit,
-                conditions: weatherData.conditions,
-                humidity: weatherData.humidity,
-                summary: `Weather in ${location}: ${weatherData.temp}°${unit === 'celsius' ? 'C' : 'F'}, ${weatherData.conditions}`
-            };
-        } catch (error) {
-            return {
-                error: `Could not fetch weather for ${location}`,
-                suggestion: "Please check the location name and try again."
-            };
-        }
+    getToolStats() {
+        return this.toolManager.getToolStats();
     }
 
-    async calculate({ expression, precision = 2 }) {
-        try {
-            // Safe evaluation of mathematical expressions
-            const sanitizedExpression = expression.replace(/[^0-9+\-*/().]/g, '');
-            const result = eval(sanitizedExpression);
-
-            if (typeof result !== 'number' || !isFinite(result)) {
-                throw new Error('Invalid calculation result');
-            }
-
-            return {
-                expression,
-                result: Number(result.toFixed(precision)),
-                precision,
-                formatted: `${expression} = ${Number(result.toFixed(precision))}`
-            };
-        } catch (error) {
-            return {
-                error: "Could not calculate expression",
-                expression,
-                suggestion: "Please provide a valid mathematical expression."
-            };
-        }
+    async executeToolSequence(sequence) {
+        return this.toolManager.executeToolSequence(sequence);
     }
-
-    async fileOperations({ operation, path, content }) {
-        try {
-            switch (operation) {
-                case 'read':
-                    // Implement file reading logic
-                    return { operation: 'read', path, content: `Simulated content of ${path}` };
-
-                case 'write':
-                    // Implement file writing logic
-                    return { operation: 'write', path, success: true, bytesWritten: content?.length || 0 };
-
-                case 'list':
-                    // Implement directory listing
-                    return { operation: 'list', path, files: ['file1.txt', 'file2.js'] };
-
-                case 'delete':
-                    // Implement file deletion
-                    return { operation: 'delete', path, success: true };
-
-                default:
-                    throw new Error(`Unsupported operation: ${operation}`);
-            }
-        } catch (error) {
-            return {
-                error: `File operation failed: ${error.message}`,
-                operation,
-                path
-            };
-        }
-    }
-
-    async databaseQuery({ query, parameters = {} }) {
-        // Implement your database query logic
-        return {
-            query,
-            parameters,
-            results: [], // Your query results
-            rowCount: 0
-        };
-    }
-
-    async sendMessage({ to, message, type = "text" }) {
-        // Implement message sending logic
-        return {
-            success: true,
-            to,
-            messageId: `msg_${Date.now()}`,
-            status: "sent"
-        };
-    }
-
 }

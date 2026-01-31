@@ -232,7 +232,7 @@ class AgentConfigManager {
     validate_config() {
         // Validate tool configurations
         const tools = this.config.tools || {};
-        
+
         for (const [toolName, toolConfig] of Object.entries(tools)) {
             // Ensure permission is valid
             const validPermissions = ["always", "ask", "never"];
@@ -240,13 +240,13 @@ class AgentConfigManager {
                 console.warn(`Invalid permission "${toolConfig.permission}" for tool ${toolName}. Defaulting to "never".`);
                 toolConfig.permission = "never";
             }
-            
+
             // Set defaults for missing configurations
             if (!toolConfig.permission) {
                 toolConfig.permission = "never";
             }
         }
-        
+
         return true;
     }
 

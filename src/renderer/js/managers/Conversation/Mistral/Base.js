@@ -10,6 +10,7 @@ import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge";
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
 import { timer } from "../../../Timer/timer";
+import aiToolIntegration from './ToolIntegration';
 
 /**
  * Base function for Mistral AI interactions

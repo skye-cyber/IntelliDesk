@@ -37,7 +37,7 @@ export class CalculateTool extends ToolBase {
         try {
             // Safe evaluation of mathematical expressions
             const sanitizedExpression = expression.replace(/[^0-9+\-*/(). \t]/g, '');
-            
+
             // Use Function constructor for safer evaluation
             const result = new Function('return ' + sanitizedExpression)();
 

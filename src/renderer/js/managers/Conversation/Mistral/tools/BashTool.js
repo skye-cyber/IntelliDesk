@@ -47,17 +47,17 @@ export class BashTool extends ToolBase {
     async _execute({ command, timeout = null }, context) {
         // Apply timeout from config if not specified
         const effectiveTimeout = timeout !== null ? timeout : this.config.default_timeout || 30;
-        
+
         // Validate command against allowlist/denylist
         this.validateCommand(command);
-        
+
         // Execute command
         const { stdout, stderr } = await execAsync(command, {
             timeout: effectiveTimeout * 1000, // Convert to milliseconds
             maxBuffer: this.config.max_output_bytes || 16000,
             shell: '/bin/bash'
         });
-        
+
         return {
             command: command,
             stdout: stdout,
@@ -71,20 +71,20 @@ export class BashTool extends ToolBase {
         const allowlist = this.config.allowlist || [];
         const denylist = this.config.denylist || [];
         const denylistStandalone = this.config.denylist_standalone || [];
-        
+
         // Check denylist (exact matches)
         for (const denied of denylist) {
             if (command.includes(denied)) {
                 throw new Error(`Command contains denied pattern: ${denied}`);
             }
         }
-        
+
         // Check denylist standalone (commands that cannot be used standalone)
         const firstWord = command.trim().split(' ')[0];
         if (denylistStandalone.includes(firstWord)) {
             throw new Error(`Command not allowed as standalone: ${firstWord}`);
         }
-        
+
         // If allowlist is defined, command must match one of the allowed patterns
         if (allowlist.length > 0) {
             const matchesAllowlist = allowlist.some(pattern => {
@@ -94,12 +94,12 @@ export class BashTool extends ToolBase {
                 }
                 return command === pattern;
             });
-            
+
             if (!matchesAllowlist) {
                 throw new Error(`Command not in allowlist`);
             }
         }
-        
+
         return true;
     }
 

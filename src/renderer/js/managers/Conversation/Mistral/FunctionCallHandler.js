@@ -108,7 +108,7 @@ export class FunctionCallHandler {
             messages: messages,
             stream: true
         });
-        
+
         return stream;
     }
 
@@ -117,7 +117,7 @@ export class FunctionCallHandler {
      */
     async executeToolCalls(toolCalls) {
         const results = [];
-        
+
         for (const toolCall of toolCalls) {
             try {
                 const toolName = toolCall.function.name;
@@ -154,7 +154,7 @@ export class FunctionCallHandler {
         if (streamResult.type === "stream") {
             // Add tool context to the stream
             const toolContext = this.aiToolIntegration.createToolContext();
-            
+
             for await (const chunk of streamResult.stream) {
                 const content = chunk.choices[0]?.delta?.content;
                 if (content) {

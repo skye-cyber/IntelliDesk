@@ -37,16 +37,16 @@ export class ToolBase {
      */
     validateExecution() {
         const permission = this.config.permission || "always";
-        
+
         if (permission === "never") {
             throw new Error(`Tool ${this.name} is disabled by configuration`);
         }
-        
+
         // Check if tool is in disabled list
         if (agent.config.disabled_tools && agent.config.disabled_tools.includes(this.name)) {
             throw new Error(`Tool ${this.name} is disabled`);
         }
-        
+
         return true;
     }
 
@@ -56,7 +56,7 @@ export class ToolBase {
     async execute(params, context = {}) {
         try {
             this.validateExecution();
-            
+
             // Add execution context
             const executionContext = {
                 timestamp: new Date().toISOString(),
@@ -67,10 +67,10 @@ export class ToolBase {
 
             // Execute the tool
             const result = await this._execute(params, executionContext);
-            
+
             // Log successful execution
             this.logExecution('success', params, result);
-            
+
             return this.formatResult(result);
         } catch (error) {
             // Handle errors consistently
@@ -121,7 +121,7 @@ export class ToolBase {
             result: status === 'error' ? result.error : 'success',
             timestamp: new Date().toISOString()
         });
-        
+
         // Store in state for debugging
         StateManager.set('lastToolExecution', {
             tool: this.name,

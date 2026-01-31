@@ -51,15 +51,15 @@ export class GrepTool extends ToolBase {
         // Build grep command
         const maxMatches = max_matches !== null ? max_matches : this.config.default_max_matches || 100;
         const ignoreFlag = use_default_ignore ? '--hidden --glob "!.git"' : '';
-        
+
         const command = `grep -r --color=never -n "${pattern}" ${path} ${ignoreFlag} | head -n ${maxMatches}`;
-        
+
         try {
             const { stdout, stderr } = await execAsync(command, {
                 timeout: (this.config.default_timeout || 60) * 1000,
                 maxBuffer: this.config.max_output_bytes || 64000
             });
-            
+
             return {
                 pattern: pattern,
                 path: path,
@@ -75,7 +75,7 @@ export class GrepTool extends ToolBase {
                     timeout: (this.config.default_timeout || 60) * 1000,
                     maxBuffer: this.config.max_output_bytes || 64000
                 });
-                
+
                 return {
                     pattern: pattern,
                     path: path,

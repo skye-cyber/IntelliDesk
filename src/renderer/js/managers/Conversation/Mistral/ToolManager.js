@@ -30,7 +30,7 @@ export class ToolManager {
         this.registerTool('file_operations', new (require('./tools/FileOperationsTool').FileOperationsTool)());
         this.registerTool('database_query', new (require('./tools/DatabaseQueryTool').DatabaseQueryTool)());
         this.registerTool('send_message', new (require('./tools/SendMessageTool').SendMessageTool)());
-        
+
         this.updateAvailableTools();
     }
 
@@ -50,7 +50,7 @@ export class ToolManager {
      */
     updateAvailableTools() {
         this.availableTools = [];
-        
+
         this.tools.forEach((tool, name) => {
             if (tool.isAvailable()) {
                 this.availableTools.push({
@@ -67,11 +67,11 @@ export class ToolManager {
      */
     async executeTool(toolName, params, context = {}) {
         const tool = this.tools.get(toolName);
-        
+
         if (!tool) {
             throw new Error(`Tool ${toolName} not found`);
         }
-        
+
         return tool.execute(params, context);
     }
 
@@ -123,15 +123,15 @@ export class ToolManager {
      */
     async executeToolSequence(sequence, sharedContext = {}) {
         const results = [];
-        
+
         for (const { tool: toolName, params } of sequence) {
             try {
                 const result = await this.executeTool(toolName, params, sharedContext);
                 results.push(result);
-                
+
                 // Update shared context with result
                 sharedContext[`${toolName}_result`] = result;
-                
+
             } catch (error) {
                 results.push({
                     tool: toolName,
@@ -141,7 +141,7 @@ export class ToolManager {
                 });
             }
         }
-        
+
         return results;
     }
 
@@ -154,7 +154,7 @@ export class ToolManager {
             availableTools: this.availableTools.length,
             toolList: Array.from(this.tools.keys())
         };
-        
+
         return stats;
     }
 }

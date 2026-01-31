@@ -18,23 +18,23 @@ export class AIToolIntegration {
      */
     async processToolCalls(toolCalls, context = {}) {
         const results = [];
-        
+
         for (const toolCall of toolCalls) {
             try {
                 // Check if we've exceeded max tool calls
                 if (this.toolCallHistory.length >= this.maxToolCalls) {
                     throw new Error(`Maximum tool calls (${this.maxToolCalls}) exceeded`);
                 }
-                
+
                 const toolName = toolCall.function.name;
                 const params = toolCall.function.arguments;
-                
+
                 // Execute the tool
                 const toolResult = await this.toolManager.executeTool(toolName, params, {
                     ...context,
                     toolCallId: toolCall.id
                 });
-                
+
                 // Store in history
                 this.toolCallHistory.push({
                     toolName,
@@ -42,13 +42,13 @@ export class AIToolIntegration {
                     result: toolResult,
                     timestamp: new Date().toISOString()
                 });
-                
+
                 results.push({
                     toolCallId: toolCall.id,
                     toolName: toolName,
                     result: toolResult
                 });
-                
+
             } catch (error) {
                 const errorResult = await BaseErrorHandler(error, null, 'AIToolIntegration');
                 results.push({
@@ -58,7 +58,7 @@ export class AIToolIntegration {
                 });
             }
         }
-        
+
         return results;
     }
 
@@ -107,13 +107,13 @@ export class AIToolIntegration {
     async processParallelToolCalls(toolCalls, context = {}) {
         const results = [];
         const promises = [];
-        
+
         for (const toolCall of toolCalls) {
             promises.push(this.processSingleToolCall(toolCall, context));
         }
-        
+
         const settledResults = await Promise.allSettled(promises);
-        
+
         settledResults.forEach((result, index) => {
             if (result.status === 'fulfilled') {
                 results.push(result.value);
@@ -125,19 +125,19 @@ export class AIToolIntegration {
                 });
             }
         });
-        
+
         return results;
     }
 
     async processSingleToolCall(toolCall, context) {
         const toolName = toolCall.function.name;
         const params = toolCall.function.arguments;
-        
+
         const toolResult = await this.toolManager.executeTool(toolName, params, {
             ...context,
             toolCallId: toolCall.id
         });
-        
+
         return {
             toolCallId: toolCall.id,
             toolName: toolName,

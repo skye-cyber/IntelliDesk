@@ -115,23 +115,68 @@
     outline: 2px solid #00ffff;
 }
 
-/* Table styling*/
-table{
-
+/* Base table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
 }
 
-thead{
+/* Light theme */
 
+table {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
 }
 
-tbody{
-
+thead {
+    background-color: #f3f4f6;
+    color: #111827;
 }
 
-tr{
-
+tbody {
+    background-color: #ffffff;
 }
 
-td{
+tr {
+    border-bottom: 1px solid #e5e7eb;
+}
 
+tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+td {
+    padding: 8px 12px;
+    text-align: left;
+}
+
+/* Dark theme */
+
+.dark table {
+    background-color: #070015;
+    border: 1px solid #374151;
+}
+
+.dark thead {
+    background-color: #111827;
+    color: #f9fafb;
+}
+
+.dark tbody {
+    background-color: #070015;
+}
+
+.dark tr {
+    border-bottom: 1px solid #1f2933;
+}
+
+.dark tr:nth-child(even) {
+    background-color: #0b001f;
+}
+
+.dark td {
+    padding: 8px 12px;
+    text-align: left;
 }

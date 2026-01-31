@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
 import { StartNewConversation } from '../Sidebar/Sidebar';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
 

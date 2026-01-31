@@ -1,11 +1,11 @@
 import React, { useEffect, useCallback, useRef, useState } from 'react';
-import { ChatManager } from '@js/managers/ConversationManager/ChatManager';
+import { ChatManager } from '@js/managers/Conversation/ChatManager';
 import indellidesk from '@assets/intellidesk.png';
 import { waitForElement } from '../../../renderer/js/Utils/dom_utils';
 import { ChatOptions } from '@components/Chat/ChatOptions.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { ClosePrefixed } from '../../../renderer/js/PortalBridge';
-import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
 import { MessageList } from '../Chat/MessageList';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
 

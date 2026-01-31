@@ -1,7 +1,6 @@
-import { ChatUtil } from './ConversationManager/util';
+import { ChatUtil } from './Conversation/util';
 import { waitForElement } from '../Utils/dom_utils';
-import { MistraChat } from './ConversationManager/Mistral/Textual';
-import { MistraMultimodal } from './ConversationManager/Mistral/MultiModal';
+import { MistraChat, MistraMultimodal } from './Conversation/Mistral/Entry';
 import { StateManager } from './StatesManager';
 import { modalmanager } from '../StatusUIManager/Manager';
 

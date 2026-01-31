@@ -1,5 +1,5 @@
 import React from 'react';
-import { appIsDev } from '../../../renderer/js/managers/ConversationManager/Mistral/shared';
+import { appIsDev } from '../../../renderer/js/managers/Conversation/Mistral/shared';
 import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
 
 class ErrorBoundary extends React.Component {

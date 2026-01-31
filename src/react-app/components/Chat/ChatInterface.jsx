@@ -3,7 +3,7 @@ import { QuickActions } from '@components/QuickActions/QuickActions';
 import { MessageList } from './MessageList';
 import { useElectron } from '@hooks/useElectron';
 import { showDropZoneModal } from '@components/DropZone/util.js'
-import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 
 import { InputSection } from '@components/Input/InputSection';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { chatmanager } from '../../../renderer/js/managers/ConversationManager/ChatManager';
+import { chatmanager } from '../../../renderer/js/managers/Conversation/ChatManager';
 import { DateSplit } from './datesplit';
 
 export const ConversationItem = ({ metadata, datestr, portal_id }) => {

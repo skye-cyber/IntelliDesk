@@ -16,16 +16,15 @@ module.exports = {
         },
         fontFamily: {
             display: ['Source Serif Pro', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
-            body: ['Synonym', 'Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],
             mono: ['JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-            brand: ['Poppins', 'Montserrat', 'SF Pro Display', 'system-ui', 'sans-serif'],
+            brand: ['Poppins', 'Montserrat', 'SF Pro Display', 'system-ui', 'Outfit', 'sans-serif'],
             handwriting: ['Dancing Script', 'Pacifico', 'Caveat', 'cursive'],
             serif: ['Source Serif Pro', 'Merriweather', 'Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
             sans: ['Synonym', 'Inter', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-            modern: ['Poppins', 'Montserrat', 'SF Pro Display', 'Outfit'],
             elegant: ['Playfair Display', 'Cormorant Garamond', 'Georgia'],
             condensed: ['Roboto Condensed', 'Oswald', 'Arial Narrow', 'sans-serif-condensed'],
             code: ['JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Source Code Pro', 'Monaco', 'Consolas', 'monospace'],
+            blink:['system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'sans-serif']
         },
 
         extend: {

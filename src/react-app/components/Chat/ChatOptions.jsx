@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { ChatManager } from '../../../renderer/js/managers/ConversationManager/ChatManager';
+import { ChatManager } from '../../../renderer/js/managers/Conversation/ChatManager';
 import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
 import { staticPortalBridge } from '../../../renderer/js/PortalBridge';
 

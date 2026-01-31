@@ -2,9 +2,9 @@ import { HandleProcessingEventChanges } from "../Utils/chatUtils"
 import { handleDevErrors } from "./ErrorHandler"
 import errorHandler from "../../../react-app/components/ErrorHandler/ErrorHandler"
 import { StateManager } from "../managers/StatesManager"
-import { appIsDev } from "../managers/ConversationManager/Mistral/shared"
+import { appIsDev } from "../managers/Conversation/Mistral/shared"
 import { staticPortalBridge, streamingPortalBridge } from "../PortalBridge"
-import { clientmanager } from "../managers/ConversationManager/Mistral/ClientManager"
+import { clientmanager } from "../managers/Conversation/Mistral/ClientManager"
 
 
 export async function BaseErrorHandler(error, ai_ms_pid, callback) {

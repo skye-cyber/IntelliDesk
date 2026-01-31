@@ -3,7 +3,7 @@ import { Caret } from '@js/Utils/caret.js'
 import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 import { StateManager } from '@js/managers/StatesManager';
-//import { ChatDisplay } from '@js/managers/ConversationManager/util';
+//import { ChatDisplay } from '@js/managers/Conversation/util';
 import { Editor } from './editor';
 import { waitForElement } from '../../../renderer/js/Utils/dom_utils';
 

@@ -1,5 +1,5 @@
 import { waitForElement } from "../../Utils/dom_utils";
-import { ChatDisplay } from "../ConversationManager/util";
+import { ChatDisplay } from "../Conversation/util";
 import { StateManager } from "../StatesManager";
 
 export class ResizeClassToggler {

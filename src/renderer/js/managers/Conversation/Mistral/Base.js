@@ -439,7 +439,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
             console.error(`[Tool Session] Error in iteration ${iteration}:`, error);
             finalResponse = `Sorry, I encountered an error while processing your request: ${error.message}`;
             hasFinalResponse = true;
-            
+
             // Add error to conversation history
             conversationHistory.push({
                 role: "assistant",
@@ -450,7 +450,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
 
     // Generate summary of tool usage
     const toolSummary = generateToolUsageSummary(toolCallHistory);
-    
+
     return {
         finalResponse: finalResponse,
         toolCallHistory: toolCallHistory,
@@ -481,7 +481,7 @@ function generateToolUsageSummary(toolCallHistory) {
     });
 
     summary.push(`Used ${totalToolsUsed} tool calls across ${toolCallHistory.length} iterations:`);
-    
+
     for (const [toolName, count] of Object.entries(toolStats)) {
         summary.push(`- ${toolName}: ${count} call(s)`);
     }
@@ -489,11 +489,7 @@ function generateToolUsageSummary(toolCallHistory) {
     return summary.join('\n');
 }
 
-/**
- * Create a mock stream from a string to maintain compatibility with streaming interface
- */
-async function* createMockStream(content) {
-=======
+
 /**
  * Handle complex tool calling sessions with multiple iterations
  * Supports: sequential tool calls, iterative tool usage, interleaved responses
@@ -595,7 +591,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
             console.error(`[Tool Session] Error in iteration ${iteration}:`, error);
             finalResponse = `Sorry, I encountered an error while processing your request: ${error.message}`;
             hasFinalResponse = true;
-            
+
             // Add error to conversation history
             conversationHistory.push({
                 role: "assistant",
@@ -606,7 +602,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
 
     // Generate summary of tool usage
     const toolSummary = generateToolUsageSummary(toolCallHistory);
-    
+
     return {
         finalResponse: finalResponse,
         toolCallHistory: toolCallHistory,
@@ -637,7 +633,7 @@ function generateToolUsageSummary(toolCallHistory) {
     });
 
     summary.push(`Used ${totalToolsUsed} tool calls across ${toolCallHistory.length} iterations:`);
-    
+
     for (const [toolName, count] of Object.entries(toolStats)) {
         summary.push(`- ${toolName}: ${count} call(s)`);
     }
@@ -669,4 +665,4 @@ async function* createMockStream(content) {
 
 // Add the helper methods to the function
 MistralBase.handleToolCallingSession = handleToolCallingSession;
-MistralBase.createMockStream = createMockStream;
+MistralBase.createMockStream = createMockStream

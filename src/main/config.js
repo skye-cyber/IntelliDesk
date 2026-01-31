@@ -131,6 +131,50 @@ class AgentConfigManager {
                     denylist: [],
                     max_read_bytes: 64000,
                     max_state_history: 10
+                },
+                search_web: {
+                    permission: "ask",
+                    max_results: 5,
+                    timeout: 10,
+                    safe_search: true
+                },
+                get_weather: {
+                    permission: "ask",
+                    default_unit: "celsius",
+                    cache_duration: 300, // 5 minutes in seconds
+                    api_timeout: 5
+                },
+                calculate: {
+                    permission: "always",
+                    max_expression_length: 100,
+                    max_precision: 10,
+                    allow_complex_numbers: false
+                },
+                file_operations: {
+                    permission: "ask",
+                    allowlist: [
+                        "read",
+                        "list"
+                    ],
+                    denylist: [
+                        "delete"
+                    ],
+                    max_file_size: 1048576, // 1MB
+                    safe_paths: [
+                        "/home",
+                        "/tmp",
+                        "/var/tmp"
+                    ]
+                },
+                database_query: {
+                    permission: "never",
+                    max_rows: 100,
+                    timeout: 15
+                },
+                send_message: {
+                    permission: "ask",
+                    max_message_length: 500,
+                    allowed_types: ["text", "email", "sms"]
                 }
             },
         }
@@ -186,7 +230,50 @@ class AgentConfigManager {
         return fs.readFile(this.config_file)
     }
     validate_config() {
-        //
+        // Validate tool configurations
+        const tools = this.config.tools || {};
+        
+        for (const [toolName, toolConfig] of Object.entries(tools)) {
+            // Ensure permission is valid
+            const validPermissions = ["always", "ask", "never"];
+            if (toolConfig.permission && !validPermissions.includes(toolConfig.permission)) {
+                console.warn(`Invalid permission "${toolConfig.permission}" for tool ${toolName}. Defaulting to "never".`);
+                toolConfig.permission = "never";
+            }
+            
+            // Set defaults for missing configurations
+            if (!toolConfig.permission) {
+                toolConfig.permission = "never";
+            }
+        }
+        
+        return true;
+    }
+
+    get_tool_config(toolName) {
+        return this.config.tools[toolName] || {
+            permission: "never"
+        };
+    }
+
+    set_tool_permission(toolName, permission) {
+        if (!this.config.tools[toolName]) {
+            this.config.tools[toolName] = {};
+        }
+        this.config.tools[toolName].permission = permission;
+        return this;
+    }
+
+    enable_tool(toolName) {
+        return this.set_tool_permission(toolName, "always");
+    }
+
+    disable_tool(toolName) {
+        return this.set_tool_permission(toolName, "never");
+    }
+
+    require_confirmation_for_tool(toolName) {
+        return this.set_tool_permission(toolName, "ask");
     }
 }
 

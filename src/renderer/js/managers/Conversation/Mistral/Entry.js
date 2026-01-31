@@ -1,8 +1,6 @@
 import { prep_user_input } from "./file_util";
 import { MistralBase } from "./Base";
 
-let ai_ms_pid
-
 export async function MistraMultimodal({ text, model_name }) {
     return MistralBase({
         text,

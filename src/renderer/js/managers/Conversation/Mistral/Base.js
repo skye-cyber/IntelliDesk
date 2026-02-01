@@ -12,6 +12,7 @@ import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
 import { timer } from "../../../Timer/timer";
 import toolsIntegration from "./ToolIntegration";
 import toolManager from "./ToolManager";
+import mistralClientSimulator from "../../../tests/MistralClientSimulator";
 
 
 let ai_ms_pid
@@ -60,6 +61,7 @@ export async function MistralBase({
 
         // This shall be for errors
         ai_ms_pid = message_portal
+        StateManager.set('ai_messages_portal', message_portal)
 
         // change send button appearance to processing status
         HandleProcessingEventChanges('show')
@@ -91,7 +93,7 @@ export async function MistralBase({
         if (enableToolCalling) {
             // Start tool calling session with conversation state
             const toolSession = await handleToolCallingSession(
-                clientmanager.MistralClient,
+                mistralClientSimulator.client,  //clientmanager.MistralClient,
                 model_name,
                 availableTools,
                 toolsIntegration
@@ -102,7 +104,7 @@ export async function MistralBase({
                 stream = createMockStream(toolSession.finalResponse);
             } else {
                 // Fallback to regular streaming if tool session failed
-                stream = await clientmanager.MistralClient.chat.stream({
+                stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
                     model: model_name,
                     messages: window.desk.api.getHistory(true),
                     max_tokens: 3000,
@@ -110,7 +112,7 @@ export async function MistralBase({
             }
         } else {
             // Use regular streaming without tools
-            stream = await clientmanager.MistralClient.chat.stream({
+            stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
                 model: model_name,
                 messages: window.desk.api.getHistory(true),
                 max_tokens: 3000,
@@ -348,7 +350,7 @@ export async function MistralBase({
  * @param {instance} toolIntegration {2}
  * @param {number} [maxIterations=5] {1}
  */
-async function handleToolCallingSession(client, modelName, availableTools, toolIntegration, maxIterations = 5) {
+async function handleToolCallingSession(client, modelName, availableTools, toolIntegration, maxIterations = 20) {
     let iteration = 0;
     let finalResponse = null;
     let conversationHistory = window.desk.api.getHistory(true);
@@ -370,15 +372,15 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
 
         try {
             // Get AI response with potential tool calls
-            const response = await client.chat.complete({
+            const response = await client.chat.complete.create({
                 model: modelName,
                 messages: conversationHistory,
                 max_tokens: 3000,
                 tools: availableTools,
                 tool_choice: "auto"
             });
-
             const aiMessage = response.choices[0].message;
+            const streaming_portal = StateManager.get('ai_messages_portal')
 
             // Check if AI wants to use tools
             if (aiMessage.tool_calls && aiMessage.tool_calls.length > 0) {
@@ -407,6 +409,8 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
                 // Update history
                 for (const call of toolResults) {
                     window.desk.api.addHistory({ role: "tool", content: call.result, name: call.toolName, tool_call_id: call.toolCallId });
+
+                    streamingPortalBridge.appendToStreamingPortal(streaming_portal, )
                 }
                 // Update with ai message
                 window.desk.api.addHistory({ role: "assistant", content: aiMessage.content || "", tool_calls: aiMessage.tool_calls });
@@ -456,7 +460,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
 
         } catch (error) {
             console.error(`[Tool Session] Error in iteration ${iteration}:`, error);
-            finalResponse = `Sorry, I encountered an error while processing your request: ${error.message}`;
+            finalResponse = `Sorry, I encountered an error while processing your request: ${error?.message}`;
             hasFinalResponse = true;
 
             // Add error to conversation history

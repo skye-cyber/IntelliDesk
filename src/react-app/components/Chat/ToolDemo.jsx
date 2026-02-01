@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ToolResponse } from './ToolResponse';
 import { ToolErrorHandler } from './ToolErrorHandler';
+import ToolCallDisplay from './ToolCallDisplay';
 
 /**
  * ToolDemo Component
@@ -78,7 +79,7 @@ export const ToolDemo = () => {
         error: {
             message: 'Permission denied: cannot write to restricted directory',
             type: 'permission',
-            stack: 'Error: Permission denied\n    at FileSystem.writeFile (/app/filesystem.js:45:15)\n    at WriteFileTool.execute (/app/tools.js:120:22)'
+            stack: 'Error:\n Permission denied\n    at FileSystem.writeFile (/app/filesystem.js:45:15)\n    at WriteFileTool.execute (/app/tools.js:120:22)'
         },
         timestamp: '2024-01-31T14:35:00Z'
     });

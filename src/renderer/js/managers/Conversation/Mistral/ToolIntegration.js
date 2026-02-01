@@ -10,7 +10,7 @@ export class IntegrateTools {
     constructor() {
         this.toolManager = toolManager;
         this.toolCallHistory = [];
-        this.maxToolCalls = 5; // Prevent infinite tool loops
+        this.maxToolCalls = 20; // Prevent infinite tool loops
     }
 
     /**
@@ -21,6 +21,7 @@ export class IntegrateTools {
 
         for (const toolCall of toolCalls) {
             try {
+                console.log("Call Index:", this.toolCallHistory.length)
                 // Check if we've exceeded max tool calls
                 if (this.toolCallHistory.length >= this.maxToolCalls) {
                     throw new Error(`Maximum tool calls (${this.maxToolCalls}) exceeded`);
@@ -50,11 +51,11 @@ export class IntegrateTools {
                 });
 
             } catch (error) {
-                const errorResult = await BaseErrorHandler(error, null, 'AIToolIntegration');
+                await BaseErrorHandler(error, null, 'ToolIntegration');
                 results.push({
                     toolCallId: toolCall.id,
                     toolName: toolCall.function.name,
-                    error: errorResult.error || error.message
+                    error: error
                 });
             }
         }

@@ -130,7 +130,6 @@ export class ToolBase {
             result: result,
             timestamp: new Date().toISOString()
         });
-        console.log( StateManager.get('lastToolExecution'))
     }
 
     /**

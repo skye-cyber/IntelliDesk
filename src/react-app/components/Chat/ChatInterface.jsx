@@ -7,7 +7,8 @@ import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '@components/Input/InputSection';
 //import { StateManager } from '@js/managers/StatesManager';
-import { TestsRunner } from '../../Tests/runner';
+//import { TestsRunner } from '../../Tests/runner';
+import ToolDemo from './ToolDemo';
 
 
 const chatutil = new ChatUtil()
@@ -93,7 +94,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
 
     return (
         <>
-            <TestsRunner />
+            {/*<TestsRunner />*/}
             <section
                 id='chat-container'
                 data-portal-container='chatContainer'
@@ -105,6 +106,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                         ref={chatAreaRef}
                         className="relative bg-white dark:bg-primary-900 h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out w-full border-1 border-blend-50 dark:border-blend-700"
                     >
+                        <ToolDemo />
                         {/* Show quick actions when no messages */}
                         {messages.length === 0 && !isLoading && (
                             <QuickActions onActionClick={handleQuickAction} />

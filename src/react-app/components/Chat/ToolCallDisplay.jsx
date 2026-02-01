@@ -20,6 +20,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
             }
             return JSON.stringify(params, null, 2);
         } catch (error) {
+            console.log(error)
             return params;
         }
     };
@@ -156,7 +157,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                             </h5>
                             <div className="bg-gray-50/80 dark:bg-blue-900/20 rounded border border-gray-200/50 dark:border-blue-700/30 p-2">
                                 <pre className="text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-20 font-mono">
-                                    {formatParams(toolCall.params)}
+                                    {formatParams(toolCall.params.query)}
                                 </pre>
                             </div>
                         </div>
@@ -173,7 +174,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                             </h5>
                             <div className="bg-red-50/80 dark:bg-red-900/30 rounded border border-red-200/50 dark:border-red-700/30 p-2">
                                 <pre className="text-xs text-red-700 dark:text-red-300 overflow-x-auto max-h-20 font-mono">
-                                    {toolCall.error}
+                                    {JSON.stringify(toolCall.error)}
                                 </pre>
                             </div>
                         </div>
@@ -187,7 +188,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                             </h5>
                             <div className="bg-green-50/80 dark:bg-green-900/30 rounded border border-green-200/50 dark:border-green-700/30 p-2">
                                 <pre className="text-xs text-green-700 dark:text-green-300 overflow-x-auto max-h-32 font-mono whitespace-pre-wrap">
-                                    {formatResult(toolCall.result)}
+                                    {formatResult(toolCall.result.content)}
                                 </pre>
                                 {typeof toolCall.result === 'string' && toolCall.result.length > 200 && (
                                     <button
@@ -212,8 +213,9 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                         </div>
                     )}
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 

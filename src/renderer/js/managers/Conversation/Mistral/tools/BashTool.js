@@ -42,9 +42,11 @@ export class BashTool extends ToolBase {
         };
     }
 
-    async _execute({ command, timeout = null }, context) {
+    async _execute(params, context, timeout) {
+        const command = JSON.parse(params)?.command
+
         // Apply timeout from config if not specified
-        const effectiveTimeout = timeout !== null ? timeout : this.config.default_timeout || 30;
+        const effectiveTimeout = (timeout && typeof(timeout) === 'number') ? timeout : this.config.default_timeout || 30;
 
         // Validate command against allowlist/denylist
         this.validateCommand(command);
@@ -70,7 +72,6 @@ export class BashTool extends ToolBase {
         const allowlist = this.config.allowlist || [];
         const denylist = this.config.denylist || [];
         const denylistStandalone = this.config.denylist_standalone || [];
-
         // Security: Validate command doesn't contain dangerous patterns
         const dangerousPatterns = [
             /rm\s+-rf/,
@@ -83,14 +84,14 @@ export class BashTool extends ToolBase {
         ];
 
         for (const pattern of dangerousPatterns) {
-            if (pattern.test(command.toLowerCase())) {
+            if (pattern.test(command)) {
                 throw new Error('Command contains potentially dangerous patterns');
             }
         }
 
         // Check denylist (exact matches)
         for (const denied of denylist) {
-            if (command.includes(denied)) {
+            if (command.split(' ').includes(denied)) {
                 throw new Error(`Command contains denied pattern: ${denied}`);
             }
         }
@@ -108,7 +109,7 @@ export class BashTool extends ToolBase {
                     const prefix = pattern.slice(0, -1);
                     return command.startsWith(prefix);
                 }
-                return command === pattern;
+                return command === pattern || command.split(' ')[0] === pattern;
             });
 
             if (!matchesAllowlist) {

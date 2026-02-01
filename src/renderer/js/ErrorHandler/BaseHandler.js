@@ -34,7 +34,7 @@ export async function BaseErrorHandler(error, ai_ms_pid, callback) {
 
     }
 
-    const isDev = false//await appIsDev()
+    const isDev = await appIsDev()
     if (isDev) {
         handleDevErrors(error, StateManager.get('user_message_portal'), StateManager.get('ai_message_portal'), user_text)
     } else {

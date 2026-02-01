@@ -16,6 +16,7 @@ export const TestsRunner = () => {
 
     const consoleOutputRef = useRef(null);
     const isRunningRef = useRef(false);
+    const TestContainer = useRef(null)
 
     // Initialize and update summary when tests change
     useEffect(() => {
@@ -205,9 +206,24 @@ export const TestsRunner = () => {
         logToConsole('Test results cleared');
     }, [logToConsole]);
 
+
+    const closeContainer = useCallback((e) => {
+        if (e.key === 'Escape') {
+            TestContainer.current.classList.add('hidden')
+        }
+    })
+    useEffect(() => {
+        document.addEventListener('keydown', closeContainer)
+        return () => {
+            document.removeEventListener('keydown', closeContainer)
+        }
+    })
     return (
-        <section className='fixed z-50 flex justify-center items-center w-full h-full leading-loose text-[#333] m-auto p-4 backdrop-brightness-50'>
+        <section
+            ref={TestContainer}
+            className='hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full leading-loose text-[#333] m-auto p-4 backdrop-brightness-50'>
             <div className='bg-white w-full max-w-6xl border-4 rounded-lg p-6 h-[95vh] overflow-y-auto scrollbar-custom'>
+                <p onClick={() => TestContainer.current.classList.add('hidden')} className='fixed top-5 right-6 z-30 text-sm cursor-pointer'>Close</p>
                 <div className="header bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg mb-6 p-4 text-center">
                     <h1 className='text-2xl font-bold mb-2'>🚀 Intellidesk Tool Calling Test Suite</h1>
                     <p className='text-blue-100'>Comprehensive testing for AI tool integration</p>
@@ -303,7 +319,7 @@ export const TestsRunner = () => {
                     </div>
                     <div
                         ref={consoleOutputRef}
-                        className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono h-64 overflow-y-auto whitespace-pre-wrap text-sm"
+                        className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono h-64 overflow-y-auto whitespace-pre-wrap text-sm scrollbar-custom"
                     >
                         {consoleOutput.length === 0 ? (
                             <div className="text-gray-500 italic">Console output will appear here...</div>
@@ -365,8 +381,8 @@ const ResultCard = ({ test }) => {
                     <div className="text-sm">
                         <span className="font-medium">Status:</span>{' '}
                         <span className={`font-bold ${status.includes('pass') ? 'text-green-600' :
-                                status.includes('fail') ? 'text-red-600' :
-                                    status.includes('running') ? 'text-yellow-600' : 'text-gray-600'
+                            status.includes('fail') ? 'text-red-600' :
+                                status.includes('running') ? 'text-yellow-600' : 'text-gray-600'
                             }`}>
                             {test.status}
                         </span>
@@ -383,8 +399,8 @@ const ResultCard = ({ test }) => {
                     )}
                 </div>
                 <div className={`px-3 py-1 rounded-full text-xs font-bold ${status.includes('pass') ? 'bg-green-100 text-green-800' :
-                        status.includes('fail') ? 'bg-red-100 text-red-800' :
-                            status.includes('running') ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+                    status.includes('fail') ? 'bg-red-100 text-red-800' :
+                        status.includes('running') ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
                     }`}>
                     {status.includes('running') ? 'RUNNING' :
                         status.includes('pass') ? 'PASS' :

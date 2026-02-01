@@ -4,10 +4,25 @@
  */
 import { ToolBase } from './ToolBase';
 import { StateManager } from '../../StatesManager';
-import { agent } from "../../../../../main/config";
+import { BashTool } from './tools/BashTool';
+import { GrepTool } from './tools/GrepTool';
+import { GetWeatherTool } from './tools/GetWeatherTool'
+import { TodoTool } from './tools/TodoTool';
+import { WriteFileTool } from './tools/WriteFileTool';
+import { ReadFileTool } from './tools/ReadFileTool';
+import { SearchReplaceTool } from './tools/SearchReplaceTool';
+import { SearchWebTool } from './tools/SearchWebTool';
+import { CalculateTool } from './tools/CalculateTool';
+import { FileOperationsTool } from './tools/FileOperationsTool';
+import { DatabaseQueryTool } from './tools/DatabaseQueryTool';
+//import { SendMessageTool } from './tools/SendMessageTool';
+
+
+StateManager.set('enable_tools', true)
 
 export class ToolManager {
     constructor() {
+        this.agent = window.desk.agent
         this.tools = new Map();
         this.availableTools = [];
         this.registerCoreTools();
@@ -17,19 +32,19 @@ export class ToolManager {
      * Register all core tools
      */
     registerCoreTools() {
-        // Import and register each tool
-        this.registerTool('bash', new (require('./tools/BashTool').BashTool)());
-        this.registerTool('grep', new (require('./tools/GrepTool').GrepTool)());
-        this.registerTool('search_replace', new (require('./tools/SearchReplaceTool').SearchReplaceTool)());
-        this.registerTool('todo', new (require('./tools/TodoTool').TodoTool)());
-        this.registerTool('write_file', new (require('./tools/WriteFileTool').WriteFileTool)());
-        this.registerTool('read_file', new (require('./tools/ReadFileTool').ReadFileTool)());
-        this.registerTool('search_web', new (require('./tools/SearchWebTool').SearchWebTool)());
-        this.registerTool('get_weather', new (require('./tools/GetWeatherTool').GetWeatherTool)());
-        this.registerTool('calculate', new (require('./tools/CalculateTool').CalculateTool)());
-        this.registerTool('file_operations', new (require('./tools/FileOperationsTool').FileOperationsTool)());
-        this.registerTool('database_query', new (require('./tools/DatabaseQueryTool').DatabaseQueryTool)());
-        this.registerTool('send_message', new (require('./tools/SendMessageTool').SendMessageTool)());
+        //Import and register each tool
+        this.registerTool('bash', new BashTool());
+        this.registerTool('grep', new GrepTool());
+        this.registerTool('search_replace', new SearchReplaceTool());
+        this.registerTool('todo', new TodoTool());
+        this.registerTool('write_file', new WriteFileTool());
+        this.registerTool('read_file', new ReadFileTool());
+        this.registerTool('search_web', new SearchWebTool());
+        this.registerTool('get_weather', new GetWeatherTool());
+        this.registerTool('calculate', new CalculateTool());
+        this.registerTool('file_operations', new FileOperationsTool());
+        this.registerTool('database_query', new DatabaseQueryTool());
+        //this.registerTool('send_message', new SendMessageTool());
 
         this.updateAvailableTools();
     }
@@ -113,7 +128,7 @@ export class ToolManager {
      */
     reloadConfig() {
         this.tools.forEach((tool, name) => {
-            tool.config = agent.config.tools[name] || {};
+            tool.config = this.agent.config.tools[name] || {};
         });
         this.updateAvailableTools();
     }

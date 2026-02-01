@@ -2,10 +2,8 @@
  * Grep Tool - Search files for patterns
  */
 import { ToolBase } from '../ToolBase';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+const cmd = window.desk.cmd
 
 export class GrepTool extends ToolBase {
     constructor() {
@@ -55,7 +53,7 @@ export class GrepTool extends ToolBase {
         const command = `grep -r --color=never -n "${pattern}" ${path} ${ignoreFlag} | head -n ${maxMatches}`;
 
         try {
-            const { stdout, stderr } = await execAsync(command, {
+            const result = await cmd.execute(command, {
                 timeout: (this.config.default_timeout || 60) * 1000,
                 maxBuffer: this.config.max_output_bytes || 64000
             });
@@ -63,15 +61,15 @@ export class GrepTool extends ToolBase {
             return {
                 pattern: pattern,
                 path: path,
-                matches: stdout,
-                matchCount: stdout.split('\n').filter(line => line.trim()).length,
+                matches: result.stdout,
+                matchCount: result.stdout.split('\n').filter(line => line.trim()).length,
                 maxMatches: maxMatches
             };
         } catch (error) {
             // If grep fails, try with rg (ripgrep) if available
             try {
                 const rgCommand = `rg --color=never --line-number "${pattern}" ${path} ${ignoreFlag} | head -n ${maxMatches}`;
-                const { stdout, stderr } = await execAsync(rgCommand, {
+                const result = await cmd.execute(rgCommand, {
                     timeout: (this.config.default_timeout || 60) * 1000,
                     maxBuffer: this.config.max_output_bytes || 64000
                 });
@@ -79,8 +77,8 @@ export class GrepTool extends ToolBase {
                 return {
                     pattern: pattern,
                     path: path,
-                    matches: stdout,
-                    matchCount: stdout.split('\n').filter(line => line.trim()).length,
+                    matches: result.stdout,
+                    matchCount: result.stdout.split('\n').filter(line => line.trim()).length,
                     maxMatches: maxMatches,
                     toolUsed: 'ripgrep'
                 };

@@ -5,9 +5,10 @@ import { useElectron } from '@hooks/useElectron';
 import { showDropZoneModal } from '@components/DropZone/util.js'
 import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
-
 import { InputSection } from '@components/Input/InputSection';
 //import { StateManager } from '@js/managers/StatesManager';
+import { TestsRunner } from '../../Tests/runner';
+
 
 const chatutil = new ChatUtil()
 
@@ -91,47 +92,50 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
     }, [])
 
     return (
-        <section
-            id='chat-container'
-            data-portal-container='chatContainer'
-            className='flex justify-center h-full w-full transition-transform ease-in-out'>
-            <div id="chatArea-wrapper" className='h-full w-[100%] md:w-[80%] lg:w-[70%] xl:w-[60%]'>
-                <section
-                    id="chatArea"
-                    data-portal-container='chatArea'
-                    ref={chatAreaRef}
-                    className="relative bg-white dark:bg-primary-900 h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out w-full border-1 border-blend-50 dark:border-blend-700"
-                >
-                    {/* Show quick actions when no messages */}
-                    {messages.length === 0 && !isLoading && (
-                        <QuickActions onActionClick={handleQuickAction} />
-                    )}
+        <>
+            <TestsRunner />
+            <section
+                id='chat-container'
+                data-portal-container='chatContainer'
+                className='flex justify-center h-full w-full transition-transform ease-in-out'>
+                <div id="chatArea-wrapper" className='h-full w-[100%] md:w-[80%] lg:w-[70%] xl:w-[60%]'>
+                    <section
+                        id="chatArea"
+                        data-portal-container='chatArea'
+                        ref={chatAreaRef}
+                        className="relative bg-white dark:bg-primary-900 h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out w-full border-1 border-blend-50 dark:border-blend-700"
+                    >
+                        {/* Show quick actions when no messages */}
+                        {messages.length === 0 && !isLoading && (
+                            <QuickActions onActionClick={handleQuickAction} />
+                        )}
 
-                    {/* Messages list */}
-                    <MessageList messages={messages} isLoading={isLoading} />
+                        {/* Messages list */}
+                        <MessageList messages={messages} isLoading={isLoading} />
 
-                </section>
-                <ErrorBoundary>
-                    <InputSection
-                        isCanvasOpen={isCanvasOpen}
-                        onToggleCanvas={onToggleCanvas}
-                        onToggleRecording={onToggleRecording}
-                    />
-                </ErrorBoundary>
-                {/* Loading Modal */}
-                <LoadingModal />
-                {/* Copy Feedback Modal */}
-                <CopyFeedbackModal />
-                {/* status display modals */}
-                <div data-portal-container='messageContainer'
-                    id='message-container'
-                    className='fixed top-2 right-2 z-[99] space-y-3 max-w-sm w-full'>
+                    </section>
+                    <ErrorBoundary>
+                        <InputSection
+                            isCanvasOpen={isCanvasOpen}
+                            onToggleCanvas={onToggleCanvas}
+                            onToggleRecording={onToggleRecording}
+                        />
+                    </ErrorBoundary>
+                    {/* Loading Modal */}
+                    <LoadingModal />
+                    {/* Copy Feedback Modal */}
+                    <CopyFeedbackModal />
+                    {/* status display modals */}
+                    <div data-portal-container='messageContainer'
+                        id='message-container'
+                        className='fixed top-2 right-2 z-[99] space-y-3 max-w-sm w-full'>
+                    </div>
+
                 </div>
-
-            </div>
-            {/* confirm dialog */}
-            <div data-portal-container='ConfirmdialogContainer' id='confirm-dialog-container'></div>
-        </section>
+                {/* confirm dialog */}
+                <div data-portal-container='ConfirmdialogContainer' id='confirm-dialog-container'></div>
+            </section>
+        </>
     );
 };
 

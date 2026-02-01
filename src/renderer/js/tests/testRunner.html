@@ -290,7 +290,7 @@
         try {
             logToConsole('Initializing test suite...');
             testSuite = new ToolCallingTestSuite();
-            
+
             // Disable buttons during testing
             runAllBtn.disabled = true;
             runSingleBtn.disabled = true;
@@ -298,11 +298,11 @@
             runIterativeBtn.disabled = true;
             runMixedBtn.disabled = true;
             runErrorBtn.disabled = true;
-            
+
             testResults.innerHTML = '';
             consoleOutput.innerHTML = 'Running tests...<br>';
             summary.classList.add('hidden');
-            
+
             const tests = [
                 { name: 'Single Tool Test', method: testSuite.testSingleToolCall.bind(testSuite) },
                 { name: 'Sequential Test', method: testSuite.testMultipleSequentialTools.bind(testSuite) },
@@ -310,56 +310,56 @@
                 { name: 'Mixed Tools Test', method: testSuite.testMixedToolTypes.bind(testSuite) },
                 { name: 'Error Handling Test', method: testSuite.testErrorHandling.bind(testSuite) }
             ];
-            
+
             const totalTests = tests.length;
-            
+
             for (let i = 0; i < tests.length; i++) {
                 currentTestIndex = i;
                 updateProgress(i, totalTests);
-                
+
                 logToConsole(`Running ${tests[i].name}...`);
-                
+
                 const resultDiv = document.createElement('div');
                 resultDiv.className = 'test-result test-running';
                 resultDiv.innerHTML = `<strong>${tests[i].name}</strong><div>Running...</div>`;
                 testResults.appendChild(resultDiv);
-                
+
                 try {
                     const result = await tests[i].method();
                     const testResult = testSuite.testResults[testSuite.testResults.length - 1];
-                    
+
                     resultDiv.className = `test-result test-${testResult.status.split(' ')[0].toLowerCase()}`;
                     resultDiv.innerHTML = `
                         <strong>${tests[i].name}</strong>
                         <div>${testResult.status} - ${testResult.details}</div>
                     `;
-                    
+
                     logToConsole(`${tests[i].name} completed`);
-                    
+
                 } catch (error) {
                     resultDiv.className = 'test-result test-fail';
                     resultDiv.innerHTML = `
                         <strong>${tests[i].name}</strong>
                         <div>❌ FAIL - ${error.message}</div>
                     `;
-                    
+
                     logToConsole(`${tests[i].name} failed: ${error.message}`, true);
                 }
             }
-            
+
             // Show summary
             updateProgress(totalTests, totalTests);
             const passed = testSuite.testResults.filter(r => r.status === '✅ PASS').length;
             const failed = testSuite.testResults.filter(r => r.status === '❌ FAIL').length;
-            
+
             passCount.textContent = passed;
             failCount.textContent = failed;
             totalCount.textContent = totalTests;
-            
+
             summary.classList.remove('hidden');
-            
+
             logToConsole(`All tests completed! ${passed} passed, ${failed} failed`);
-            
+
         } catch (error) {
             logToConsole(`Test suite failed: ${error.message}`, true);
             console.error(error);

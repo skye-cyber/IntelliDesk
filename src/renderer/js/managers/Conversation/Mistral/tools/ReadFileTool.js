@@ -2,8 +2,10 @@
  * Read File Tool - Read UTF-8 files with safety constraints and line range support
  */
 import { ToolBase } from '../ToolBase';
-import fs from 'fs';
-import path from 'path';
+const path = window.desk.path
+
+const fs = window.desk.fsops
+
 
 export class ReadFileTool extends ToolBase {
     constructor() {

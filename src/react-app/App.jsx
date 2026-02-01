@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MainLayout } from '@components/Layout/MainLayout';
+import '@css/styles.css';
 import { Header } from '@components/Header/Header';
 import { ChatInterface } from '@components/Chat/ChatInterface';
 import { Sidebar } from '@components/Sidebar/Sidebar';
@@ -7,7 +8,6 @@ import { Canvas } from '@components/Canvas/Canvas';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import '@js/katex/katex.min.js';
 import '@js/katex/contrib/auto-render.min.js';
-import '@css/styles.css';
 import '@css/code-theme.css'
 import { Recording } from '@components/RecordingUI/Recording';
 import '@js/Timer/timer.js'

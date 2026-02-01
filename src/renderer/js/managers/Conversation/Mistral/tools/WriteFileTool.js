@@ -2,8 +2,9 @@
  * Write File Tool - Create or overwrite UTF-8 files with safety constraints
  */
 import { ToolBase } from '../ToolBase';
-import fs from 'fs';
-import path from 'path';
+const path = window.desk.path
+
+const fs = window.desk.fs
 
 export class WriteFileTool extends ToolBase {
     constructor() {

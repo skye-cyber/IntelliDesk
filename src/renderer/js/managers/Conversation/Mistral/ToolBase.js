@@ -2,15 +2,15 @@
  * Base class for all tool handlers
  * Provides common functionality for tool execution, validation, and error handling
  */
-import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
 import { StateManager } from '../../StatesManager';
-import { agent } from "../../../../../main/config";
+
 
 export class ToolBase {
     constructor(name, description) {
         this.name = name;
         this.description = description;
-        this.config = agent.config.tools[name] || {};
+        this.agent = window.desk.agent
+        this.config = this.agent.config.tools[name] || {};
         this.schema = this.defineSchema();
     }
 
@@ -43,7 +43,7 @@ export class ToolBase {
         }
 
         // Check if tool is in disabled list
-        if (agent.config.disabled_tools && agent.config.disabled_tools.includes(this.name)) {
+        if (this.agent.config.disabled_tools && this.agent.config.disabled_tools.includes(this.name)) {
             throw new Error(`Tool ${this.name} is disabled`);
         }
 
@@ -130,6 +130,7 @@ export class ToolBase {
             result: result,
             timestamp: new Date().toISOString()
         });
+        console.log( StateManager.get('lastToolExecution'))
     }
 
     /**

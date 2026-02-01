@@ -2,8 +2,10 @@
  * File Operations Tool - Perform comprehensive file operations
  */
 import { ToolBase } from '../ToolBase';
-import fs from 'fs';
-import path from 'path';
+const path = window.desk.path
+
+const fs = window.desk.fsops
+
 
 export class FileOperationsTool extends ToolBase {
     constructor() {

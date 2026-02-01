@@ -3,14 +3,15 @@
  * Handles the complete lifecycle of function/tool calls during conversations
  */
 import toolManager from './ToolManager';
-import aiToolIntegration from './ToolIntegration';
+import toolsIntegration from './ToolIntegration';
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
+import { StateManager } from '../../StatesManager';
 
 export class FunctionCallHandler {
     constructor(client) {
         this.client = client;
         this.toolManager = toolManager;
-        this.aiToolIntegration = aiToolIntegration;
+        this.integration = toolsIntegration;
         this.maxToolIterations = 3; // Prevent infinite loops
     }
 
@@ -19,7 +20,7 @@ export class FunctionCallHandler {
      */
     async processMessage(userMessage, conversationHistory = [], options = {}) {
         const {
-            model = "mistral-large-latest",
+            model = StateManager.get('currentModel') || "mistral-large-latest",
             temperature = 0.1,
             maxToolCalls = 5
         } = options;
@@ -34,7 +35,7 @@ export class FunctionCallHandler {
         let finalResponse = null;
 
         // Reset tool integration for this conversation
-        this.aiToolIntegration.reset();
+        this.integration.reset();
 
         while (iteration < this.maxToolIterations) {
             iteration++;
@@ -124,7 +125,7 @@ export class FunctionCallHandler {
                 const params = JSON.parse(toolCall.function.arguments);
 
                 // Execute through AI tool integration
-                const executionResult = await this.aiToolIntegration.processToolCalls([{
+                const executionResult = await this.integration.processToolCalls([{
                     id: toolCall.id,
                     function: {
                         name: toolName,
@@ -153,7 +154,7 @@ export class FunctionCallHandler {
     async *processStream(streamResult, context = {}) {
         if (streamResult.type === "stream") {
             // Add tool context to the stream
-            const toolContext = this.aiToolIntegration.createToolContext();
+            const toolContext = this.integration.createToolContext();
 
             for await (const chunk of streamResult.stream) {
                 const content = chunk.choices[0]?.delta?.content;
@@ -187,7 +188,7 @@ export class FunctionCallHandler {
     getStats() {
         return {
             availableTools: this.toolManager.getToolStats(),
-            toolCallHistory: this.aiToolIntegration.getHistory(),
+            toolCallHistory: this.integration.getHistory(),
             maxToolIterations: this.maxToolIterations
         };
     }

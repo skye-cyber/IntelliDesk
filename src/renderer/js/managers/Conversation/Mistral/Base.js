@@ -10,8 +10,9 @@ import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge";
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
 import { timer } from "../../../Timer/timer";
-import aiToolIntegration from './ToolIntegration';
-import ToolsIntegration from './Tools';
+import toolsIntegration from "./ToolIntegration";
+import toolManager from "./ToolManager";
+
 
 let ai_ms_pid
 
@@ -44,6 +45,7 @@ export async function MistralBase({
             }, 'user_message');
 
             window.desk.api.addHistory({ role: "user", content: text });
+
             StateManager.set('user_message_portal', user_message_portal);
         }
 
@@ -80,20 +82,19 @@ export async function MistralBase({
         }
 
         // Initialize tools integration
-        const toolsIntegration = new ToolsIntegration(clientmanager.key);
-        const availableTools = toolsIntegration.getAvailableToolSchemas();
+        const availableTools = toolManager.getAvailableToolSchemas();
 
         // Check if we should enable tool calling
-        const enableToolCalling = availableTools.length > 0 && StateManager.get('enable_tools', true);
+        const enableToolCalling = availableTools.length > 0 && StateManager.get('enable_tools');
 
         let stream;
         if (enableToolCalling) {
             // Start tool calling session with conversation state
-            const toolSession = await this.handleToolCallingSession(
+            const toolSession = await handleToolCallingSession(
                 clientmanager.MistralClient,
                 model_name,
                 availableTools,
-                aiToolIntegration
+                toolsIntegration
             );
 
             if (toolSession.finalResponse) {
@@ -341,6 +342,11 @@ export async function MistralBase({
 /**
  * Handle complex tool calling sessions with multiple iterations
  * Supports: sequential tool calls, iterative tool usage, interleaved responses
+ * @param {instance} client {2}
+ * @param {String} modelName {2}
+ * @param {Array} availableTools {2}
+ * @param {instance} toolIntegration {2}
+ * @param {number} [maxIterations=5] {1}
  */
 async function handleToolCallingSession(client, modelName, availableTools, toolIntegration, maxIterations = 5) {
     let iteration = 0;
@@ -364,7 +370,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
 
         try {
             // Get AI response with potential tool calls
-            const response = await client.chat.completions.create({
+            const response = await client.chat.complete({
                 model: modelName,
                 messages: conversationHistory,
                 max_tokens: 3000,
@@ -397,6 +403,19 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
                     content: aiMessage.content || "",
                     tool_calls: aiMessage.tool_calls
                 });
+
+                // Update history
+                for (const call of toolResults) {
+                    window.desk.api.addHistory({ role: "tool", content: call.result, name: call.toolName, tool_call_id: call.toolCallId });
+                }
+                // Update with ai message
+                window.desk.api.addHistory({ role: "assistant", content: aiMessage.content || "", tool_calls: aiMessage.tool_calls });
+
+
+                /*
+                 * TODO 1. Handle display of tool info ie calls and result to ui
+                 * TODO 2. Display ai message in the ui
+                 */
 
                 // Add tool results to history
                 toolResults.forEach(toolResult => {
@@ -489,157 +508,6 @@ function generateToolUsageSummary(toolCallHistory) {
     return summary.join('\n');
 }
 
-
-/**
- * Handle complex tool calling sessions with multiple iterations
- * Supports: sequential tool calls, iterative tool usage, interleaved responses
- */
-async function handleToolCallingSession(client, modelName, availableTools, toolIntegration, maxIterations = 5) {
-    let iteration = 0;
-    let finalResponse = null;
-    let conversationHistory = window.desk.api.getHistory(true);
-    let toolCallHistory = [];
-    let hasFinalResponse = false;
-
-    // Initialize session state
-    const sessionState = {
-        iterationCount: 0,
-        toolCallsMade: 0,
-        lastToolCall: null,
-        pendingToolResults: [],
-        conversationContext: {}
-    };
-
-    while (iteration < maxIterations && !hasFinalResponse) {
-        iteration++;
-        sessionState.iterationCount = iteration;
-
-        try {
-            // Get AI response with potential tool calls
-            const response = await client.chat.completions.create({
-                model: modelName,
-                messages: conversationHistory,
-                max_tokens: 3000,
-                tools: availableTools,
-                tool_choice: "auto"
-            });
-
-            const aiMessage = response.choices[0].message;
-
-            // Check if AI wants to use tools
-            if (aiMessage.tool_calls && aiMessage.tool_calls.length > 0) {
-                console.log(`[Tool Session] Iteration ${iteration}: Processing ${aiMessage.tool_calls.length} tool calls`);
-
-                // Process all tool calls in this iteration
-                const toolResults = await toolIntegration.processToolCalls(
-                    aiMessage.tool_calls
-                );
-
-                // Store tool call information
-                toolCallHistory.push({
-                    iteration,
-                    toolCalls: aiMessage.tool_calls,
-                    results: toolResults,
-                    timestamp: new Date().toISOString()
-                });
-
-                // Add AI message with tool calls to history
-                conversationHistory.push({
-                    role: "assistant",
-                    content: aiMessage.content || "",
-                    tool_calls: aiMessage.tool_calls
-                });
-
-                // Add tool results to history
-                toolResults.forEach(toolResult => {
-                    conversationHistory.push({
-                        role: "tool",
-                        tool_call_id: toolResult.toolCallId,
-                        name: toolResult.toolName,
-                        content: JSON.stringify(toolResult.result)
-                    });
-                });
-
-                // Update session state
-                sessionState.toolCallsMade += aiMessage.tool_calls.length;
-                sessionState.lastToolCall = aiMessage.tool_calls[aiMessage.tool_calls.length - 1];
-                sessionState.pendingToolResults = toolResults;
-
-                // Check if we should continue (AI might want to make more tool calls)
-                if (aiMessage.content && aiMessage.content.includes("<final_response>")) {
-                    // Extract final response
-                    finalResponse = aiMessage.content.replace("<final_response>", "").replace("</final_response>", "");
-                    hasFinalResponse = true;
-                    console.log(`[Tool Session] Final response received after ${iteration} iterations`);
-                }
-
-                // Safety check: prevent infinite loops
-                if (iteration >= maxIterations) {
-                    console.warn(`[Tool Session] Max iterations (${maxIterations}) reached`);
-                    finalResponse = "I've made several tool calls to gather the information you requested. Here's what I found:";
-                    hasFinalResponse = true;
-                }
-
-            } else {
-                // No tool calls, this is the final response
-                finalResponse = aiMessage.content;
-                hasFinalResponse = true;
-                console.log(`[Tool Session] Final response received in iteration ${iteration}`);
-            }
-
-        } catch (error) {
-            console.error(`[Tool Session] Error in iteration ${iteration}:`, error);
-            finalResponse = `Sorry, I encountered an error while processing your request: ${error.message}`;
-            hasFinalResponse = true;
-
-            // Add error to conversation history
-            conversationHistory.push({
-                role: "assistant",
-                content: finalResponse
-            });
-        }
-    }
-
-    // Generate summary of tool usage
-    const toolSummary = generateToolUsageSummary(toolCallHistory);
-
-    return {
-        finalResponse: finalResponse,
-        toolCallHistory: toolCallHistory,
-        iterationCount: iteration,
-        sessionState: sessionState,
-        toolSummary: toolSummary
-    };
-}
-
-/**
- * Generate a summary of tool usage for the conversation
- */
-function generateToolUsageSummary(toolCallHistory) {
-    if (toolCallHistory.length === 0) {
-        return "No tools were used in this conversation.";
-    }
-
-    const summary = [];
-    const toolStats = {};
-    let totalToolsUsed = 0;
-
-    toolCallHistory.forEach(iteration => {
-        iteration.toolCalls.forEach(toolCall => {
-            const toolName = toolCall.function.name;
-            toolStats[toolName] = (toolStats[toolName] || 0) + 1;
-            totalToolsUsed++;
-        });
-    });
-
-    summary.push(`Used ${totalToolsUsed} tool calls across ${toolCallHistory.length} iterations:`);
-
-    for (const [toolName, count] of Object.entries(toolStats)) {
-        summary.push(`- ${toolName}: ${count} call(s)`);
-    }
-
-    return summary.join('\n');
-}
 
 /**
  * Create a mock stream from a string to maintain compatibility with streaming interface
@@ -659,7 +527,7 @@ async function* createMockStream(content) {
             }
         };
         // Small delay to simulate streaming
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 0));
     }
 }
 

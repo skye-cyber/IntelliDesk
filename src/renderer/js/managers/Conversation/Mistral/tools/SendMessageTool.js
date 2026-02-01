@@ -2,7 +2,8 @@
  * Send Message Tool - Send messages to various platforms
  */
 import { ToolBase } from '../ToolBase';
-import { MessageService } from '../../services/MessageService';
+import { MessageService } from '../ToolProviders/MessageService';
+
 
 export class SendMessageTool extends ToolBase {
     constructor() {

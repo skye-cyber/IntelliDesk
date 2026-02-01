@@ -4,9 +4,8 @@
  * Tests complex workflows: sequential tools, iterative usage, interleaved responses
  */
 
-import { ToolManager } from '../managers/Conversation/Mistral/ToolManager';
-import { AIToolIntegration } from '../managers/Conversation/Mistral/ToolIntegration';
-import { StateManager } from '../managers/StatesManager';
+import toolManager from '../managers/Conversation/Mistral/ToolManager.js';
+import toolsIntegration from '../managers/Conversation/Mistral/ToolIntegration.js';
 
 /**
  * Mistral Vibe Response Simulator
@@ -14,8 +13,8 @@ import { StateManager } from '../managers/StatesManager';
  */
 class MistralVibeSimulator {
     constructor() {
-        this.toolManager = new ToolManager();
-        this.toolIntegration = new AIToolIntegration();
+        this.toolManager = toolManager;
+        this.toolIntegration = toolsIntegration;
         this.conversationHistory = [];
         this.toolCallCounter = 0;
     }
@@ -119,7 +118,7 @@ class MistralVibeSimulator {
 /**
  * Tool Calling Test Suite
  */
-export class ToolCallingTestSuite {
+class ToolCallingTestSuite {
     constructor() {
         this.simulator = new MistralVibeSimulator();
         this.testResults = [];
@@ -519,8 +518,10 @@ export class ToolCallingTestSuite {
     }
 }
 
+const testSuite = new ToolCallingTestSuite()
+
 // Export for use in other test files
-export { MistralVibeSimulator, ToolCallingTestSuite };
+export { MistralVibeSimulator, ToolCallingTestSuite, testSuite };
 
 // Run tests if this file is executed directly
 if (typeof window !== 'undefined' && window.runToolTests) {

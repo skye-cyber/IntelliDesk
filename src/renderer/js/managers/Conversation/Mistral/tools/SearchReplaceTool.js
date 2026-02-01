@@ -2,8 +2,9 @@
  * Search Replace Tool - Replace content in files
  */
 import { ToolBase } from '../ToolBase';
-import fs from 'fs';
-import path from 'path';
+
+const fs = window.desk.fsops
+
 
 export class SearchReplaceTool extends ToolBase {
     constructor() {

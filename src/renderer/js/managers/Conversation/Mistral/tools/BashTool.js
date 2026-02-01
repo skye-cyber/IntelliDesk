@@ -2,10 +2,8 @@
  * Bash Tool - Execute bash commands with safety constraints
  */
 import { ToolBase } from '../ToolBase';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+const execAsync = window.desk.cmd.execute;
 
 export class BashTool extends ToolBase {
     constructor() {
@@ -52,7 +50,7 @@ export class BashTool extends ToolBase {
         this.validateCommand(command);
 
         // Execute command
-        const { stdout, stderr } = await execAsync(command, {
+        const result = await execAsync(command, {
             timeout: effectiveTimeout * 1000, // Convert to milliseconds
             maxBuffer: this.config.max_output_bytes || 16000,
             shell: '/bin/bash'
@@ -60,17 +58,35 @@ export class BashTool extends ToolBase {
 
         return {
             command: command,
-            stdout: stdout,
-            stderr: stderr,
-            exitCode: 0,
+            stdout: result.stdout,
+            stderr: result.stderr,
+            exitCode: result.code,
             timestamp: new Date().toISOString()
         };
     }
+
 
     validateCommand(command) {
         const allowlist = this.config.allowlist || [];
         const denylist = this.config.denylist || [];
         const denylistStandalone = this.config.denylist_standalone || [];
+
+        // Security: Validate command doesn't contain dangerous patterns
+        const dangerousPatterns = [
+            /rm\s+-rf/,
+            /:\(\)\{:\|:\}\&:/,  // Fork bomb
+            /mkfs/,
+            /dd\s+if=.*\s+of=.*/,
+            /chmod\s+777/,
+            />\s*\/dev\/sda/,
+            /mv\s+.*\s+\/dev\/null/
+        ];
+
+        for (const pattern of dangerousPatterns) {
+            if (pattern.test(command.toLowerCase())) {
+                throw new Error('Command contains potentially dangerous patterns');
+            }
+        }
 
         // Check denylist (exact matches)
         for (const denied of denylist) {

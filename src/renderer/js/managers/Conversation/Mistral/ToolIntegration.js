@@ -6,7 +6,7 @@ import toolManager from './ToolManager';
 import { StateManager } from '../../StatesManager';
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
 
-export class AIToolIntegration {
+export class IntegrateTools {
     constructor() {
         this.toolManager = toolManager;
         this.toolCallHistory = [];
@@ -171,5 +171,5 @@ export class AIToolIntegration {
 }
 
 // Singleton instance
-const aiToolIntegration = new AIToolIntegration();
-export default aiToolIntegration;
+const toolsIntegration = new IntegrateTools();
+export default toolsIntegration;

@@ -2,7 +2,9 @@
  * Database Query Tool - Execute database queries
  */
 import { ToolBase } from '../ToolBase';
-import { DatabaseManager } from '../../DatabaseManager';
+
+const dbManager = window.desk.dbManager
+
 
 export class DatabaseQueryTool extends ToolBase {
     constructor() {
@@ -75,8 +77,13 @@ export class DatabaseQueryTool extends ToolBase {
         }
 
         try {
+            // Add a new database configuration
+            // databaseManager.addConnection('my_database', {
+            //     type: 'sqlite',
+            //     database: './myapp.sqlite'
+            // });
+
             // Get database connection
-            const dbManager = new DatabaseManager();
             const dbConnection = await dbManager.getConnection(database);
 
             // Execute query based on type

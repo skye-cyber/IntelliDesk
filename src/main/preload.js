@@ -6,6 +6,10 @@ const { Buffer } = require('node:buffer');
 const { command } = require('./system.js')
 const { getformatDateTime } = require('./utils.js');
 const { agent } = require('./config.js')
+const { exec } = require('child_process');
+const { dbManager } = require('./DatabaseManager.js')
+const fsops = require('./fs_operations.js')
+
 
 let ConversationId = "";
 
@@ -414,7 +418,7 @@ const api = {
         try {
             if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving")
             //console.log("Saving: " + conversationId + filePath)
-            await api.write(filePath, conversationData);
+            // await api.write(filePath, conversationData);
             return filePath
         } catch (err) {
             console.error('Error saving conversation:', err);
@@ -680,12 +684,39 @@ const api2 = {
     }
 };
 
+const cmd = {
+    execute: (command, options = {}) => {
+        return new Promise((resolve) => {
+            exec(command, {
+                encoding: 'utf8',
+                ...options
+            }, (error, stdout, stderr) => {
+                // Always resolve, never reject, so caller can handle both cases
+                console.log("CMD E:", error, "STDOUT:", stdout, "STDERR:", stderr)
+                resolve({
+                    success: !error,
+                    error: error,
+                    stdout: stdout || '',
+                    stderr: stderr || '',
+                    code: error ? (error.code || 1) : 0,
+                    message: error ? error.message : 'Command executed successfully'
+                });
+            });
+        });
+    }
+};
+
 contextBridge.exposeInMainWorld('desk', {
     api,
     api2,
-    agent
+    agent,
+    cmd,
+    fsops,
+    path,
+    fs,
+    dbManager
 });
-
+fsops.exists
 document.addEventListener('DOMContentLoaded', function() {
     //initialize conversation histories when is ready/loaded
     ConversationHistory.chats = [{ role: "system", content: system_command }];

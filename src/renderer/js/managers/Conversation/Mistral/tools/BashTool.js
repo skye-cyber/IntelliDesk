@@ -121,7 +121,7 @@ export class BashTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             command: result.command,
             output: result.stdout,
             error: result.stderr || null,

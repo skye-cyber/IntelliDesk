@@ -102,7 +102,7 @@ export class GrepTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             error: result.error,
             exitCode: result.code || 0,
             pattern: result.pattern,

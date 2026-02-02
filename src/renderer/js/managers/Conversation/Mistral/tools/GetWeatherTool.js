@@ -155,7 +155,7 @@ export class GetWeatherTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             location: result.location,
             unit: result.unit,
             current_weather: result.current_weather,

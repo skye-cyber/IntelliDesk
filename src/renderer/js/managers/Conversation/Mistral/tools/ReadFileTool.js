@@ -135,7 +135,7 @@ export class ReadFileTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             path: result.path,
             content: result.content,
             offset: result.offset,

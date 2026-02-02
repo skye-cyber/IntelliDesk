@@ -59,7 +59,7 @@ export class CalculateTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             expression: result.expression,
             result: result.result,
             precision: result.precision,

@@ -108,7 +108,6 @@ export class WriteFileTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
             path: result.path,
             bytes_written: result.bytes_written,
             file_created: result.file_created,

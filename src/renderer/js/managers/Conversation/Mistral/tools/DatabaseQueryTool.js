@@ -222,7 +222,7 @@ export class DatabaseQueryTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             query: result.query,
             database: result.database,
             query_type: result.query_type,

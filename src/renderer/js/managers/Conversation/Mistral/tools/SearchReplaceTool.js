@@ -123,7 +123,7 @@ export class SearchReplaceTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             file_path: result.file_path,
             changes_made: result.changes_made,
             total_blocks: result.total_blocks,

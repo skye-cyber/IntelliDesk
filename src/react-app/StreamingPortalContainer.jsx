@@ -215,7 +215,7 @@ export const StreamingPortalContainer = () => {
                 const portalsToRemove = [];
 
                 portalDataRef.current.forEach((value, key) => {
-                    if (key.startsWith(portalId?.id)) {
+                    if (key.startsWith(portalId)) {
                         portalsToRemove.push(key);
                     }
                 });

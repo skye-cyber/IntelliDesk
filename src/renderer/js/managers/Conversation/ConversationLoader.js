@@ -3,7 +3,7 @@ import { ChatUtil } from "./util";
 import { ChatDisplay } from "./util";
 import { ClosePrefixed } from "../../PortalBridge";
 import { modalmanager } from "../../StatusUIManager/Manager";
-import { staticPortalBridge } from "../../PortalBridge";
+import { staticPortalBridge, streamingPortalBridge } from "../../PortalBridge";
 import { StateManager } from "../StatesManager";
 
 export class ConversationLoader {
@@ -48,23 +48,29 @@ export class ConversationLoader {
             ClosePrefixed()
             const vmodels = this.chatutil.get_multimodal_models()
 
+            let portal
+
             if (model === 'multimodal') {
                 if (!vmodels.includes(StateManager.get('currentModel'))) this.change_model('mistral-small-latest')
 
-                conversationData.chats.forEach(message => {
+                conversationData.chats.forEach(async message => {
 
                     if (message.content) {
                         if (message.role === "user") {
                             this.renderUserMessage(message.content, model);
+                            portal = null
                         } else if (message.role === "assistant") {
-                            this.renderAIMessage(message.content[0]?.text);
+                            portal = await this.renderAIMessage(message.content[0]?.text, Boolean(portal));
+                            console.log(portal)
+                        } else if (message.role === "tool") {
+                            this.renderToolContent(message, portal)
                         }
                     }
                     //window.debounceRenderKaTeX(null, null, true);
                 });
             } else {
 
-                conversationData.chats.forEach(message => {
+                conversationData.chats.forEach(async message => {
                     vmodels.includes(StateManager.get('currentModel')) && StateManager.get('currentModel') !== 'mistral-small-latest' ? this.change_model() : ''
                     let content
                     if (typeof message?.content === 'string') {
@@ -75,9 +81,12 @@ export class ConversationLoader {
 
                     if (content) {
                         if (message.role === "user") {
+                            portal = null
                             this.renderUserMessage(content, model);
                         } else if (message.role === "assistant") {
-                            this.renderAIMessage(content);
+                            portal = await this.renderAIMessage(content, Boolean(portal));
+                        } else if (message.role === "tool") {
+                            this.renderToolContent(message, portal)
                         }
                     }
                 });
@@ -162,17 +171,32 @@ export class ConversationLoader {
             userText = content
         }
 
-        if (userText) staticPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: userText, files: files, save: false }, 'user_message')
+        if (userText) streamingPortalBridge.createStreamingPortal('UserMessage', 'chatArea', { message: userText, files: files, save: false }, 'user_message')
 
         //const message_id = GenerateId('user_msg')
     }
 
+    async renderToolContent(content, portal) {
+        if (!portal) return console.log("xx")
+        portal.appendComponent('ToolCallDisplay', {
+            toolCall: content
+        });
+    }
+
     // Render text-based assistant message
-    async renderAIMessage(content) {
-        let actualResponse = "";
+    async renderAIMessage(content, hasPortal) {
+        let actualContent = "";
         let thinkContent = "";
 
-        if (!content) return
+        let message_portal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
+
+        if (!content){
+            if(hasPortal){
+                message_portal.close()
+                return
+            }
+            return message_portal
+        }
 
         // Check whether it is a thinking model response ie if it has thinking tags.
         const hasThinkTag = content.includes("<think>");
@@ -180,11 +204,13 @@ export class ConversationLoader {
         if (hasThinkTag) {
             const start = (content.indexOf('<think>') !== -1) ? 7 : 0
             thinkContent = content.slice(start, content.indexOf('</think>'));
-            actualResponse = content.slice(content.indexOf('</think>') + 8);
+            actualContent = content.slice(content.indexOf('</think>') + 8);
         } else {
-            actualResponse = content;
+            actualContent = content;
         }
-        staticPortalBridge.showComponentInTarget('AiMessage', 'chatArea', { actual_response: actualResponse, isThinking: false, think_content: thinkContent }, 'ai_message');
+
+        message_portal.appendComponent('ResponseWrapper', { actualContent: actualContent, thinkContent: thinkContent });
+        return message_portal
     }
 }
 

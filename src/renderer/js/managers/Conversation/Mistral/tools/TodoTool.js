@@ -132,7 +132,7 @@ export class TodoTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             action: result.action,
             todos: result.todos,
             total_count: result.total_count,

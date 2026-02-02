@@ -340,7 +340,7 @@ export class FileOperationsTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             operation: result.operation,
             ...result
         };

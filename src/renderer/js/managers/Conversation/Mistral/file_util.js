@@ -1,4 +1,4 @@
-import { staticPortalBridge } from "../../../PortalBridge";
+import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge";
 import { StateManager } from "../../StatesManager";
 
 /**
@@ -47,7 +47,7 @@ export function prep_user_input(text, options = {}) {
         files.forEach(file => MarkasUsed(file))
     }
 
-    const user_message_portal = staticPortalBridge.showComponentInTarget('UserMessage', 'chatArea', { message: text, files: userContent.filter(c => c.type !== "text") }, 'user_message')
+    const user_message_portal = streamingPortalBridge.createStreamingPortal('UserMessage', 'chatArea', { message: text, files: userContent.filter(c => c.type !== "text") }, 'user_message')
 
     window.desk.api.addHistory({ role: "user", content: userContent });
 

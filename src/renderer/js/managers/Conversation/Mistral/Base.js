@@ -54,8 +54,8 @@ export async function MistralBase({
         const export_id = GenerateId('export')
         const fold_id = GenerateId('fold')
 
-        const loader_id = staticPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea', {}, "loader")
-        StateManager.set('loader-element-id', loader_id)
+        //const loader_id = staticPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea', {}, "loader")
+        //StateManager.set('loader-element-id', loader_id)
 
         let message_portal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
 
@@ -277,7 +277,7 @@ export async function MistralBase({
         }
         setTimeout(() => { leftalinemath() }, 1000)
 
-        staticPortalBridge.closeComponent(loader_id)
+        //staticPortalBridge.closeComponent(loader_id)
 
         if (await appIsDev()) errorHandler.resetRetryCount()
 
@@ -368,7 +368,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
                         error: call.result.error
                     }
                     window.desk.api.addHistory({
-                        role: "tool", content: JSON.stringify(toolResponse), name: call.toolName, tool_call_id: call.toolCallId
+                        role: "tool", content: JSON.stringify(call.result), name: call.toolName, tool_call_id: call.toolCallId
                     });
                     streamingPortalBridge.appendComponentAsChild(streaming_portal.id, 'ToolCallDisplay', {
                         toolCall: call

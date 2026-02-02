@@ -256,7 +256,7 @@ class StreamingPortalBridge {
 
 export function ClosePrefixed() {
     for (let pid of ['user_message', 'ai_message']) {
-        staticPortalBridge.closeComponent(pid, true)
+        //staticPortalBridge.closeComponent(pid, true)
         streamingPortalBridge.closeStreamingPortal(pid, true)
     }
 }

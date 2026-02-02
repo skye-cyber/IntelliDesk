@@ -133,7 +133,7 @@ export class SendMessageTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             platform: result.platform,
             message_id: result.message_id,
             recipients: result.recipients,

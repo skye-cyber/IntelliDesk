@@ -116,7 +116,7 @@ export class SearchWebTool extends ToolBase {
     formatResult(result) {
         return {
             success: true,
-            tool: this.name,
+            //tool: this.name,
             query: result.query,
             results: result.results,
             count: result.count,

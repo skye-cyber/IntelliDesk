@@ -179,6 +179,11 @@ class AgentConfigManager {
             },
         }
         this.config = this.default_config
+
+        this.ignore_file = path.join(os.homedir(), '.IntelliDesk/.config/', this.config.tools.grep.codeignore_file)
+
+        this.check_local_config()
+        this.ensure_ignore_file_exist()
     }
     /**
      * @param {JSON} config New config
@@ -202,8 +207,17 @@ class AgentConfigManager {
      * Check if local config file exist and create it in not
      */
     check_local_config() {
-        if (!fs.statfsSync(this.config_file)) {
+        if (!fs.existsSync(this.config_file) || !fs.statfsSync(this.config_file)) {
             return this.write_config()
+        }
+        return true
+    }
+    ensure_ignore_file_exist() {
+        if (!fs.existsSync(this.ignore_file) || !fs.statfsSync(this.config_file)) {
+            fs.writeFile(this.ignore_file, this.config.tools.grep.exclude_patterns.toString().replaceAll(',', '\n'), (err) => {
+                console.log("Error writing to local ignore file:", err)
+                return false
+            })
         }
         return true
     }
@@ -212,11 +226,11 @@ class AgentConfigManager {
         return JSON.parse(config)
     }
     write_config() {
-        fs.writeFile(this.config_file, JSON.stringify(this.config), (err) => {
+        fs.writeFile(this.config_file, JSON.stringify(this.config, null, 2), (err) => {
             console.log("Error writing to local config:", err)
             return false
         })
-        return True
+        return true
     }
     update_local_config() {
         const local_config = this.get_config()

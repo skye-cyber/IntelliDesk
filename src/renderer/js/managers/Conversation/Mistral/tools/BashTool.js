@@ -42,11 +42,9 @@ export class BashTool extends ToolBase {
         };
     }
 
-    async _execute(params, context, timeout) {
-        const command = JSON.parse(params)?.command
-
+    async _execute({ command, timeout }, context) {
         // Apply timeout from config if not specified
-        const effectiveTimeout = (timeout && typeof(timeout) === 'number') ? timeout : this.config.default_timeout || 30;
+        const effectiveTimeout = (timeout && typeof (timeout) === 'number') ? timeout : this.config.default_timeout || 30;
 
         // Validate command against allowlist/denylist
         this.validateCommand(command);

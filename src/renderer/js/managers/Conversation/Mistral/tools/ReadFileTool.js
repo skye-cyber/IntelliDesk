@@ -4,7 +4,7 @@
 import { ToolBase } from '../ToolBase';
 const path = window.desk.path
 
-const fs = window.desk.fsops
+const fs = window.desk.fs
 
 
 export class ReadFileTool extends ToolBase {

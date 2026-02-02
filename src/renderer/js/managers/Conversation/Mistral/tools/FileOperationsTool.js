@@ -4,8 +4,8 @@
 import { ToolBase } from '../ToolBase';
 const path = window.desk.path
 
-const fs = window.desk.fsops
-
+const fs = window.desk.fs
+const fsops = window.desk.fsops
 
 export class FileOperationsTool extends ToolBase {
     constructor() {
@@ -134,10 +134,10 @@ export class FileOperationsTool extends ToolBase {
             throw new Error(`Directory not found: ${dirPath}`);
         }
 
-        const stats = fs.statSync(dirPath);
-        if (!stats.isDirectory()) {
-            throw new Error(`Path is not a directory: ${dirPath}`);
-        }
+        // const stats = fs.statSync(dirPath);
+        // if (!stats.isDirectory()) {
+        //     throw new Error(`Path is not a directory: ${dirPath}`);
+        // }
 
         let items = [];
         if (recursive) {
@@ -150,7 +150,7 @@ export class FileOperationsTool extends ToolBase {
                 return {
                     name: file,
                     path: fullPath,
-                    type: stat.isDirectory() ? 'directory' : 'file',
+                    //type: stat.isDirectory() ? 'directory' : 'file',
                     size: stat.size,
                     modified: stat.mtime
                 };
@@ -176,14 +176,16 @@ export class FileOperationsTool extends ToolBase {
             items.push({
                 name: file,
                 path: fullPath,
-                type: stat.isDirectory() ? 'directory' : 'file',
+                //type: stat.isDirectory() ? 'directory' : 'file',
                 size: stat.size,
                 modified: stat.mtime
             });
 
-            if (stat.isDirectory()) {
+            //if (stat.isDirectory()) {
+            try {
                 items.push(...this.listDirectoryRecursive(fullPath));
-            }
+            } catch (err) { }
+            //}
         }
 
         return items;
@@ -286,17 +288,18 @@ export class FileOperationsTool extends ToolBase {
         }
 
         const stats = fs.statSync(filePath);
-
         return {
             operation: 'info',
             path: filePath,
-            exists: true,
-            type: stats.isDirectory() ? 'directory' : 'file',
-            size: stats.size,
-            created: stats.birthtime,
-            modified: stats.mtime,
-            accessed: stats.atime,
-            permissions: this.getFilePermissions(stats)
+            stats: {
+                exists: true,
+                //type: stats.isDirectory() ? 'directory' : 'file',
+                size: stats.size,
+                created: stats.birthtime,
+                modified: stats.mtime,
+                accessed: stats.atime,
+                permissions: this.getFilePermissions(stats)
+            }
         };
     }
 

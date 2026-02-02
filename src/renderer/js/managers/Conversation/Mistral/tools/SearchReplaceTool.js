@@ -3,7 +3,7 @@
  */
 import { ToolBase } from '../ToolBase';
 
-const fs = window.desk.fsops
+const fs = window.desk.fs
 
 
 export class SearchReplaceTool extends ToolBase {
@@ -38,7 +38,7 @@ export class SearchReplaceTool extends ToolBase {
     async _execute({ file_path, content }, context) {
         // Parse the search/replace blocks
         const blocks = this.parseSearchReplaceContent(content);
-
+        console.log(blocks)
         if (blocks.length === 0) {
             throw new Error('No valid SEARCH/REPLACE blocks found in content');
         }
@@ -56,7 +56,7 @@ export class SearchReplaceTool extends ToolBase {
 
             // Find the search pattern in the file
             const searchIndex = modifiedContent.indexOf(searchPattern);
-
+            console.log(searchIndex, searchPattern)
             if (searchIndex !== -1) {
                 // Replace the content
                 modifiedContent = modifiedContent.substring(0, searchIndex) +
@@ -94,6 +94,7 @@ export class SearchReplaceTool extends ToolBase {
         let inReplace = false;
 
         for (const line of lines) {
+            console.log(line)
             if (line.trim() === '<<<<<<< SEARCH') {
                 currentBlock = { search: '', replace: '' };
                 inSearch = true;

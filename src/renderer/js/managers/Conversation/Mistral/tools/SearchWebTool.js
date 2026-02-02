@@ -42,6 +42,7 @@ export class SearchWebTool extends ToolBase {
 
     async _execute({ query, max_results = 5, search_engine = "google" }, context) {
         // Validate query
+        console.log(query, max_results)
         if (!query || typeof query !== 'string' || query.trim().length === 0) {
             throw new Error('Query must be a non-empty string');
         }

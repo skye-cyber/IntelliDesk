@@ -7,6 +7,7 @@ import { FileItem } from './components/DropZone/dropzone';
 import { LoadingAnimation } from './components/StatusUI/StatusUI';
 import ToolResponse from './components/Chat/ToolResponse';
 import ToolErrorHandler from './components/Chat/ToolErrorHandler';
+import ToolCallDisplay from './components/Chat/ToolCallDisplay';
 
 const streamingComponentRegistry = {
     Diagram,
@@ -16,7 +17,8 @@ const streamingComponentRegistry = {
     ConversationItem,
     FileItem,
     ToolResponse,
-    ToolErrorHandler
+    ToolErrorHandler,
+    ToolCallDisplay
 };
 
 export const StreamingPortalContainer = () => {
@@ -255,7 +257,7 @@ export const StreamingPortalContainer = () => {
                 position = 'append' // 'append', 'prepend', 'insertAt'
             } = options;
 
-            console.log("🔄 Appending component:", { pid, componentType, target, position });
+            //console.log("🔄 Appending component:", { pid, componentType, target, position });
 
             // Handle different append strategies
             switch (target) {

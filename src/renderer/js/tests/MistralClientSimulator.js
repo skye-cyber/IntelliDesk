@@ -364,16 +364,39 @@ export class MistralClientSimulator {
         let aiResponse = "Let me gather the information you requested.";
 
         // File operations
-        if (lowerCaseMsgArray.includes('file') || lowerCaseMsgArray.includes('document')) {
+        if (lowerCaseMsgArray.includes('read') || lowerCaseMsgArray.includes('document')) {
             const fileTool = tools.find(t => t.function.name.includes('read_file'));
             if (fileTool) {
                 toolCalls.push(this.createToolCall(fileTool.function.name, {
-                    path: '/Documents/playground'
+                    path: '/home/skye/Documents/playground/README2.md',
+                    content: "Sample test content: Intellidesk"
                 }));
                 aiResponse = "Let me check your documents folder...";
             }
         }
 
+        if (lowerCaseMsgArray.includes('write') || lowerCaseMsgArray.includes('document')) {
+            const fileTool = tools.find(t => t.function.name.includes('write_file'));
+            if (fileTool) {
+                toolCalls.push(this.createToolCall(fileTool.function.name, {
+                    path: '/home/skye/Documents/playground/README2.md',
+                    content: "Sample test content: Intellidesk",
+                    overwrite: true
+                }));
+                aiResponse = "Let me check your documents folder...";
+            }
+        }
+
+        if (lowerCaseMsgArray.includes('search') || lowerCaseMsgArray.includes('replace')) {
+            const fileTool = tools.find(t => t.function.name.includes('search_replace'));
+            if (fileTool) {
+                toolCalls.push(this.createToolCall(fileTool.function.name, {
+                    file_path: '/home/skye/Documents/playground/README2.md',
+                    content: "<<<<<<< SEARCH \nIntellidesk\n=======\nrepl_toolkit\n>>>>>>> REPLACE",
+                }));
+                aiResponse = "Let me make the replacement...";
+            }
+        }
         // System operations
         if (lowerCaseMsgArray.includes('system') || lowerCaseMsgArray.includes('disk') || lowerCaseMsgArray.includes('memory')) {
             const bashTool = tools.find(t => t.function.name.includes('bash'));
@@ -398,7 +421,7 @@ export class MistralClientSimulator {
             const calcTool = tools.find(t => t.function.name.includes('calculate'));
             if (calcTool) {
                 // Extract simple calculation
-                const calcMatch = userMessage.match(/\d+\s*[+\-*/]\s*\d+/);
+                const calcMatch = textContent?.text.match(/\d+\s*[+\-*/]\s*\d+/);
                 const expression = calcMatch ? calcMatch[0] : '100 + 200';
 
                 toolCalls.push(this.createToolCall(calcTool.function.name, {
@@ -411,15 +434,39 @@ export class MistralClientSimulator {
         }
 
         // Search operations
-        if (lowerCaseMsgArray.includes('search') || lowerCaseMsgArray.includes('find') || lowerCaseMsgArray.includes('look for')) {
-            const searchTool = tools.find(t => t.function.name.includes('search'));
+        if (lowerCaseMsgArray.includes('lookup') || lowerCaseMsgArray.includes('find') || lowerCaseMsgArray.includes('look for')) {
+            const searchTool = tools.find(t => t.function.name.includes('search_web'));
             if (searchTool) {
                 toolCalls.push(this.createToolCall(searchTool.function.name, {
-                    query: this.extractSearchQuery(userMessage),
+                    query: this.extractSearchQuery(textContent.text),
                     limit: 5
                 }));
+                aiResponse = "Searching the web for the information...";
+            }
+        }
 
-                aiResponse = "Searching for the information...";
+        // Grep operations
+        if (lowerCaseMsgArray.includes('grep') || lowerCaseMsgArray.includes('pgrep')) {
+            const searchTool = tools.find(t => t.function.name.includes('grep'));
+            if (searchTool) {
+                toolCalls.push(this.createToolCall(searchTool.function.name, {
+                    pattern: "rep",
+                    path: "/home/skye/Documents/playground/README2.md"
+                }));
+                aiResponse = "Perfoming pattern grep...";
+            }
+        }
+
+        // Grep operations
+        if (lowerCaseMsgArray.includes('fsc') || lowerCaseMsgArray.includes('file ops')) {
+            const searchTool = tools.find(t => t.function.name.includes('file_operations'));
+            if (searchTool) {
+                toolCalls.push(this.createToolCall(searchTool.function.name, {
+                    operation: "list",
+                    path: "/home/skye/Documents/playground/",
+                    recursive: true
+                }));
+                aiResponse = "Perfoming file ops...";
             }
         }
 
@@ -494,7 +541,7 @@ export class MistralClientSimulator {
      * Extract search query from user message
      */
     extractSearchQuery(message) {
-        const keywords = ['search', 'find', 'look for', 'query'];
+        const keywords = ['lookup', 'find', 'look for', 'query'];
 
         for (const keyword of keywords) {
             const index = message.toLowerCase().indexOf(keyword);

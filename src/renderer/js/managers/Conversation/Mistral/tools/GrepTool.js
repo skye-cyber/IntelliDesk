@@ -3,7 +3,7 @@
  */
 import { ToolBase } from '../ToolBase';
 
-const cmd = window.desk.cmd
+const execAsync = window.desk.cmd.execute
 
 export class GrepTool extends ToolBase {
     constructor() {
@@ -48,22 +48,31 @@ export class GrepTool extends ToolBase {
     async _execute({ pattern, path = ".", max_matches = null, use_default_ignore = true }, context) {
         // Build grep command
         const maxMatches = max_matches !== null ? max_matches : this.config.default_max_matches || 100;
-        const ignoreFlag = use_default_ignore ? '--hidden --glob "!.git"' : '';
+        const ignore_list = this.config.exclude_patterns.toString()
+        const ignore_file = this.agent.ignore_file
 
-        const command = `grep -r --color=never -n "${pattern}" ${path} ${ignoreFlag} | head -n ${maxMatches}`;
+        const ignoreFlag = use_default_ignore ?
+            (ignore_file ?
+                `--exclude-from=${ignore_file}` :
+                `--exclude=${ignore_list}`) : '';
+
+        const command = `grep -r --color=never --line-number "${pattern}" ${path} ${ignoreFlag} | head -n ${maxMatches}`;
 
         try {
-            const result = await cmd.execute(command, {
+            const result = await execAsync(command, {
                 timeout: (this.config.default_timeout || 60) * 1000,
-                maxBuffer: this.config.max_output_bytes || 64000
+                maxBuffer: this.config.max_output_bytes || 64000,
+                shell: '/bin/bash'
             });
 
             return {
                 pattern: pattern,
                 path: path,
+                error: result.stderr,
                 matches: result.stdout,
                 matchCount: result.stdout.split('\n').filter(line => line.trim()).length,
-                maxMatches: maxMatches
+                maxMatches: maxMatches,
+                exitCode: result.code,
             };
         } catch (error) {
             // If grep fails, try with rg (ripgrep) if available
@@ -71,16 +80,18 @@ export class GrepTool extends ToolBase {
                 const rgCommand = `rg --color=never --line-number "${pattern}" ${path} ${ignoreFlag} | head -n ${maxMatches}`;
                 const result = await cmd.execute(rgCommand, {
                     timeout: (this.config.default_timeout || 60) * 1000,
-                    maxBuffer: this.config.max_output_bytes || 64000
+                    maxBuffer: this.config.max_output_bytes || 64000,
+                    shell: '/bin/bash'
                 });
-
                 return {
                     pattern: pattern,
                     path: path,
+                    error: result.stderr,
                     matches: result.stdout,
                     matchCount: result.stdout.split('\n').filter(line => line.trim()).length,
                     maxMatches: maxMatches,
-                    toolUsed: 'ripgrep'
+                    toolUsed: 'ripgrep',
+                    exitCode: result.code,
                 };
             } catch (rgError) {
                 throw new Error(`Both grep and rg failed: ${rgError.message}`);
@@ -92,6 +103,8 @@ export class GrepTool extends ToolBase {
         return {
             success: true,
             tool: this.name,
+            error: result.error,
+            exitCode: result.code || 0,
             pattern: result.pattern,
             path: result.path,
             matches: result.matches,

@@ -66,7 +66,7 @@ export class ToolBase {
             };
 
             // Execute the tool
-            const result = await this._execute(params, executionContext);
+            const result = await this._execute(JSON.parse(params), executionContext);
 
             // Log successful execution
             this.logExecution('success', params, result);
@@ -116,11 +116,11 @@ export class ToolBase {
      * Log tool execution
      */
     logExecution(status, params, result) {
-        console.log(`[TOOL:${this.name}] ${status.toUpperCase()}`)//, {
-            // params: params,
-            // result: status === 'error' ? result.error : 'success',
-            // timestamp: new Date().toISOString()
-        //});
+        console.log(`[TOOL:${this.name}] ${status.toUpperCase()}`, {
+            //params: params,
+            result: status === 'error' ? result.error : 'success',
+            //timestamp: new Date().toISOString()
+        });
 
         // Store in state for debugging
         StateManager.set('lastToolExecution', {

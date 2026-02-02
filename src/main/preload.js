@@ -699,7 +699,7 @@ const cmd = {
                     stdout: stdout || '',
                     stderr: stderr || '',
                     code: error ? (error.code || 1) : 0,
-                    message: error ? error.message : 'Command executed successfully'
+                    message: error || stderr ? error?.message || "Command exited with an error" : 'Command executed successfully'
                 });
             });
         });
@@ -716,7 +716,7 @@ contextBridge.exposeInMainWorld('desk', {
     fs,
     dbManager
 });
-fsops.exists
+
 document.addEventListener('DOMContentLoaded', function() {
     //initialize conversation histories when is ready/loaded
     ConversationHistory.chats = [{ role: "system", content: system_command }];

@@ -367,12 +367,15 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
                     window.desk.api.addHistory({
                         role: "tool", content: JSON.stringify(toolResponse), name: call.toolName, tool_call_id: call.toolCallId
                     });
+                    streamingPortalBridge.appendComponentAsChild(streaming_portal.id, 'ToolCallDisplay', {
+                        toolCall: call
+                    })
                 }
 
                 // Render tool call responses
-                streamingPortalBridge.appendComponentAsChild(streaming_portal.id, 'ToolResponse', {
-                    toolCalls: toolResults
-                })
+                // streamingPortalBridge.appendComponentAsChild(streaming_portal.id, 'ToolResponse', {
+                //     toolCalls: toolResults
+                // })
 
                 // Update with ai message
                 window.desk.api.addHistory({ role: "assistant", content: aiMessage.content || "", tool_calls: aiMessage.tool_calls });

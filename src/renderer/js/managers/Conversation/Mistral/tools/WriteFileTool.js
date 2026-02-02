@@ -91,8 +91,12 @@ export class WriteFileTool extends ToolBase {
         }
 
         // Check file extension against denylist
-        const deniedExtensions = this.config.denied_extensions || ['.exe', '.bat', '.sh', '.js'];
+        const deniedExtensions = this.config.denied_extensions || ['.exe', '.bat', '.sh', '.js', '.deb'];
         const fileExt = path.extname(filePath).toLowerCase();
+
+        // if(path.isAbsolute(filePath)){
+        //     throw new Error("File path must be absolute")
+        // }
 
         if (deniedExtensions.includes(fileExt)) {
             throw new Error(`File extension ${fileExt} is not allowed`);

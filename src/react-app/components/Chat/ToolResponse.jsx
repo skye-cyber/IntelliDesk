@@ -35,7 +35,7 @@ export const ToolResponse = ({ toolCalls = [], finalResponse = '', showDetails =
     };
 
     // Check if there are any errors in tool calls
-    const hasErrors = toolCalls.some(call => call.error);
+    const hasErrors = toolCalls.some(call => call.error||call.result.error);
 
     if (toolCalls.length === 0) {
         return null;

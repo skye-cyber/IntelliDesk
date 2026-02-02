@@ -37,11 +37,11 @@ export class ToolManager {
         this.registerTool('bash', new BashTool());
         this.registerTool('grep', new GrepTool());
         this.registerTool('search_replace', new SearchReplaceTool());
-        this.registerTool('todo', new TodoTool());
+        //this.registerTool('todo', new TodoTool());
         this.registerTool('write_file', new WriteFileTool());
         this.registerTool('read_file', new ReadFileTool());
         this.registerTool('search_web', new SearchWebTool());
-        this.registerTool('get_weather', new GetWeatherTool());
+        //this.registerTool('get_weather', new GetWeatherTool());
         this.registerTool('calculate', new CalculateTool());
         this.registerTool('file_operations', new FileOperationsTool());
         this.registerTool('database_query', new DatabaseQueryTool());

@@ -9,6 +9,7 @@ export class ChatUtil {
         this.diagram_interpreter = dot_interpreter
         this.diagram_interpreter = chart_interpret
     }
+
     scrollToBottom(element = document.getElementById('chatArea'), check = false, timeout = 500) {
         this.updateScrollButtonVisibility();
 
@@ -176,3 +177,5 @@ export class ChatDisplay {
         }
     }
 }
+
+export const chatutil = new ChatUtil()

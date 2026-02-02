@@ -66,31 +66,6 @@ export function implementUserCopy() {
     });
 }
 
-// Copy function for the whole text block/aiMessage
-export function CopyMessage(selector, html = false) {
-    //console.log(UId)
-    const textBlock = document.querySelector(selector);
-    //console.log(textBlock)
-    if (!textBlock) {
-        console.error('Element not found: ', selector);
-        return;
-    }
-
-    const textToCopy = html === true ? textBlock.innerHTML : textBlock.textContent;
-    //console.log(textToCopy)
-
-    if (textToCopy.length >= 0) {
-        try {
-            navigator.clipboard.writeText(textToCopy);
-            html ? showCopyModal("Clone successfull!") : showCopyModal()
-        } catch (err) {
-            console.error('Failed to copy: ', err);
-        }
-    } else {
-        console.log('Text is too short to copy: ', textToCopy);
-    }
-}
-
 // Function to show the modal
 export function showCopyModal(text) {
     const modal = document.getElementById('copyModal');
@@ -287,7 +262,6 @@ export function addImageGenClickListener(el) {
     });
 }
 
-window.CopyMessage = CopyMessage
 window.copyBMan = copyBMan
 window.InputPurify = InputPurify
 window.showCopyModal = showCopyModal

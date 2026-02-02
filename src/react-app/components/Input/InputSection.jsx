@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { opendiagViewModal, closediagViewModal } from '@js/diagraming/Utils.js';
 import { showDropZoneModal } from '@components/DropZone/util.js'
 import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
 import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
@@ -64,7 +63,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             showApiNotSetWarning()
         } else {
 
-            if(input_text) setInputValue(input_text)
+            if (input_text) setInputValue(input_text)
 
             const userInput = textareaRef.current;
             if (inputValue.trim() && !StateManager.get('processing')) {
@@ -600,7 +599,9 @@ const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeT
             </div>
 
             {/* Diagram/Flow Tool */}
-            <div onClick={opendiagViewModal} className='flex items-center gap-1 text-gray-800 dark:text-gray-200 hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm cursor-pointer select-none'>
+            <div
+            onClick={() => StateManager.get('openDiagramView')()}
+            className='flex items-center gap-1 text-gray-800 dark:text-gray-200 hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm cursor-pointer select-none'>
                 <button
                     id='diagToggle'
 

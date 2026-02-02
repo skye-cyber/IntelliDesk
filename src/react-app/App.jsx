@@ -21,7 +21,6 @@ import { DropZone } from '@components/DropZone/dropzone.jsx'
 import { NotificationFlyer, Notifcation } from '@components/Notifications/Notification.jsx'
 import '@js/MathBase/MathNormalize.js';
 import '@js/MathBase/mathRenderer.js';
-import '@js/diagraming/Utils.js'
 import '@js/diagraming/vizcharting.js'
 import '@js/diagraming/jscharting.js'
 import '@js/Notification/notification';

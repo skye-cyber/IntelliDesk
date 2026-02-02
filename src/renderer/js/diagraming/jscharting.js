@@ -1,10 +1,9 @@
 import * as JSC from 'jscharting';
 import { createChart, HistogramSeries } from 'lightweight-charts';
 import { waitForElement } from '../Utils/dom_utils';
-import { opendiagViewModal } from './Utils';
-//import { exportSvgToPng } from './Utils';
 import { modalmanager } from '../StatusUIManager/Manager';
 import { staticPortalBridge } from '../PortalBridge';
+import { StateManager } from '../managers/StatesManager';
 
 const chartCache = new Map();
 
@@ -174,7 +173,7 @@ export class InterPreter {
 
             // open modal if render trigger===click
             if (trigger === 'click') {
-                opendiagViewModal();
+                StateManager.get('openDiagramView')();
             }
 
             // Hide placeholder
@@ -210,7 +209,7 @@ export class InterPreter {
 
             // open modal if render trigger===click
             if (trigger === 'click') {
-                opendiagViewModal();
+                StateManager.get('openDiagramView')();
             }
         } catch (e) {
             console.error("Invalid JSON chart block:", e);
@@ -299,5 +298,3 @@ export class InterPreter {
 
 
 export const chart_interpret = new InterPreter()
-
-window.chart_interpret = chart_interpret

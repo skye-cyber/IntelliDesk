@@ -8,6 +8,7 @@ import { LoadingAnimation } from './components/StatusUI/StatusUI';
 import ToolResponse from './components/Chat/ToolResponse';
 import ToolErrorHandler from './components/Chat/ToolErrorHandler';
 import ToolCallDisplay from './components/Chat/ToolCallDisplay';
+import { ResponseWrapper } from './components/ConversationRenderer/Renderer';
 
 const streamingComponentRegistry = {
     Diagram,
@@ -18,7 +19,8 @@ const streamingComponentRegistry = {
     FileItem,
     ToolResponse,
     ToolErrorHandler,
-    ToolCallDisplay
+    ToolCallDisplay,
+    ResponseWrapper
 };
 
 export const StreamingPortalContainer = () => {

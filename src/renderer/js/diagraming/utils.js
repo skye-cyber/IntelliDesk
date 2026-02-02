@@ -1,41 +1,6 @@
-import { waitForElement } from "../Utils/dom_utils";
 import { modalmanager } from "../StatusUIManager/Manager";
 
-let diagToggle;
-let diagView;
-
-waitForElement('#diagViewModal', setDiagView)
-waitForElement('#diagToggle', setdiagDiagToggle)
-
-function setDiagView(el) {
-    diagView = el
-}
-
-
-function setdiagDiagToggle(el) {
-    diagToggle = el
-    el.addEventListener('click', () => {
-        opendiagViewModal();
-    })
-}
-
-export function opendiagViewModal() {
-    //console.log('Open DiagView')
-    diagView.classList.remove('hidden', 'opacity-0', 'translate-x-full');
-    diagView.classList.add('opacity-100', 'translate-x-0')
-}
-
-export function closediagViewModal() {
-    //console.log('Close DiagView')
-    diagView.classList.remove('opacity-100', 'translate-x-0')
-    diagView.classList.add('translate-x-full');
-    setTimeout(() => {
-        diagView.classList.add('opacity-0', 'hidden');
-    }, 1000)
-}
-
-
-export async function exportSvgToPng(svgElementId, outputFileName = `${svgElementId}.png`) {
+export async function DiagramToPngExportSvg(svgElementId, outputFileName = `${svgElementId}.png`) {
     let button_content = null
     let export_button = document.querySelector(`[data-value^=${svgElementId}]`)
     if (export_button) button_content = modalmanager.showLoading(export_button, 'exporting')

@@ -138,9 +138,9 @@ export class MistralClientSimulator {
      * Returns a complete response with potential tool calls
      */
     async createCompletion({ model, messages, tools, tool_choice }) {
-        console.log('🎭 Simulating chat.completions.create() for model:', model);
-        console.log('   Tools available:', tools ? tools.length : 0);
-        console.log('   Tool choice:', tool_choice);
+        // console.log('🎭 Simulating chat.completions.create() for model:', model);
+        // console.log('   Tools available:', tools ? tools.length : 0);
+        // console.log('   Tool choice:', tool_choice);
 
         // Store conversation history
         this.conversationHistory = messages || [];

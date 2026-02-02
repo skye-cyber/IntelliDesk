@@ -692,7 +692,7 @@ const cmd = {
                 ...options
             }, (error, stdout, stderr) => {
                 // Always resolve, never reject, so caller can handle both cases
-                console.log("CMD E:", error, "STDOUT:", stdout, "STDERR:", stderr)
+                // console.log("CMD E:", error, "STDOUT:", stdout, "STDERR:", stderr)
                 resolve({
                     success: !error,
                     error: error,

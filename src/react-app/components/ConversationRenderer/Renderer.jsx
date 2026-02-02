@@ -1,7 +1,6 @@
-import React, { useCallback } from 'react';
-import { CopyMessage } from '../../../renderer/js/Utils/chatUtils';
+import React, { useCallback, useRef } from 'react';
+import { CopyMessage } from './utils';
 import { normalizeMathDelimiters } from '../../../renderer/js/MathBase/MathNormalize';
-import { toggleExportOptions } from '../../../renderer/js/ChatExport/export';
 import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../renderer/js/ChatExport/export';
 import { markitdown } from '../Code/CodeHighlighter';
 import { CodeBlockRenderer, SimpleUserCodeRenderer } from '../Code/CodeBlockRenderer';
@@ -14,30 +13,26 @@ import { StateManager } from '../../../renderer/js/managers/StatesManager';
 
 const chatutil = new ChatUtil()
 
-export const UserMessage = ({
-    message,
-    files = [],
-    save = true
-}) => {
+export const UserMessage = ({ message, files = [] }) => {
+    const messageRef = useRef(null)
 
     const userContent = markitdown(message);
+    const selector_class = GenerateId('user-ms')
 
-    const message_id = GenerateId('user_msg')
-
-    //if (save) window.desk.api.addHistory({ role: "user", content: message });
-
-    chatutil.render_math(`.${message_id}`, 0)
+    chatutil.render_math(`.${selector_class}`, 0)
 
     return (
         <>
             <section className="block">
                 <div className="flex items-end gap-x-2 justify-end">
-                    <div id="user_message" data-id={message_id} className={`${message_id} relative bg-blue-100/70 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-none w-fit max-w-full md:max-w-[80%]`}>
+                    <div
+                        ref={messageRef}
+                        className={`${selector_class} relative bg-blue-100/70 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none p-2 md:p-3 shadow-none w-fit max-w-full md:max-w-[80%]`}>
                         <SimpleUserCodeRenderer htmlContent={userContent} />
                     </div>
                 </div>
 
-                <UserMessageOptions message_id={message_id} />
+                <UserMessageOptions messageref={messageRef} />
             </section >
 
             <div className='flex justify-end'>
@@ -48,98 +43,105 @@ export const UserMessage = ({
 }
 
 
-export const AiMessage = ({
-    actual_response,
+export const AiMessage = ({ children, ...props }) => {
+    const exportMenu = useRef(null)
+    const messageRef = useRef(null)
+
+    const onExportMenuToggle = useCallback(() => {
+        exportMenu.current.classList.toggle('hidden');
+
+    })
+
+    return (
+        <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
+            <section id="ai_response" className="relative w-fit max-w-full mb-[2vh] p-2">
+                {/* This is where child components will appear eg too- responses */}
+                {children &&
+                    <div ref={messageRef} className="child-components">{children}</div>
+                }
+
+                <AiMessageOptions onMenuToggle={onExportMenuToggle} message_id={message_id} />
+                <ExportMenu menuref={exportMenu} messageref={messageRef} />
+            </section >
+        </div >
+    )
+}
+
+export const ResponseWrapper = ({
+    actualContent,
     isThinking,
-    think_content,
+    thinkContent,
     message_id = GenerateId('ai-msg'),
     export_id = GenerateId('export'),
     fold_id = GenerateId('fold'),
-    children,
-    ...props
 }) => {
-    let processedHtml
+    const foldRef = useRef(null)
+    const foldSVGRef = useRef(null)
+    const hasContent_hasThink = actualContent && thinkContent
+    const thinking_thinkcontent = isThinking && thinkContent
 
-    //console.log(actual_response)
+    let processedHtmlContent
+
     try {
         // Normalize code
-        actual_response = normalizeCodeBlocks(actual_response)
-        processedHtml = markitdown(mathStandardize(actual_response))
+        const NormalizedMessage = normalizeCodeBlocks(actualContent)
+        processedHtmlContent = markitdown(mathStandardize(NormalizedMessage))
     } catch (err) {
         //console.log(err)
     }
 
     StateManager.set("current_message_id", message_id)
 
-    const processedThinkHtml = think_content ? markitdown(normalizeMathDelimiters(think_content)) : null;
+    const htmlThinkContent = thinkContent ? markitdown(normalizeMathDelimiters(thinkContent)) : null;
 
-    const FoldThinking = useCallback((e, selector) => {
-        const content = document.getElementById(selector);
+    const FoldThinkSection = useCallback(() => {
+        const content = foldRef.current;
+
         if (content) {
             content.classList.toggle('hidden');
         }
-        document.querySelector('.fold_svg')?.classList.toggle('rotate-180')
+        foldSVGRef.current?.classList.toggle('rotate-180')
     })
 
-
     return (
-        <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
-            <section id="ai_response" className="relative w-fit max-w-full mb-[2vh] p-2">
-                {
-                    actual_response ?
-                        (
-                            <>
-                                <div id="ai_response_think" className={`think-${message_id} w-full bg-none py-4 text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-700`}>
-                                    {
-                                        (isThinking || think_content) ? (
-                                            <div className="think-section">
-                                                <div className="flex items-center justify-between">
-                                                    <strong className="leading-widest font-brand text-light text-blue-400 dark:text-blue-400">Thoughts:</strong>
-                                                    <button
-                                                        className="text-sm text-gray-600 dark:text-gray-200"
-                                                        onClick={(e) => FoldThinking(e, fold_id)}
-                                                    >
-                                                        <svg className="fold_svg mb-2 fold-icon transition-transform duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor" width="32" height="38">
-                                                            <path d="M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                                <div id={fold_id} className="">
-                                                    <div id="think-content" className='text-gray-500 dark:text-gray-400'>
-                                                        <CodeBlockRenderer htmlContent={processedThinkHtml} />
-                                                    </div>
-                                                </div>
-                                                {
-                                                    (think_content && actual_response) ?
-                                                        <p className="w-full rounded-lg border-2 border-blue-200 dark:border-gray-400 mb-2"></p>
-                                                        : ""
-                                                }
-                                            </div>
-                                        )
-                                            : ''
-                                    }
-                                    {
-                                        actual_response && think_content ?
-                                            <strong className="text-green-400 dark:text-green-400">Response:</strong>
-                                            : ''
-                                    }
-                                    <div id={message_id} className={message_id}>
-                                        <CodeBlockRenderer htmlContent={processedHtml} />
-                                    </div>
-                                    <div className='' id="tool-calls-container"></div>
-                                    {/* This is where child components will appear eg too- responses */}
-                                    {children && <div className="child-components">{children}</div>}
-                                    <AiMessageOptions export_id={export_id} message_id={message_id} />
+        <>
+            <div id="ai_response_think" className={`think-${message_id} w-full bg-none py-4 text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-700`}>
+                <div id="ai_response_think" className={`think-${message_id} w-full bg-none py-4 text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-700`}>
+                    {thinking_thinkcontent &&
+                        <div className="think-section">
+                            <div className="flex items-center justify-between">
+                                <strong className="leading-widest font-brand text-light text-blue-400 dark:text-blue-400">Thoughts:</strong>
+                                <button
+                                    className="text-sm text-gray-600 dark:text-gray-200"
+                                    onClick={FoldThinkSection}
+                                >
+                                    <svg ref={foldSVGRef} className="fold_svg mb-2 fold-icon transition-transform duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor" width="32" height="38">
+                                        <path d="M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div ref={foldRef}>
+                                <div id="think-content" className='text-gray-500 dark:text-gray-400'>
+                                    <CodeBlockRenderer htmlContent={htmlThinkContent} />
                                 </div>
-                                <ExportMenu export_id={export_id} message_id={message_id} />
-                            </>
-                        ) :
-                        ''
-                }
-            </section >
-        </div >
+                            </div>
+                            {hasContent_hasThink &&
+                                <p className="w-full rounded-lg border-2 border-blue-200 dark:border-gray-400 mb-2"></p>
+                            }
+                        </div>
+                    }
+
+                    {hasContent_hasThink &&
+                        <strong className="text-green-400 dark:text-green-400">Response:</strong>
+                    }
+
+                </div>
+                <CodeBlockRenderer htmlContent={processedHtmlContent} />
+            </div>
+        </>
     )
 }
+
 export const FileContainer = ({ files }) => {
     const file_container_id = `file_container-${Math.random().toString(36).substring(2, 6)}`;
 
@@ -378,12 +380,12 @@ export const Mimesvg = ({ mime, className = "w-6 h-6 mr-1 text-gray-600" }) => {
     );
 };
 
-export const ExportMenu = ({ export_id, message_id }) => {
+export const ExportMenu = ({ menuref, messageref }) => {
     return (
         <div
-            onMouseLeave={() => toggleExportOptions(export_id, 'off')}
+            ref={menuref}
+            onMouseLeave={(e) => e.target.classList.add('hidden')}
             data-action="export-menu"
-            id={`exportOptions-${export_id}`}
             className="hidden absolute z-[10] bottom-12 left-0 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 z-50 overflow-hidden transition-all duration-300 transform origin-bottom-left">
             <div className="p-1">
                 <div className="relative">
@@ -394,7 +396,10 @@ export const ExportMenu = ({ export_id, message_id }) => {
 
                     {/* Export Items */}
                     <div className="py-1">
-                        <button onClick={(event) => HTML2Pdf(event, `.${message_id}`)}
+                        <button onClick={(event) => {
+                            menuref.current.classList.add('hidden')
+                            HTML2Pdf(event, messageref.current)
+                        }}
                             className="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 group">
                             <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
                                 <svg className="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -407,7 +412,10 @@ export const ExportMenu = ({ export_id, message_id }) => {
                             </div>
                         </button>
 
-                        <button onClick={(event) => HTML2Jpg(event, `.${message_id}`)}
+                        <button onClick={(event) => {
+                            menuref.current.classList.add('hidden')
+                            HTML2Jpg(event, messageref.current)
+                        }}
                             className="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all duration-200 group">
                             <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
                                 <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -420,7 +428,10 @@ export const ExportMenu = ({ export_id, message_id }) => {
                             </div>
                         </button>
 
-                        <button onClick={(event) => HTML2Word(event, `.${message_id}`)}
+                        <button onClick={(event) => {
+                            menuref.current.classList.add('hidden')
+                            HTML2Word(event, messageref.current)
+                        }}
                             className="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 group">
                             <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-200">
                                 <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,7 +446,7 @@ export const ExportMenu = ({ export_id, message_id }) => {
                     </div>
 
                     {/* Coming Soon Section */}
-                    <div className="px-3 py-2 border-t border-gray-100 dark:border-gray-700">
+                    <div className="hidden px-3 py-2 border-t border-gray-100 dark:border-gray-700">
                         <button className="w-full flex items-center px-3 py-2.5 text-sm text-gray-400 dark:text-gray-500 rounded-lg transition-all duration-200 cursor-not-allowed group">
                             <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3">
                                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,10 +469,7 @@ export const ExportMenu = ({ export_id, message_id }) => {
     )
 }
 
-export const AiMessageOptions = ({ message_id, export_id }) => {
-    const copy_button_id = GenerateId('ai-copy-button')
-    const clone_button_id = GenerateId('ai-clone');
-
+export const AiMessageOptions = ({ messageref, onMenuToggle }) => {
     const clone_markdown_content = useCallback((selector, html = true) => {
         CopyMessage(selector, html)
     });
@@ -472,9 +480,8 @@ export const AiMessageOptions = ({ message_id, export_id }) => {
             <div className="group relative max-w-fit transition-all duration-300 hover:z-50">
                 <div
                     role="button"
-                    id={export_id}
                     aria-expanded="false"
-                    onClick={() => toggleExportOptions(export_id)}
+                    onClick={onMenuToggle}
                     aria-label="Export"
                     className="relative overflow-hidden bg-white/80 backdrop-blur-md transition-all duration-700 hover:bg-white hover:shadow-lg hover:shadow-blue-500/10 dark:bg-[#5500ff]/80 dark:hover:bg-[#00aa00]/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/50 rounded-full"
                     style={{
@@ -506,7 +513,13 @@ export const AiMessageOptions = ({ message_id, export_id }) => {
             </div>
 
             {/* COPY OPTION */}
-            <div data-id={copy_button_id} className="rounded-lg p-1 cursor-pointer" aria-label="Copy" title="Copy" id="copy-all" onClick={() => CopyMessage(`.${message_id}`)}>
+            <div
+                className="rounded-lg p-1 cursor-pointer"
+                aria-label="Copy"
+                title="Copy"
+                id="copy-all"
+                onClick={() => CopyMessage(messageref.current)}
+            >
                 <svg className="w-5 md:w-6 h-5 md:h-6 transition-transform duration-200 ease-in-out hover:scale-110 cursor-pointer" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -526,7 +539,13 @@ export const AiMessageOptions = ({ message_id, export_id }) => {
             </div>
 
             {/*CLONE OPTION*/}
-            <button data-id={clone_button_id} className="rounded-lg p-1 text-gray-700 cursor-pointer" aria-label="Clone" title="Clone Raw" id="clone_content" onClick={() => clone_markdown_content(`.${message_id}`)}>
+            <button
+                className="rounded-lg p-1 text-gray-700 cursor-pointer"
+                aria-label="Clone"
+                title="Clone Raw"
+                id="clone_content"
+                onClick={() => clone_markdown_content(messageref.current)}
+            >
                 <svg className="w-5 md:w-6 h-5 md:h-6 fill-gray-700 dark:fill-gray-200 transition-transform duration-200 ease-in-out hover:scale-110 cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                     <path d="M296.5 69.2C311.4 62.3 328.6 62.3 343.5 69.2L562.1 170.2C570.6 174.1 576 182.6 576 192C576 201.4 570.6 209.9 562.1 213.8L343.5 314.8C328.6 321.7 311.4 321.7 296.5 314.8L77.9 213.8C69.4 209.8 64 201.3 64 192C64 182.7 69.4 174.1 77.9 170.2L296.5 69.2zM112.1 282.4L276.4 358.3C304.1 371.1 336 371.1 363.7 358.3L528 282.4L562.1 298.2C570.6 302.1 576 310.6 576 320C576 329.4 570.6 337.9 562.1 341.8L343.5 442.8C328.6 449.7 311.4 449.7 296.5 442.8L77.9 341.8C69.4 337.8 64 329.3 64 320C64 310.7 69.4 302.1 77.9 298.2L112 282.4zM77.9 426.2L112 410.4L276.3 486.3C304 499.1 335.9 499.1 363.6 486.3L527.9 410.4L562 426.2C570.5 430.1 575.9 438.6 575.9 448C575.9 457.4 570.5 465.9 562 469.8L343.4 570.8C328.5 577.7 311.3 577.7 296.4 570.8L77.9 469.8C69.4 465.8 64 457.3 64 448C64 438.7 69.4 430.1 77.9 426.2z" />
                 </svg>
@@ -535,17 +554,17 @@ export const AiMessageOptions = ({ message_id, export_id }) => {
     )
 }
 
-export const UserMessageOptions = ({ message_id }) => {
-    const copy_button_id = GenerateId('copy-button')
-    const clone_button_id = GenerateId('clone')
-
+export const UserMessageOptions = ({ messageref }) => {
     const clone_markdown_content = useCallback((selector, html = true) => {
         CopyMessage(selector, html)
     });
 
     return (
         <div className="message-actions text-secondary-700 dark:text-white flex items-center justify-end space-x-1 opacity-100 transition-opacity duration-300 hover:opacity-100 motion-safe:transition-opacity">
-            <button id={copy_button_id} onClick={(e) => CopyMessage(`.${message_id}`, e.currentTarget, false)} className="relative group rounded-lg cursor-pointer" aria-label="Copy">
+            <button
+                onClick={() => CopyMessage(messageref.current)}
+                className="relative group rounded-lg cursor-pointer"
+                aria-label="Copy">
                 <span className="flex items-center justify-center w-6 h-6">
                     <svg width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                         <path d="M480 400L288 400C279.2 400 272 392.8 272 384L272 128C272 119.2 279.2 112 288 112L421.5 112C425.7 112 429.8 113.7 432.8 116.7L491.3 175.2C494.3 178.2 496 182.3 496 186.5L496 384C496 392.8 488.8 400 480 400zM288 448L480 448C515.3 448 544 419.3 544 384L544 186.5C544 169.5 537.3 153.2 525.3 141.2L466.7 82.7C454.7 70.7 438.5 64 421.5 64L288 64C252.7 64 224 92.7 224 128L224 384C224 419.3 252.7 448 288 448zM160 192C124.7 192 96 220.7 96 256L96 512C96 547.3 124.7 576 160 576L352 576C387.3 576 416 547.3 416 512L416 496L368 496L368 512C368 520.8 360.8 528 352 528L160 528C151.2 528 144 520.8 144 512L144 256C144 247.2 151.2 240 160 240L176 240L176 192L160 192z" />
@@ -553,7 +572,10 @@ export const UserMessageOptions = ({ message_id }) => {
                 </span>
                 <span className="gradient-neon dark:gradient-neon-dark hidden group-hover:flex absolute z-[30] -left-3 -bottom-4 text-xs font-brand rounded-lg text-primary-700 dark:text-gray-50 py-0 px-1 shadow-balanced-lg shadow-primray-400 active:outline-none" >copy</span>
             </button>
-            <button id={clone_button_id} onClick={(e) => clone_markdown_content(`.${message_id}`, true)} className="relative group rounded-lg cursor-pointer" aria-label="Clone">
+            <button
+                onClick={() => clone_markdown_content(messageref.current)}
+                className="relative group rounded-lg cursor-pointer"
+                aria-label="Clone">
                 <span className="flex items-center justify-center w-6 h-6">
                     <svg width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                         <path d="M352 528L128 528C119.2 528 112 520.8 112 512L112 288C112 279.2 119.2 272 128 272L176 272L176 224L128 224C92.7 224 64 252.7 64 288L64 512C64 547.3 92.7 576 128 576L352 576C387.3 576 416 547.3 416 512L416 464L368 464L368 512C368 520.8 360.8 528 352 528zM288 368C279.2 368 272 360.8 272 352L272 128C272 119.2 279.2 112 288 112L512 112C520.8 112 528 119.2 528 128L528 352C528 360.8 520.8 368 512 368L288 368zM224 352C224 387.3 252.7 416 288 416L512 416C547.3 416 576 387.3 576 352L576 128C576 92.7 547.3 64 512 64L288 64C252.7 64 224 92.7 224 128L224 352z" />

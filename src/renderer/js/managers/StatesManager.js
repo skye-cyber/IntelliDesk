@@ -11,13 +11,19 @@ export const StateManager = (() => {
         get(key) {
             return state[key];
         },
+        has(key) {
+            return Boolean(state[key])
+        },
         subscribe(key, callback) {
             if (!listeners[key]) listeners[key] = [];
             listeners[key].push(callback);
+        },
+        unset(key) {
+            state[key] = undefined
+        },
+        reset() {
+            state = {}
+            listeners = {}
         }
     };
 })();
-
-
-// expose globally
-window.StateManager = StateManager;

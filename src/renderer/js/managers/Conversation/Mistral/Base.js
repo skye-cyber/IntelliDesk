@@ -330,9 +330,12 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
             // Update with ai message
             window.desk.api.addHistory({ role: "assistant", content: aiMessage.content || "", tool_calls: aiMessage.tool_calls });
 
-            streamingPortalBridge.appendToStreamingPortal(streaming_portal, {
-                actual_response: aiMessage.content,
-            });
+            // streamingPortalBridge.appendToStreamingPortal(streaming_portal, {
+            //     actual_response: aiMessage.content,
+            // });
+            streamingPortalBridge.appendComponentAsChild(streaming_portal.id, 'ResponseWrapper', {
+                message: aiMessage.content
+            })
 
             // Check if AI wants to use tools
             if (aiMessage.tool_calls && aiMessage.tool_calls.length > 0) {

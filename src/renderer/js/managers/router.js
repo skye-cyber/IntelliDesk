@@ -91,8 +91,7 @@ export class Router {
         const model = StateManager.get('currentModel');
 
         //Intercept image generation
-        if (StateManager.get('imageGen', true)
-        ) {
+        if (StateManager.get('imageGen')) {
             //const imageGen = new window.ImageGenerator(chatArea);
             //imageGen.createImage(text)
             return

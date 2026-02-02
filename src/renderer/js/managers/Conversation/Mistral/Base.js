@@ -334,7 +334,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
             //     actual_response: aiMessage.content,
             // });
             streamingPortalBridge.appendComponentAsChild(streaming_portal.id, 'ResponseWrapper', {
-                message: aiMessage.content
+                actualContent: aiMessage.content,
             })
 
             // Check if AI wants to use tools

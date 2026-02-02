@@ -6,10 +6,8 @@ import { showDropZoneModal } from '@components/DropZone/util.js'
 import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '@components/Input/InputSection';
-//import { StateManager } from '@js/managers/StatesManager';
-//import { TestsRunner } from '../../Tests/runner';
-import ToolDemo from './ToolDemo';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
 
 
 const chatutil = new ChatUtil()
@@ -205,8 +203,8 @@ const CopyFeedbackModal = () => {
                         <div className="absolute inset-0 border-2 border-emerald-400/30 rounded-full animate-ping-slow"></div>
                     </div>
 
-                    <div ref={feedbackEl} className="text-left">
-                        <p id="copy-title" className="font-semibold text-gray-900 dark:text-white text-sm">Copied to clipboard</p>
+                    <div className="text-left">
+                        <p ref={feedbackEl} id="copy-title" className="font-semibold text-gray-900 dark:text-white text-sm">Copied to clipboard</p>
                         <p id="copy-body" className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Ready to paste anywhere</p>
                     </div>
                 </div>

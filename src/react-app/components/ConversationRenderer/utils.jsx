@@ -1,3 +1,5 @@
+import { StateManager } from "../../../renderer/js/managers/StatesManager";
+
 export function GenerateId(prefix = '', postfix = '', length = 6) {
     // Generate a random alphanumeric string (letters + digits) for valid class/ID characters
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -33,7 +35,7 @@ export function CopyMessage(element, html = false) {
             navigator.clipboard.writeText(textToCopy);
             html ?
                 StateManager.get('showCopyFeedback')("Clone successfull!") :
-                showCopyModal()
+                StateManager.get('showCopyFeedback')()
         } catch (err) {
             console.error('Failed to copy: ', err);
         }

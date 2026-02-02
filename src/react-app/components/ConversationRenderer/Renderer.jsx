@@ -54,14 +54,17 @@ export const AiMessage = ({ children, ...props }) => {
 
     return (
         <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
-            <section id="ai_response" className="relative w-fit max-w-full mb-[2vh] p-2">
+            <section id="ai_response" className="relative w-fit max-w-full mb-[2vh] py-2 px-4">
                 {/* This is where child components will appear eg too- responses */}
                 {children &&
                     <div ref={messageRef} className="child-components">{children}</div>
                 }
 
-                <AiMessageOptions onMenuToggle={onExportMenuToggle} message_id={message_id} />
-                <ExportMenu menuref={exportMenu} messageref={messageRef} />
+                {/*Other componets*/}
+                <div className='mt-10'>
+                    <AiMessageOptions onMenuToggle={onExportMenuToggle} messageref={messageRef} />
+                    <ExportMenu menuref={exportMenu} messageref={messageRef} />
+                </div>
             </section >
         </div >
     )
@@ -69,11 +72,9 @@ export const AiMessage = ({ children, ...props }) => {
 
 export const ResponseWrapper = ({
     actualContent,
-    isThinking,
-    thinkContent,
+    isThinking = false,
+    thinkContent = null,
     message_id = GenerateId('ai-msg'),
-    export_id = GenerateId('export'),
-    fold_id = GenerateId('fold'),
 }) => {
     const foldRef = useRef(null)
     const foldSVGRef = useRef(null)
@@ -104,41 +105,39 @@ export const ResponseWrapper = ({
     })
 
     return (
-        <>
-            <div id="ai_response_think" className={`think-${message_id} w-full bg-none py-4 text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-700`}>
-                <div id="ai_response_think" className={`think-${message_id} w-full bg-none py-4 text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none px-4 mb-6 pb-4 transition-colors duration-700`}>
-                    {thinking_thinkcontent &&
-                        <div className="think-section">
-                            <div className="flex items-center justify-between">
-                                <strong className="leading-widest font-brand text-light text-blue-400 dark:text-blue-400">Thoughts:</strong>
-                                <button
-                                    className="text-sm text-gray-600 dark:text-gray-200"
-                                    onClick={FoldThinkSection}
-                                >
-                                    <svg ref={foldSVGRef} className="fold_svg mb-2 fold-icon transition-transform duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor" width="32" height="38">
-                                        <path d="M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <div ref={foldRef}>
-                                <div id="think-content" className='text-gray-500 dark:text-gray-400'>
-                                    <CodeBlockRenderer htmlContent={htmlThinkContent} />
-                                </div>
-                            </div>
-                            {hasContent_hasThink &&
-                                <p className="w-full rounded-lg border-2 border-blue-200 dark:border-gray-400 mb-2"></p>
-                            }
+        <div id="ai_response_think" className={`think-${message_id} w-full bg-none text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none transition-colors duration-700`}>
+            <div id="ai_response_think" className={`think-${message_id} w-full bg-none text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none transition-colors duration-700`}>
+                {thinking_thinkcontent &&
+                    <div className="think-section">
+                        <div className="flex items-center justify-between">
+                            <strong className="leading-widest font-brand text-light text-blue-400 dark:text-blue-400">Thoughts:</strong>
+                            <button
+                                className="text-sm text-gray-600 dark:text-gray-200"
+                                onClick={FoldThinkSection}
+                            >
+                                <svg ref={foldSVGRef} className="fold_svg mb-2 fold-icon transition-transform duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor" width="32" height="38">
+                                    <path d="M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z" />
+                                </svg>
+                            </button>
                         </div>
-                    }
+                        <div ref={foldRef}>
+                            <div id="think-content" className='text-gray-500 dark:text-gray-400'>
+                                <CodeBlockRenderer htmlContent={htmlThinkContent} />
+                            </div>
+                        </div>
+                        {hasContent_hasThink &&
+                            <p className="w-full rounded-lg border-2 border-blue-200 dark:border-gray-400 mb-2"></p>
+                        }
+                    </div>
+                }
 
-                    {hasContent_hasThink &&
-                        <strong className="text-green-400 dark:text-green-400">Response:</strong>
-                    }
+                {hasContent_hasThink &&
+                    <strong className="text-green-400 dark:text-green-400">Response:</strong>
+                }
 
-                </div>
-                <CodeBlockRenderer htmlContent={processedHtmlContent} />
             </div>
-        </>
+            <CodeBlockRenderer htmlContent={processedHtmlContent} />
+        </div>
     )
 }
 
@@ -384,7 +383,7 @@ export const ExportMenu = ({ menuref, messageref }) => {
     return (
         <div
             ref={menuref}
-            onMouseLeave={(e) => e.target.classList.add('hidden')}
+            onMouseLeave={() => menuref.current.classList.add('hidden')}
             data-action="export-menu"
             className="hidden absolute z-[10] bottom-12 left-0 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 z-50 overflow-hidden transition-all duration-300 transform origin-bottom-left">
             <div className="p-1">

@@ -66,38 +66,6 @@ export function implementUserCopy() {
     });
 }
 
-// Function to show the modal
-export function showCopyModal(text) {
-    const modal = document.getElementById('copyModal');
-    const modalTitle = document.getElementById("copy-title")
-
-    if (text) {
-        const original_text = modalTitle.textContent
-        modalTitle.textContent = InputPurify(text)
-        setTimeout(() => {
-            modalTitle.textContent = original_text
-        }, 4500)
-    }
-
-    // Slide modal to 20% height and make it visible after 1 second
-    setTimeout(() => {
-        modal.classList.add('top-1/5', 'opacity-100', 'pointer-events-auto');
-    }, 500); // 1 second delay
-
-    // Slide modal to the left and fade out after 5 seconds
-    setTimeout(() => {
-        modal.classList.remove('top-1/5', 'left-1/2', '-translate-x-1/2');
-        modal.classList.add('left-0', '-translate-x-[100vw]', 'opacity-0', 'pointer-events-none');
-
-    }, 4000); // 5 seconds for staying in the middle plus 1 second delay
-
-    // Reset transform after fully fading out and moving off-screen
-    setTimeout(() => {
-        modal.classList.remove('left-0', '-translate-x-[100vw]', 'opacity-0', 'pointer-events-none');
-        modal.classList.add('top-0', 'left-1/2', '-translate-x-1/2', 'pointer-events-none');
-    }, 1000); // 1s for fade out
-    //addRmColor("rm")
-}
 
 // Function to remove the first conversation pairs to maintain conversation size limit
 export function removeFirstConversationPairs(conversationHistory, count = 2) {
@@ -261,12 +229,3 @@ export function addImageGenClickListener(el) {
         }
     });
 }
-
-window.copyBMan = copyBMan
-window.InputPurify = InputPurify
-window.showCopyModal = showCopyModal
-window.handleCodeCopy = handleCodeCopy;
-window.showDeletionStatus = showCopyModal
-window.implementUserCopy = implementUserCopy
-window.removeFirstConversationPairs = removeFirstConversationPairs
-window.HandleProcessingEventChanges = HandleProcessingEventChanges;

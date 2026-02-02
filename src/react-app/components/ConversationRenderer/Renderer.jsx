@@ -54,7 +54,9 @@ export const AiMessage = ({
     think_content,
     message_id = GenerateId('ai-msg'),
     export_id = GenerateId('export'),
-    fold_id = GenerateId('fold')
+    fold_id = GenerateId('fold'),
+    children,
+    ...props
 }) => {
     let processedHtml
 
@@ -124,6 +126,9 @@ export const AiMessage = ({
                                     <div id={message_id} className={message_id}>
                                         <CodeBlockRenderer htmlContent={processedHtml} />
                                     </div>
+                                    <div className='' id="tool-calls-container"></div>
+                                    {/* This is where child components will appear eg too- responses */}
+                                    {children && <div className="child-components">{children}</div>}
                                     <AiMessageOptions export_id={export_id} message_id={message_id} />
                                 </div>
                                 <ExportMenu export_id={export_id} message_id={message_id} />

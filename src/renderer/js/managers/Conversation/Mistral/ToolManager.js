@@ -15,6 +15,7 @@ import { SearchWebTool } from './tools/SearchWebTool';
 import { CalculateTool } from './tools/CalculateTool';
 import { FileOperationsTool } from './tools/FileOperationsTool';
 import { DatabaseQueryTool } from './tools/DatabaseQueryTool';
+import { NameConversationTool } from './tools/NameConversationTool';
 //import { SendMessageTool } from './tools/SendMessageTool';
 
 
@@ -44,6 +45,7 @@ export class ToolManager {
         this.registerTool('calculate', new CalculateTool());
         this.registerTool('file_operations', new FileOperationsTool());
         this.registerTool('database_query', new DatabaseQueryTool());
+        this.registerTool('name_conversation', new NameConversationTool());
         //this.registerTool('send_message', new SendMessageTool());
 
         this.updateAvailableTools();

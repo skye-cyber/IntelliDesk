@@ -91,15 +91,13 @@ class StaticPortalBridge {
 class StreamingPortalBridge {
     constructor() {
         this.portals = new Map();
-        this.streamingPortals = new Map(); // Special registry for streaming components
+        this.streamingPortals = new Map();
     }
 
-    // Register a component that supports streaming
     registerStreamingComponent(componentName, Component) {
         this.streamingPortals.set(componentName, Component);
     }
 
-    // Create a streaming portal that can be updated
     createStreamingPortal(componentType, containerId, initialProps = {}, portal_prefix = '') {
         const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}stream-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -107,11 +105,12 @@ class StreamingPortalBridge {
             id: portalId,
             update: (newProps) => this.updateStreamingPortal(portalId, newProps),
             close: () => this.closeStreamingPortal(portalId),
-            append: (data) => this.appendToStreamingPortal(portalId, data)
+            append: (data) => this.appendToStreamingPortal(portalId, data),
+            appendComponent: (componentType, componentProps, options) =>
+                this.appendComponentToStreamingPortal(portalId, componentType, componentProps, options)
         };
 
-        // Initial render
-        const event = new CustomEvent('react-portal-stream-create', {
+        const event = new CustomEvent('stream-data-portal-create', {
             detail: {
                 portalId,
                 componentType,
@@ -125,35 +124,21 @@ class StreamingPortalBridge {
         return streamController;
     }
 
-    // Update an existing streaming portal
     updateStreamingPortal(portalId, newProps) {
-        //console.log("Update portal", portalId, newProps)
-
-        const event = new CustomEvent('react-portal-stream-update', {
+        const event = new CustomEvent('stream-data-portal-update', {
             detail: { portalId, props: newProps }
         });
         document.dispatchEvent(event);
     }
 
-    // Append data to a streaming portal (for chat messages, etc.)
-    _appendToStreamingPortal(portalId, data) {
-        console.log(data)
-        const event = new CustomEvent('react-portal-stream-append', {
-            detail: { portalId, data }
-        });
-        document.dispatchEvent(event);
-    }
-
-
-    // Enhanced append with type detection
     appendToStreamingPortal(portalId, data, options = {}) {
-        const event = new CustomEvent('react-portal-stream-append', {
+        const event = new CustomEvent('stream-data-portal-append', {
             detail: {
                 portalId,
                 data,
                 options: {
-                    mergeStrategy: 'append', // 'append' | 'update' | 'replace'
-                    target: 'props', // 'props' | 'streamData' | 'auto'
+                    mergeStrategy: 'append',
+                    target: 'props',
                     ...options
                 }
             }
@@ -161,7 +146,77 @@ class StreamingPortalBridge {
         document.dispatchEvent(event);
     }
 
-    // Specialized methods for common patterns
+    /**
+     * Append a component to a streaming portal
+     * @param {string} portalId - Target portal ID
+     * @param {string} componentType - Component type from registry
+     * @param {object} componentProps - Component props
+     * @param {object} options - Append options
+     * @param {string} options.target - 'componentChildren' (as children) or 'props' (as props.children)
+     * @param {string} options.position - 'append' (default), 'prepend', 'insertAt'
+     * @param {number} options.index - Index for insertAt
+     */
+    appendComponentToStreamingPortal(portalId, componentType, componentProps = {}, options = {}) {
+        const event = new CustomEvent('stream-data-portal-append-component', {
+            detail: {
+                portalId,
+                componentType,
+                componentProps,
+                options: {
+                    target: 'componentChildren', // Append as children of the portal
+                    position: 'append', // Default: append to end
+                    ...options
+                }
+            }
+        });
+        document.dispatchEvent(event);
+
+        return { portalId, componentType, componentProps };
+    }
+
+    // Convenience methods for common patterns
+
+    /**
+     * Append a component as a child of the portal (in-place appending)
+     */
+    appendComponentAsChild(portalId, componentType, componentProps = {}) {
+        return this.appendComponentToStreamingPortal(portalId, componentType, componentProps, {
+            target: 'componentChildren',
+            position: 'append'
+        });
+    }
+
+    /**
+     * Prepend a component as a child of the portal
+     */
+    prependComponentAsChild(portalId, componentType, componentProps = {}) {
+        return this.appendComponentToStreamingPortal(portalId, componentType, componentProps, {
+            target: 'componentChildren',
+            position: 'prepend'
+        });
+    }
+
+    /**
+     * Insert a component at a specific position
+     */
+    insertComponentAt(portalId, componentType, componentProps = {}, index = 0) {
+        return this.appendComponentToStreamingPortal(portalId, componentType, componentProps, {
+            target: 'componentChildren',
+            position: 'insertAt',
+            index
+        });
+    }
+
+    /**
+     * Append a component as props.children (alternative approach)
+     */
+    appendComponentToProps(portalId, componentType, componentProps = {}) {
+        return this.appendComponentToStreamingPortal(portalId, componentType, componentProps, {
+            target: 'props',
+            position: 'append'
+        });
+    }
+
     updateProps(portalId, props) {
         this.appendToStreamingPortal(portalId, props, {
             mergeStrategy: 'update',
@@ -183,17 +238,15 @@ class StreamingPortalBridge {
         });
     }
 
-    // Close a streaming portal
     closeStreamingPortal(portalId, prefix = false) {
-        const event = new CustomEvent('react-portal-stream-close', {
+        const event = new CustomEvent('stream-data-portal-close', {
             detail: { portalId: portalId, prefix: prefix }
         });
         document.dispatchEvent(event);
     }
 
-    // Batch update multiple portals
     batchUpdate(updates) {
-        const event = new CustomEvent('react-portal-batch-update', {
+        const event = new CustomEvent('batch-data-portal-update', {
             detail: { updates }
         });
         document.dispatchEvent(event);

@@ -46,6 +46,14 @@ export class MistralClientSimulator {
     }
 
     /**
+     * Reset current scenario (call this between different conversations)
+     */
+    resetCurrentScenario() {
+        this.currentScenario = null;
+        console.log('🔄 Scenario reset - ready for new conversation');
+    }
+
+    /**
      * Get conversation history
      */
     getHistory() {
@@ -137,18 +145,148 @@ export class MistralClientSimulator {
         // Store conversation history
         this.conversationHistory = messages || [];
 
+        // Track conversation state to prevent infinite loops
+        if (!this.currentScenario) {
+            this.currentScenario = {
+                iteration: 0,
+                maxIterations: 3, // Prevent infinite loops
+                toolCallsMade: 0,
+                hasFinalResponse: false
+            };
+        }
+
         // Determine if we should use tools
         const shouldUseTools = this.toolCallingEnabled &&
             tools && tools.length > 0 &&
             tool_choice !== 'none';
 
-        if (shouldUseTools) {
-            // Generate response with tool calls
-            return this.generateResponseWithToolCalls(messages, tools);
+        // Intelligent decision: mix of tool calls and final responses
+        if (shouldUseTools && !this.currentScenario.hasFinalResponse) {
+            // Decide based on iteration count and conversation context
+            if (this.shouldMakeToolCall()) {
+                // Generate response with tool calls
+                const response = this.generateResponseWithToolCalls(messages, tools);
+                this.currentScenario.toolCallsMade++;
+                this.currentScenario.iteration++;
+                return response;
+            } else {
+                // Time to provide a final response
+                const response = this.generateFinalResponseWithToolResults(messages, tools);
+                this.currentScenario.hasFinalResponse = true;
+                return response;
+            }
         } else {
             // Generate regular response
             return this.generateRegularResponse(messages);
         }
+    }
+
+    /**
+     * Determine if we should make a tool call or provide final response
+     * This prevents infinite loops and creates realistic conversation flows
+     */
+    shouldMakeToolCall() {
+        const scenario = this.currentScenario;
+
+        // Stop after max iterations
+        if (scenario.iteration >= scenario.maxIterations) {
+            console.log('🛑 Max iterations reached, providing final response');
+            return false;
+        }
+
+        // Analyze conversation context to decide
+        const lastMessage = this.conversationHistory[this.conversationHistory.length - 1];
+        const userMessage = lastMessage?.content || "";
+
+        // If this is the first iteration, likely need tools
+        if (scenario.iteration === 0) {
+            return true;
+        }
+
+        // If we've already made 2 tool calls, time for final response
+        if (scenario.toolCallsMade >= 2) {
+            return false;
+        }
+
+        // Content-based decision making
+        const lowerCaseMsg = userMessage.toLowerCase();
+
+        // Questions that typically require multiple tool calls
+        if (lowerCaseMsg.includes('analyze') ||
+            lowerCaseMsg.includes('comprehensive') ||
+            lowerCaseMsg.includes('detailed') ||
+            lowerCaseMsg.includes('complete')) {
+            return scenario.toolCallsMade < 2; // Allow up to 2 tool calls
+        }
+
+        // Simple questions might only need one tool call
+        if (lowerCaseMsg.includes('quick') ||
+            lowerCaseMsg.includes('simple') ||
+            lowerCaseMsg.includes('just')) {
+            return scenario.toolCallsMade < 1; // Only one tool call
+        }
+
+        // Default: allow one more tool call
+        return scenario.toolCallsMade < 1;
+    }
+
+    /**
+     * Generate a final response that incorporates tool results
+     */
+    generateFinalResponseWithToolResults(messages, tools) {
+        const userMessage = messages[messages.length - 1].content || "";
+        const lowerCaseMsg = userMessage.toLowerCase();
+
+        // Generate appropriate final responses based on the conversation context
+        let finalResponse = "I have completed the analysis and here are the results:";
+
+        if (lowerCaseMsg.includes('file') || lowerCaseMsg.includes('document')) {
+            finalResponse = "I have analyzed the files and here's what I found:";
+        } else if (lowerCaseMsg.includes('system') || lowerCaseMsg.includes('performance')) {
+            finalResponse = "System analysis complete. Here are the findings:";
+        } else if (lowerCaseMsg.includes('calculate') || lowerCaseMsg.includes('math')) {
+            finalResponse = "Calculation complete. The result is:";
+        } else if (lowerCaseMsg.includes('search') || lowerCaseMsg.includes('find')) {
+            finalResponse = "Search complete. Here are the results:";
+        }
+
+        // Add some realistic content based on tools used
+        if (tools.some(t => t.function.name.includes('read_file'))) {
+            finalResponse += "\n\nFile Analysis: Found 3 files totaling 12MB.";
+        }
+
+        if (tools.some(t => t.function.name.includes('bash'))) {
+            finalResponse += "\n\nSystem Status: Disk usage at 45%, memory usage at 60%.";
+        }
+
+        if (tools.some(t => t.function.name.includes('calculate'))) {
+            finalResponse += "\n\nCalculation: (100 + 200) * 1.5 = 450";
+        }
+
+        if (tools.some(t => t.function.name.includes('search'))) {
+            finalResponse += "\n\nSearch Results: Found 5 relevant items.";
+        }
+
+        // Build the response
+        return {
+            id: this.generateScenarioId(),
+            object: "chat.completion",
+            created: Math.floor(Date.now() / 1000),
+            model: "mistral-simulator",
+            choices: [{
+                index: 0,
+                message: {
+                    role: "assistant",
+                    content: finalResponse
+                },
+                finish_reason: "stop"
+            }],
+            usage: {
+                prompt_tokens: 50,
+                completion_tokens: finalResponse.length,
+                total_tokens: 50 + finalResponse.length
+            }
+        };
     }
 
     /**
@@ -161,8 +299,8 @@ export class MistralClientSimulator {
 
         // Get the last user message
         const lastMessage = messages[messages.length - 1];
-        const userMessage = lastMessage.content || "";
 
+        const userMessage = lastMessage.content.filter(item=> item.type==='text')[0]?.content || "";
         // Simple response generation based on user input
         const responses = {
             'hello': "Hello! How can I assist you today?",
@@ -174,7 +312,7 @@ export class MistralClientSimulator {
         };
 
         // Try to match keywords
-        const lowerCaseMsg = userMessage.toLowerCase();
+        const lowerCaseMsg = userMessage.toLowerCase().split(' ');
         for (const [keyword, response] of Object.entries(responses)) {
             if (lowerCaseMsg.includes(keyword)) {
                 return response;
@@ -340,12 +478,12 @@ export class MistralClientSimulator {
      */
     getDefaultParamsForTool(toolName) {
         const defaults = {
-            'read_file': { path: '/Documents/playground' },
-            'write_file': { path: '/Documents/playground/output.txt', content: 'sample content' },
+            'read_file': { path: '/home/skye/Documents/playground' },
+            'write_file': { path: '/home/skye/Documents/playground/output.txt', content: 'sample content' },
             'bash': { command: 'echo "Hello from simulator"' },
             'search': { query: 'sample search', limit: 5 },
             'calculate': { expression: '100 + 200', precision: 2 },
-            'grep': { pattern: 'sample', path: '/Documents/playground' },
+            'grep': { pattern: 'sample', path: '/home/skye/Documents/playground' },
             'database': { query: 'SELECT * FROM sample_table LIMIT 10' }
         };
 

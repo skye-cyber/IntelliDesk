@@ -71,7 +71,7 @@ export async function MistralBase({
         chatutil.scrollToBottom(chatArea, true);
 
         //start timer
-        timer.trackTime("start");
+        //timer.trackTime("start");
 
         if (!clientmanager.MistralClient?.chat) {
             throw {
@@ -90,6 +90,9 @@ export async function MistralBase({
         const enableToolCalling = availableTools.length > 0 && StateManager.get('enable_tools');
 
         let stream;
+        let continued = false;
+        let fullResponse = "";
+
         if (enableToolCalling) {
             // Start tool calling session with conversation state
             const toolSession = await handleToolCallingSession(
@@ -99,17 +102,17 @@ export async function MistralBase({
                 toolsIntegration
             );
 
-            if (toolSession.finalResponse) {
-                // Create mock stream for the final response
-                stream = createMockStream(toolSession.finalResponse);
-            } else {
-                // Fallback to regular streaming if tool session failed
-                stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
-                    model: model_name,
-                    messages: window.desk.api.getHistory(true),
-                    max_tokens: 3000,
-                });
-            }
+            // if (toolSession.finalResponse || !toolSession.hasFinalResponse) {
+            //     // Create mock stream for the final response
+            //     stream = createMockStream(toolSession.finalResponse);
+            // } else {
+            // Fallback to regular streaming if tool session failed
+            // stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
+            //     model: model_name,
+            //     messages: window.desk.api.getHistory(true),
+            //     max_tokens: 3000,
+            //     });
+            //}
         } else {
             // Use regular streaming without tools
             stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
@@ -117,183 +120,125 @@ export async function MistralBase({
                 messages: window.desk.api.getHistory(true),
                 max_tokens: 3000,
             })
-        }
 
-        let conversationName = null;
-        let continued = false;
-        let output = ""
-        let thinkContent = "";
-        let actualResponse = "";
-        let isThinking = false;
-        let fullResponse = "";
-        let hasfinishedThinking = false;
-        let first_run = true;
+            let output = ""
+            let thinkContent = "";
+            let actualResponse = "";
+            let isThinking = false;
+            let hasfinishedThinking = false;
+            let first_run = true;
 
-        for await (const chunk of stream) {
-            const choice = chunk?.data?.choices?.[0];
-            if (!choice?.delta?.content) continue;
-            const deltaContent = choice.delta.content;
+            for await (const chunk of stream) {
+                const choice = chunk?.data?.choices?.[0];
+                if (!choice?.delta?.content) continue;
+                const deltaContent = choice.delta.content;
 
-            // Store raw content before any processing
-            let rawDelta = deltaContent;
-            output += rawDelta;
-            fullResponse += rawDelta;
+                // Store raw content before any processing
+                let rawDelta = deltaContent;
+                output += rawDelta;
+                fullResponse += rawDelta;
 
-            // === NAME EXTRACTION (Highest Priority) ===
-            if (!conversationName && (output.includes("<name>") || output.includes("<name"))) {
-                actualResponse = ""; // Hold response during name extraction
-
-                const nameStart = output.indexOf("<name>");
-                const nameEnd = output.indexOf("</name>");
-
-                // Case 1: Complete name tag found
-                if (nameStart !== -1 && nameEnd !== -1 && nameEnd > nameStart) {
-                    conversationName = output.slice(nameStart + 6, nameEnd).trim();
-
-                    if (conversationName.length > 0) {
-                        // Remove name tag from output
-                        output = output.slice(0, nameStart) + output.slice(nameEnd + 7);
-
-                        // CRITICAL: Clean any stray name tokens from thinkContent
-                        const strayNameIndex = thinkContent.indexOf("<name>");
-                        if (strayNameIndex !== -1) {
-                            thinkContent = thinkContent.slice(0, strayNameIndex);
-                        }
-
-                        // Sync accumulators
-                        fullResponse = output;
-                        actualResponse = output;
-                    } else {
-                        console.warn("Empty name tag detected");
-                        output = output.replace("<name></name>", "");
-                        actualResponse = output;
-                    }
-                }
-                // Case 2: Incomplete tag timeout (prevent infinite wait)
-                else if (output.length >= 200) {
-                    console.warn("Name tag incomplete after 200 chars, treating as plain text");
-                    output = output.replace(/<name>?/g, ""); // Remove both <name> and <name
-                    actualResponse = output;
+                if (output.includes("<think>") && !isThinking && !hasfinishedThinking) {
+                    isThinking = true;
+                    hasfinishedThinking = false;
+                    output = output.replace("<think>", "");
+                    thinkContent = output;
+                    actualResponse = " "
+                } else if (isThinking && output.includes("</think>")) {
+                    isThinking = false;
+                    hasfinishedThinking = true;
+                    thinkContent += deltaContent.replace("</think>", "");
+                    output = output.replace("</think>", "");
+                } else if (isThinking) {
+                    thinkContent += deltaContent;
                 } else {
-                    // Continue accumulating for complete tag
-                    continue;
-                }
-            }
-
-            // Safety check: if output was cleared but no valid name was set
-            if (!output && !conversationName) {
-                console.warn("Output cleared without valid name extraction");
-                output = rawDelta; // Restore at least the current delta
-                continue;
-            }
-
-            // If we have a valid name and output is empty, wait for meaningful content
-            if (conversationName && !output.trim()) {
-                continue;
-            }
-
-            if (output.includes("<think>") && !isThinking && !hasfinishedThinking) {
-                isThinking = true;
-                hasfinishedThinking = false;
-                output = output.replace("<think>", "");
-                thinkContent = output;
-                actualResponse = " "
-            } else if (isThinking && output.includes("</think>")) {
-                isThinking = false;
-                hasfinishedThinking = true;
-                thinkContent += deltaContent.replace("</think>", "");
-                output = output.replace("</think>", "");
-            } else if (isThinking) {
-                thinkContent += deltaContent;
-            } else {
-                actualResponse += deltaContent;
-            }
-
-            if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
-                if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
-
-                waitForElement('#code-view', (el) => {
-                    el.innerHTML = StateManager.get('codeBuffer').code;
-                    StateManager.get('canvasUpdate')();
-                });
-            }
-
-            if (actualResponse.includes('<continued>') || actualResponse.includes('<continued')) {
-                // In first run set <continue> tag as chunk to avoid breaking due to stary chunks that may be part of it, rawDelta cannot be anything except for items in the tage
-                if (first_run) {
-                    rawDelta = "<continued>"
-                    // Remove user message from interface
-                    staticPortalBridge.closeComponent(StateManager.get('user_message_portal'))
-                    first_run = false
-                }
-                continued = true
-
-                let target_message_portal = StateManager.get('prev_ai_message_portal')
-
-                // th now created portal and resuse the previous
-                if (target_message_portal) {
-                    streamingPortalBridge.closeStreamingPortal(message_portal)
-                } else {
-                    target_message_portal = message_portal
+                    actualResponse += deltaContent;
                 }
 
-                streamingPortalBridge.appendToStreamingPortal(target_message_portal, {
-                    actual_response: rawDelta,
-                    isThinking: isThinking,
-                    think_content: thinkContent,
-                    message_id: message_id,
-                    export_id: export_id,
-                    fold_id: fold_id,
-                    conversation_name: conversationName
-                },
-                    {
-                        replace: {
-                            target_props: ["actual_response"],
-                            repvalues: [
-                                {
-                                    pattern: "<continued>",
-                                    repl: "\n"
+                if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
+                    if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
 
-                                }, {
-                                    pattern: "</continued>",
-                                    repl: ""
-                                }
-                            ]
-                        }
+                    waitForElement('#code-view', (el) => {
+                        el.innerHTML = StateManager.get('codeBuffer').code;
+                        StateManager.get('canvasUpdate')();
                     });
-            } else {
-                streamingPortalBridge.updateStreamingPortal(message_portal, {
-                    actual_response: actualResponse,
-                    isThinking: isThinking,
-                    think_content: thinkContent,
-                    message_id: message_id,
-                    export_id: export_id,
-                    fold_id: fold_id,
-                    conversation_name: conversationName
-                });
+                }
+
+                if (actualResponse.includes('<continued>') || actualResponse.includes('<continued')) {
+                    // In first run set <continue> tag as chunk to avoid breaking due to stary chunks that may be part of it, rawDelta cannot be anything except for items in the tage
+                    if (first_run) {
+                        rawDelta = "<continued>"
+                        // Remove user message from interface
+                        staticPortalBridge.closeComponent(StateManager.get('user_message_portal'))
+                        first_run = false
+                    }
+                    continued = true
+
+                    let target_message_portal = StateManager.get('prev_ai_message_portal')
+
+                    // th now created portal and resuse the previous
+                    if (target_message_portal) {
+                        streamingPortalBridge.closeStreamingPortal(message_portal)
+                    } else {
+                        target_message_portal = message_portal
+                    }
+
+                    streamingPortalBridge.appendToStreamingPortal(target_message_portal, {
+                        actual_response: rawDelta,
+                        isThinking: isThinking,
+                        think_content: thinkContent,
+                        message_id: message_id,
+                        export_id: export_id,
+                        fold_id: fold_id,
+                        conversation_name: conversationName
+                    },
+                        {
+                            replace: {
+                                target_props: ["actual_response"],
+                                repvalues: [
+                                    {
+                                        pattern: "<continued>",
+                                        repl: "\n"
+
+                                    }, {
+                                        pattern: "</continued>",
+                                        repl: ""
+                                    }
+                                ]
+                            }
+                        });
+                } else {
+                    streamingPortalBridge.updateStreamingPortal(message_portal, {
+                        actual_response: actualResponse,
+                        isThinking: isThinking,
+                        think_content: thinkContent,
+                        message_id: message_id,
+                        export_id: export_id,
+                        fold_id: fold_id,
+                        conversation_name: conversationName
+                    });
+                }
+
+                chatutil.render_math(`${message_id}`, 2000)
+
+                // Scroll to bottom
+                chatutil.scrollToBottom(chatArea, true, 1000);
+
+                // Render mathjax immediately
+                if (!message_id) message_id = StateManager.get("current_message_id", message_id)
             }
+            if (conversationName && conversationName !== "null") window.desk.api.updateName(conversationName, false)
 
-            chatutil.render_math(`${message_id}`, 2000)
-
-            // Scroll to bottom
-            chatutil.scrollToBottom(chatArea, true, 1000);
-
-            // Render mathjax immediately
-            if (!message_id) message_id = StateManager.get("current_message_id", message_id)
+            if (canvasutil.isCanvasOn()) {
+                if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();
+                // normalize canvas
+                canvasutil.NormalizeCanvasCode();
+            }
         }
-
         StateManager.set('processing', false);
 
-        if (conversationName && conversationName !== "null") window.desk.api.updateName(conversationName, false)
-
-        if (canvasutil.isCanvasOn()) {
-            if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();
-            // normalize canvas
-            canvasutil.NormalizeCanvasCode();
-        }
-
         //stop timer
-        timer.trackTime("stop");
+        //timer.trackTime("stop");
 
         // Reset send button appearance
         HandleProcessingEventChanges('hide')
@@ -382,6 +327,13 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
             const aiMessage = response.choices[0].message;
             const streaming_portal = StateManager.get('ai_messages_portal')
 
+            // Update with ai message
+            window.desk.api.addHistory({ role: "assistant", content: aiMessage.content || "", tool_calls: aiMessage.tool_calls });
+
+            streamingPortalBridge.appendToStreamingPortal(streaming_portal, {
+                actual_response: aiMessage.content,
+            });
+
             // Check if AI wants to use tools
             if (aiMessage.tool_calls && aiMessage.tool_calls.length > 0) {
                 console.log(`[Tool Session] Iteration ${iteration}: Processing ${aiMessage.tool_calls.length} tool calls`);
@@ -408,10 +360,20 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
 
                 // Update history
                 for (const call of toolResults) {
-                    window.desk.api.addHistory({ role: "tool", content: call.result, name: call.toolName, tool_call_id: call.toolCallId });
-
-                    streamingPortalBridge.appendToStreamingPortal(streaming_portal, )
+                    const toolResponse = {
+                        output: call.result.output,
+                        error: call.result.error
+                    }
+                    window.desk.api.addHistory({
+                        role: "tool", content: JSON.stringify(toolResponse), name: call.toolName, tool_call_id: call.toolCallId
+                    });
                 }
+
+                // Render tool call responses
+                streamingPortalBridge.appendComponentAsChild(streaming_portal.id, 'ToolResponse', {
+                    toolCalls: toolResults
+                })
+
                 // Update with ai message
                 window.desk.api.addHistory({ role: "assistant", content: aiMessage.content || "", tool_calls: aiMessage.tool_calls });
 
@@ -436,38 +398,43 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
                 sessionState.lastToolCall = aiMessage.tool_calls[aiMessage.tool_calls.length - 1];
                 sessionState.pendingToolResults = toolResults;
 
-                // Check if we should continue (AI might want to make more tool calls)
-                if (aiMessage.content && aiMessage.content.includes("<final_response>")) {
-                    // Extract final response
-                    finalResponse = aiMessage.content.replace("<final_response>", "").replace("</final_response>", "");
-                    hasFinalResponse = true;
-                    console.log(`[Tool Session] Final response received after ${iteration} iterations`);
-                }
+                // // Check if we should continue (AI might want to make more tool calls)
+                // if (aiMessage.content && aiMessage.content.includes("<final_response>")) {
+                //     // Extract final response
+                //     finalResponse = aiMessage.content.replace("<final_response>", "").replace("</final_response>", "");
+                //     hasFinalResponse = true;
+                //     console.log(`[Tool Session] Final response received after ${iteration} iterations`);
+                // }
 
                 // Safety check: prevent infinite loops
-                if (iteration >= maxIterations) {
-                    console.warn(`[Tool Session] Max iterations (${maxIterations}) reached`);
-                    finalResponse = "I've made several tool calls to gather the information you requested. Here's what I found:";
-                    hasFinalResponse = true;
-                }
+                // if (iteration >= maxIterations) {
+                //     console.warn(`[Tool Session] Max iterations (${maxIterations}) reached`);
+                //     finalResponse = "I've made several tool calls to gather the information you requested. Here's what I found:";
+                //     hasFinalResponse = true;
+                // }
 
             } else {
                 // No tool calls, this is the final response
                 finalResponse = aiMessage.content;
                 hasFinalResponse = true;
                 console.log(`[Tool Session] Final response received in iteration ${iteration}`);
+                //break
             }
 
         } catch (error) {
             console.error(`[Tool Session] Error in iteration ${iteration}:`, error);
+            // Add tool error
+            // streamingPortalBridge.appendComponentAfter(streaming_portal, 'ToolErrorHandler', {
+            //     toolCalls: toolResults
+            // })
             finalResponse = `Sorry, I encountered an error while processing your request: ${error?.message}`;
             hasFinalResponse = true;
 
             // Add error to conversation history
-            conversationHistory.push({
-                role: "assistant",
-                content: finalResponse
-            });
+            // conversationHistory.push({
+            //     role: "assistant",
+            //     content: finalResponse
+            // });
         }
     }
 
@@ -479,7 +446,8 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
         toolCallHistory: toolCallHistory,
         iterationCount: iteration,
         sessionState: sessionState,
-        toolSummary: toolSummary
+        toolSummary: toolSummary,
+        hasFinalResponse: hasFinalResponse
     };
 }
 
@@ -517,6 +485,7 @@ function generateToolUsageSummary(toolCallHistory) {
  * Create a mock stream from a string to maintain compatibility with streaming interface
  */
 async function* createMockStream(content) {
+    console.log("XCreating mock")
     // Split content into chunks for streaming simulation
     const chunkSize = 50;
     for (let i = 0; i < content.length; i += chunkSize) {

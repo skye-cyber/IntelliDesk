@@ -188,7 +188,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                             </h5>
                             <div className="bg-green-50/80 dark:bg-green-900/30 rounded border border-green-200/50 dark:border-green-700/30 p-2">
                                 <pre className="text-xs text-green-700 dark:text-green-300 overflow-x-auto max-h-32 font-mono whitespace-pre-wrap">
-                                    {formatResult(toolCall.result.content)}
+                                    {formatResult(toolCall.result.content || toolCall.result.output)}
                                 </pre>
                                 {typeof toolCall.result === 'string' && toolCall.result.length > 200 && (
                                     <button

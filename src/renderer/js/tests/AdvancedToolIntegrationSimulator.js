@@ -147,7 +147,7 @@ export class AdvancedToolIntegrationSimulator {
     async simulateSingleToolCall({
         userMessage = 'What\'s in my documents folder?',
         toolName = 'read_file',
-        toolParams = { path: '/home/user/documents' },
+        toolParams = { path: '/home/skye/Documents' },
         toolResponse = { success: true, files: ['file1.txt', 'file2.txt', 'report.pdf'] },
         finalAiResponse = 'I found these files in your documents folder: file1.txt, file2.txt, and report.pdf'
     } = {}) {

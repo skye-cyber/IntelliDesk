@@ -1,0 +1,64 @@
+--- a/src/renderer/js/managers/Conversation/Mistral/Base.js
++++ b/src/renderer/js/managers/Conversation/Mistral/Base.js
+@@ -140,53 +140,8 @@ export async function MistralBase({
+                 output += rawDelta;
+                 fullResponse += rawDelta;
+ 
+-                // === NAME EXTRACTION (Highest Priority) ===
+-                if (!conversationName && (output.includes("<name>") || output.includes("<name"))) {
+-                    actualResponse = ""; // Hold response during name extraction
+-
+-                    const nameStart = output.indexOf("<name>");
+-                    const nameEnd = output.indexOf("</name>");
+-
+-                    // Case 1: Complete name tag found
+-                    if (nameStart !== -1 && nameEnd !== -1 && nameEnd > nameStart) {
+-                        conversationName = output.slice(nameStart + 6, nameEnd).trim();
+-
+-                        if (conversationName.length > 0) {
+-                            // Remove name tag from output
+-                            output = output.slice(0, nameStart) + output.slice(nameEnd + 7);
+-
+-                            // CRITICAL: Clean any stray name tokens from thinkContent
+-                            const strayNameIndex = thinkContent.indexOf("<name>");
+-                            if (strayNameIndex !== -1) {
+-                                thinkContent = thinkContent.slice(0, strayNameIndex);
+-                            }
+-
+-                            // Sync accumulators
+-                            fullResponse = output;
+-                            actualResponse = output;
+-                        } else {
+-                            console.warn("Empty name tag detected");
+-                            output = output.replace("<name><\/name>", "");
+-                            actualResponse = output;
+-                        }
+-                    }
+-                    // Case 2: Incomplete tag timeout (prevent infinite wait)
+-                    else if (output.length >= 200) {
+-                        console.warn("Name tag incomplete after 200 chars, treating as plain text");
+-                        output = output.replace(/<name>?/g, ""); // Remove both <name> and <name
+-                        actualResponse = output;
+-                    } else {
+-                        // Continue accumulating for complete tag
+-                        continue;
+-                    }
+-                }
+-
+-                // Safety check: if output was cleared but no valid name was set
+-                if (!output && !conversationName) {
+-                    console.warn("Output cleared without valid name extraction");
+-                    output = rawDelta; // Restore at least the current delta
+-                    continue;
+-                }
+-
+-                // If we have a valid name and output is empty, wait for meaningful content
+-                if (conversationName && !output.trim()) {
+-                    continue;
+-                }
++                // NOTE: Name extraction has been moved to NameConversationTool
++                // Legacy <name> tag handling has been removed
++                // Conversation names are now handled via tool calls or utility methods
++                // Use conversationNaming.extractConversationName() for backward compatibility
+ 
+                 if (output.includes("<think>") && !isThinking && !hasfinishedThinking) {

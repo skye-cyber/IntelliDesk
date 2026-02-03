@@ -298,8 +298,13 @@ export class MistralClientSimulator {
 
         // Get the last user message
         const lastMessage = messages[messages.length - 1];
+        const userMessageArray = lastMessage?.content || "";
 
-        const userMessage = lastMessage.content.filter(item=> item.type==='text')[0]?.content || "";
+        const userMessageObj = typeof (userMessageArray === 'string') ?
+            userMessageArray :
+            userMessageArray?.filter(item => item.type === 'text');
+        const userMessage = userMessageObj[0]?.content || userMessageObj[0]?.text || ''
+
         // Simple response generation based on user input
         const responses = {
             'hello': "Hello! How can I assist you today?",

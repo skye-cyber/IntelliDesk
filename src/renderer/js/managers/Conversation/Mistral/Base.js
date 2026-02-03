@@ -179,7 +179,7 @@ export async function MistralBase({
                     if (first_run) {
                         rawDelta = "<continued>"
                         // Remove user message from interface
-                        staticPortalBridge.closeComponent(StateManager.get('user_message_portal'))
+                        streamingPortalBridge.closeStreamingPortal(StateManager.get('user_message_portal'))
                         first_run = false
                     }
                     continued = true
@@ -188,19 +188,15 @@ export async function MistralBase({
 
                     // th now created portal and resuse the previous
                     if (target_message_portal) {
-                        streamingPortalBridge.closeStreamingPortal(message_portal)
+                        streaming_message_portal.close()
                     } else {
                         target_message_portal = message_portal
                     }
 
-                    streamingPortalBridge.appendToStreamingPortal(target_message_portal, {
-                        actual_response: rawDelta,
+                    target_message_portal.append({
+                        actualContent: rawDelta,
                         isThinking: isThinking,
-                        think_content: thinkContent,
-                        message_id: message_id,
-                        export_id: export_id,
-                        fold_id: fold_id,
-                        conversation_name: conversationName
+                        thinkContent: thinkContent,
                     },
                         {
                             replace: {
@@ -218,16 +214,11 @@ export async function MistralBase({
                             }
                         });
                 } else {
-                    streamingPortalBridge.updateStreamingPortal(streaming_message_portal.id, {
+                    streaming_message_portal.update({
                         actualContent: actualResponse,
                         isThinking: isThinking,
                         thinkContent: thinkContent,
                     });
-                    // message_portal.appendComponent('ResponseWrapper', {
-                    //     actualContent: actualResponse,
-                    //     isThinking: isThinking,
-                    //     thinkContent: thinkContent,
-                    // });
                 }
 
                 chatutil.render_math(`${message_id}`, 2000)
@@ -265,7 +256,13 @@ export async function MistralBase({
                     }]
                 })
             } else {
-                window.desk.api.addHistory({ role: "assistant", content: fullResponse });
+                const content = window.desk.api.addHistory().metadata.model === 'multimodal' ?
+                    [
+                        { type: 'text', text: fullResponse }
+                    ] :
+                    fullResponse
+
+                window.desk.api.addHistory({ role: "assistant", content: content });
                 StateManager.set('ai_message_portal', message_portal)
                 StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
             }

@@ -3,7 +3,7 @@ import { handleDevErrors } from "./ErrorHandler"
 import errorHandler from "../../../react-app/components/ErrorHandler/ErrorHandler"
 import { StateManager } from "../managers/StatesManager"
 import { appIsDev } from "../managers/Conversation/Mistral/shared"
-import { staticPortalBridge, streamingPortalBridge } from "../PortalBridge"
+import { streamingPortalBridge } from "../PortalBridge"
 import { clientmanager } from "../managers/Conversation/Mistral/ClientManager"
 
 
@@ -12,9 +12,9 @@ export async function BaseErrorHandler(error, ai_ms_pid, callback) {
     window.desk.api.popHistory("user")
     const user_text = StateManager.get('userInputText')
 
-    staticPortalBridge.closeComponent(StateManager.get('user_message_portal'))
+    streamingPortalBridge.closeStreamingPortal(StateManager.get('user_message_portal'))
     streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
-    staticPortalBridge.closeComponent(StateManager.get('loader-element-id'))
+    // staticPortalBridge.closeComponent(StateManager.get('loader-element-id'))
 
     // Rotate keys if error is key error ie rate limit
     if (error.statusCode && error.statusCode === 401) {

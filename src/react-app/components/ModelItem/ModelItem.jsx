@@ -12,9 +12,8 @@ export const ModelItem = ({ model, isSelected, onSelect }) => {
             ? 'multimodal'
             : 'chat'
 
-        const is_current_multimodal = chatutil.get_multimodal_models().includes(window.desk.api.getModel())
-            ? 'multimodal'
-            : 'chat';
+        const is_current_multimodal = window.desk.api.getModel()
+
         if (selected_model !== is_current_multimodal) {
             StartNewConversation(selected_model)
         }

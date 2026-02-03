@@ -13,6 +13,7 @@ export class ConversationLoader {
         this.chatutil = new ChatUtil()
         this.chatdisplay = new ChatDisplay()
         waitForElement('#chatArea', (el) => this.chatArea = el)
+        this.portal = null
     }
 
     // Load conversation from a JSON file
@@ -48,7 +49,6 @@ export class ConversationLoader {
             ClosePrefixed()
             const vmodels = this.chatutil.get_multimodal_models()
 
-            let portal
 
             if (model === 'multimodal') {
                 if (!vmodels.includes(StateManager.get('currentModel'))) this.change_model('mistral-small-latest')
@@ -58,12 +58,11 @@ export class ConversationLoader {
                     if (message.content) {
                         if (message.role === "user") {
                             this.renderUserMessage(message.content, model);
-                            portal = null
+                            this.portal = null
                         } else if (message.role === "assistant") {
-                            portal = await this.renderAIMessage(message.content[0]?.text, Boolean(portal));
-                            console.log(portal)
+                            await this.renderAIMessage(message.content[0]?.text);
                         } else if (message.role === "tool") {
-                            this.renderToolContent(message, portal)
+                            this.renderToolContent(message)
                         }
                     }
                     //window.debounceRenderKaTeX(null, null, true);
@@ -81,12 +80,12 @@ export class ConversationLoader {
 
                     if (content) {
                         if (message.role === "user") {
-                            portal = null
+                            this.portal = null
                             this.renderUserMessage(content, model);
                         } else if (message.role === "assistant") {
-                            portal = await this.renderAIMessage(content, Boolean(portal));
+                            await this.renderAIMessage(content);
                         } else if (message.role === "tool") {
-                            this.renderToolContent(message, portal)
+                            this.renderToolContent(message)
                         }
                     }
                 });
@@ -176,27 +175,38 @@ export class ConversationLoader {
         //const message_id = GenerateId('user_msg')
     }
 
-    async renderToolContent(content, portal) {
-        if (!portal) return console.log("xx")
-        portal.appendComponent('ToolCallDisplay', {
-            toolCall: content
+    async renderToolContent(message) {
+        if (!this.portal) return //portal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
+
+        const toolCall = {
+            result: JSON.parse(message.content),
+            toolName: message.name,
+            toolCallId: message.tool_call_id
+        }
+
+        // streamingPortalBridge.appendComponentAsChild(this.portal.id, 'ToolCallDisplay', {toolCall: toolCall})
+
+        this.portal.appendComponent('ToolCallDisplay', {
+            toolCall: toolCall
         });
     }
 
     // Render text-based assistant message
-    async renderAIMessage(content, hasPortal) {
+    async renderAIMessage(content) {
         let actualContent = "";
         let thinkContent = "";
 
-        let message_portal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
-
-        if (!content){
-            if(hasPortal){
-                message_portal.close()
-                return
-            }
-            return message_portal
+        let message_portal
+        if (this.portal) {
+            message_portal = this.portal
+        } else {
+            message_portal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
+            this.portal = message_portal
         }
+
+        //this.portal = message_portal
+
+        if (!content) return
 
         // Check whether it is a thinking model response ie if it has thinking tags.
         const hasThinkTag = content.includes("<think>");

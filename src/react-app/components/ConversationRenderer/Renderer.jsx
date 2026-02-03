@@ -104,8 +104,10 @@ export const ResponseWrapper = ({
         foldSVGRef.current?.classList.toggle('rotate-180')
     })
 
+    chatutil.render_math(message_id)
+
     return (
-        <div id="ai_response_think" className={`think-${message_id} w-full bg-none text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none transition-colors duration-700`}>
+        <div id={message_id}>
             <div id="ai_response_think" className={`think-${message_id} w-full bg-none text-gray-900 dark:text-white font-brand leading-loose rounded-lg rounded-bl-none transition-colors duration-700`}>
                 {thinking_thinkcontent &&
                     <div className="think-section">

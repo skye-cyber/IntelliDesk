@@ -147,6 +147,8 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
         return comment || ''
     }
 
+    console.log(toolCall)
+
     return (
         <div className={`tool-call-item border border-blue-200/30 dark:border-blue-700/30 rounded-lg overflow-hidden transition-all duration-200 ${hasError ? 'bg-red-50/50 dark:bg-red-900/20' : 'bg-white/50 dark:bg-blue-900/10'}`}>
             {/* Tool Call Header */}

@@ -227,6 +227,7 @@ export async function MistralBase({
                 // Render mathjax immediately
                 if (!message_id) message_id = StateManager.get("current_message_id", message_id)
             }
+
             if (conversationName && conversationName !== "null") window.desk.api.updateName(conversationName, false)
 
             if (canvasutil.isCanvasOn()) {
@@ -234,7 +235,34 @@ export async function MistralBase({
                 // normalize canvas
                 canvasutil.NormalizeCanvasCode();
             }
+
+            /*
+             * Conversation continuation PROTOCOL
+             * 1. Pop last user message that triggered continuation
+             * 2. Modify the previous ai response and concatenate this response
+             * 3. Store conversation history
+             */
+            if (continued) {
+                // Reset store user message state
+                StateManager.set('user_message_portal', null)
+
+                window.desk.api.updateContinueHistory({
+                    role: "assistant",
+                    content: [{
+                        type: "text",
+                        text: fullResponse
+                            .replace("<continued>", "")
+                            .replace("</continued>", "")
+                    }]
+                })
+            } else {
+                window.desk.api.addHistory({ role: "assistant", content: fullResponse });
+                StateManager.set('ai_message_portal', message_portal)
+                StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
+            }
+
         }
+
         StateManager.set('processing', false);
 
         //stop timer
@@ -243,38 +271,13 @@ export async function MistralBase({
         // Reset send button appearance
         HandleProcessingEventChanges('hide')
 
-        /*
-         * Conversation continuation PROTOCOL
-         * 1. Pop last user message that triggered continuation
-         * 2. Modify the previous ai response and concatenate this response
-         * 3. Store conversation history
-         */
-        if (continued) {
-            // Reset store user message state
-            StateManager.set('user_message_portal', null)
-
-            window.desk.api.updateContinueHistory({
-                role: "assistant",
-                content: [{
-                    type: "text",
-                    text: fullResponse
-                        .replace("<continued>", "")
-                        .replace("</continued>", "")
-                }]
-            })
-        } else {
-            window.desk.api.addHistory({ role: "assistant", content: fullResponse });
-            StateManager.set('ai_message_portal', message_portal)
-            StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
-        }
-
         // render diagrams from this response
-        if (message_id) {
-            chatutil.render_math(`${message_id}`)
-        } else {
-            chatutil.render_math()
-            renderAll_aimessages()
-        }
+        // if (StateManager.get('current_message_id')) {
+        //     chatutil.render_math(`${StateManager.get('current_message_id')}`)
+        // } else {
+        chatutil.render_math()
+        renderAll_aimessages()
+        // }
         setTimeout(() => { leftalinemath() }, 1000)
 
         //staticPortalBridge.closeComponent(loader_id)
@@ -319,7 +322,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
             // Get AI response with potential tool calls
             const response = await client.chat.complete.create({
                 model: modelName,
-                messages: conversationHistory,
+                messages: window.desk.api.getHistory(true), //conversationHistory,
                 max_tokens: 3000,
                 tools: availableTools,
                 tool_choice: "auto"
@@ -327,6 +330,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
             const aiMessage = response.choices[0].message;
             const streaming_portal = StateManager.get('ai_messages_portal')
 
+            // console.log("AIMS:", aiMessage)
             // Update with ai message
             window.desk.api.addHistory({ role: "assistant", content: aiMessage.content || "", tool_calls: aiMessage.tool_calls });
 
@@ -355,18 +359,14 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
                 });
 
                 // Add AI message with tool calls to history
-                conversationHistory.push({
-                    role: "assistant",
-                    content: aiMessage.content || "",
-                    tool_calls: aiMessage.tool_calls
-                });
+                // conversationHistory.push({
+                //     role: "assistant",
+                //     content: aiMessage.content || "",
+                //     tool_calls: aiMessage.tool_calls
+                // });
 
                 // Update history
                 for (const call of toolResults) {
-                    const toolResponse = {
-                        output: call.result.output,
-                        error: call.result.error
-                    }
                     window.desk.api.addHistory({
                         role: "tool", content: JSON.stringify(call.result), name: call.toolName, tool_call_id: call.toolCallId
                     });
@@ -375,49 +375,10 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
                     })
                 }
 
-                // Render tool call responses
-                // streamingPortalBridge.appendComponentAsChild(streaming_portal.id, 'ToolResponse', {
-                //     toolCalls: toolResults
-                // })
-
-                // Update with ai message
-                window.desk.api.addHistory({ role: "assistant", content: aiMessage.content || "", tool_calls: aiMessage.tool_calls });
-
-
-                /*
-                 * TODO 1. Handle display of tool info ie calls and result to ui
-                 * TODO 2. Display ai message in the ui
-                 */
-
-                // Add tool results to history
-                toolResults.forEach(toolResult => {
-                    conversationHistory.push({
-                        role: "tool",
-                        tool_call_id: toolResult.toolCallId,
-                        name: toolResult.toolName,
-                        content: JSON.stringify(toolResult.result)
-                    });
-                });
-
                 // Update session state
                 sessionState.toolCallsMade += aiMessage.tool_calls.length;
                 sessionState.lastToolCall = aiMessage.tool_calls[aiMessage.tool_calls.length - 1];
                 sessionState.pendingToolResults = toolResults;
-
-                // // Check if we should continue (AI might want to make more tool calls)
-                // if (aiMessage.content && aiMessage.content.includes("<final_response>")) {
-                //     // Extract final response
-                //     finalResponse = aiMessage.content.replace("<final_response>", "").replace("</final_response>", "");
-                //     hasFinalResponse = true;
-                //     console.log(`[Tool Session] Final response received after ${iteration} iterations`);
-                // }
-
-                // Safety check: prevent infinite loops
-                // if (iteration >= maxIterations) {
-                //     console.warn(`[Tool Session] Max iterations (${maxIterations}) reached`);
-                //     finalResponse = "I've made several tool calls to gather the information you requested. Here's what I found:";
-                //     hasFinalResponse = true;
-                // }
 
             } else {
                 // No tool calls, this is the final response

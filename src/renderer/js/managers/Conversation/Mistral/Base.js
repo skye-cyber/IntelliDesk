@@ -13,6 +13,7 @@ import { timer } from "../../../Timer/timer";
 import toolsIntegration from "./ToolIntegration";
 import toolManager from "./ToolManager";
 import mistralClientSimulator from "../../../tests/MistralClientSimulator";
+import { Mistral } from '@mistralai/mistralai';
 
 
 let ai_ms_pid
@@ -50,10 +51,6 @@ export async function MistralBase({
             StateManager.set('user_message_portal', user_message_portal);
         }
 
-        let message_id = GenerateId('ai-msg');
-        const export_id = GenerateId('export')
-        const fold_id = GenerateId('fold')
-
         //const loader_id = staticPortalBridge.showComponentInTarget('LoadingAnimation', 'chatArea', {}, "loader")
         //StateManager.set('loader-element-id', loader_id)
 
@@ -87,11 +84,7 @@ export async function MistralBase({
         const availableTools = toolManager.getAvailableToolSchemas();
 
         // Check if we should enable tool calling
-        const enableToolCalling = false //availableTools.length > 0 && StateManager.get('enable_tools');
-
-        let stream;
-        let continued = false;
-        let fullResponse = "";
+        const enableToolCalling = availableTools.length > 0 && StateManager.get('enable_tools');
 
         if (enableToolCalling) {
             // Start tool calling session with conversation state
@@ -125,44 +118,81 @@ export async function MistralBase({
             StateManager.set('ai_messages_portal', message_portal)
 
             // Use regular streaming without tools
-            stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
+            let stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
                 model: model_name,
                 messages: window.desk.api.getHistory(true),
-                max_tokens: 3000,
+                maxTokens: 3000,
             })
 
-            let output = ""
+            let output = "";
             let thinkContent = "";
             let actualResponse = "";
             let isThinking = false;
             let hasfinishedThinking = false;
             let first_run = true;
+            let continued = false;
 
             for await (const chunk of stream) {
                 const choice = chunk?.data?.choices?.[0];
                 if (!choice?.delta?.content) continue;
+
                 const deltaContent = choice.delta.content;
 
-                // Store raw content before any processing
+                // Store raw content
                 let rawDelta = deltaContent;
                 output += rawDelta;
                 fullResponse += rawDelta;
-                // console.log("Stream:", output)
-                if (output.includes("<think>") && !isThinking && !hasfinishedThinking) {
-                    isThinking = true;
-                    hasfinishedThinking = false;
-                    output = output.replace("<think>", "");
-                    thinkContent = output;
-                    actualResponse = " "
-                } else if (isThinking && output.includes("</think>")) {
-                    isThinking = false;
-                    hasfinishedThinking = true;
-                    thinkContent += deltaContent.replace("</think>", "");
-                    output = output.replace("</think>", "");
-                } else if (isThinking) {
-                    thinkContent += deltaContent;
-                } else {
-                    actualResponse += deltaContent;
+
+                // Process based on content type
+                if (Array.isArray(deltaContent)) {
+                    console.log("Is thinking ...")
+                    // Process each content chunk in the array
+                    for (const contentChunk of deltaContent) {
+                        if (contentChunk.type === "thinking") {
+                            // Start or continue thinking
+                            isThinking = true;
+
+                            // Extract text from thinking array
+                            if (contentChunk.thinking && Array.isArray(contentChunk.thinking)) {
+                                for (const thought of contentChunk.thinking) {
+                                    if (thought.type === "text" && thought.text) {
+                                        thinkContent += thought.text;
+                                    }
+                                }
+                            }
+                        }
+                        else if (contentChunk.type === "text" && contentChunk.text) {
+                            // This is actual response text
+
+                            // If we were thinking, now we've finished thinking
+                            if (isThinking) {
+                                hasfinishedThinking = true;
+                                isThinking = false;
+                            }
+
+                            actualResponse += contentChunk.text;
+                        }
+                        // TODO: Handle other chunk types here
+                    }
+                }
+                else if (typeof deltaContent === 'string') {
+                    // Fallback to tag-based parsing for string content
+                    if (output.includes("<think>") && !isThinking && !hasfinishedThinking) {
+                        isThinking = true;
+                        hasfinishedThinking = false;
+                        output = output.replace("<think>", "");
+                        thinkContent = output;
+                        actualResponse = " ";
+                    } else if (isThinking && output.includes("</think>")) {
+                        isThinking = false;
+                        hasfinishedThinking = true;
+                        thinkContent += deltaContent.replace("</think>", "");
+                        output = output.replace("</think>", "");
+                    } else if (isThinking) {
+                        thinkContent += deltaContent;
+                    } else {
+                        actualResponse += deltaContent;
+                    }
                 }
 
                 if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
@@ -175,7 +205,7 @@ export async function MistralBase({
                 }
 
                 if (actualResponse.includes('<continued>') || actualResponse.includes('<continued')) {
-                    // In first run set <continue> tag as chunk to avoid breaking due to stary chunks that may be part of it, rawDelta cannot be anything except for items in the tage
+                    // In first run set <continue> tag as chunk to avoid breaking due to stray chunks that may be part of it, rawDelta cannot be anything except for items in the tag
                     if (first_run) {
                         rawDelta = "<continued>"
                         // Remove user message from interface
@@ -214,6 +244,7 @@ export async function MistralBase({
                             }
                         });
                 } else {
+                    console.log(thinkContent)
                     streaming_message_portal.update({
                         actualContent: actualResponse,
                         isThinking: isThinking,
@@ -221,13 +252,13 @@ export async function MistralBase({
                     });
                 }
 
-                chatutil.render_math(`${message_id}`, 2000)
+                let message_id = StateManager.get("current_message_id")
 
                 // Scroll to bottom
                 chatutil.scrollToBottom(chatArea, true, 1000);
 
                 // Render mathjax immediately
-                if (!message_id) message_id = StateManager.get("current_message_id", message_id)
+                chatutil.render_math(`${message_id}`, 2000)
             }
 
             if (canvasutil.isCanvasOn()) {
@@ -329,9 +360,10 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
             const response = await client.chat.complete.create({
                 model: modelName,
                 messages: window.desk.api.getHistory(true), //conversationHistory,
-                max_tokens: 3000,
+                maxTokens: 3000,
                 tools: availableTools,
-                tool_choice: "auto"
+                toolChoice: 'any',
+                parallelToolCalls: false,
             });
             const aiMessage = response.choices[0].message;
             const streaming_portal = StateManager.get('ai_messages_portal')

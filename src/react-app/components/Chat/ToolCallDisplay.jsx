@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 
 /**
  * ToolCallDisplay Component
@@ -101,47 +102,55 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
     const hasError = !!toolCall.error || !!toolCall.result.error;
     const hasResult = !!toolCall.result;
 
-    let params = !toolCall?.result.success ? JSON.parse(toolCall?.result?.params) : toolCall?.result
+    let params
+    try {
+        params = !toolCall?.result.success ? JSON.parse(toolCall?.result?.params) : toolCall?.result
+    } catch (err) { }
 
+    console.log(toolCall)
     function get_action_comment() {
         const tool = toolCall.toolName
         let comment
-        // if (toolCall.toolName === 'read_file' && toolCall.result.lines_read) {
-        //     comment = `Read ${toolCall.result.lines_read} lines`
-        //
-        // } else if (toolCall.toolName === 'write_file' && toolCall.result.bytes_written) {
-        //     comment = `Wrote ${toolCall.result.bytes_written} bytes`
-        //
-        // } else if (toolCall.toolName === 'search_replace') {
-        //     comment = `Replaced ${toolCall.result.total_blocks} blocks`
-        // }
+        const toolResult = toolCall.result
         switch (tool) {
             case 'read_file':
-                comment = `Read ${toolCall.result.lines_read} lines`
+                comment = `Read ${toolResult.lines_read} lines`
                 break
             case 'write_file':
-                comment = `Wrote ${toolCall.result.bytes_written} bytes`
+                comment = `Wrote ${toolResult.bytes_written} bytes`
                 break
             case 'search_replace':
-                comment = `Replaced ${toolCall.result.total_blocks} blocks`
+                comment = `Replaced ${toolResult.total_blocks} blocks`
                 break
             case 'calculate':
-                comment = `Calc Precision ${toolCall.result.precision}`
+                comment = `Calc Precision ${toolResult.precision}`
                 break
             case 'search_web':
-                comment = `Got ${toolCall.result.count} results`
+                comment = `Got ${toolResult.count} results`
                 break
             case 'grep':
-                comment = `Got ${toolCall.result.matchCount} matche(s)`
+                comment = `Got ${toolResult.matchCount} matche(s)`
                 break
             case 'file_operations':
-                if (toolCall.result.bytes_written) {
-                    comment = `Wrote ${toolCall.result.bytes_written} bytes`
-                } else if (toolCall.result.size) {
-                    comment = `Read ${toolCall.result.size} bytes`
+                const operation = toolResult.operation
+                if (operation === 'write') {
+                    comment = `Wrote ${toolResult.bytes_written} bytes`
+                } else if (operation === 'read') {
+                    comment = `Read ${toolResult.size} bytes`
+                } else if (operation === 'copy') {
+                    comment = `Copied ${toolResult.count} items`
+                } else if (operation === 'move') {
+                    comment = `Moved ${toolResult.count} items`
+                } else if (operation === 'delete') {
+                    comment = `Deleted ${toolResult.count} items`
+                } else if (operation === 'existence_check') {
+                    comment = `Path exists: ${toolResult.exists}`
+                } else if (['read_dir', 'list'].includes(operation)) {
+                    comment = `Found ${toolResult?.count} items in directory`
                 } else {
-                    comment = toolCall.result?.operation ? `${toolCall.result.operation} ${toolCall.result?.count} items` : ''
+                    comment = toolResult.operation
                 }
+
                 break
             case 'name_conversation':
                 comment = `Renamed`
@@ -157,29 +166,37 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
         let result
 
         switch (tool) {
-            case 'file_operation':
+            case 'file_operations':
                 const operation = toolResult.operation
                 if (operation === 'list') {
                     result = toolResult.items
                 } else if (operation === 'read') {
                     result = toolResult.content
-                // } else if (operation === 'write') {
-                //     res = toolResult.items
-                // } else if (operation === 'copy') {
-                //     res = toolResult.items
-                // } else if (operation === 'mover') {
-                //     res = toolResult.items
+                    // } else if (operation === 'write') {
+                    //     res = toolResult.items
+                } else if (['copy', 'move'].includes(operation)) {
+                    result = {
+                        type: toolResult.type,
+                        count: toolResult.count,
+                        source: toolResult.source,
+                        destination: toolResult.destination
+                    }
                 } else if (operation === 'stats') {
                     result = toolResult.stats
-                // } else if (operation === 'delete') {
-                //     res = toolResult.items
+                } else if (operation === 'existence_check') {
+                    result = {
+                        path: toolResult.path,
+                        exist: toolResult.exists
+                    }
+                } else if (operation === 'read_dir') {
+                    result = toolResult.files
                 }
                 break
             case 'bash':
                 result = toolResult.output
                 break
             case 'read_file':
-                result= toolResult.content
+                result = toolResult.content
                 break
             case 'calculate':
                 result = toolResult.result
@@ -206,126 +223,128 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
 
         return result ? formatResult(result) : ''
     }
-
+    //     console.log(toolCall)
     return (
-        <div className={`tool-call-item border border-blue-200/30 dark:border-blue-700/30 rounded-lg overflow-hidden transition-all duration-200 ${hasError ? 'bg-red-50/50 dark:bg-red-900/20' : 'bg-white/50 dark:bg-blue-900/10'}`}>
-            {/* Tool Call Header */}
-            <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => onToggle ? onToggle() : setExpanded(!expanded)}>
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <div className={`w-6 h-6 bg-gradient-to-br ${toolColor} rounded flex items-center justify-center shadow-sm`}>
-                        <span className="text-white text-sm">{toolIcon}</span>
-                    </div>
-                    <div className="min-w-0">
-                        <h4 className="font-medium text-gray-900 dark:text-white truncate text-sm">
-                            {toolCall.toolName}<span className='ml-0.5 text-xs text-gray-500 dark:text-gray-400 truncate'>({params.command || params.path || params.query || ''})</span>
-                        </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            {toolCall.toolCallId ? `Call ID: ${toolCall.toolCallId.substring(0, 8)}...` : 'Tool Execution'}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Status Badge */}
-                <div className="flex items-center space-x-2">
-                    {hasError ? (
-                        <span className="px-2 py-0.5 bg-red-100 dark:bg-red-800/50 text-red-600 dark:text-red-300 text-xs font-medium rounded-full">
-                            Error
-                        </span>
-                    ) : hasResult ? (
-                        <span className="px-2 py-0.5 bg-green-100 dark:bg-green-800/50 text-green-600 dark:text-green-300 text-xs font-medium rounded-full">
-                            Success
-                        </span>
-                    ) : (
-                        <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-800/50 text-yellow-600 dark:text-yellow-300 text-xs font-medium rounded-full">
-                            Pending
-                        </span>
-                    )}
-
-                    <button className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-                        <svg className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            {/* Expanded Content */}
-            {(isExpanded || expanded || showDetails) && (
-                <div className="px-3 pb-3">
-                    {/* Parameters */}
-                    {toolCall.result.params && (
-                        <div className="mb-3">
-                            <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 flex items-center">
-                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                Parameters
-                            </h5>
-                            <div className="bg-gray-50/80 dark:bg-blue-900/20 rounded border border-gray-200/50 dark:border-blue-700/30 p-2">
-                                <pre className="text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-20 font-mono whitespace-pre-wrap overflow-yauto scrollbar-custom">
-                                    {formatParams(toolCall.result.params?.slice(0, 500))}
-                                </pre>
-                            </div>
+        <ErrorBoundary>
+            <div className={`tool-call-item border border-blue-200/30 dark:border-blue-700/30 rounded-lg overflow-hidden transition-all duration-200 ${hasError ? 'bg-red-50/50 dark:bg-red-900/20' : 'bg-white/50 dark:bg-blue-900/10'}`}>
+                {/* Tool Call Header */}
+                <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => onToggle ? onToggle() : setExpanded(!expanded)}>
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <div className={`w-6 h-6 bg-gradient-to-br ${toolColor} rounded flex items-center justify-center shadow-sm`}>
+                            <span className="text-white text-sm">{toolIcon}</span>
                         </div>
-                    )}
+                        <div className="min-w-0">
+                            <h4 className="font-medium text-gray-900 dark:text-white truncate text-sm">
+                                {toolCall.toolName}<span className='ml-0.5 text-xs text-gray-500 dark:text-gray-400 truncate'>({params?.command || params?.path || params?.query || ''})</span>
+                            </h4>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                {toolCall.toolCallId ? `Call ID: ${toolCall.toolCallId.substring(0, 8)}...` : 'Tool Execution'}
+                            </p>
+                        </div>
+                    </div>
 
-                    {/* Result or Error */}
-                    {hasError ? (
-                        <div className="mb-3">
-                            <h5 className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide mb-1 flex items-center">
-                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                    {/* Status Badge */}
+                    <div className="flex items-center space-x-2">
+                        {hasError ? (
+                            <span className="px-2 py-0.5 bg-red-100 dark:bg-red-800/50 text-red-600 dark:text-red-300 text-xs font-medium rounded-full">
                                 Error
-                            </h5>
-                            <div className="bg-red-50/80 dark:bg-red-900/30 rounded border border-red-200/50 dark:border-red-700/30 p-2">
-                                <pre className="text-xs text-red-700 dark:text-red-300 overflow-x-auto max-h-20 font-mono whitespace-pre-wrap scrollbar-custom overflow-y-auto">
-                                    {JSON.stringify(toolCall.error || toolCall.result.error)}
-                                </pre>
-                            </div>
-                        </div>
-                    ) : hasResult ? (
-                        <div className="mb-3">
-                            <div className='flex'>
-                                <h5 className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide mb-1 flex items-center">
-                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Result
-                                </h5>
-                                <p className="flex ml-2 text-xs text-blue-600 font-semibold dark:text-green-200">{get_action_comment()}</p>
-                            </div>
-                            <div className="bg-green-50/80 dark:bg-green-900/30 rounded border border-green-200/50 dark:border-green-700/30 p-2">
-                                <pre className="text-xs text-green-700 dark:text-green-300 overflow-x-auto max-h-32 font-mono whitespace-pre-wrap scrollbar-custom">
-                                    {getToolResult()}
-                                </pre>
-                                {typeof toolCall.result === 'string' && toolCall.result.length > 200 && (
-                                    <button
-                                        onClick={() => setShowFullContent(!showFullContent)}
-                                        className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                                    >
-                                        {showFullContent ? 'Show less' : 'Show more'}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 italic">
-                            No result available
-                        </div>
-                    )}
+                            </span>
+                        ) : hasResult ? (
+                            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-800/50 text-green-600 dark:text-green-300 text-xs font-medium rounded-full">
+                                Success
+                            </span>
+                        ) : (
+                            <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-800/50 text-yellow-600 dark:text-yellow-300 text-xs font-medium rounded-full">
+                                Pending
+                            </span>
+                        )}
 
-                    {/* Timestamp */}
-                    {toolCall.timestamp && (
-                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                            Executed: {new Date(toolCall.timestamp).toLocaleString()}
-                        </div>
-                    )}
+                        <button className="p-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                            <svg className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-            )
-            }
-        </div >
+
+                {/* Expanded Content */}
+                {(isExpanded || expanded || showDetails) && (
+                    <div className="px-3 pb-3">
+                        {/* Parameters */}
+                        {toolCall.result.params && (
+                            <div className="mb-3">
+                                <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 flex items-center">
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Parameters
+                                </h5>
+                                <div className="bg-gray-50/80 dark:bg-blue-900/20 rounded border border-gray-200/50 dark:border-blue-700/30 p-2">
+                                    <pre className="text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-20 font-mono whitespace-pre-wrap overflow-yauto scrollbar-custom">
+                                        {formatParams(toolCall.result.params?.slice(0, 500))}
+                                    </pre>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Result or Error */}
+                        {hasError ? (
+                            <div className="mb-3">
+                                <h5 className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide mb-1 flex items-center">
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Error
+                                </h5>
+                                <div className="bg-red-50/80 dark:bg-red-900/30 rounded border border-red-200/50 dark:border-red-700/30 p-2">
+                                    <pre className="text-xs text-red-700 dark:text-red-300 overflow-x-auto max-h-20 font-mono whitespace-pre-wrap scrollbar-custom overflow-y-auto">
+                                        {JSON.stringify(toolCall.error || toolCall.result.error)}
+                                    </pre>
+                                </div>
+                            </div>
+                        ) : hasResult ? (
+                            <div className="mb-3">
+                                <div className='flex'>
+                                    <h5 className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide mb-1 flex items-center">
+                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Result
+                                    </h5>
+                                    <p className="flex ml-2 text-xs text-blue-600 font-semibold dark:text-green-200">{get_action_comment()}</p>
+                                </div>
+                                <div className="bg-green-50/80 dark:bg-green-900/30 rounded border border-green-200/50 dark:border-green-700/30 p-2">
+                                    <pre className="text-xs text-green-700 dark:text-green-300 overflow-x-auto max-h-32 font-mono whitespace-pre-wrap scrollbar-custom">
+                                        {getToolResult()}
+                                    </pre>
+                                    {typeof toolCall.result === 'string' && toolCall.result.length > 200 && (
+                                        <button
+                                            onClick={() => setShowFullContent(!showFullContent)}
+                                            className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                        >
+                                            {showFullContent ? 'Show less' : 'Show more'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                No result available
+                            </div>
+                        )}
+
+                        {/* Timestamp */}
+                        {toolCall.timestamp && (
+                            <div className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                Executed: {new Date(toolCall.timestamp).toLocaleString()}
+                            </div>
+                        )}
+                    </div>
+                )
+                }
+            </div>
+        </ErrorBoundary>
     );
 };
 

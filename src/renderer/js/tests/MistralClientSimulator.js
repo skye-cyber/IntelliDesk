@@ -94,7 +94,7 @@ export class MistralClientSimulator {
      * Simulate chat.stream() - for regular (non-tooling) conversations
      * Returns an async generator that yields chunks like the real API
      */
-    async *stream({ model, messages }) {
+    async *stream_({ model, messages }) {
         //console.log('🎭 Simulating chat.stream() for model:', model);
 
         // Store conversation history
@@ -116,6 +116,92 @@ export class MistralClientSimulator {
                     choices: [{
                         delta: {
                             content: chunk
+                        }
+                    }]
+                }
+            };
+        }
+
+        // Final chunk
+        yield {
+            data: {
+                choices: [{
+                    finish_reason: 'stop'
+                }]
+            }
+        };
+    }
+
+    /**
+     * Simulate chat.stream() - for regular (non-tooling) conversations
+     * Returns an async generator that yields chunks like the real API
+     */
+    async *stream({ model, messages }) {
+        //console.log('🎭 Simulating chat.stream() for model:', model);
+
+        // Store conversation history
+        this.conversationHistory = messages || [];
+
+        // Generate a realistic AI response
+        const responseText = this.generateAIResponse(messages);
+        const lastMessage = this.conversationHistory[this.conversationHistory.length - 1];
+        const userMessageArr = lastMessage?.content || "";
+
+        let userMessage = Array.isArray(userMessageArr) ?
+            userMessageArr.filter(ms => ms.type === 'text')[0].text :
+            userMessageArr.text
+
+        const chunkSize = 3;
+
+        // Option 1A: Send thinking first, then response
+        const thinkingText = `*Hmm, the user asked about "${userMessage}". Let me think through this step by step... First, I need to understand the context. The previous messages suggest... Actually, I should break this down into parts.*`;
+
+        for (let i = 0; i < thinkingText.length; i += chunkSize) {
+            const chunk = thinkingText.substring(i, i + chunkSize);
+
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Yield thinking chunk (as structured JSON array)
+            yield {
+                data: {
+                    choices: [{
+                        delta: {
+                            content: [
+                                {
+                                    type: "thinking",
+                                    thinking: [
+                                        {
+                                            type: "text",
+                                            text: chunk
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }]
+                }
+            };
+        }
+
+
+        // Yield response chunks
+        for (let i = 0; i < responseText.length; i += chunkSize) {
+            const chunk = responseText.substring(i, i + chunkSize);
+
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Yield chunk in Mistral format
+            yield {
+                data: {
+                    choices: [{
+                        delta: {
+                            content: [
+                                {
+                                    type: "text",
+                                    text: chunk
+                                }
+                            ]
                         }
                     }]
                 }
@@ -466,9 +552,8 @@ export class MistralClientSimulator {
             const fileopTool = tools.find(t => t.function.name.includes('file_operations'));
             if (fileopTool) {
                 toolCalls.push(this.createToolCall(fileopTool.function.name, {
-                    operation: "list",
-                    path: "/home/skye/Documents/playground/",
-                    recursive: true
+                    operation: "stats",
+                    path: "/home/skye/Documents/",
                 }));
                 aiResponse = "Perfoming file ops...";
             }

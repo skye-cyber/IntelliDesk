@@ -27,6 +27,7 @@ try {
     if (!profile) profile = ''
 }
 
+
 const conversation_root = path.join(os.homedir(), '.IntelliDesk/.store')
 
 let system_command = new command(profile).standard()

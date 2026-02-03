@@ -9,7 +9,7 @@ const fsops = window.desk.fsops
 
 export class FileOperationsTool extends ToolBase {
     constructor() {
-        super('file_operations', 'Perform file operations (read, write, list, delete, copy, move)');
+        super('file_operations', 'Perform file operations (read, write, list, stats, delete, copy, move, exists, read_dir)');
     }
 
     defineSchema() {
@@ -17,13 +17,13 @@ export class FileOperationsTool extends ToolBase {
             type: "function",
             function: {
                 name: "file_operations",
-                description: "Perform file operations (read, write, list, delete, copy, move)",
+                description: "Perform file operations (read, write, list, stats, delete, copy, move, exists, read_dir)",
                 parameters: {
                     type: "object",
                     properties: {
                         operation: {
                             type: "string",
-                            enum: ["read", "write", "list", "delete", "copy", "move", "info"],
+                            enum: ["read", "write", "list", "delete", "copy", "move", "stats", 'exists', 'read_dir'],
                             description: "File operation to perform"
                         },
                         path: {
@@ -59,6 +59,8 @@ export class FileOperationsTool extends ToolBase {
         // Validate file path
         this.validateFilePath(filePath);
 
+        if (this.config.denylist.includes(operation)) throw new Error("Operation not permitted. Requires explicit permission from user.")
+
         switch (operation) {
             case 'read':
                 return this.readFile(filePath);
@@ -67,13 +69,17 @@ export class FileOperationsTool extends ToolBase {
             case 'list':
                 return this.listDirectory(filePath, recursive);
             case 'delete':
-                return this.deleteFile(filePath, recursive);
+                return this.delete(filePath, recursive);
             case 'copy':
-                return this.copyFile(filePath, destination, overwrite);
+                return this.copy(filePath, destination, overwrite);
             case 'move':
-                return this.moveFile(filePath, destination, overwrite);
-            case 'info':
+                return this.move(filePath, destination, overwrite);
+            case 'stats':
                 return this.getFileInfo(filePath);
+            case 'exists':
+                return this.exists(filePath)
+            case 'read_dir':
+                return this.readDir(filePath, recursive)
             default:
                 throw new Error(`Unsupported operation: ${operation}`);
         }
@@ -84,7 +90,7 @@ export class FileOperationsTool extends ToolBase {
             throw new Error(`File not found: ${filePath}`);
         }
 
-        const stats = fs.statSync(filePath);
+        const stats = fsops.stat(fullPath).stats //fs.statSync(filePath);
         const maxFileSize = this.config.max_file_size || 1024 * 1024; // 1MB default
         if (stats.size > maxFileSize) {
             throw new Error(`File size ${stats.size} bytes exceeds maximum allowed ${maxFileSize} bytes`);
@@ -97,8 +103,8 @@ export class FileOperationsTool extends ToolBase {
             path: filePath,
             content: content,
             size: stats.size,
-            modified: stats.mtime,
-            created: stats.birthtime
+            modified: stats.modified,
+            created: stats.created
         };
     }
 
@@ -129,6 +135,24 @@ export class FileOperationsTool extends ToolBase {
         };
     }
 
+    async exists(filePath) {
+        const result = await fsops.exists(filePath)
+        if (result.success) return {
+            ...result,
+            operation: "existence_check"
+        }
+        throw new Error(result.error)
+    }
+
+    async readDir(filePath, recursive) {
+        const result = await fsops.readDir(filePath, recursive)
+        if (result.success) return {
+            ...result,
+            operation: "read_dir"
+        }
+        throw new Error(result.error)
+    }
+
     listDirectory(dirPath, recursive) {
         if (!fs.existsSync(dirPath)) {
             throw new Error(`Directory not found: ${dirPath}`);
@@ -146,13 +170,13 @@ export class FileOperationsTool extends ToolBase {
             const files = fs.readdirSync(dirPath);
             items = files.map(file => {
                 const fullPath = path.join(dirPath, file);
-                const stat = fs.statSync(fullPath);
+                const stat = fsops.stat(fullPath).stats //fs.statSync(fullPath);
                 return {
                     name: file,
                     path: fullPath,
-                    //type: stat.isDirectory() ? 'directory' : 'file',
+                    type: stat.isDirectory ? 'directory' : 'file',
                     size: stat.size,
-                    modified: stat.mtime
+                    modified: stat.modified
                 };
             });
         }
@@ -160,126 +184,121 @@ export class FileOperationsTool extends ToolBase {
         return {
             operation: 'list',
             path: dirPath,
-            items: items,
+            items: [...items],
             count: items.length
         };
     }
 
-    listDirectoryRecursive(dirPath) {
+    listDirectoryRecursive(dirPath, max_depth = 30) {
         const items = [];
-        const files = fs.readdirSync(dirPath);
 
-        for (const file of files) {
-            const fullPath = path.join(dirPath, file);
-            const stat = fs.statSync(fullPath);
+        try {
+            const files = fs.readdirSync(dirPath);
+            let depth = 1
 
-            items.push({
-                name: file,
-                path: fullPath,
-                //type: stat.isDirectory() ? 'directory' : 'file',
-                size: stat.size,
-                modified: stat.mtime
-            });
+            for (const file of files) {
+                const fullPath = path.join(dirPath, file);
+                if (depth >= max_depth) break
 
-            //if (stat.isDirectory()) {
-            try {
-                items.push(...this.listDirectoryRecursive(fullPath));
-            } catch (err) { }
-            //}
+                try {
+                    // Call statSync (not async stat)
+                    const result = fsops.stat(fullPath);
+
+                    if (!result.success) {
+                        console.warn(`Failed to stat ${file}: ${result.error}`);
+                        continue;
+                    }
+
+                    const stats = result.stats;
+
+                    // Create item object with all stats
+                    const item = {
+                        name: file,
+                        path: fullPath,
+                        ...stats,
+                        isDirectory: stats.isDirectory,
+                        isFile: stats.isFile,
+                        isSymbolicLink: stats.isSymbolicLink
+                    };
+
+                    items.push(item);
+
+                    // Recurse if it's a directory
+                    if (stats.isDirectory === true) {
+                        const subItems = this.listDirectoryRecursive(fullPath);
+                        items.push(...subItems);
+                    }
+
+                } catch (err) {
+                    console.warn(`Error processing ${file}:`, err.message);
+                }
+                depth += 1
+            }
+
+        } catch (err) {
+            console.error(`Cannot read directory ${dirPath}:`, err.message);
         }
 
         return items;
     }
 
-    deleteFile(filePath, recursive) {
-        if (!fs.existsSync(filePath)) {
-            throw new Error(`File/directory not found: ${filePath}`);
-        }
+    delete(filePath, recursive) {
+        // const existsCheck = this.exists(filePath);
+        // if (!existsCheck.exists) {
+        //     throw new Error(`File/directory not found: ${filePath}`);
+        // }
+        //
+        // //const stats = fsops.stat(filePath).stats //fs.statSync(filePath);
+        //
+        // if (existsCheck.isDirectory) {
+        //     if (recursive) {
+        //         fs.rmSync(filePath, { recursive: true, force: true });
+        //     } else {
+        //         throw new Error(`Directory not empty, use recursive=true to delete: ${filePath}`);
+        //     }
+        // } else {
+        //     fs.unlinkSync(filePath);
+        // }
 
-        const stats = fs.statSync(filePath);
-
-        if (stats.isDirectory()) {
-            if (recursive) {
-                fs.rmSync(filePath, { recursive: true, force: true });
-            } else {
-                throw new Error(`Directory not empty, use recursive=true to delete: ${filePath}`);
-            }
-        } else {
-            fs.unlinkSync(filePath);
-        }
-
+        const result = fsops.delete(filePath, recursive)
         return {
             operation: 'delete',
+            ...result,
             path: filePath,
-            was_directory: stats.isDirectory(),
+            was_directory: stats.isDirectory,
             recursive: recursive
         };
     }
 
-    copyFile(sourcePath, destinationPath, overwrite) {
-        if (!fs.existsSync(sourcePath)) {
-            throw new Error(`Source file not found: ${sourcePath}`);
+    async copy(sourcePath, destinationPath, overwrite) {
+        const result = await fsops.copy(sourcePath, destinationPath, overwrite)
+        const stats = fsops.stat(sourcePath).stats
+        let count = 1
+
+        if (stats.isDirectory) count = this.listDirectory(sourcePath, true).count
+
+        if (result.success) return {
+            ...result,
+            count: count,
+            operation: "copy"
         }
-
-        if (!destinationPath) {
-            throw new Error('Destination path is required for copy operations');
-        }
-
-        const destExists = fs.existsSync(destinationPath);
-        if (destExists && !overwrite) {
-            throw new Error(`Destination already exists: ${destinationPath}. Set overwrite=true to overwrite.`);
-        }
-
-        // Ensure destination directory exists
-        const destDir = path.dirname(destinationPath);
-        if (!fs.existsSync(destDir)) {
-            fs.mkdirSync(destDir, { recursive: true });
-        }
-
-        fs.copyFileSync(sourcePath, destinationPath);
-
-        const stats = fs.statSync(destinationPath);
-
-        return {
-            operation: 'copy',
-            source: sourcePath,
-            destination: destinationPath,
-            bytes_copied: stats.size,
-            file_overwritten: destExists && overwrite
-        };
+        throw new Error(result.error)
     }
 
-    moveFile(sourcePath, destinationPath, overwrite) {
-        if (!fs.existsSync(sourcePath)) {
-            throw new Error(`Source file not found: ${sourcePath}`);
+    async move(sourcePath, destinationPath, overwrite) {
+        const stats = fsops.stat(sourcePath).stats
+        let count = 1
+
+        if (stats.isDirectory) count = this.listDirectory(sourcePath, true).count
+
+        const result = await fsops.move(sourcePath, destinationPath, overwrite)
+
+        if (result.success) return {
+            ...result,
+            count: count,
+            operation: "move"
         }
-
-        if (!destinationPath) {
-            throw new Error('Destination path is required for move operations');
-        }
-
-        const destExists = fs.existsSync(destinationPath);
-        if (destExists && !overwrite) {
-            throw new Error(`Destination already exists: ${destinationPath}. Set overwrite=true to overwrite.`);
-        }
-
-        // Ensure destination directory exists
-        const destDir = path.dirname(destinationPath);
-        if (!fs.existsSync(destDir)) {
-            fs.mkdirSync(destDir, { recursive: true });
-        }
-
-        fs.renameSync(sourcePath, destinationPath);
-
-        const stats = fs.statSync(destinationPath);
-
-        return {
-            operation: 'move',
-            source: sourcePath,
-            destination: destinationPath,
-            bytes_moved: stats.size,
-            file_overwritten: destExists && overwrite
-        };
+        throw new Error(result.error)
     }
 
     getFileInfo(filePath) {
@@ -287,29 +306,23 @@ export class FileOperationsTool extends ToolBase {
             throw new Error(`File not found: ${filePath}`);
         }
 
-        const stats = fs.statSync(filePath);
+        const stats = fsops.stat(filePath).stats //fs.statSync(filePath);
         return {
-            operation: 'info',
+            operation: 'stats',
             path: filePath,
             stats: {
+                ...stats,
                 exists: true,
-                //type: stats.isDirectory() ? 'directory' : 'file',
-                size: stats.size,
-                created: stats.birthtime,
-                modified: stats.mtime,
-                accessed: stats.atime,
-                permissions: this.getFilePermissions(stats)
+                type: stats.isDirectory ? 'directory' : 'file',
             }
         };
     }
 
     getFilePermissions(stats) {
-        const mode = stats.mode.toString(8).slice(-3);
         return {
-            owner: mode[0],
-            group: mode[1],
-            other: mode[2],
-            octal: stats.mode.toString(8)
+            owner: stats.owner,
+            group: stats.group,
+            other: stats.other,
         };
     }
 
@@ -322,7 +335,7 @@ export class FileOperationsTool extends ToolBase {
             throw new Error('File path contains invalid characters');
         }
 
-        const allowedDirectories = this.config.allowed_directories || [];
+        const allowedDirectories = this.config.safe_paths || [];
         if (allowedDirectories.length > 0) {
             const fileDir = path.dirname(filePath);
             const isAllowed = allowedDirectories.some(allowedDir =>

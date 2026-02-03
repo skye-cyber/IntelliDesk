@@ -151,13 +151,20 @@ class AgentConfigManager {
                     allow_complex_numbers: false
                 },
                 file_operations: {
+                    max_recurse_depth: 30, // prevents memory pressure for large directories
                     permission: "ask",
                     allowlist: [
                         "read",
-                        "list"
+                        "list",
+                        "copy",
+                        "stats",
+                        "exists",
+                        "read_dir",
                     ],
                     denylist: [
-                        "delete"
+                        "delete",
+                        "write",
+                        "move",
                     ],
                     max_file_size: 1048576, // 1MB
                     safe_paths: [

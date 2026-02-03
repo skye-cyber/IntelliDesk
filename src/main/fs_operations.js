@@ -180,12 +180,12 @@ const fsOperations = {
                         name: item.name,
                         path: itemPath,
                         type: item.isDirectory() ? 'directory' :
-                        item.isFile() ? 'file' :
-                        item.isSymbolicLink() ? 'symlink' : 'other',
-                          size: stats.size,
-                          modified: stats.mtime,
-                          created: stats.birthtime,
-                          mode: stats.mode.toString(8)
+                            item.isFile() ? 'file' :
+                                item.isSymbolicLink() ? 'symlink' : 'other',
+                        size: stats.size,
+                        modified: stats.mtime,
+                        created: stats.birthtime,
+                        mode: stats.mode.toString(8)
                     };
 
                     if (recursive && item.isDirectory()) {
@@ -326,7 +326,7 @@ const fsOperations = {
             }
 
             const sourcePath = path.resolve(source);
-            const destPath = path.resolve(destination);
+            let destPath = path.resolve(destination);
 
             const sourceExists = await this.exists(sourcePath);
             if (!sourceExists.exists) {
@@ -337,7 +337,15 @@ const fsOperations = {
                 };
             }
 
-            const destExists = await this.exists(destPath);
+            let destExists = await this.exists(destPath);
+            // If destination exists and is a directory, append source filename
+            if (destExists) {
+                if (destExists.isDirectory && sourceExists.isFile) {
+                    destPath = path.resolve(path.join(destPath, path.basename(sourcePath)));
+                    destExists = await this.exists(destPath);
+                }
+            }
+
             if (destExists.exists && !overwrite) {
                 return {
                     success: false,
@@ -347,8 +355,10 @@ const fsOperations = {
                 };
             }
 
+
             if (sourceExists.isDirectory) {
-                await this._copyDirectory(sourcePath, destPath, overwrite);
+                const realDest = path.join(destPath, path.basename(sourcePath))
+                await this._copyDirectory(sourcePath, realDest, overwrite);
             } else {
                 await fs.copyFile(sourcePath, destPath);
             }
@@ -371,6 +381,36 @@ const fsOperations = {
         }
     },
 
+    findCommonRoot(src, dst) {
+        const destParts = dst.split('/')
+        const sourceParts = src.split('/')
+
+        let root = ''
+        const destDirs = []
+        const sourceDirs = []
+
+        destParts.forEach(part => {
+            if (part.trim()) {
+                root += `/${part}`
+                destDirs.push(root)
+            }
+        })
+
+        root = ''
+
+        sourceParts.forEach(part => {
+            if (part.trim()) {
+                root += `/${part}`
+                sourceDirs.push(root)
+            }
+        })
+
+        const sharedRoots = destDirs.filter(dir => sourceDirs.includes(dir))
+        const rightMostRoot = sharedRoots.slice(-1)[0]
+
+        return rightMostRoot
+    },
+
     /**
      * Helper: Copy directory recursively
      */
@@ -382,7 +422,6 @@ const fsOperations = {
         for (const item of items) {
             const sourcePath = path.join(sourceDir, item.name);
             const destPath = path.join(destDir, item.name);
-
             if (item.isDirectory()) {
                 await this._copyDirectory(sourcePath, destPath, overwrite);
             } else {
@@ -408,9 +447,11 @@ const fsOperations = {
             }
 
             const sourcePath = path.resolve(source);
-            const destPath = path.resolve(destination);
+            let destPath = path.resolve(destination);
 
             const sourceExists = await this.exists(sourcePath);
+            const sourceType = sourceExists.isDirectory ? 'directory' : 'file'
+
             if (!sourceExists.exists) {
                 return {
                     success: false,
@@ -419,7 +460,15 @@ const fsOperations = {
                 };
             }
 
-            const destExists = await this.exists(destPath);
+            let destExists = await this.exists(destPath);
+            // If destination exists and is a directory, append source filename
+            if (destExists.exists) {
+                if (destExists.isDirectory) {
+                    destPath = path.resolve(path.join(destPath, path.basename(sourcePath)));
+                    destExists = await this.exists(destPath);
+                }
+            }
+
             if (destExists.exists && !overwrite) {
                 return {
                     success: false,
@@ -436,7 +485,7 @@ const fsOperations = {
                 source: sourcePath,
                 destination: destPath,
                 moved: true,
-                type: sourceExists.isDirectory ? 'directory' : 'file'
+                type: sourceType
             };
         } catch (error) {
             return {
@@ -454,14 +503,16 @@ const fsOperations = {
      * @param {string} filePath - Path to check
      * @returns {Promise<{success: boolean, stats?: object, error?: string, path: string}>}
      */
-    async stat(filePath) {
+    stat(filePath) {
         try {
             if (!filePath || typeof filePath !== 'string') {
                 return { success: false, error: 'Invalid path', path: filePath };
             }
 
             const absolutePath = path.resolve(filePath);
-            const stats = await fs.stat(absolutePath);
+            const stats = fsSync.statSync(absolutePath);
+
+            const mode = stats.mode.toString(8)
 
             return {
                 success: true,
@@ -473,7 +524,12 @@ const fsOperations = {
                     modified: stats.mtime,
                     created: stats.birthtime,
                     accessed: stats.atime,
-                    mode: stats.mode.toString(8),
+                    permissions: {
+                        owner: mode[0],
+                        group: mode[1],
+                        other: mode[2],
+                    },
+                    mode: mode,
                     uid: stats.uid,
                     gid: stats.gid,
                     blocks: stats.blocks
@@ -500,12 +556,12 @@ const fsOperations = {
             const result = await dialog.showOpenDialog({
                 title: options.title || 'Select File',
                 defaultPath: options.defaultPath || process.cwd(),
-                    buttonLabel: options.buttonLabel || 'Select',
-                    filters: options.filters || [
-                        { name: 'All Files', extensions: ['*'] }
-                    ],
-                    properties: options.properties || ['openFile'],
-                    message: options.message
+                buttonLabel: options.buttonLabel || 'Select',
+                filters: options.filters || [
+                    { name: 'All Files', extensions: ['*'] }
+                ],
+                properties: options.properties || ['openFile'],
+                message: options.message
             });
 
             if (result.canceled) {
@@ -539,11 +595,11 @@ const fsOperations = {
             const result = await dialog.showSaveDialog({
                 title: options.title || 'Save File',
                 defaultPath: options.defaultPath || process.cwd(),
-                    buttonLabel: options.buttonLabel || 'Save',
-                    filters: options.filters || [
-                        { name: 'All Files', extensions: ['*'] }
-                    ],
-                    message: options.message
+                buttonLabel: options.buttonLabel || 'Save',
+                filters: options.filters || [
+                    { name: 'All Files', extensions: ['*'] }
+                ],
+                message: options.message
             });
 
             if (result.canceled) {

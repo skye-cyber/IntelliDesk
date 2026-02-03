@@ -313,9 +313,9 @@ const api = {
             //console.log("Rename conversation to:", name)
             ConversationHistory.metadata.name = name
             if (save) api.saveConversation(ConversationHistory)
-            return ConversationHistory
+            return ConversationHistory.metadata.name
         } catch (err) {
-            return ConversationHistory
+            return ConversationHistory.metadata.name
         }
     },
     updateContinueHistory: (item) => {
@@ -418,7 +418,7 @@ const api = {
         try {
             if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving")
             //console.log("Saving: " + conversationId + filePath)
-            await api.write(filePath, conversationData);
+            // await api.write(filePath, conversationData);
             return filePath
         } catch (err) {
             console.error('Error saving conversation:', err);

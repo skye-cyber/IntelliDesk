@@ -70,6 +70,37 @@ export const AiMessage = ({ children, ...props }) => {
     )
 }
 
+export const StreamingAiMessage = ({
+    actualContent,
+    isThinking = false,
+    thinkContent = null,
+}) => {
+    const exportMenu = useRef(null)
+    const messageRef = useRef(null)
+
+    const onExportMenuToggle = useCallback(() => {
+        exportMenu.current.classList.toggle('hidden');
+
+    })
+
+    return (
+        <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
+            <section id="ai_response" className="relative w-fit max-w-full mb-[2vh] py-2 px-4">
+                {/* Streaming response wrapper */}
+                <div ref={messageRef}>
+                    <ResponseWrapper actualContent={actualContent} thinkContent={thinkContent} isThinking={isThinking} />
+                </div>
+
+                {/*Other componets*/}
+                <div className='mt-10'>
+                    <AiMessageOptions onMenuToggle={onExportMenuToggle} messageref={messageRef} />
+                    <ExportMenu menuref={exportMenu} messageref={messageRef} />
+                </div>
+            </section >
+        </div >
+    )
+}
+
 export const ResponseWrapper = ({
     actualContent,
     isThinking = false,

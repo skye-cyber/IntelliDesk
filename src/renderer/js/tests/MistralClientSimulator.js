@@ -95,19 +95,18 @@ export class MistralClientSimulator {
      * Returns an async generator that yields chunks like the real API
      */
     async *stream({ model, messages }) {
-        console.log('🎭 Simulating chat.stream() for model:', model);
+        //console.log('🎭 Simulating chat.stream() for model:', model);
 
         // Store conversation history
         this.conversationHistory = messages || [];
 
         // Generate a realistic AI response
         const responseText = this.generateAIResponse(messages);
-        console.log(responseText)
         // Simulate streaming by yielding chunks
-        const chunkSize = 50;
+        const chunkSize = 3;
         for (let i = 0; i < responseText.length; i += chunkSize) {
             const chunk = responseText.substring(i, i + chunkSize);
-
+            // console.log(chunk)
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -447,10 +446,10 @@ export class MistralClientSimulator {
 
         // Grep operations
         if (lowerCaseMsgArray.includes('grep') || lowerCaseMsgArray.includes('pgrep')) {
-            const searchTool = tools.find(t => t.function.name.includes('grep'));
-            if (searchTool) {
-                toolCalls.push(this.createToolCall(searchTool.function.name, {
-                    pattern: "rep",
+            const grepTool = tools.find(t => t.function.name.includes('grep'));
+            if (grepTool) {
+                toolCalls.push(this.createToolCall(grepTool.function.name, {
+                    pattern: "test",
                     path: "/home/skye/Documents/playground/README2.md"
                 }));
                 aiResponse = "Perfoming pattern grep...";
@@ -459,12 +458,23 @@ export class MistralClientSimulator {
 
         // Grep operations
         if (lowerCaseMsgArray.includes('fsc') || lowerCaseMsgArray.includes('file ops')) {
-            const searchTool = tools.find(t => t.function.name.includes('file_operations'));
-            if (searchTool) {
-                toolCalls.push(this.createToolCall(searchTool.function.name, {
+            const fileopTool = tools.find(t => t.function.name.includes('file_operations'));
+            if (fileopTool) {
+                toolCalls.push(this.createToolCall(fileopTool.function.name, {
                     operation: "list",
                     path: "/home/skye/Documents/playground/",
                     recursive: true
+                }));
+                aiResponse = "Perfoming file ops...";
+            }
+        }
+
+        // Conversation Rename operations
+        if (lowerCaseMsgArray.includes('rename') || lowerCaseMsgArray.includes('name')) {
+            const renameTool = tools.find(t => t.function.name.includes('name_conversation'));
+            if (renameTool) {
+                toolCalls.push(this.createToolCall(renameTool.function.name, {
+                    conversation_name: "Simulator test with tool integration",
                 }));
                 aiResponse = "Perfoming file ops...";
             }

@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Diagram } from './components/DiagramUI/diagram';
-import { UserMessage, AiMessage } from './components/ConversationRenderer/Renderer';
+import { UserMessage, AiMessage, ResponseWrapper, StreamingAiMessage } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { FileItem } from './components/DropZone/dropzone';
 import { LoadingAnimation } from './components/StatusUI/StatusUI';
 import ToolResponse from './components/Chat/ToolResponse';
 import ToolErrorHandler from './components/Chat/ToolErrorHandler';
 import ToolCallDisplay from './components/Chat/ToolCallDisplay';
-import { ResponseWrapper } from './components/ConversationRenderer/Renderer';
 
 const streamingComponentRegistry = {
     Diagram,
@@ -20,7 +19,8 @@ const streamingComponentRegistry = {
     ToolResponse,
     ToolErrorHandler,
     ToolCallDisplay,
-    ResponseWrapper
+    ResponseWrapper,
+    StreamingAiMessage
 };
 
 export const StreamingPortalContainer = () => {

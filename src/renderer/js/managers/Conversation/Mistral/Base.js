@@ -87,7 +87,7 @@ export async function MistralBase({
         const availableTools = toolManager.getAvailableToolSchemas();
 
         // Check if we should enable tool calling
-        const enableToolCalling = availableTools.length > 0 && StateManager.get('enable_tools');
+        const enableToolCalling = false //availableTools.length > 0 && StateManager.get('enable_tools');
 
         let stream;
         let continued = false;
@@ -114,6 +114,16 @@ export async function MistralBase({
             //     });
             //}
         } else {
+            // close message portal
+            message_portal.close()
+
+            const streaming_message_portal = streamingPortalBridge.createStreamingPortal(
+                'StreamingAiMessage', 'chatArea', undefined, 'ai_message'
+            )
+            message_portal = streaming_message_portal
+            ai_ms_pid = message_portal
+            StateManager.set('ai_messages_portal', message_portal)
+
             // Use regular streaming without tools
             stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
                 model: model_name,
@@ -137,7 +147,7 @@ export async function MistralBase({
                 let rawDelta = deltaContent;
                 output += rawDelta;
                 fullResponse += rawDelta;
-
+                // console.log("Stream:", output)
                 if (output.includes("<think>") && !isThinking && !hasfinishedThinking) {
                     isThinking = true;
                     hasfinishedThinking = false;
@@ -208,15 +218,16 @@ export async function MistralBase({
                             }
                         });
                 } else {
-                    streamingPortalBridge.updateStreamingPortal(message_portal, {
-                        actual_response: actualResponse,
+                    streamingPortalBridge.updateStreamingPortal(streaming_message_portal.id, {
+                        actualContent: actualResponse,
                         isThinking: isThinking,
-                        think_content: thinkContent,
-                        message_id: message_id,
-                        export_id: export_id,
-                        fold_id: fold_id,
-                        conversation_name: conversationName
+                        thinkContent: thinkContent,
                     });
+                    // message_portal.appendComponent('ResponseWrapper', {
+                    //     actualContent: actualResponse,
+                    //     isThinking: isThinking,
+                    //     thinkContent: thinkContent,
+                    // });
                 }
 
                 chatutil.render_math(`${message_id}`, 2000)
@@ -227,8 +238,6 @@ export async function MistralBase({
                 // Render mathjax immediately
                 if (!message_id) message_id = StateManager.get("current_message_id", message_id)
             }
-
-            if (conversationName && conversationName !== "null") window.desk.api.updateName(conversationName, false)
 
             if (canvasutil.isCanvasOn()) {
                 if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();

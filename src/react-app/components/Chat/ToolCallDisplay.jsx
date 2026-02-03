@@ -137,17 +137,75 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
             case 'file_operations':
                 if (toolCall.result.bytes_written) {
                     comment = `Wrote ${toolCall.result.bytes_written} bytes`
-                }else if(toolCall.result.size){
+                } else if (toolCall.result.size) {
                     comment = `Read ${toolCall.result.size} bytes`
-                }else{
+                } else {
                     comment = toolCall.result?.operation ? `${toolCall.result.operation} ${toolCall.result?.count} items` : ''
                 }
+                break
+            case 'name_conversation':
+                comment = `Renamed`
                 break
         }
         return comment || ''
     }
 
-    console.log(toolCall)
+    function getToolResult() {
+        const tool = toolCall.toolName
+        const toolResult = toolCall.result
+
+        let result
+
+        switch (tool) {
+            case 'file_operation':
+                const operation = toolResult.operation
+                if (operation === 'list') {
+                    result = toolResult.items
+                } else if (operation === 'read') {
+                    result = toolResult.content
+                // } else if (operation === 'write') {
+                //     res = toolResult.items
+                // } else if (operation === 'copy') {
+                //     res = toolResult.items
+                // } else if (operation === 'mover') {
+                //     res = toolResult.items
+                } else if (operation === 'stats') {
+                    result = toolResult.stats
+                // } else if (operation === 'delete') {
+                //     res = toolResult.items
+                }
+                break
+            case 'bash':
+                result = toolResult.output
+                break
+            case 'read_file':
+                result= toolResult.content
+                break
+            case 'calculate':
+                result = toolResult.result
+                break
+            case 'grep':
+                result = toolResult.matches
+                break
+            case 'get_weather':
+                result = toolResult.forecast
+                break
+            case 'name_conversation':
+                result = toolResult.conversation_name
+                break
+            case 'todo':
+                result = toolResult.todos
+                break
+            case 'search_web':
+                result = toolResult.results
+                break
+            default:
+                result = ''
+        }
+        // result = toolCall.result.content || toolCall.result.output || toolCall.result.results || toolCall.result.matches || toolCall.result.stats || toolCall.result.items
+
+        return result ? formatResult(result) : ''
+    }
 
     return (
         <div className={`tool-call-item border border-blue-200/30 dark:border-blue-700/30 rounded-lg overflow-hidden transition-all duration-200 ${hasError ? 'bg-red-50/50 dark:bg-red-900/20' : 'bg-white/50 dark:bg-blue-900/10'}`}>
@@ -240,7 +298,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                             </div>
                             <div className="bg-green-50/80 dark:bg-green-900/30 rounded border border-green-200/50 dark:border-green-700/30 p-2">
                                 <pre className="text-xs text-green-700 dark:text-green-300 overflow-x-auto max-h-32 font-mono whitespace-pre-wrap scrollbar-custom">
-                                    {formatResult(toolCall.result.content || toolCall.result.output || toolCall.result.results || toolCall.result.matches || toolCall.result.stats || toolCall.result.items) || ''}
+                                    {getToolResult()}
                                 </pre>
                                 {typeof toolCall.result === 'string' && toolCall.result.length > 200 && (
                                     <button

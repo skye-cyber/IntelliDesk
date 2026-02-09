@@ -98,14 +98,6 @@ jobs:
                   fi
               shell: bash
 
-            - name: Clean dist directory
-              run: rm -rf dist/*
-              shell: bash
-
-            - name: Ensure build directory exists
-              run: mkdir -p dist
-              shell: bash
-
             - name: Remove conflicting LICENSE.md
               run: |
                   LICENSE_PATH=$(pwd)/dist/resources/app.asar.unpacked/node_modules/keytar/LICENSE.md
@@ -117,38 +109,41 @@ jobs:
                   fi
               shell: bash
 
-            - name: Build react
+
+            - name: Clean dist and build directory
+              run: rm -rf dist/* build
+              shell: bash
+
+            - name: Ensure build directory exists
+              run: mkdir -p dist
+              shell: bash
+
+            - name: Build react first
               run: npm run build:react
 
             - name: Build for specific platform
               run: |
-                  if [ "${{ runner.os }}" == "Linux" ]; then
-                    # Build DEB separately
-                    sudo npm run build:electron -- --linux deb --x64
-                    sudo npm run build:electron -- --linux deb --arm64
+                if [ "${{ runner.os }}" == "Linux" ]; then
+                  # Install snapcraft for snap build
+                  sudo snap install snapcraft --classic
 
-                    # Build AppImage separately
-                    sudo npm run build:electron -- --linux appimage --x64
-                    sudo npm run build:electron -- --linux appimage --arm64
+                  # Build DEB separately
+                  sudo npm run build:electron -- --linux
 
-                    # Build SNAP separately
-                    # sudo npm run build:electron -- --linux snap
-                  elif [ "${{ runner.os }}" == "macOS" ]; then
-                    source /tmp/build-venv/bin/activate
-                    # Build the macOS target
-                    sudo npm run build:electron -- --mac --x64
-                    # sudo npm run build:electron -- --mac --arm64
-                  elif [ "${{ runner.os }}" == "Windows" ]; then
-                    # Build the Windows target
-                    npm run build:electron -- --win --x64
-                    # npm run build:electron -- --win --ia32
-                    npm run build:electron -- --win --arm64
-                  else
-                    echo "Unsupported platform: ${{ runner.os }}"
-                    exit 1
-                  fi
+                elif [ "${{ runner.os }}" == "macOS" ]; then
+                  # Build the macOS target
+                  sudo npm run build:electron -- --mac
+
+                elif [ "${{ runner.os }}" == "Windows" ]; then
+                  # Build the Windows target
+                  npm run build:electron -- --win
+
+                else
+                  echo "Unsupported platform: ${{ runner.os }}"
+                  exit 1
+                fi
               env:
-                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+                GH_TOKEN: ${{ secrets.GH_TOKEN }}
               shell: bash
 
             - name: Check if build directory exists
@@ -161,9 +156,7 @@ jobs:
 
             - name: show dist content
               run: |
-                  if [ "${{ runner.os }}" == "Linux" ]; then
-                  ls dist
-                  fi
+                ls dist
               shell: bash
 
             # Upload artifacts

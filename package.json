@@ -78,6 +78,7 @@
     "level": "^9.0.0",
     "levelup": "^5.1.1",
     "lightweight-charts": "^5.0.6",
+    "lucide-react": "^0.563.0",
     "map-schema": "^0.3.0",
     "marked": "^15.0.3",
     "minimatch": "^10.0.1",
@@ -158,11 +159,9 @@
           ]
         }
       ],
-      "hardenedRuntime": true,
+      "hardenedRuntime": false,
       "gatekeeperAssess": false,
-      "entitlements": "entitlements.mac.plist",
-      "entitlementsInherit": "entitlements.mac.plist",
-      "provisioningProfile": "embedded.provisionprofile"
+      "identity": null
     },
     "dmg": {
       "artifactName": "${productName}-${version}-${arch}.dmg"
@@ -184,6 +183,13 @@
             "x64",
             "arm64"
           ]
+        },
+        {
+          "target": "msi",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ]
     },
@@ -194,7 +200,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "allowToChangeInstallationDirectory": true,
-      "license": "LICENSE"
+      "license": "LICENSE",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "portable": {
       "artifactName": "${productName}-portable-${version}-${arch}.${ext}"
@@ -217,7 +224,8 @@
           ]
         },
         {
-          "target": "snap"
+          "target": "snap",
+          "arch": ["x64"]
         }
       ],
       "category": "Utility",
@@ -246,7 +254,8 @@
         "network",
         "home",
         "audio-playback"
-      ]
+      ],
+      "artifactName": "${productName}_${version}_${arch}.snap"
     }
   }
 }

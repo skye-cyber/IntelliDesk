@@ -8,6 +8,7 @@ import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '@components/Input/InputSection';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
 import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
+import ConfigEditor from '../ConfigManager/config';
 
 
 const chatutil = new ChatUtil()
@@ -98,7 +99,8 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                 id='chat-container'
                 data-portal-container='chatContainer'
                 className='flex justify-center h-full w-full transition-transform ease-in-out'>
-                <div id="chatArea-wrapper" className='h-full w-[100%] md:w-[80%] lg:w-[70%] xl:w-[60%]'>
+                <div id="chatArea-wrapper" className='h-full w-[100%] md:w-[80%] lg:w-[70%] xl:w-[60%]'>            <ConfigEditor />
+
                     <section
                         id="chatArea"
                         data-portal-container='chatArea'

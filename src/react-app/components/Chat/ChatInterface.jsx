@@ -8,7 +8,7 @@ import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '@components/Input/InputSection';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
 import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
-import ConfigEditor from '../ConfigManager/config';
+import ConfigEditor from '../ConfigManager/ConfigEditor';
 
 
 const chatutil = new ChatUtil()

@@ -3,6 +3,7 @@ import { SettingToggle } from '@components/Settings/settings_toggle.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
 
 export const Settings = ({ isOpen, onToggle }) => {
     const [preferenceChange, setPreferenceChange] = useState(false);
@@ -38,11 +39,11 @@ export const Settings = ({ isOpen, onToggle }) => {
         loadSettings();
     }, []);
 
-    function updateCanvasTheme(){
+    function updateCanvasTheme() {
         const moon = document.getElementById('icon-moon')
         const sun = document.getElementById('icon-sun')
 
-        if (settings.theme==='dark') {
+        if (settings.theme === 'dark') {
             sun?.classList.add('hidden')
             moon?.classList.remove('hidden')
         } else {
@@ -277,12 +278,12 @@ export const Settings = ({ isOpen, onToggle }) => {
         }
     }, [settings])
 
-    useEffect(()=>{
+    useEffect(() => {
         document.addEventListener('close-settings', CloseSettings);
         return () => {
             document.removeEventListener('close-settings', CloseSettings);
         }
-    },[CloseSettings])
+    }, [CloseSettings])
     return (
         <div onClick={shouldClose} id="settingsModal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
             {/* Modal Content */}
@@ -323,7 +324,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar p-6">
+                <div className="overflow-y-auto max-h-[calc(90vh-140px)] scrollbar-custom p-6">
                     {/* Quick Settings Grid */}
                     <div className="mb-8">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -467,18 +468,37 @@ export const Settings = ({ isOpen, onToggle }) => {
                         </div>
 
                         {/* API Management */}
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">API Configuration</h3>
-                            <button
-                                onClick={handleApiManagement}
-                                className="w-full px-4 py-3 bg-gradient-to-r from-accent-500 to-blue-600 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
-                            >
-                                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                </svg>
-                                <span>Manage API Key Chain</span>
-                            </button>
-                        </div>
+                        <section className='block space-y-2 sm:space-y-0 sm:flex justify-between'>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">API Configuration</h3>
+                                <button
+                                    onClick={handleApiManagement}
+                                    className="w-full px-4 py-3 bg-gradient-to-r from-accent-500 to-blue-600 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
+                                >
+                                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                    <span>Manage API Key Chain</span>
+                                </button>
+                            </div>
+
+                            {/* Tool/Agent mode Config */}
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Tool Configuration</h3>
+                                <button
+                                    onClick={() => {
+                                        CloseSettings()
+                                        StateManager.get('OpenEditor')()
+                                    }}
+                                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-accent-500 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
+                                >
+                                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                    <span>Manage Tool Config</span>
+                                </button>
+                            </div>
+                        </section>
                     </div>
                 </div>
 

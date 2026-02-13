@@ -1,22 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     ChevronDown,
     ChevronRight,
     Cog,
-    Terminal,
-    Search,
     FileText,
-    CheckSquare,
     Folder,
-    Globe,
-    Cloud,
-    Calculator,
-    Database,
-    Mail,
-    Server,
-    Route,
-    CheckCircle,
-    XCircle,
     PlusCircle,
     Save,
     Download,
@@ -25,17 +13,11 @@ import {
     ArrowUp,
     ArrowDown,
     Plus,
-    FilePlus,
-    Cpu,
-    Settings,
-    Eye,
-    EyeOff,
-    Lock,
-    Unlock,
-    Shield
+    Settings
 } from 'lucide-react';
 import { FieldGroup } from './Fields';
 import { PermissionBadge, TopLevelIcon, SaveIndicator, ToolIcon } from './Helpers';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
 
 // Default configuration
 const defaultConfig = {
@@ -148,16 +130,20 @@ const defaultConfig = {
 };
 
 const ConfigEditor = () => {
-    const [config, setConfig] = useState({});
+    const [config, setConfig] = useState(window.desk.agent.config || {});
     const [selectedTool, setSelectedTool] = useState(null);
     const [selectedTopLevel, setSelectedTopLevel] = useState(null);
     const [expandedSections, setExpandedSections] = useState({});
     const [saveIndicator, setSaveIndicator] = useState(false);
     const [viewMode, setViewMode] = useState('editor'); // 'editor' or 'json'
+    const EditorWrapper = useRef(null)
+    const Editor = useRef(null)
 
     // Initialize with first tool
     useEffect(() => {
-        if(!config) LoadConfig()
+        if (!config || !config.length > 0) LoadConfig()
+
+        if (!config || !config.length > 0) return
 
         if (Object.keys(config.tools).length > 0 && !selectedTool && !selectedTopLevel) {
             setSelectedTool(Object.keys(config.tools)[0]);
@@ -165,9 +151,9 @@ const ConfigEditor = () => {
     }, []);
 
     const LoadConfig = useCallback(async () => {
-        const config = window.api.desk.agent.config
-        if (!config) return
-        setConfig(config)
+        const conf = await window.desk.agent.config
+        if (!conf) return
+        setConfig(conf)
     })
 
     const handleUpdateField = (path, value) => {
@@ -351,8 +337,8 @@ const ConfigEditor = () => {
         };
 
         return (
-            <div className="space-y-6">
-                <div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="h-full space-y-1 overflow-y-auto scrollbar-custom">
+                < div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700" >
                     <div className="flex items-center gap-3">
                         <ToolIcon toolName={toolName} />
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -360,49 +346,51 @@ const ConfigEditor = () => {
                         </h2>
                     </div>
                     <PermissionBadge permission={tool.permission} />
-                </div>
+                </div >
 
-                {Object.entries(sections).map(([sectionName, fields]) => {
-                    if (Object.keys(fields).length === 0) return null;
+                {
+                    Object.entries(sections).map(([sectionName, fields]) => {
+                        if (Object.keys(fields).length === 0) return null;
 
-                    const isExpanded = expandedSections[sectionName] !== false;
+                        const isExpanded = expandedSections[sectionName] !== false;
 
-                    return (
-                        <div key={sectionName} className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm">
-                            <button
-                                onClick={() => toggleSection(sectionName)}
-                                className="flex justify-between items-center w-full mb-4"
-                            >
-                                <div className="flex items-center gap-3">
-                                    {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
-                                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                        {sectionName}
-                                    </h3>
-                                </div>
-                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                    {Object.keys(fields).length} fields
-                                </span>
-                            </button>
+                        return (
+                            <div key={sectionName} className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm">
+                                <button
+                                    onClick={() => toggleSection(sectionName)}
+                                    className="flex justify-between items-center w-full mb-4"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                            {sectionName}
+                                        </h3>
+                                    </div>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                                        {Object.keys(fields).length} fields
+                                    </span>
+                                </button>
 
-                            {isExpanded && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {Object.entries(fields).map(([field, value]) => (
-                                        <FieldGroup
-                                            key={field}
-                                            field={field}
-                                            value={value}
-                                            onUpdate={(newValue) => handleUpdateField(`tools.${toolName}.${field}`, newValue)}
-                                            onRename={(oldName, newName) => handleRenameField(`tools.${toolName}.${oldName}`, newName)}
-                                            onDelete={() => handleDeleteField(`tools.${toolName}.${field}`)}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                                {isExpanded && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {Object.entries(fields).map(([field, value]) => (
+                                            <FieldGroup
+                                                key={field}
+                                                field={field}
+                                                value={value}
+                                                onUpdate={(newValue) => handleUpdateField(`tools.${toolName}.${field}`, newValue)}
+                                                onRename={(oldName, newName) => handleRenameField(`tools.${toolName}.${oldName}`, newName)}
+                                                onDelete={() => handleDeleteField(`tools.${toolName}.${field}`)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
+                }
 
-                <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                < div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700" >
                     <button
                         onClick={() => handleAddField(toolName)}
                         className="flex items-center gap-2 px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
@@ -417,8 +405,8 @@ const ConfigEditor = () => {
                         <Save size={18} />
                         Save Changes
                     </button>
-                </div>
-            </div>
+                </div >
+            </div >
         );
     };
 
@@ -560,7 +548,7 @@ const ConfigEditor = () => {
                         {obj.map((item, idx) => (
                             <div key={idx} className="ml-8">
                                 {formatJSON(item, indent + 1)}
-                                {idx < obj.length - 1 ? ',' : ''}
+                                {(obj && idx < obj?.length - 1) ? ',' : ''}
                             </div>
                         ))}
                         <br />
@@ -570,6 +558,7 @@ const ConfigEditor = () => {
             }
 
             const entries = Object.entries(obj);
+
             return (
                 <span>
                     {'{'}<br />
@@ -577,7 +566,7 @@ const ConfigEditor = () => {
                         <div key={key} className="ml-8">
                             <span className="text-indigo-600 dark:text-indigo-400">"{key}"</span>
                             : {formatJSON(value, indent + 1)}
-                            {idx < entries.length - 1 ? ',' : ''}
+                            {(entries && idx < entries?.length - 1) || 0 ? ',' : ''}
                         </div>
                     ))}
                     <br />
@@ -601,173 +590,193 @@ const ConfigEditor = () => {
         { id: 'disabled_tools', name: 'Disabled Tools' }
     ];
 
+    const OpenEditor = useCallback(() => {
+        if (!EditorWrapper.current) return
+        EditorWrapper.current.classList.remove('hidden');
+        EditorWrapper.current.classList.add('translate-x-0');
+        EditorWrapper.current.classList.remove('translate-x-full');
+    }, []);
+
+    const CloseEditor = useCallback(() => {
+        if (!EditorWrapper.current) return
+        EditorWrapper.current.classList.remove('translate-x-0');
+        EditorWrapper.current.classList.add('translate-x-full');
+        setTimeout(() => {
+            EditorWrapper.current.classList.add('hidden');
+        }, 800);
+    }, []);
+
+    StateManager.set('OpenEditor', OpenEditor)
+    StateManager.set('CloseEditor', CloseEditor)
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
+        <div ref={EditorWrapper} onClick={(e) => (Editor.current.contains(e.currentTarget)) ? CloseEditor() : ''} id="EditorWrapper" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
+            <div ref={Editor} className="w-full max-h-[100vh] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-1 md:p-1 transition-colors duration-500 ease-in-out">
                 {/* Header */}
-                <header className="mb-8 text-center">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-500 bg-clip-text text-transparent mb-2">
+                <header className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 transition-colors duration-700 ease-in-out mb-4 text-center">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-500 bg-clip-text text-transparent mb-1">
                         Configuration Editor
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
                         Edit field names and values with an elegant, user-friendly interface
                     </p>
                 </header>
+                <div className="max-h-full max-w-full mx-auto scrollbar-custom mb-12">
+                    {/* Main Editor */}
+                    <div className="flex flex-col md:flex-row gap-6">
+                        {/* Sidebar */}
+                        <div className="overflow-y-auto max-h-[90vh] lg:w-72 flex-shrink-0 scrollbar-custom">
+                            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-5">
+                                <div className="sticky z-10 top-0 left-0 right-0 w-full bg-white dark:bg-gray-900 p-2 flex items-center gap-3 mb-5">
+                                    <Settings className="text-indigo-500 dark:text-indigo-400" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        Tools Configuration
+                                    </h3>
+                                </div>
 
-                {/* Main Editor */}
-                <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Sidebar */}
-                    <div className="lg:w-72 flex-shrink-0">
-                        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-5">
-                            <div className="flex items-center gap-3 mb-5">
-                                <Settings className="text-indigo-500 dark:text-indigo-400" />
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    Tools Configuration
-                                </h3>
-                            </div>
-
-                            <div className="space-y-2 mb-6">
-                                {topLevelItems.map(item => (
-                                    <button
-                                        key={item.id}
-                                        onClick={() => {
-                                            setSelectedTopLevel(item.id);
-                                            setSelectedTool(null);
-                                        }}
-                                        className={`flex items-center justify-between w-full p-3 rounded-lg transition-all ${selectedTopLevel === item.id
-                                            ? 'bg-indigo-500 text-white'
-                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <TopLevelIcon itemId={item.id} />
-                                            <span>{item.name}</span>
-                                        </div>
-                                        <span className={`text-xs px-2 py-1 rounded ${selectedTopLevel === item.id
-                                            ? 'bg-white/20'
-                                            : 'bg-gray-200 dark:bg-gray-700'
-                                            }`}>
-                                            {config[item.id].length}
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                                    TOOLS
-                                </h4>
-                                <div className="space-y-2">
-                                    {Object.keys(config.tools).map(toolName => (
+                                <div className="space-y-2 mb-6">
+                                    {topLevelItems.map(item => (
                                         <button
-                                            key={toolName}
+                                            key={item.id}
                                             onClick={() => {
-                                                setSelectedTool(toolName);
-                                                setSelectedTopLevel(null);
+                                                setSelectedTopLevel(item.id);
+                                                setSelectedTool(null);
                                             }}
-                                            className={`flex items-center justify-between w-full p-3 rounded-lg transition-all ${selectedTool === toolName
+                                            className={`flex items-center justify-between w-full p-3 rounded-lg transition-all ${selectedTopLevel === item.id
                                                 ? 'bg-indigo-500 text-white'
                                                 : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <ToolIcon toolName={toolName} />
-                                                <span>{toolName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
+                                                <TopLevelIcon itemId={item.id} />
+                                                <span>{item.name}</span>
                                             </div>
-                                            <PermissionBadge permission={config.tools[toolName].permission} />
+                                            <span className={`text-xs px-2 py-1 rounded ${selectedTopLevel === item.id
+                                                ? 'bg-white/20'
+                                                : 'bg-gray-200 dark:bg-gray-700'
+                                                }`}>
+                                                {config[item.id].length}
+                                            </span>
                                         </button>
                                     ))}
                                 </div>
+
+                                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                                        TOOLS
+                                    </h4>
+                                    <div className="space-y-2">
+                                        {Object.keys(config.tools).map(toolName => (
+                                            <button
+                                                key={toolName}
+                                                onClick={() => {
+                                                    setSelectedTool(toolName);
+                                                    setSelectedTopLevel(null);
+                                                }}
+                                                className={`flex items-center justify-between w-full p-3 rounded-lg transition-all ${selectedTool === toolName
+                                                    ? 'bg-indigo-500 text-white'
+                                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <ToolIcon toolName={toolName} />
+                                                    <span>{toolName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
+                                                </div>
+                                                <PermissionBadge permission={config.tools[toolName].permission} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleAddTool}
+                                    className="w-full mt-6 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                                >
+                                    <PlusCircle size={18} />
+                                    Add New Tool
+                                </button>
                             </div>
-
-                            <button
-                                onClick={handleAddTool}
-                                className="w-full mt-6 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
-                            >
-                                <PlusCircle size={18} />
-                                Add New Tool
-                            </button>
                         </div>
-                    </div>
 
-                    {/* Main Content */}
-                    <div className="flex-1">
-                        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden">
-                            {/* View Mode Toggle */}
-                            <div className="border-b border-gray-200 dark:border-gray-700">
-                                <div className="flex">
-                                    <button
-                                        onClick={() => setViewMode('editor')}
-                                        className={`flex-1 py-3 text-center font-medium ${viewMode === 'editor'
-                                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-500'
-                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Cog size={18} />
-                                            Editor
-                                        </div>
-                                    </button>
-                                    <button
-                                        onClick={() => setViewMode('json')}
-                                        className={`flex-1 py-3 text-center font-medium ${viewMode === 'json'
-                                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-500'
-                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            <FileText size={18} />
-                                            JSON View
-                                        </div>
-                                    </button>
+                        {/* Main Content */}
+                        <div className="h-full flex-1">
+                            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden">
+                                {/* View Mode Toggle */}
+                                <div className="border-b border-gray-200 dark:border-gray-700">
+                                    <div className="flex">
+                                        <button
+                                            onClick={() => setViewMode('editor')}
+                                            className={`flex-1 py-3 text-center font-medium focus:ring-none focus:outline-none ${viewMode === 'editor'
+                                                ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-500'
+                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Cog size={18} />
+                                                Editor
+                                            </div>
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('json')}
+                                            className={`flex-1 py-3 text-center font-medium focus:ring-none focus:outline-none${viewMode === 'json'
+                                                ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-500'
+                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <FileText size={18} />
+                                                JSON View
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Content Area */}
+                                <div className="h-[62vh] p-6">
+                                    {viewMode === 'json' ? (
+                                        renderJSONView()
+                                    ) : (
+                                        <>
+                                            {selectedTool ? (
+                                                renderToolEditor(selectedTool)
+                                            ) : selectedTopLevel ? (
+                                                renderTopLevelEditor(selectedTopLevel)
+                                            ) : (
+                                                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                                                    <Cog size={64} className="mx-auto mb-4 opacity-30" />
+                                                    <h3 className="text-xl font-medium mb-2">Select a Configuration</h3>
+                                                    <p>Choose a tool or configuration section from the sidebar to begin editing</p>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Content Area */}
-                            <div className="p-6">
-                                {viewMode === 'json' ? (
-                                    renderJSONView()
-                                ) : (
-                                    <>
-                                        {selectedTool ? (
-                                            renderToolEditor(selectedTool)
-                                        ) : selectedTopLevel ? (
-                                            renderTopLevelEditor(selectedTopLevel)
-                                        ) : (
-                                            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                                                <Cog size={64} className="mx-auto mb-4 opacity-30" />
-                                                <h3 className="text-xl font-medium mb-2">Select a Configuration</h3>
-                                                <p>Choose a tool or configuration section from the sidebar to begin editing</p>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
+                            {/* Footer Controls */}
+                            <div className="flex justify-between mt-2">
+                                <button
+                                    onClick={handleReset}
+                                    className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                                >
+                                    <Undo size={18} />
+                                    Reset to Defaults
+                                </button>
+                                <button
+                                    onClick={handleExport}
+                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
+                                >
+                                    <Download size={18} />
+                                    Export Configuration
+                                </button>
                             </div>
-                        </div>
-
-                        {/* Footer Controls */}
-                        <div className="flex justify-between mt-6">
-                            <button
-                                onClick={handleReset}
-                                className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                            >
-                                <Undo size={18} />
-                                Reset to Defaults
-                            </button>
-                            <button
-                                onClick={handleExport}
-                                className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
-                            >
-                                <Download size={18} />
-                                Export Configuration
-                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Save Indicator */}
-            <SaveIndicator show={saveIndicator} />
+                {/* Save Indicator */}
+                <SaveIndicator show={saveIndicator} />
+            </div>
         </div>
     );
 };

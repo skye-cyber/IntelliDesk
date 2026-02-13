@@ -10,7 +10,11 @@ import {
     Calculator,
     Folder,
     Database,
-    Mail
+    Mail,
+    Server,
+    Route,
+    XCircle,
+    Cog
 } from "lucide-react";
 
 // Helper components

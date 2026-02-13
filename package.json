@@ -15,7 +15,8 @@
     "build": "npm run build:react && sudo npm run build:electron",
     "build:react": "vite build",
     "build:electron": "electron-builder",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "node src/scripts/post-install.js"
   },
   "keywords": [],
   "author": {

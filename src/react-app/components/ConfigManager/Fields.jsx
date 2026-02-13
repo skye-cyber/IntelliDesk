@@ -1,4 +1,5 @@
 import { Plus, Trash2, Save, Edit2 } from "lucide-react";
+import { useState } from "react";
 
 export const FieldInput = ({ type, value, onChange, options = [] }) => {
     const renderInput = () => {
@@ -8,7 +9,7 @@ export const FieldInput = ({ type, value, onChange, options = [] }) => {
                     <select
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all text-gray-900 dark:text-gray-100"
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all text-gray-900 dark:text-gray-100 focus:outline-none"
                     >
                         {options.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -23,7 +24,7 @@ export const FieldInput = ({ type, value, onChange, options = [] }) => {
                             type="checkbox"
                             checked={value}
                             onChange={(e) => onChange(e.target.checked)}
-                            className="w-5 h-5 text-indigo-600 dark:text-indigo-400 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                            className="w-5 h-5 text-indigo-600 dark:text-indigo-400 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:outline-none"
                         />
                         <span className="text-gray-700 dark:text-gray-300">Enabled</span>
                     </div>
@@ -35,7 +36,7 @@ export const FieldInput = ({ type, value, onChange, options = [] }) => {
                         type="number"
                         value={value}
                         onChange={(e) => onChange(Number(e.target.value))}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all text-gray-900 dark:text-gray-100"
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all text-gray-900 dark:text-gray-100 focus:outline-none"
                     />
                 );
 
@@ -52,14 +53,14 @@ export const FieldInput = ({ type, value, onChange, options = [] }) => {
                                         newArray[idx] = e.target.value;
                                         onChange(newArray);
                                     }}
-                                    className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all text-gray-900 dark:text-gray-100"
+                                    className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all text-gray-900 dark:text-gray-100 focus:outline-none"
                                 />
                                 <button
                                     onClick={() => {
                                         const newArray = value.filter((_, i) => i !== idx);
                                         onChange(newArray);
                                     }}
-                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors focus:ring-none focus:outline-none"
                                 >
                                     <Trash2 size={18} />
                                 </button>
@@ -67,7 +68,7 @@ export const FieldInput = ({ type, value, onChange, options = [] }) => {
                         ))}
                         <button
                             onClick={() => onChange([...value, ''])}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors focus:ring-none focus:outline-none"
                         >
                             <Plus size={16} />
                             Add Item
@@ -81,7 +82,7 @@ export const FieldInput = ({ type, value, onChange, options = [] }) => {
                         type="text"
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all text-gray-900 dark:text-gray-100"
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all text-gray-900 dark:text-gray-100 focus:outline-none"
                     />
                 );
         }

@@ -1,27 +1,34 @@
-import React, { useEffect, useCallback } from 'react';
-import { CloseDropZone, openPreview, closePreview, handleFiles, formatFileSize, getFileType } from './util.js'
-import { MistraMultimodal } from '../../../renderer/js/managers/ConversationManager/Mistral/MultiModal.js';
+import React, { useEffect, useCallback, useRef } from 'react';
+import { openPreview, closePreview, handleFiles, formatFileSize, getFileType } from './util.js'
+import { staticPortalBridge } from '../../../renderer/js/PortalBridge.js';
+import { StateManager } from '../../../renderer/js/managers/StatesManager.js';
 
 export const DropZone = ({ isOpen, onToggle }) => {
+    const dropZoneRef = useRef(null)
+    const dropzoneInputRef = useRef(null)
+    const uploadsPreviewRef = useRef(null)
+    const dropzoneContainer = useRef(null)
+    const dropzoneContent = useRef(null)
 
     useEffect(() => {
-        const dropZone = document.getElementById('dropZone');
-        if (dropZone) {
-            dropZone.addEventListener('dragover', (e) => {
+        const dropzone = dropZoneRef.current
+
+        if (dropzone) {
+            dropzone.addEventListener('dragover', (e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'copy';
-                dropZone.classList.add('border-blue-500', 'bg-blue-50/80');
+                dropzone.classList.add('border-blue-500', 'bg-blue-50/80');
             });
 
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('border-blue-500', 'bg-blue-50/80');
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('border-blue-500', 'bg-blue-50/80');
             });
 
-            dropZone.addEventListener('drop', (e) => {
+            dropzone.addEventListener('drop', (e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                dropZone.classList.remove('border-blue-500', 'bg-blue-50/80');
+                dropzone.classList.remove('border-blue-500', 'bg-blue-50/80');
                 // Handle file drop
                 const files = e.dataTransfer.files;
                 handleFiles(files);
@@ -41,13 +48,23 @@ export const DropZone = ({ isOpen, onToggle }) => {
         });
     })
 
+    function CloseDropZone() {
+        const modal = dropzoneContainer.current
+        const content = dropzoneContent.current
+
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => modal.classList.add('hidden'), 500);
+    }
+
     function handleFileSelect(event) {
         const files = event.target.files;
         handleFiles(files);
     }
 
     const shouldClose = useCallback((e) => {
-        if (e.target.id === 'dropZoneModal') CloseDropZone();
+        if (e.target.id === 'dropzoneContainer') CloseDropZone();
     })
 
     const shouldClosePreview = useCallback((e) => {
@@ -56,7 +73,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
 
     const handleEscape = useCallback((e) => {
         if (e.key === 'Escape' && !e.shiftKey) {
-            if (!document.getElementById('previewModal')?.classList.contains('hidden')) {
+            if (!uploadsPreviewRef.current?.classList.contains('hidden')) {
                 return closePreview()
             }
             CloseDropZone();
@@ -66,7 +83,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
 
     const HandleFileSubmit = useCallback((e) => {
         e.preventDefault()
-        const userInput = document.getElementById('dropzone_input');
+        const userInput = dropzoneInputRef.current;
 
         //document.dispatchEvent(new CustomEvent('Clear-all-files'))
 
@@ -75,7 +92,8 @@ export const DropZone = ({ isOpen, onToggle }) => {
 
         if (inputText) {
             //Reset the input field content
-            MistraMultimodal({ text: inputText })
+            //MistraMultimodal({ text: inputText })
+            StateManager.get('onSend')(inputText)
             CloseDropZone()
         }
     })
@@ -88,22 +106,29 @@ export const DropZone = ({ isOpen, onToggle }) => {
     })
 
     useEffect(() => {
-        const textInputSec = document.getElementById('dropzone_input')
-        textInputSec.addEventListener('keydown', handleEnter)
+        const dropzoneInput = dropzoneInputRef.current
+        dropzoneInput.addEventListener('keydown', handleEnter)
         document.addEventListener('close-dropzone', CloseDropZone)
         document.addEventListener('close-preview', closePreview)
 
         return () => {
-            textInputSec.removeEventListener('keydown', handleEnter)
+            dropzoneInput.removeEventListener('keydown', handleEnter)
             document.removeEventListener('close-dropzone', CloseDropZone)
             document.removeEventListener('close-preview', closePreview)
         }
     })
     return (
-        <section id="dropZoneModalContainer" >
+        <section id="dropZoneContainerWrapper" >
             {/* Main Dropzone Modal */}
-            <div onClick={shouldClose} id="dropZoneModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 transition-all duration-500 hidden">
-                <div id="dropZoneContent" className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-4xl h-[95vh] backdrop-blur-lg transform transition-all duration-500 scale-95 opacity-0">
+            <div
+                ref={dropzoneContainer}
+                onClick={shouldClose}
+                id="dropzoneContainer"
+                className="fixed inset-0 bg-black/60 backdrop-brightness-50 flex items-center justify-center z-[51] p-2 transition-all duration-300 hidden">
+                <div
+                    ref={dropzoneContent}
+                    id="dropzoneContent"
+                    className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-3xl h-[95vh] backdrop-blur-lg transform transition-all duration-500 scale-95 opacity-0">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
                         <div className="flex items-center justify-between">
@@ -136,17 +161,18 @@ export const DropZone = ({ isOpen, onToggle }) => {
                     </div>
 
                     {/* Dropzone Area */}
-                    <div className="p-6 h-[calc(85vh-200px)]">
+                    <div className="p-2 h-[calc(86vh-200px)]">
                         <div
+                            ref={dropZoneRef}
                             id="dropZone"
-                            className="relative border-3 border-dashed border-blue-300 dark:border-blue-600 rounded-2xl w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 hover:from-blue-100/50 hover:to-purple-100/50 dark:hover:from-blue-800/20 dark:hover:to-purple-800/20 transition-all duration-300 group cursor-pointer"
+                            className="relative flex flex-col items-center justify-center border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-2xl w-full h-full p-3 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 hover:from-blue-100/50 hover:to-purple-100/50 dark:hover:from-blue-800/20 dark:hover:to-purple-800/20 transition-all duration-300 group cursor-pointer"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Animated Background */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent dark:via-white/2 group-hover:via-white/10 transition-all duration-1000 transform -translate-x-full group-hover:translate-x-full"></div>
+                            <div className="hidden absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent dark:via-white/2 group-hover:via-white/10 transition-all duration-1000 transform -translate-x-full group-hover:translate-x-full"></div>
 
                             {/* Main Content */}
-                            <div className="relative z-10 text-center p-8">
+                            <div className="text-center p-8">
                                 {/* Animated Icon */}
                                 <div className="w-fit h-fit p-3 bg-gradient-to-br from-sky-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,6 +231,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
                                     Add context for your files
                                 </label>
                                 <textarea
+                                    ref={dropzoneInputRef}
                                     id="dropzone_input"
                                     aria-label="prompt input field"
                                     title="prompt field"
@@ -234,7 +261,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
                 </div>
             </div>
 
-            <FilePreview shouldClosePreview={shouldClosePreview} closePreview={closePreview} />
+            <FilePreview shouldClosePreview={shouldClosePreview} closePreview={closePreview} preview_ref={uploadsPreviewRef} />
             {/* Hidden File Input */}
             <input
                 multiple
@@ -284,11 +311,15 @@ export const DropZone = ({ isOpen, onToggle }) => {
 
 };
 
-export const FilePreview = ({ shouldClosePreview, closePreview }) => {
+export const FilePreview = ({ shouldClosePreview, closePreview, preview_ref }) => {
     return (
         <>
             {/* Preview Modal */}
-            < div onClick={shouldClosePreview} id="previewModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden opacity-0" >
+            <div
+                ref={preview_ref}
+                onClick={shouldClosePreview}
+                id="previewModal"
+                className="fixed inset-0 bg-black/60 backdrop-brightness-100 flex items-center justify-center z-[51] p-4 transition-all duration-500 hidden opacity-0" >
                 <div id="modalContent" className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] backdrop-blur-lg transform transition-all duration-500 animate-exit">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
@@ -360,10 +391,10 @@ export const FilePreview = ({ shouldClosePreview, closePreview }) => {
 export const FileItem = ({ file, portal_id }) => {
     const removeFile = useCallback((name) => {
         // Filter out files whose name matches the given name
-        window.filedata = window.filedata.filter(file => file.name !== name);
+        StateManager.set('uploaded_files', StateManager.get('uploaded_files').filter(file => file.name !== name));
 
         // Close the portal component
-        window.reactPortalBridge.closeComponent(portal_id);
+        staticPortalBridge.closeComponent(portal_id);
     }, []);
 
     return (

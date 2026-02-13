@@ -1,5 +1,7 @@
+import { modalmanager } from "../StatusUIManager/Manager";
+
 export const exportCodeToFile = (codeblockId) => {
-    window.ModalManager.startLoader("Preparing code to file")
+    modalmanager.startLoader("Preparing code to file")
     try {
         // Get the code block element
         const codeBlock = document.getElementById(codeblockId);
@@ -111,11 +113,11 @@ export const exportCodeToFile = (codeblockId) => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     } catch (err) {
-        window.ModalManager.showMessage(`Error downloading code: ${err}`, 'error')
+        modalmanager.showMessage(`Error downloading code: ${err}`, 'error')
         console.log(e)
     }
     finally {
-        window.ModalManager.hideLoader()
+        modalmanager.hideLoader()
 
     }
 };

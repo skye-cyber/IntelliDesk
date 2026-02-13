@@ -1,4 +1,5 @@
 import React from 'react';
+import { staticPortalBridge } from '../../../renderer/js/PortalBridge';
 
 export class ErrorHandler {
     constructor() {
@@ -42,7 +43,7 @@ export class ErrorHandler {
             retryCount: this.retryCount
         };
 
-        const error_portal = window.reactPortalBridge.showComponentInTarget("ErrorModal", "mainContainer", {
+        const error_portal = staticPortalBridge.showComponentInTarget("ErrorModal", "mainContainer", {
             error: this.currentError,
             onRetry: () => this.handleRetry(),
             onClose: () => {
@@ -109,7 +110,7 @@ export class ErrorHandler {
     }
 
     hideError() {
-        window.reactPortalBridge.closeComponent(this.error_portal)
+        staticPortalBridge.closeComponent(this.error_portal)
         this.currentError = null;
     }
 
@@ -300,3 +301,4 @@ export const ErrorModal = ({ error, onRetry, onClose, autoCloseDelay = 8000 }) =
 const errorHandler = new ErrorHandler();
 
 export default errorHandler;
+

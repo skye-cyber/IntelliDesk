@@ -1,3 +1,5 @@
+import { StateManager } from "../../../renderer/js/managers/StatesManager";
+
 export function GenerateId(prefix = '', postfix = '', length = 6) {
     // Generate a random alphanumeric string (letters + digits) for valid class/ID characters
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -21,4 +23,23 @@ export function GenerateId(prefix = '', postfix = '', length = 6) {
     }
 
     return id;
+}
+
+export function CopyMessage(element, html = false) {
+    const textToCopy = (html === true) ?
+        element.innerHTML :
+        element.textContent;
+
+    if (textToCopy.length >= 0) {
+        try {
+            navigator.clipboard.writeText(textToCopy);
+            html ?
+                StateManager.get('showCopyFeedback')("Clone successfull!") :
+                StateManager.get('showCopyFeedback')()
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
+    } else {
+        console.log('Text is too short to copy: ', textToCopy);
+    }
 }

@@ -1,9 +1,10 @@
-import { ChatUtil } from "../ConversationManager/util";
+import { ChatUtil } from "../Conversation/util";
+import { modalmanager } from "../../StatusUIManager/Manager";
 
 export async function html_preview(selector) {
     try {
         const element = document.querySelector(selector);
-        if (!element) window.ModalManager.showMessage("Failed to locate codblock")
+        if (!element) modalmanager.showMessage("Failed to locate codblock")
         const code = element?.textContent;
 
         if (!code) {
@@ -18,7 +19,7 @@ export async function html_preview(selector) {
 
     } catch (err) {
         console.log("Error rendering html :", err)
-        window.ModalManager.showMessage(err, 'error');
+        modalmanager.showMessage(err, 'error');
     }
 }
 

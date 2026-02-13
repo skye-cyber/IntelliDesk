@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+//import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
+import { staticPortalBridge } from '../../../renderer/js/PortalBridge';
 
 export const ConfirmationDialog = ({ title, message, dialog_id, portal_id, resolve }) => {
     const portalRef = useRef(null)
@@ -27,12 +29,13 @@ export const ConfirmationDialog = ({ title, message, dialog_id, portal_id, resol
 
                 // Resolve promise and close dialog portal
                 setTimeout(() => {
-                    window.reactPortalBridge.closeComponent(portal_id)
+                    staticPortalBridge.closeComponent(portal_id)
+                    portalRef.current.remove()
                     resolve(confirmed)
-                }, 510);
+                }, 500);
             }
         } else {
-            //window.ModalManager.hideConfirmDialog(dialog_id, confirmed, resolve)
+            //modalmanager.hideConfirmDialog(dialog_id, confirmed, resolve)
         }
     })
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { chatmanager } from '../../../renderer/js/managers/ConversationManager/ChatManager';
+import { chatmanager } from '../../../renderer/js/managers/Conversation/ChatManager';
+import { DateSplit } from './datesplit';
 
-export const ConversationItem = ({ metadata, portal_id }) => {
+export const ConversationItem = ({ metadata, datestr, portal_id }) => {
 
     const onContextMenu = useCallback((event, id) => {
         // Prevent the default context menu
@@ -12,6 +13,9 @@ export const ConversationItem = ({ metadata, portal_id }) => {
         // First render the tooltip
         const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
         const chatOptions = document.getElementById('chatOptions');
+
+        // Sometimes pulse naimate overflows to the chat options - Remove it
+        chatOptionsOverlay.classList.remove('animate-heartpulse-slow')
 
         chatOptionsOverlay.dataset.id = id
         chatOptionsOverlay.dataset.portalid = portal_id
@@ -62,6 +66,7 @@ export const ConversationItem = ({ metadata, portal_id }) => {
         if (chatmanager.activeItem) {
             chatmanager.activeItem.classList.remove('animate-heartpulse-slow');
             chatmanager.activeItem.querySelector('#active-dot').classList.add('hidden');
+            document.getElementById('conversations').querySelector('#active-dot').classList.add('hidden')
         }
 
         chatmanager.renderConversationFromFile(metadata.id)
@@ -69,7 +74,7 @@ export const ConversationItem = ({ metadata, portal_id }) => {
         activate_item(item?.dataset?.id)
     });
 
-    const deactivate_item = (data_id=window.activeConversationId) => {
+    const deactivate_item = (data_id = window.activeConversationId) => {
         const item = document.querySelector(`[data-id^='${data_id}']`)
 
         item.classList.remove('animate-heartpulse-slow');
@@ -97,35 +102,48 @@ export const ConversationItem = ({ metadata, portal_id }) => {
 
 
     return (
-        <div
-            id='chat-item'
-            data-name={metadata?.name || metadata?.id}
-            data-id={metadata?.id}
-            data-highlight={metadata?.highlight}
-            data-portal-id={metadata?.portal_id}
-            className='conversation-item group mb-1.5'
-            onContextMenu={(event) => onContextMenu(event, metadata?.id)}
-            onClick={(event) => handleItemClick(event.currentTarget)}
-        >
-            <div className="flex items-center space-x-3 p-1 md:p-2 2xl:p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 cursor-pointer transition-all duration-200">
-                <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-md">
-                        <span className="text-white font-semibold text-sm">GN</span>
+        <>
+
+            {datestr ?
+                <DateSplit displaystr={datestr} />
+                : ''
+            }
+            <div
+                id='chat-item'
+                data-name={metadata?.name || metadata?.id}
+                data-id={metadata?.id}
+                data-highlight={metadata?.highlight}
+                data-portal-id={metadata?.portal_id}
+                className='conversation-item group mb-1.5'
+                onContextMenu={(event) => onContextMenu(event, metadata?.id)}
+                onClick={(event) => handleItemClick(event.currentTarget)}
+            >
+                {/*Full name popup display*/}
+                {/*
+                metadata.name || metadata.id ?
+                    <span className='hidden group:hover:flex fixed z-[99] left-0 bg-primary-950 rounded-lg px-1 py-0.5 w-full whitespace-pre truncate font-brand tracking-tight leading-[16px] text-white text-xs'>{metadata.name || metadata.id}</span>
+                    : ''
+            */}
+                <div className="flex items-center space-x-0.5 p-1 md:p-2 2xl:p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 cursor-pointer transition-all duration-200">
+                    <div className="relative flex-shrink-0">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-md">
+                            <span className="text-white font-semibold text-sm">GN</span>
+                        </div>
+                        <div id="active-dot" className="hidden absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
                     </div>
-                    <div id="active-dot" className="hidden absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
-                </div>
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                        <h3 id="chat-name" className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                            {metadata?.name || metadata?.id}
-                        </h3>
-                        <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{chatmanager.formatRelativeTime(metadata?.created_at)}</span>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                            <h3 id="chat-name" className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                {metadata?.name || metadata?.id}
+                            </h3>
+                            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{chatmanager.formatRelativeTime(metadata?.created_at)}</span>
+                        </div>
+                        <p id="chat-highlight" className="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
+                            {metadata?.highlight}
+                        </p>
                     </div>
-                    <p id="chat-highlight" className="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
-                        {metadata?.highlight}
-                    </p>
                 </div>
             </div>
-        </div>
+        </>
     )
 }

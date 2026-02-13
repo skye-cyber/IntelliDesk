@@ -1,8 +1,8 @@
-import { ChatUtil } from './ConversationManager/util';
+import { ChatUtil } from './Conversation/util';
 import { waitForElement } from '../Utils/dom_utils';
-import { MistraChat } from './ConversationManager/Mistral/Textual';
-import { MistraMultimodal } from './ConversationManager/Mistral/MultiModal';
+import { MistraChat, MistraMultimodal } from './Conversation/Mistral/Entry';
 import { StateManager } from './StatesManager';
+import { modalmanager } from '../StatusUIManager/Manager';
 
 
 const chatutil = new ChatUtil()
@@ -32,7 +32,7 @@ export class Router {
 
     change_model(value = 'mistral-medium-latest') {
         try {
-            if (window.currentModel === value) return
+            if (StateManager.get('currentModel') === value) return
             waitForElement('#model-selector', (context) => {
                 waitForElement(`[data-value^="${value}"]`, (el) => el.click(), { context: context })
             })
@@ -45,7 +45,7 @@ export class Router {
     async chooseRoute(event) {
         //document.querySelector(`[data-value="mistral-small-latest"]`).click();
         const text = event.detail.text;
-        const modelName = window.currentModel;
+        const modelName = StateManager.get('currentModel');
         //switch to vision model
         /*
          * const res = await this.switchToVision()
@@ -63,8 +63,7 @@ export class Router {
     }
 
     routeToMistral(text, modelName = null) {
-        console.log(modelName)
-        if (!text) window.ModalManager.showMessage("No text provided", "error")
+        if (!text) modalmanager.showMessage("No text provided", "error")
         if (multimodal.includes(modelName)) {
             return MistraMultimodal({ text: text, model_name: modelName })
         }
@@ -83,17 +82,16 @@ export class Router {
      * then route to the appropriate function.
      */
     requestRouter(text) {
-        if (!text) window.ModalManager.showMessage("No text provided", "error")
+        if (!text) modalmanager.showMessage("No text provided", "error")
 
         // clear buffer initialy
         StateManager.set('codeBuffer', null);
 
         if (StateManager.get('processing') === true) return;
-        const model = window.currentModel;
+        const model = StateManager.get('currentModel');
 
         //Intercept image generation
-        if (StateManager.get('imageGen', true)
-        ) {
+        if (StateManager.get('imageGen')) {
             //const imageGen = new window.ImageGenerator(chatArea);
             //imageGen.createImage(text)
             return

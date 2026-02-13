@@ -2,8 +2,9 @@ import 'cytoscape';
 import 'graphlib-dot';
 import { Graphviz } from "@hpcc-js/wasm-graphviz";
 import { waitForElement } from '../Utils/dom_utils';
-import { opendiagViewModal } from './Utils';
-import { displayStatus } from '../StatusUIManager/SimpleManager';
+import { modalmanager } from '../StatusUIManager/Manager';
+import { staticPortalBridge } from '../PortalBridge';
+import { StateManager } from '../managers/StatesManager';
 
 
 export class DotInterPreter {
@@ -73,12 +74,12 @@ export class DotInterPreter {
         try {
             //console.log("ID:", selector)
             const codeBlock = document.querySelector(selector);
-            if (!codeBlock) return window.ModalManager.showMessage("Codeblock extraction error", 'error')
+            if (!codeBlock) return modalmanager.showMessage("Codeblock extraction error", 'error')
             const codeText = codeBlock.textContent;
             return codeText ? codeText : ''
         } catch (err) {
             //console.log(err)
-            window.ModalManager.showMessage(err, 'error')
+            modalmanager.showMessage(err, 'error')
         }
     }
 
@@ -103,7 +104,7 @@ export class DotInterPreter {
     async diagram_interpreter(input, lang = 'all', isPlainCode = false, trigger = 'function') {
         let toParse;
 
-        if (!input) return window.ModalManager.showMessage("Missing input", 'error')
+        if (!input) return modalmanager.showMessage("Missing input", 'error')
 
         const code = await this.getCodeBlock(input);
 
@@ -144,7 +145,7 @@ export class DotInterPreter {
         })
         // open modal if render trigger===click
         if (trigger === 'click') {
-            opendiagViewModal();
+            StateManager.get('opendiagViewModal')();
         }
 
         waitForElement('#diag-placeholder', (el) => el.classList.add('hidden'))
@@ -212,7 +213,7 @@ export class DotInterPreter {
         try {
             graph = JSON.parse(graphJson);
         } catch (err) {
-            window.ModalManager.showMessag(`renderDiagramCytoscape: invalid JSON: ${err}`, 'error', 5000);
+            modalmanager.showMessag(`renderDiagramCytoscape: invalid JSON: ${err}`, 'error', 5000);
             return;
         }
 
@@ -228,13 +229,13 @@ export class DotInterPreter {
             const diagId = `Cytoscape_${Math.random().toString(30).substring(3, 9)}`;
 
             // Obtain container id or element
-            const element_id = window.reactPortalBridge.showComponentInTarget("Diagram", 'diagram_canvas', { name: chartName, exportId: 'Cytoscape', dgId: diagId, description: desc })
+            const element_id = staticPortalBridge.showComponentInTarget("Diagram", 'diagram_canvas', { name: chartName, exportId: 'Cytoscape', dgId: diagId, description: desc })
 
             const id = `Cytoscape-${chartName}-${diagId}`
 
             const graphContainer = document.getElementById(id)
 
-            if (!graphContainer) window.ModalManager.showMessage('Missing diagram container', 'error')
+            if (!graphContainer) modalmanager.showMessage('Missing diagram container', 'error')
 
             // Cytoscape setup
 
@@ -315,17 +316,17 @@ export class DotInterPreter {
 
             const cyId = Export.dataset.value;
             // Register it safely
-            window.CyManager.register(cyId, cy);
+            CyManager.register(cyId, cy);
 
             // Assign a click event handler function properly
             Export.onclick = (event) => {
                 event.stopPropagation();
                 //const cyId = Export.dataset.value;
-                const cy = window.CyManager.get(cyId);
+                const cy = CyManager.get(cyId);
                 //console.log(cy)
 
                 if (!cy) {
-                    return window.displayStatus("Diagram not found", "error");
+                    return modalmanager.showMessage("Diagram not found", "error");
                 }
 
                 const png = cy.png({ scale: 2, bg: "white", full: true });
@@ -339,15 +340,14 @@ export class DotInterPreter {
             };
 
             document.addEventListener('ThemeChange', () => {
-                console.log('Theme:', window.isDark)
                 cy.style(window.isDark ? darkStyle : lightStyle).update();
             });
 
             //show success message
-            window.showCopyModal(null, "Rendered ✅... Open DiagView modal to view", 700);
+            modalmanager.showMessage("Rendered ✅... Open DiagView modal to view", 'success', 700);
         } catch (err) {
             console.log("Error rendering diagram :", err)
-            window.displayStatus(err, 'error');
+            modalmanager.showMessage(err, 'error');
         }
 
     }
@@ -361,23 +361,23 @@ export class DotInterPreter {
             const diagId = `diag-VIZ-${Math.random().toString(30).substring(3, 9)}`;
 
             // Obtain container id or element
-            const portal_id = window.reactPortalBridge.showComponentInTarget("Diagram", 'diagram_canvas', { name: chartName, exportId: 'VIZ', dgId: diagId, description: desc, content: svgElement })
+            const portal_id = staticPortalBridge.showComponentInTarget("Diagram", 'diagram_canvas', { name: chartName, exportId: 'VIZ', dgId: diagId, description: desc, content: svgElement })
 
             const id = `VIZ-${chartName}-${diagId}`
 
-            console.log("Created dot diagram with id:", id, "using portal:", portal_id)
+            //console.log("Created dot diagram with id:", id, "using portal:", portal_id)
             //show success message
-            window.ModalManager.showMessage("RDiagram render succeeded", 'success');
+            modalmanager.showMessage("RDiagram render succeeded", 'success');
 
         } catch (err) {
             console.error(err)
-            displayStatus(err, 'error');
+            modalmanager.showMessage(err, 'error');
         }
     }
 
 }
 // cytoscapeManager.js or inline in main script
-window.CyManager = (function() {
+export const CyManager = (function() {
     const _store = new Map();
 
     return {
@@ -408,5 +408,3 @@ window.CyManager = (function() {
 
 
 export const dot_interpreter = new DotInterPreter()
-
-window.dot_interpreter = dot_interpreter

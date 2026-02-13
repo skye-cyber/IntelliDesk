@@ -6,7 +6,7 @@ import '../renderer/js/polyfills/polyfills';
 // Optimized mounting with better error handling and performance
 const mountApp = async () => {
     try {
-        console.log('🚀 Starting app mounting process...');
+        //console.log('🚀 Starting app mounting process...');
 
         // Wait for DOM to be ready with fallback
         if (document.readyState === 'loading') {
@@ -20,13 +20,13 @@ const mountApp = async () => {
             throw new Error('React root element (#react-root) not found in DOM');
         }
 
-        console.log('✅ DOM ready, container found');
+        //console.log('✅ DOM ready, container found');
 
         // Render the app
         const root = createRoot(container);
         root.render(React.createElement(App));
 
-        console.log('🎉 React app mounted successfully!');
+        //console.log('🎉 React app mounted successfully!');
 
     } catch (error) {
         console.error('💥 Failed to mount React app:', error);

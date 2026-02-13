@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { opendiagViewModal, closediagViewModal } from '@js/diagraming/Utils.js';
 import { showDropZoneModal } from '@components/DropZone/util.js'
 import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
-import { ChatUtil } from '../../../renderer/js/managers/ConversationManager/util';
+import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
 import { StateManager } from '../../../renderer/js/managers/StatesManager';
 import { AutoCodeDetector } from '../Code/autoCodeDetector';
 
@@ -59,12 +58,18 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         ApiWarnContent.classList.add('animate-enter')
     })
 
-    const handleSend = useCallback(() => {
+    const handleSend = useCallback((input_text = null) => {
         if (!StateManager.get('api_key_ok')) {
             showApiNotSetWarning()
         } else {
+
+            if (input_text) setInputValue(input_text)
+
             const userInput = textareaRef.current;
             if (inputValue.trim() && !StateManager.get('processing')) {
+                // Avail orginal text for retries incase of errors
+                StateManager.set('userInputText', inputValue.trim())
+
                 // Reset the input field
                 // Auto-format the text with code blocks before sending
                 const formattedMessage = AutoCodeDetector.autoFormatCodeBlocks(inputValue)
@@ -90,6 +95,8 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             }
         }
     })
+
+    StateManager.set('onSend', handleSend)
 
 
     useEffect(() => {
@@ -189,7 +196,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     useEffect(() => {
         const observer = new MutationObserver((mutations) => {
             setInputValue(textareaRef.current?.innerHTML) //?.replace(/<\/?p>/, '').replace('</p>', '') || '');
-            if (!textareaRef.current?.innerHTML?.trim() || textareaRef.current?.innerHTML==='<br>' ) textareaRef.current.innerHTML = ""
+            if (!textareaRef.current?.innerHTML?.trim() || textareaRef.current?.innerHTML === '<br>') textareaRef.current.innerHTML = ""
         });
 
         if (textareaRef.current) {
@@ -543,14 +550,21 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     );
 };
 
-const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeTools, handleInlineCode, handleCodeBlock, detectedLanguage }) => {
+const Tools = ({
+    onToggleRecording,
+    shouldToggleCanvas,
+    onAICanvasToggle,
+    closeTools,
+    handleInlineCode,
+    handleCodeBlock,
+    detectedLanguage }) => {
     return (
         <section
             id="tool-modal"
             onMouseLeave={closeTools}
-            className='block absolute -left-12 bottom-12 z-[51] bg-gray-200 dark:bg-blend-700 rounded-md p-3 space-y-2 hidden animate-exit'>
+            className='block absolute -left-12 bottom-12 z-[51] bg-gray-200 dark:bg-primary-400 rounded-md p-2 space-y-2 hidden animate-exit'>
 
-            <div id="code-toolbar" className="flex gap-1 border-none rounded-md transition-transform transition-all duration-500">
+            <div id="code-toolbar" className="hidden flex gap-1 border-none rounded-md transition-transform transition-all duration-500">
                 <button
                     type="button"
                     onClick={handleInlineCode}
@@ -573,7 +587,7 @@ const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeT
             </div>
 
             {/* Voice Recording */}
-            <div onClick={onToggleRecording} className='flex gap-1 text-gray-800 dark:text-gray-200 items-center cursor-pointer hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm'>
+            <div onClick={onToggleRecording} className='hidden flex gap-1 text-gray-800 dark:text-gray-200 items-center cursor-pointer hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm'>
                 <button id="microphone" className="flex items-center justify-center rounded-lg  transition-colors duration-300" title="Voice recording">
                     <svg id="microphoneSVG" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" className="stroke-blue-600 dark:stroke-cyan-400 w-5 h-5 transition-colors duration-300">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
@@ -592,7 +606,9 @@ const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeT
             </div>
 
             {/* Diagram/Flow Tool */}
-            <div onClick={opendiagViewModal} className='flex items-center gap-1 text-gray-800 dark:text-gray-200 hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm cursor-pointer select-none'>
+            <div
+                onClick={() => StateManager.get('openDiagramView')()}
+                className='flex items-center gap-1 text-gray-800 dark:text-gray-200 hover:bg-black/20 dark:hover:bg-black/50 p-1 rounded-sm cursor-pointer select-none'>
                 <button
                     id='diagToggle'
 
@@ -611,9 +627,7 @@ const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeT
 
             {/* Preview Button */}
             <button id="previewBtn"
-                className="hidden h-8 min-w-8 items-center justify-center rounded-full border p-2 text-[13px] font-medium
-    border-sky-900 bg-blue-100 hover:bg-sky-300 dark:border-[#aa55ff] dark:bg-[#171717] dark:hover:bg-[#225]
-    text-gray-900 dark:text-white transition-colors duration-300"
+                className="hidden h-8 min-w-8 items-center justify-center rounded-full border p-2 text-[13px] font-medium border-sky-900 bg-blue-100 hover:bg-sky-300 dark:border-[#aa55ff] dark:bg-[#171717] dark:hover:bg-[#225] text-gray-900 dark:text-white transition-colors duration-300"
                 aria-pressed="false"
                 aria-label="Preview content"
                 title="Preview content">
@@ -633,7 +647,7 @@ const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeT
                 <button
                     id="ToggleCanvasBt"
                     onClick={shouldToggleCanvas}
-                    className="group flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-950 text-blue-700 dark:text-teal-200 border-2 border-blue-500 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 relative overflow-hidden"
+                    className="group flex items-center gap-1 px-2 py-1 rounded-xl w-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-primary-700 dark:to-primary-600 text-blue-700 dark:text-teal-200 border-2 border-blue-500 dark:border-primary-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 relative overflow-hidden"
                     aria-pressed="false"
                     title="Toggle AI Canvas"
                 >
@@ -642,7 +656,7 @@ const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeT
                         id="aiActivePulse"></div>
 
                     {/* AI Toggle Indicator */}
-                    <div className="relative flex items-center justify-center">
+                    <div className="relative flex items-center justify-start">
                         <div id="aiToggleRing" className="absolute w-5 h-5 border-2 border-blue-300 dark:border-teal-400 rounded-full transition-all duration-300 opacity-0 scale-125"></div>
                         <div id="iconContainer" className="relative transition-transform duration-300 group-hover:scale-110">
                             {/* Plus Icon */}
@@ -661,7 +675,7 @@ const Tools = ({ onToggleRecording, shouldToggleCanvas, onAICanvasToggle, closeT
                             <span className="text-[12px] font-bold tracking-wide select-none whitespace-nowrap inline">&lt;/&gt; <span className='hidden xs:inline'>Canvas</span></span>
                         </div>
                         {/* AI Toggle Status */}
-                        <div className='flex justify-between'>
+                        <div className='flex justify-between w-full'>
                             <div className="hidden xs:flex items-center gap-1 transition-all duration-300 opacity-60 group-hover:opacity-100">
                                 <div id="aiStatusDot" className="w-1.5 h-1.5 bg-gray-400 rounded-full transition-all duration-300"></div>
                                 <span id="aiStatusText" className="text-[9.5px] font-medium text-gray-600 dark:text-gray-300 transition-all duration-300">AI ready</span>

@@ -3,14 +3,11 @@ import { Caret } from '@js/Utils/caret.js'
 import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
 import { StateManager } from '@js/managers/StatesManager';
-//import { ChatDisplay } from '@js/managers/ConversationManager/util';
+//import { ChatDisplay } from '@js/managers/Conversation/util';
 import { Editor } from './editor';
 import { waitForElement } from '../../../renderer/js/Utils/dom_utils';
 
 //const chatdisplay = new ChatDisplay()
-
-window.openCanvas = null;
-window.canvasUpdate = null
 
 StateManager.set('isCanvasActive', false)
 
@@ -138,7 +135,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
         updatePreview();
     }
 
-    window.canvasUpdate = canvasUpdate
+    StateManager.set('canvasUpdate', canvasUpdate)
 
     // set canvas for update
     const setCanvas4Update = useCallback((e) => {
@@ -474,7 +471,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
             //mainLayoutAWfitAdjust('retract')
         }, 400)
         waitForElement('#main-container-center', (container) => {
-            if (window.StateManager.get("sidebar-open")) {
+            if (StateManager.get("sidebar-open")) {
                 container.classList.remove('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
             } else {
                 container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')
@@ -497,7 +494,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
             document.removeEventListener('open-canvas', openCanvas)
         }
     })
-    window.openCanvas = openCanvas
+    StateManager.set('openCanvas', openCanvas)
 
     // Hide canvas
     const hideCanvas = useCallback(() => {
@@ -514,7 +511,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
         waitForElement('#main-container-center', (container) => {
 
-            if (window.StateManager.get("sidebar-open")) {
+            if (StateManager.get("sidebar-open")) {
                 container.classList.add('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
             } else {
                 container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')

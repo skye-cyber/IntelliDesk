@@ -1,4 +1,4 @@
-export class SuccessModal {
+export class SuccessUiHandler {
     constructor() {
         this.modalId = 'global-success-modal';
         this.init();
@@ -239,7 +239,9 @@ export class SuccessModal {
  * }
  */
 // Create global instance
-window.SuccessModal = new SuccessModal();
+window.SuccessModal = new SuccessUiHandler();
+
+export const successhandler = new SuccessUiHandler()
 
 window.hideSuccessModal = window.SuccessModal.hide
 // Export for module systems

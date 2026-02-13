@@ -15,7 +15,8 @@
     "build": "npm run build:react && sudo npm run build:electron",
     "build:react": "vite build",
     "build:electron": "electron-builder",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "node src/scripts/post-install.js"
   },
   "keywords": [],
   "author": {
@@ -25,17 +26,18 @@
   "license": "GNU",
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
+    "baseline-browser-mapping": "^2.9.19",
     "concurrently": "^9.2.1",
     "electron": "^34.1.1",
     "electron-builder": "^25.1.8"
   },
- "dependencies": {
+  "dependencies": {
     "@fiahfy/icns": "^0.0.7",
     "@hpcc-js/wasm-graphviz": "^1.7.0",
-    "@huggingface/inference": "^4.13.2",
     "@mistralai/mistralai": "^1.5.0",
     "@vitejs/plugin-react": "^5.1.0",
     "assert": "^2.1.0",
+    "axios": "^1.13.4",
     "base": "^3.0.0",
     "bl": "^6.0.16",
     "braces": "^3.0.3",
@@ -68,8 +70,8 @@
     "html2canvas": "^1.4.1",
     "https-browserify": "^1.0.0",
     "husky": "^9.1.7",
-    "jscharting": "^3.4.0",
     "js-yaml": "^4.1.0",
+    "jscharting": "^3.4.0",
     "jspdf": "^3.0.0",
     "jszip": "^3.10.1",
     "katex": "^0.16.22",
@@ -77,12 +79,16 @@
     "level": "^9.0.0",
     "levelup": "^5.1.1",
     "lightweight-charts": "^5.0.6",
+    "lucide-react": "^0.563.0",
     "map-schema": "^0.3.0",
     "marked": "^15.0.3",
     "minimatch": "^10.0.1",
     "mistral": "^0.0.1",
+    "mongodb": "^5.0.0",
+    "mysql2": "^3.0.0",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
+    "pg": "^8.0.0",
     "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -91,6 +97,8 @@
     "set-value": "^4.1.0",
     "sharp": "^0.34.2",
     "shelljs": "^0.8.5",
+    "sqlite": "^5.0.0",
+    "sqlite3": "^5.0.0",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "style-loader": "^4.0.0",
@@ -109,7 +117,8 @@
     "src/renderer/**/*",
     "src/main/**/*",
     "public/**/*",
-    "!node_modules/"
+    "!node_modules/",
+    "!eproj"
   ],
   "build": {
     "appId": "com.intellidesk.app",
@@ -151,11 +160,9 @@
           ]
         }
       ],
-      "hardenedRuntime": true,
+      "hardenedRuntime": false,
       "gatekeeperAssess": false,
-      "entitlements": "entitlements.mac.plist",
-      "entitlementsInherit": "entitlements.mac.plist",
-      "provisioningProfile": "embedded.provisionprofile"
+      "identity": null
     },
     "dmg": {
       "artifactName": "${productName}-${version}-${arch}.dmg"
@@ -177,6 +184,13 @@
             "x64",
             "arm64"
           ]
+        },
+        {
+          "target": "msi",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ]
     },
@@ -187,7 +201,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "allowToChangeInstallationDirectory": true,
-      "license": "LICENSE"
+      "license": "LICENSE",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "portable": {
       "artifactName": "${productName}-portable-${version}-${arch}.${ext}"
@@ -210,7 +225,8 @@
           ]
         },
         {
-          "target": "snap"
+          "target": "snap",
+          "arch": ["x64"]
         }
       ],
       "category": "Utility",
@@ -239,7 +255,8 @@
         "network",
         "home",
         "audio-playback"
-      ]
+      ],
+      "artifactName": "${productName}_${version}_${arch}.snap"
     }
   }
 }

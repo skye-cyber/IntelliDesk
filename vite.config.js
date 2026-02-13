@@ -46,7 +46,7 @@ export default defineConfig({
             crypto: require.resolve('crypto-browserify'),
             process: require.resolve('process/browser'),
             fs: require.resolve('browserify-fs'),
-            buffer: require.resolve('buffer/'),
+            //buffer: require.resolve('buffer/'),
         },
     },
     define: {

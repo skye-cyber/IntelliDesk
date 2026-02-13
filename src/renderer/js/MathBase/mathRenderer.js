@@ -2,9 +2,6 @@ import '@math/katex/katex.min.css';
 //import katex from 'katex';
 import renderMathInElement from '@math/katex/contrib/auto-render';
 
-// Make renderMathInElement globally available if needed
-window.renderMathInElement = renderMathInElement;
-
 // Function to ensure Katex renders dynamically injected content
 //let renderTimeout;
 
@@ -34,7 +31,7 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
     const render = () => {
         renderTimeouts.delete(containerSelector);  // Clear from the map once rendered
 
-        if (window.renderMathInElement) {
+        if (renderMathInElement) {
             renderMathInElement(element, {
                 delimiters: [
                     { left: '$$', right: '$$', display: true },
@@ -179,6 +176,3 @@ export function mathStandardize(content) {
 
     return result;
 }
-
-window.debounceRenderKaTeX = debounceRenderKaTeX
-window.NormalizeCode = NormalizeCode

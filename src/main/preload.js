@@ -5,6 +5,11 @@ const os = require('os');
 const { Buffer } = require('node:buffer');
 const { command } = require('./system.js')
 const { getformatDateTime } = require('./utils.js');
+const { agent } = require('./config.js')
+const { exec } = require('child_process');
+const { dbManager } = require('./DatabaseManager.js')
+const fsops = require('./fs_operations.js')
+
 
 let ConversationId = "";
 
@@ -21,6 +26,7 @@ try {
 } catch (err) {
     if (!profile) profile = ''
 }
+
 
 const conversation_root = path.join(os.homedir(), '.IntelliDesk/.store')
 
@@ -308,9 +314,9 @@ const api = {
             //console.log("Rename conversation to:", name)
             ConversationHistory.metadata.name = name
             if (save) api.saveConversation(ConversationHistory)
-            return ConversationHistory
+            return ConversationHistory.metadata.name
         } catch (err) {
-            return ConversationHistory
+            return ConversationHistory.metadata.name
         }
     },
     updateContinueHistory: (item) => {
@@ -413,7 +419,7 @@ const api = {
         try {
             if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving")
             //console.log("Saving: " + conversationId + filePath)
-            await api.write(filePath, conversationData);
+            // await api.write(filePath, conversationData);
             return filePath
         } catch (err) {
             console.error('Error saving conversation:', err);
@@ -622,15 +628,16 @@ const api = {
 };
 
 const api2 = {
-    saveKeys: async (keys) => ipcRenderer.invoke('save-keys', keys),
-    getKeys: async (key = null) => ipcRenderer.invoke('get-keys', key),
-    resetKeys: async (accounts) => ipcRenderer.invoke('reset-keys', accounts),
+    // Key chain apis
+    saveKeyChain: async (keychain) => ipcRenderer.invoke('save-key-chain', keychain),
+    getKeyChain: async (account = 'mistral') => ipcRenderer.invoke('get-key-chain', account),
+    resetKeyChain: async (accounts) => ipcRenderer.invoke('reset-key-chain', accounts),
+
     appVersion: async () => ipcRenderer.invoke('get-app-version',),
     appIsDev: async () => ipcRenderer.invoke('get-dev-status',),
 
     // Chat functionality
-    sendChatMessage: (message, model, options) =>
-        ipcRenderer.invoke('send-chat-message', { message, model, options }),
+    sendChatMessage: (message, model, options) => ipcRenderer.invoke('send-chat-message', { message, model, options }),
 
     // File dialogs
     showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
@@ -678,9 +685,37 @@ const api2 = {
     }
 };
 
+const cmd = {
+    execute: (command, options = {}) => {
+        return new Promise((resolve) => {
+            exec(command, {
+                encoding: 'utf8',
+                ...options
+            }, (error, stdout, stderr) => {
+                // Always resolve, never reject, so caller can handle both cases
+                // console.log("CMD E:", error, "STDOUT:", stdout, "STDERR:", stderr)
+                resolve({
+                    success: !error,
+                    error: error,
+                    stdout: stdout || '',
+                    stderr: stderr || '',
+                    code: error ? (error.code || 1) : 0,
+                    message: error || stderr ? error?.message || "Command exited with an error" : 'Command executed successfully'
+                });
+            });
+        });
+    }
+};
+
 contextBridge.exposeInMainWorld('desk', {
     api,
-    api2
+    api2,
+    agent,
+    cmd,
+    fsops,
+    path,
+    fs,
+    dbManager
 });
 
 document.addEventListener('DOMContentLoaded', function() {

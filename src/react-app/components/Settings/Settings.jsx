@@ -1,7 +1,9 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { SettingToggle } from '@components/Settings/toggle.jsx';
+import { SettingToggle } from '@components/Settings/settings_toggle.jsx';
 import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
 import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
+import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
 
 export const Settings = ({ isOpen, onToggle }) => {
     const [preferenceChange, setPreferenceChange] = useState(false);
@@ -31,17 +33,17 @@ export const Settings = ({ isOpen, onToggle }) => {
                 setTheme(savedSettings.data.theme)
                 updateCanvasTheme()
             } catch (error) {
-                window.ModalManager.showMessage(`Failed to load settings: ${error}`, 'error');
+                modalmanager.showMessage(`Failed to load settings: ${error}`, 'error');
             }
         };
         loadSettings();
     }, []);
 
-    function updateCanvasTheme(){
+    function updateCanvasTheme() {
         const moon = document.getElementById('icon-moon')
         const sun = document.getElementById('icon-sun')
 
-        if (settings.theme==='dark') {
+        if (settings.theme === 'dark') {
             sun?.classList.add('hidden')
             moon?.classList.remove('hidden')
         } else {
@@ -138,9 +140,9 @@ export const Settings = ({ isOpen, onToggle }) => {
 
         try {
             await window.desk.api.savePreference(newSettings);
-            SuccessModal.success('Your preferences have been saved successfully!');
+            modalmanager.showMessage('Your preferences have been saved successfully!');
         } catch (error) {
-            window.ModalManager.showMessage('Failed to save preferences', 'error');
+            modalmanager.showMessage('Failed to save preferences', 'error');
         }
     }, [settings]);
 
@@ -169,7 +171,7 @@ export const Settings = ({ isOpen, onToggle }) => {
         const prefContent = document.getElementById('pref-content');
         const prefContentSection = document.getElementById('prefContentSection')
 
-        const confirmed = await window.ModalManager.confirm("This action cannot be undone", "Delete preferences?")
+        const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete preferences?")
 
         if (!confirmed) return;
 
@@ -184,12 +186,12 @@ export const Settings = ({ isOpen, onToggle }) => {
                 prefInputSection.classList.remove('hidden'); //Show input section
                 prefInput.value = "";
 
-                SuccessModal.success('Your preferences have been deleted successfully!');
+                modalmanager.showMessage('Your preferences have been deleted successfully!');
             } else {
-                window.ModalManager.showMessage('Failed to delete preferences', 'error');
+                modalmanager.showMessage('Failed to delete preferences', 'error');
             }
         } catch (error) {
-            window.ModalManager.showMessage(`Failed to delete preferences: ${error.message}`, 'error');
+            modalmanager.showMessage(`Failed to delete preferences: ${error.message}`, 'error');
         }
     }, [settings])
 
@@ -210,7 +212,7 @@ export const Settings = ({ isOpen, onToggle }) => {
             prefContentSection.classList.remove('hidden');
         }
         if (saved) {
-            window.ModalManager.showMessage("Settings updated successfully", 'success')
+            modalmanager.showMessage("Settings updated successfully", 'success')
         }
     })
 
@@ -243,7 +245,7 @@ export const Settings = ({ isOpen, onToggle }) => {
 
         modal.classList.remove('hidden');
         setTimeout(() => {
-            content.classList.remove('translate-y-8', 'opacity-0');
+            content.classList.remove('translate-y-full', 'opacity-0');
             content.classList.add('translate-y-0', 'opacity-100');
         }, 10);
     })
@@ -253,7 +255,7 @@ export const Settings = ({ isOpen, onToggle }) => {
     })
 
     const handleResetSettings = useCallback(async () => {
-        const confirmed = await window.ModalManager.confirm("This action cannot be undone", "Delete preferences?");
+        const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete preferences?");
         if (!confirmed) return;
 
         try {
@@ -270,20 +272,20 @@ export const Settings = ({ isOpen, onToggle }) => {
             setSettings(newSettings);
 
             await window.desk.api.savePreference(newSettings);
-            SuccessModal.success('Your preferences have been deleted successfully!');
+            modalmanager.showMessage('Your preferences have been deleted successfully!');
         } catch (error) {
-            window.ModalManager.showMessage('Failed to delete preferences', 'error');
+            modalmanager.showMessage('Failed to delete preferences', 'error');
         }
     }, [settings])
 
-    useEffect(()=>{
+    useEffect(() => {
         document.addEventListener('close-settings', CloseSettings);
         return () => {
             document.removeEventListener('close-settings', CloseSettings);
         }
-    },[CloseSettings])
+    }, [CloseSettings])
     return (
-        <div onClick={shouldClose} id="settingsModal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden translate-x-full transition-colors duration-700">
+        <div onClick={shouldClose} id="settingsModal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
             {/* Modal Content */}
             <div
                 className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl p-0 w-full mx-4 md:mx-auto max-w-2xl max-h-[98vh] overflow-hidden backdrop-blur-lg transition-colors duration-700 ease-in-out"
@@ -322,7 +324,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar p-6">
+                <div className="overflow-y-auto max-h-[calc(90vh-140px)] scrollbar-custom p-6">
                     {/* Quick Settings Grid */}
                     <div className="mb-8">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -393,7 +395,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 <div className="relative">
                                     <textarea
                                         id="pref-input"
-                                        className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition custom-scrollbar"
+                                        className="w-full px-4 py-3 bg-white dark:bg-primary-800 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-none focus:ring-blue-500 focus:outline focus:outline-blue-500 focus:border-transparent transition scrollbar-custom"
                                         placeholder="How would you like me to assist you? Share your preferences, communication style, or specific needs..."
                                         rows="3"
                                         onChange={handlePreferenceInput}
@@ -456,7 +458,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 </svg>
                                 Language & Region
                             </h3>
-                            <select id="languagePref" className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" onChange={(e) => handleSettingChange('language', e.target.value)}>
+                            <select id="languagePref" className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-none focus:outline-none focus:border-2 focus:border-primary-100/80 dark:border-accent-500" onChange={(e) => handleSettingChange('language', e.target.value)}>
                                 <option value="en">🌐 English</option>
                                 <option value="fr">🇫🇷 French</option>
                                 <option value="es">🇪🇸 Spanish</option>
@@ -466,18 +468,37 @@ export const Settings = ({ isOpen, onToggle }) => {
                         </div>
 
                         {/* API Management */}
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">API Configuration</h3>
-                            <button
-                                onClick={handleApiManagement}
-                                className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group"
-                            >
-                                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                </svg>
-                                <span>Manage API Keys</span>
-                            </button>
-                        </div>
+                        <section className='block space-y-2 sm:space-y-0 sm:flex justify-between'>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">API Configuration</h3>
+                                <button
+                                    onClick={handleApiManagement}
+                                    className="w-full px-4 py-3 bg-gradient-to-r from-accent-500 to-blue-600 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
+                                >
+                                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                    <span>Manage API Key Chain</span>
+                                </button>
+                            </div>
+
+                            {/* Tool/Agent mode Config */}
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Tool Configuration</h3>
+                                <button
+                                    onClick={() => {
+                                        CloseSettings()
+                                        StateManager.get('OpenEditor')()
+                                    }}
+                                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-accent-500 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
+                                >
+                                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                    <span>Manage Tool Config</span>
+                                </button>
+                            </div>
+                        </section>
                     </div>
                 </div>
 

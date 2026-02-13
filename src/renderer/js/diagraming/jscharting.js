@@ -1,8 +1,9 @@
 import * as JSC from 'jscharting';
 import { createChart, HistogramSeries } from 'lightweight-charts';
 import { waitForElement } from '../Utils/dom_utils';
-import { opendiagViewModal } from './Utils';
-//import { exportSvgToPng } from './Utils';
+import { modalmanager } from '../StatusUIManager/Manager';
+import { staticPortalBridge } from '../PortalBridge';
+import { StateManager } from '../managers/StatesManager';
 
 const chartCache = new Map();
 
@@ -44,7 +45,7 @@ export class InterPreter {
             const diagId = `chart-LWT_${Math.random().toString(30).substring(3, 9)}`;
 
             // Obtain container id or element
-            const element_id = window.reactPortalBridge.showComponent('Diagram', { name: chartName, exportId: 'LWT', dgId: diagId, description: desc })
+            const element_id = staticPortalBridge.showComponent('Diagram', { name: chartName, exportId: 'LWT', dgId: diagId, description: desc })
 
             const id = `LWT-${chartName}-${diagId}`
 
@@ -111,7 +112,7 @@ export class InterPreter {
         const diagId = `chart-JSC_${Math.random().toString(30).substring(3, 9)}`;
 
         // Obtain container id or element
-        const element_id = window.reactPortalBridge.showComponentInTarget('Diagram', 'diagram_canvas', { name: chartName, exportId: 'JSC', dgId: diagId, description: desc })
+        const element_id = staticPortalBridge.showComponentInTarget('Diagram', 'diagram_canvas', { name: chartName, exportId: 'JSC', dgId: diagId, description: desc })
 
         const id = `JSC-${chartName?.replace(' ','-')}-${diagId}`
 
@@ -172,7 +173,7 @@ export class InterPreter {
 
             // open modal if render trigger===click
             if (trigger === 'click') {
-                opendiagViewModal();
+                StateManager.get('openDiagramView')();
             }
 
             // Hide placeholder
@@ -180,7 +181,7 @@ export class InterPreter {
 
         } catch (e) {
             console.error("Invalid JSON chart block:", e);
-            window.ModalManager.showMessage(e, 'error');
+            modalmanager.showMessage(e, 'error');
             return null;
         }
     }
@@ -208,11 +209,11 @@ export class InterPreter {
 
             // open modal if render trigger===click
             if (trigger === 'click') {
-                opendiagViewModal();
+                StateManager.get('openDiagramView')();
             }
         } catch (e) {
             console.error("Invalid JSON chart block:", e);
-            window.ModalManager.showMessage(e, 'error');
+            modalmanager.showMessage(e, 'error');
             return null;
         }
     }
@@ -289,7 +290,7 @@ export class InterPreter {
     async getCodeFromBlock(selector) {
         //console.log("ID:", selector)
         const codeBlock = document.querySelector(selector);
-        if (!codeBlock) return window.ModalManager.showMessage("Codeblock extraction error", 'error')
+        if (!codeBlock) return modalmanager.showMessage("Codeblock extraction error", 'error')
         const codeText = codeBlock.textContent;
         return codeText ? codeText : ''
     }
@@ -297,5 +298,3 @@ export class InterPreter {
 
 
 export const chart_interpret = new InterPreter()
-
-window.chart_interpret = chart_interpret

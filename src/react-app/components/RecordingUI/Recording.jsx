@@ -3,6 +3,7 @@ import { HfInference } from "@huggingface/inference";
 import { RecordingAnimator } from '@js/animations/WaveForm.js'
 import errorHandler from '@components/ErrorHandler/ErrorHandler.jsx';
 import '@js/Utils/chatUtils.js'
+import { timer } from '../../../renderer/js/Timer/timer';
 
 export const Recording = ({ isOpen, onToggle }) => {
     const [isPaused, setIsPaused] = useState(false);
@@ -127,7 +128,7 @@ export const Recording = ({ isOpen, onToggle }) => {
         }
 
         getMedia()
-        currentRefs.Timer = new window.Timer;
+        currentRefs.Timer = timer;
         initialize()
     }, [isOpen])
 
@@ -249,8 +250,8 @@ export const Recording = ({ isOpen, onToggle }) => {
     }, [])
 
     async function loadApiKey() {
-        const key = await window.desk.api2.getKeys('huggingfacex');
-        setHf_API_KEY(key.huggingfaceKey); // Assign to global variable
+        const key = '...'//await window.desk.api2.getKeys('huggingfacex');
+        setHf_API_KEY(key) //.huggingfaceKey); // Assign to global variable
     }
     async function autoSpeech(data) {
         try {
@@ -701,14 +702,14 @@ export const Recording = ({ isOpen, onToggle }) => {
     if (!isOpen) return null;
 
     return (
-        <div onClick={closeOnclick} id="recordingModal" className="hidden fixed inset-0 z-50 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-cyan-500/10 backdrop-brightness-[0.5]  overflow-y-auto transition-all duration-500">
+        <div onClick={closeOnclick} id="recordingModal" className="hidden fixed inset-0 z-50 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-cyan-500/10 backdrop-brightness-50  overflow-y-auto transition-all duration-500">
             <div className="relative flex items-center justify-center min-h-screen p-4">
                 {/* Animated Canvas Background */}
                 <canvas className="hidden absolute md:max-w-md lg:max-w-lg xl:max-w-xl md:max-h-md lg:max-h-lg xl:max-h-xl z-[1] bg-gradient-to-br from-white to-gray-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-slate-600/50 transition-all duration-700 transform hover:scale-105" id="canvas"></canvas>
 
                 {/* Recording Content */}
                 <section id="recorder-content" className="absolute z-10 w-full max-w-md">
-                    <div className="bg-white/10 dark:bg-slate-800/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 dark:border-slate-600/30 overflow-hidden transition-all duration-500 hover:shadow-3xl">
+                    <div className="bg-white dark:bg-slate-800 backdrop-brightness-100 rounded-2xl shadow-2xl border border-white/20 dark:border-slate-600/30 overflow-hidden transition-all duration-500 hover:shadow-3xl">
                         {/* Header */}
                         <div className="px-6 pt-6 pb-4 border-b border-gray-200/50 dark:border-slate-600/50">
                             <div className="flex items-center justify-between">
@@ -726,7 +727,7 @@ export const Recording = ({ isOpen, onToggle }) => {
                             </div>
 
                             {/* Visualizer Placeholder */}
-                            <div className="mt-4 h-2 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div className="mt-4 h-2 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden hidden">
                                 <div id="audioVisualizer" className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-100 transform scale-x-0 origin-left"></div>
                             </div>
                         </div>

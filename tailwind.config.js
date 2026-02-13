@@ -16,16 +16,15 @@ module.exports = {
         },
         fontFamily: {
             display: ['Source Serif Pro', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
-            body: ['Synonym', 'Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],
             mono: ['JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-            brand: ['Poppins', 'Montserrat', 'SF Pro Display', 'system-ui', 'sans-serif'],
+            brand: ['Poppins', 'Montserrat', 'SF Pro Display', 'system-ui', 'Outfit', 'sans-serif'],
             handwriting: ['Dancing Script', 'Pacifico', 'Caveat', 'cursive'],
             serif: ['Source Serif Pro', 'Merriweather', 'Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
             sans: ['Synonym', 'Inter', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-            modern: ['Poppins', 'Montserrat', 'SF Pro Display', 'Outfit'],
             elegant: ['Playfair Display', 'Cormorant Garamond', 'Georgia'],
             condensed: ['Roboto Condensed', 'Oswald', 'Arial Narrow', 'sans-serif-condensed'],
             code: ['JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Source Code Pro', 'Monaco', 'Consolas', 'monospace'],
+            blink:['system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'sans-serif']
         },
 
         extend: {
@@ -106,6 +105,19 @@ module.exports = {
                     900: '#161732',
                     950: '#12142a',
                 },
+                cyber: {
+                    50: '#f0f9ff',
+                    100: '#e0f2fe',
+                    200: '#bae6fd',
+                    300: '#7dd3fc',
+                    400: '#38bdf8',
+                    500: '#0ea5e9',
+                    600: '#0284c7',
+                    700: '#0369a1',
+                    800: '#075985',
+                    900: '#0c4a6e',
+                    950: '#041824',
+                },
             },
             transitionTimingFunction: {
                 'in-expo': 'cubic-bezier(0.95, 0.05, 0.795, 0.035)',
@@ -154,6 +166,7 @@ module.exports = {
             'bounce-600': 'bounce 0.5s 600ms infinite',
             'heartpulse': 'heartpulse 1s infinite',
             'heartpulse-slow': 'heartpulse-slow 1s infinite',
+            'heartpulse-super': 'heartpulse-super 1.2s infinite',
             'spin-50': 'spin 0.5s linear infinite',
             'spin': 'spin 1s linear infinite',
             'reload-100': 'spin 1s linear infinite',
@@ -188,6 +201,11 @@ module.exports = {
             'heartpulse-slow': {
                 '0%': { transform: 'scale(1)' },
                 '50%': { transform: 'scale(1.05)' },
+                '100%': { transform: 'scale(1)' },
+            },
+            'heartpulse-super': {
+                '0%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.4)' },
                 '100%': { transform: 'scale(1)' },
             },
             spin: {

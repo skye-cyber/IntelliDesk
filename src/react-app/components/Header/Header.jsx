@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ModelSelector } from '../ModelSelector/ModelSelector';
+import { StateManager } from '../../../renderer/js/managers/StatesManager';
 
-window.currentModel = 'mistral-small-latest'
+StateManager.set('currentModel', 'mistral-small-latest')
 
 export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
@@ -120,7 +121,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                 onModelSelect={(model) => {
                     onModelChange(model);
                     setIsModelDropdownOpen(false);
-                    window.currentModel = model;
+                    StateManager.set('currentModel',model);
                 }}
                 onClose={() => setIsModelDropdownOpen(false)}
             />

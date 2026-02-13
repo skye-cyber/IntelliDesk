@@ -68,6 +68,3 @@ export function normalizeMathDelimiters(text) {
 
     return text;
 }
-
-window.normalizeMathDelimiters = normalizeMathDelimiters
-window.normaliZeMathDisplay=normaliZeMathDisplay

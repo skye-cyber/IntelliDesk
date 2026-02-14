@@ -199,6 +199,15 @@ function createWindow() {
         loadingWindow.close();
     });
 
+    // Intercept the window close event
+    mainWindow.on('close', (event) => {
+        if (!app.isQuiting && process.platform !== 'darwin') {
+            event.preventDefault();   // prevent window from actually closing
+            mainWindow.hide();        // just hide it to tray
+        }
+        return false;
+    });
+
     // Return the main window for reference
     return mainWindow;
 }
@@ -236,6 +245,12 @@ app.on('ready', async () => {
             }
         },
         {
+            label: 'New window',
+            click: () => {
+                createWindow()
+            }
+        },
+        {
             label: 'Help',
             click: () => {
                 show_documentation()
@@ -244,6 +259,7 @@ app.on('ready', async () => {
         {
             label: 'Quit',
             click: () => {
+                app.isQuiting = true;
                 app.quit();
             }
         }
@@ -266,21 +282,21 @@ app.on('window-all-closed', (event) => {
 });
 
 // Handle window close properly - ONLY if mainWindow exists
-if (mainWindow) {
-    mainWindow.on('close', (event) => {
-        if (process.platform !== 'darwin') {
-            // On Windows/Linux, hide instead of close
-            event.preventDefault();
-            mainWindow.hide();
-        }
-        // On macOS, let the close happen normally
-    });
-
-    mainWindow.on('closed', () => {
-        // Remove references to prevent memory leaks
-        mainWindow.removeAllListeners();
-    });
-}
+// if (mainWindow) {
+//     mainWindow.on('close', (event) => {
+//         if (process.platform !== 'darwin') {
+//             // On Windows/Linux, hide instead of close
+//             event.preventDefault();
+//             mainWindow.hide();
+//         }
+//         // On macOS, let the close happen normally
+//     });
+//
+//     mainWindow.on('closed', () => {
+//         // Remove references to prevent memory leaks
+//         mainWindow.removeAllListeners();
+//     });
+// }
 
 
 app.on('activate', () => {

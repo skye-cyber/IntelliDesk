@@ -1,55 +1,55 @@
 import { waitForElement, waitForElementSimple } from "../renderer/js/Utils/dom_utils";
-
+import { staticPortalBridge, streamingPortalBridge } from "../renderer/js/PortalBridge";
 waitForElement('#diag-modal-content', (el) => {
-    window.reactPortalBridge.registerContainer('diagram_canvas', el);
+    staticPortalBridge.registerContainer('diagram_canvas', el);
 })
 
 
 waitForElement('#chatArea', (el) => {
-    window.reactPortalBridge.registerContainer('chatArea', el);
-    window.streamingPortalBridge.registerStreamingComponent('chatArea', el);
+    staticPortalBridge.registerContainer('chatArea', el);
+    streamingPortalBridge.registerStreamingComponent('chatArea', el);
 })
 
 
 waitForElement('#main-container', (el) => {
-    window.reactPortalBridge.registerContainer('"mainContainer"', el);
-    window.streamingPortalBridge.registerStreamingComponent('mainContainer', el);
+    staticPortalBridge.registerContainer('"mainContainer"', el);
+    streamingPortalBridge.registerStreamingComponent('mainContainer', el);
 })
 
 
 waitForElement('#conversations', (el) => {
-    window.reactPortalBridge.registerContainer('conversations', el);
-    window.streamingPortalBridge.registerStreamingComponent('conversations', el);
+    staticPortalBridge.registerContainer('conversations', el);
+    streamingPortalBridge.registerStreamingComponent('conversations', el);
 })
 
 waitForElementSimple('.FilePreview', (el) => {
-    window.reactPortalBridge.registerContainer('FilePreview', el);
-    //window.streamingPortalBridge.registerStreamingComponent('FilePreview', el);
+    staticPortalBridge.registerContainer('FilePreview', el);
+    //streamingPortalBridge.registerStreamingComponent('FilePreview', el);
 })
 
 waitForElement('#chat-container', (el) => {
-    window.reactPortalBridge.registerContainer('chatContainer', el);
-    //window.streamingPortalBridge.registerStreamingComponent('chatContainer', el);
+    staticPortalBridge.registerContainer('chatContainer', el);
+    //streamingPortalBridge.registerStreamingComponent('chatContainer', el);
 })
 
 waitForElement('#userInputContainer', (el) => {
-    window.reactPortalBridge.registerContainer('userInputContainer', el);
-    //window.streamingPortalBridge.registerStreamingComponent('userInput-wrapper', el);
+    staticPortalBridge.registerContainer('userInputContainer', el);
+    //streamingPortalBridge.registerStreamingComponent('userInput-wrapper', el);
 })
 
 waitForElement('#message-container', (el) => {
-    window.reactPortalBridge.registerContainer('messageContainer', el);
+    staticPortalBridge.registerContainer('messageContainer', el);
 })
 
 
 waitForElement('#confirm-dialog-container', (el) => {
-    window.reactPortalBridge.registerContainer('ConfirmdialogContainer', el);
+    staticPortalBridge.registerContainer('ConfirmdialogContainer', el);
 })
 
 export function RegisterCanvas() {
     waitForElementSimple('#canvas-wrapper', (el) => {
-        window.reactPortalBridge.registerContainer('code_canvas', el);
-        window.streamingPortalBridge.registerStreamingComponent('code_canvas', el);
+        staticPortalBridge.registerContainer('code_canvas', el);
+        streamingPortalBridge.registerStreamingComponent('code_canvas', el);
     })
 }
 

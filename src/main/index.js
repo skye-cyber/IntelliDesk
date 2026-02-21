@@ -188,9 +188,7 @@ function createWindow() {
         //mainWindow.webContents.openDevTools()
     } else {
         // Load the main application when it is ready
-        isDev
-            ? mainWindow.loadFile(path.join(__dirname, '../build/index.html'))
-            : mainWindow.loadFile(path.join(process.resourcesPath, './build/index.html'))
+        mainWindow.loadFile(path.join(process.resourcesPath, './build/index.html'))
     }
 
     // Show the main window and close the loading window when the main window is ready to show**
@@ -231,7 +229,7 @@ app.on('ready', async () => {
     //mainWindow.webContents.send('storagePath', storagePath);
 
     // Create the tray icon
-    const tray = new Tray(path.join(iconPath)); // Path to your tray icon
+    const tray = new Tray(iconPath); // Path to your tray icon
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show',

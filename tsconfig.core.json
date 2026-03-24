@@ -1,0 +1,13 @@
+// tsconfig.renderer.json - Renderer (React/TSX)
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    //"outDir": "./dist/main",
+    "rootDir": "./src/common",
+    "lib": ["ES2020"],
+    "types": ["node"]
+  },
+  "include": ["src/common/**/*"],
+  "exclude": ["src/common/pico_bundle"]
+}

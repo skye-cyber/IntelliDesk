@@ -1,0 +1,16 @@
+// tsconfig.renderer.json - Renderer (React/TSX)
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext", //ES2022
+    "moduleResolution": "node",
+    //"outDir": "./dist/ui",
+    "rootDir": "./src/ui",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "jsx": "react-jsx",
+    "types": ["react", "react-dom"],
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/ui/**/*"]
+  //"exclude": []
+}

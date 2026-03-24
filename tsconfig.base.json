@@ -1,0 +1,21 @@
+// tsconfig.base.json - Shared base configuration
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+    //"noEmit": true,          // Let Vite emit, tsc just checks
+  },
+  "exclude": ["node_modules", "dist", "assets", "common", "icons", "scripts", "styles"]
+}

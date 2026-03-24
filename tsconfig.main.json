@@ -1,0 +1,14 @@
+// tsconfig.main.json - Main process (CommonJS)
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    //"outDir": "./dist/main",
+    "rootDir": "./src/main",
+    "lib": ["ES2020", "DOM"],
+    "types": ["node", "electron"],
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "include": ["src/main/**/*"]
+}

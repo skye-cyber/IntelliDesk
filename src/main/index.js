@@ -188,15 +188,22 @@ function createWindow() {
         //mainWindow.webContents.openDevTools()
     } else {
         // Load the main application when it is ready
-        isDev
-            ? mainWindow.loadFile(path.join(__dirname, '../build/index.html'))
-            : mainWindow.loadFile(path.join(process.resourcesPath, './build/index.html'))
+        mainWindow.loadFile(path.join(process.resourcesPath, './build/index.html'))
     }
 
     // Show the main window and close the loading window when the main window is ready to show**
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
         loadingWindow.close();
+    });
+
+    // Intercept the window close event
+    mainWindow.on('close', (event) => {
+        if (!app.isQuiting && process.platform !== 'darwin') {
+            event.preventDefault();   // prevent window from actually closing
+            mainWindow.hide();        // just hide it to tray
+        }
+        return false;
     });
 
     // Return the main window for reference
@@ -222,7 +229,7 @@ app.on('ready', async () => {
     //mainWindow.webContents.send('storagePath', storagePath);
 
     // Create the tray icon
-    const tray = new Tray(path.join(iconPath)); // Path to your tray icon
+    const tray = new Tray(iconPath); // Path to your tray icon
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show',
@@ -236,6 +243,12 @@ app.on('ready', async () => {
             }
         },
         {
+            label: 'New window',
+            click: () => {
+                createWindow()
+            }
+        },
+        {
             label: 'Help',
             click: () => {
                 show_documentation()
@@ -244,6 +257,7 @@ app.on('ready', async () => {
         {
             label: 'Quit',
             click: () => {
+                app.isQuiting = true;
                 app.quit();
             }
         }
@@ -266,21 +280,21 @@ app.on('window-all-closed', (event) => {
 });
 
 // Handle window close properly - ONLY if mainWindow exists
-if (mainWindow) {
-    mainWindow.on('close', (event) => {
-        if (process.platform !== 'darwin') {
-            // On Windows/Linux, hide instead of close
-            event.preventDefault();
-            mainWindow.hide();
-        }
-        // On macOS, let the close happen normally
-    });
-
-    mainWindow.on('closed', () => {
-        // Remove references to prevent memory leaks
-        mainWindow.removeAllListeners();
-    });
-}
+// if (mainWindow) {
+//     mainWindow.on('close', (event) => {
+//         if (process.platform !== 'darwin') {
+//             // On Windows/Linux, hide instead of close
+//             event.preventDefault();
+//             mainWindow.hide();
+//         }
+//         // On macOS, let the close happen normally
+//     });
+//
+//     mainWindow.on('closed', () => {
+//         // Remove references to prevent memory leaks
+//         mainWindow.removeAllListeners();
+//     });
+// }
 
 
 app.on('activate', () => {

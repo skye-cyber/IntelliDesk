@@ -11,6 +11,6 @@
     "types": ["react", "react-dom"],
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/ui/**/*"],
+  "include": ["src/ui/**/*"]
   //"exclude": []
 }

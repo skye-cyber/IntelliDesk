@@ -10,6 +10,5 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "include": ["src/main/**/*"],
-  "exclude": []//"src/renderer/**/*", "src/preload/**/*"]
+  "include": ["src/main/**/*"]
 }

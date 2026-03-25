@@ -1,15 +1,15 @@
 /**
  * Database Manager - Handles database connections and operations
  */
-const sqlite3 = require('sqlite3')
-const { open } = require('sqlite')
-const mysql = require('mysql2/promise')
-const postgres = require('pg')
-const { MongoClient } = require('mongodb')
+import { MongoClient } from "mongodb"
+import postgres from 'pg'
+import mysql from 'mysql2/promise'
+import { open } from "sqlite"
+// import { sqlite3 } from "sqlite3"
 
 //const open = window.desk.sqlite_open
 
-class DatabaseManager {
+export class DatabaseManager {
     constructor() {
         this.connections = new Map();
         this.config = this.loadConfig();
@@ -45,7 +45,7 @@ class DatabaseManager {
      * @param {string} name - Connection name or identifier
      * @returns {Promise<object>} Database connection object
      */
-    async getConnection(name = 'default') {
+    async getConnection(name: string = 'default') {
         // Return existing connection if available
         if (this.connections.has(name)) {
             const connection = this.connections.get(name);
@@ -80,7 +80,7 @@ class DatabaseManager {
      * @param {string} name - Connection name
      * @returns {object} Connection configuration
      */
-    getConnectionConfig(name) {
+    getConnectionConfig(name: string) {
         // Return specific config if exists
         if (this.config[name]) {
             return this.config[name];
@@ -108,7 +108,7 @@ class DatabaseManager {
      * @param {string} connectionString - Database connection string
      * @returns {object} Parsed configuration
      */
-    parseConnectionString(connectionString) {
+    parseConnectionString(connectionString: string) {
         const url = new URL(connectionString);
 
         const config = {
@@ -303,7 +303,7 @@ class DatabaseManager {
     /**
      * Add or update a database configuration
      */
-    addConnection(name, config) {
+    addConnection(name: string, config) {
         this.config[name] = config;
         this.saveConfig();
         return { success: true, message: `Configuration saved for ${name}` };
@@ -312,7 +312,7 @@ class DatabaseManager {
     /**
      * Remove a database configuration
      */
-    removeConnection(name) {
+    removeConnection(name: string) {
         if (this.config[name]) {
             delete this.config[name];
             this.saveConfig();
@@ -326,7 +326,7 @@ class DatabaseManager {
      * Execute a query on a specific connection
      * Utility method for other tools/components
      */
-    async executeQuery(connectionName, query, parameters = []) {
+    async executeQuery(connectionName: string, query: string, parameters: [string|object|number|undefined] = [undefined]) {
         const db = await this.getConnection(connectionName);
 
         try {
@@ -355,7 +355,7 @@ class DatabaseManager {
     /**
      * Get database schema/information
      */
-    async getSchema(connectionName) {
+    async getSchema(connectionName: string) {
         const db = await this.getConnection(connectionName);
         const config = this.getConnectionConfig(connectionName);
 
@@ -462,7 +462,7 @@ class DatabaseManager {
     /**
      * Cleanup old/unused connections
      */
-    cleanupConnections(maxAgeMinutes = 30) {
+    cleanupConnections(maxAgeMinutes: number = 30) {
         const now = new Date();
         for (const [name, connection] of this.connections.entries()) {
             const age = (now - connection.lastUsed) / (1000 * 60); // minutes
@@ -474,6 +474,4 @@ class DatabaseManager {
 }
 
 // Export singleton instance if desired
-const dbManager = new DatabaseManager();
-
-module.exports = { dbManager }
+export const dbManager = new DatabaseManager();

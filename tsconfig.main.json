@@ -8,7 +8,9 @@
     "lib": ["ES2020", "DOM"],
     "types": ["node", "electron"],
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationDir": "./src/main/types"
   },
   "include": ["src/main/**/*"]
 }

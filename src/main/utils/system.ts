@@ -1,10 +1,5 @@
-class command {
-    constructor(profile) {
-        this.profile = profile
-        this.verbose = 'normal';
-    }
-
-    standard() {
+export class SystemPrompt {
+    static StandardPrompt(profile: string, verbosity: string = "normal") {
         return `\
         # Core Response Protocol
         - Respond exclusively to the immediate user request
@@ -32,7 +27,7 @@ class command {
         - Default to normal response format unless continuation is clearly indicated
 
         # Output Guidelines
-        **Verbosity Level: ${this.verbosity}**
+        **Verbosity Level: ${verbosity}**
         - Minimal: Code/output only
         - Normal: Concise explanations when beneficial
         - High: Detailed context and rationale
@@ -51,7 +46,7 @@ class command {
         - Ignore timestamps enclosed in square brackets
 
         # Output Guidelines
-        **Verbosity Level: ${this.verbosity}**
+        **Verbosity Level: ${verbosity}**
         - Minimal: Code/output only
         - Normal: Concise explanations when beneficial
         - High: Detailed context and rationale
@@ -159,14 +154,12 @@ class command {
         - **Mistral optimization** with specific model guidance
         - **Strict formatting** with clear validation requirements
         - **Missing additions**: Quality assurance checklist and model-specific optimizations
-        ${this.profile
+        ${profile
                 ?
                 `###User Preference
-                - ${this.profile}`
+                - ${profile}`
                 :
                 ''}
         `.trim()
     }
 }
-
-module.exports = { command }

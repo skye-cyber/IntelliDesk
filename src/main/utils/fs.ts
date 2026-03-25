@@ -1,30 +1,52 @@
-const fs = require('fs').promises;
-const fsSync = require('fs');
-const path = require('path');
-const { dialog } = require('electron');
+import { dialog } from "electron";
+import fsSync from 'fs';
+import path from "path"
+import fs from "fs/promises"
+import type {
+    readFileSuccess,
+    readFileError,
+    writeFileSuccess,
+    writeFileError,
+    appendFileError,
+    fileStats,
+    fileStatError
+} from "./types";
 
-const fsOperations = {
+type dialogMenufilter = [
+    { name: string, extensions: [string] }
+]
+
+type DialogOptions = {
+    title: string,
+    defaultPath: string,
+    buttonLabel: string
+    filters: dialogMenufilter,
+    properties: [string] | undefined
+    message: string
+}
+
+export const fsOperations = {
     /**
      * Read file content
      * @param {string} filePath - Path to file
      * @param {string} [encoding='utf8'] - File encoding
      * @returns {Promise<{success: boolean, data?: string, error?: string, path: string}>}
      */
-    async readFile(filePath, encoding = 'utf8') {
+    async readFile(filePath: string, encoding: BufferEncoding | null = 'utf8'): Promise<readFileSuccess | readFileError> {
         try {
             if (!filePath || typeof filePath !== 'string') {
-                return { success: false, error: 'Invalid file path', path: filePath };
+                return { success: false, code: 404, error: 'Invalid file path', path: filePath };
             }
 
             const absolutePath = path.resolve(filePath);
-            const data = await fs.readFile(absolutePath, encoding);
+            const data = await fs.readFile(absolutePath, { encoding: encoding });
 
             return {
                 success: true,
                 data,
                 path: absolutePath,
                 size: data.length,
-                encoding
+                encoding: encoding
             };
         } catch (error) {
             return {
@@ -43,14 +65,14 @@ const fsOperations = {
      * @param {string} [encoding='utf8'] - File encoding
      * @returns {Promise<{success: boolean, path?: string, error?: string, bytesWritten?: number}>}
      */
-    async writeFile(filePath, content, encoding = 'utf8') {
+    async writeFile(filePath: string, content: string, encoding: BufferEncoding | null = 'utf8'): Promise<writeFileSuccess | writeFileError> {
         try {
             if (!filePath || typeof filePath !== 'string') {
-                return { success: false, error: 'Invalid file path', path: filePath };
+                return { success: false, code: 404, error: 'Invalid file path', path: filePath };
             }
 
             if (content === undefined || content === null) {
-                return { success: false, error: 'Content cannot be null or undefined', path: filePath };
+                return { success: false, code: 403, error: 'Content cannot be null or undefined', path: filePath };
             }
 
             const absolutePath = path.resolve(filePath);
@@ -59,7 +81,7 @@ const fsOperations = {
             const dir = path.dirname(absolutePath);
             await fs.mkdir(dir, { recursive: true });
 
-            await fs.writeFile(absolutePath, content, encoding);
+            await fs.writeFile(absolutePath, content, { encoding: encoding });
 
             const stats = await fs.stat(absolutePath);
 
@@ -86,21 +108,23 @@ const fsOperations = {
      * @param {string} [encoding='utf8'] - File encoding
      * @returns {Promise<{success: boolean, path?: string, error?: string}>}
      */
-    async appendFile(filePath, content, encoding = 'utf8') {
+    async appendFile(filePath: string, content: string, encoding: BufferEncoding | null = 'utf8'): Promise<writeFileSuccess | appendFileError> {
         try {
             if (!filePath || typeof filePath !== 'string') {
-                return { success: false, error: 'Invalid file path', path: filePath };
+                return { success: false, code: 404, error: 'Invalid file path', path: filePath };
             }
 
             const absolutePath = path.resolve(filePath);
-            await fs.appendFile(absolutePath, content, encoding);
+            await fs.appendFile(absolutePath, content, { encoding: encoding });
 
             const stats = await fs.stat(absolutePath);
 
             return {
                 success: true,
                 path: absolutePath,
-                size: stats.size
+                data: undefined,
+                size: stats.size,
+                encoding: encoding,
             };
         } catch (error) {
             return {
@@ -117,10 +141,10 @@ const fsOperations = {
      * @param {string} filePath - Path to check
      * @returns {Promise<{success: boolean, exists: boolean, isFile?: boolean, isDirectory?: boolean, error?: string}>}
      */
-    async exists(filePath) {
+    async exists(filePath: string): Promise<fileStats | fileStatError> {
         try {
             if (!filePath || typeof filePath !== 'string') {
-                return { success: false, exists: false, error: 'Invalid path' };
+                return { success: false, code: 404, path: filePath, error: 'Invalid path' };
             }
 
             const absolutePath = path.resolve(filePath);
@@ -140,7 +164,8 @@ const fsOperations = {
                 if (error.code === 'ENOENT') {
                     return {
                         success: true,
-                        exists: false,
+                        error: error,
+                        code: 403,
                         path: absolutePath
                     };
                 }
@@ -149,8 +174,8 @@ const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                exists: false,
-                error: error.message,
+                error: error,
+                path: filePath,
                 code: error.code
             };
         }
@@ -162,7 +187,7 @@ const fsOperations = {
      * @param {boolean} [recursive=false] - List recursively
      * @returns {Promise<{success: boolean, files?: Array, error?: string, path: string}>}
      */
-    async readDir(dirPath, recursive = false) {
+    async readDir(dirPath: string, recursive: boolean = false) {
         try {
             if (!dirPath || typeof dirPath !== 'string') {
                 return { success: false, error: 'Invalid directory path', path: dirPath };
@@ -185,7 +210,8 @@ const fsOperations = {
                         size: stats.size,
                         modified: stats.mtime,
                         created: stats.birthtime,
-                        mode: stats.mode.toString(8)
+                        mode: stats.mode.toString(8),
+                        children: null
                     };
 
                     if (recursive && item.isDirectory()) {
@@ -221,7 +247,7 @@ const fsOperations = {
      * @param {boolean} [recursive=true] - Create parent directories
      * @returns {Promise<{success: boolean, path?: string, error?: string, created: boolean}>}
      */
-    async mkdir(dirPath, recursive = true) {
+    async mkdir(dirPath: string, recursive: boolean = true) {
         try {
             if (!dirPath || typeof dirPath !== 'string') {
                 return { success: false, error: 'Invalid directory path', path: dirPath };
@@ -256,7 +282,7 @@ const fsOperations = {
      * @param {boolean} [recursive=false] - Delete recursively for directories
      * @returns {Promise<{success: boolean, path?: string, error?: string, type?: string}>}
      */
-    async delete(filePath, recursive = false) {
+    async delete(filePath: string, recursive: boolean = false) {
         try {
             if (!filePath || typeof filePath !== 'string') {
                 return { success: false, error: 'Invalid path', path: filePath };
@@ -316,7 +342,7 @@ const fsOperations = {
      * @param {boolean} [overwrite=false] - Overwrite if exists
      * @returns {Promise<{success: boolean, source?: string, destination?: string, error?: string}>}
      */
-    async copy(source, destination, overwrite = false) {
+    async copy(source: string, destination: string, overwrite: boolean = false) {
         try {
             if (!source || typeof source !== 'string') {
                 return { success: false, error: 'Invalid source path', source };
@@ -381,13 +407,13 @@ const fsOperations = {
         }
     },
 
-    findCommonRoot(src, dst) {
+    findCommonRoot(src: string, dst: string) {
         const destParts = dst.split('/')
         const sourceParts = src.split('/')
 
         let root = ''
-        const destDirs = []
-        const sourceDirs = []
+        const destDirs: [string | null | undefined] = [undefined]
+        const sourceDirs: [string | null | undefined] = [undefined]
 
         destParts.forEach(part => {
             if (part.trim()) {
@@ -414,7 +440,7 @@ const fsOperations = {
     /**
      * Helper: Copy directory recursively
      */
-    async _copyDirectory(sourceDir, destDir, overwrite) {
+    async _copyDirectory(sourceDir: string, destDir: string, overwrite: boolean) {
         await fs.mkdir(destDir, { recursive: true });
 
         const items = await fs.readdir(sourceDir, { withFileTypes: true });
@@ -437,7 +463,7 @@ const fsOperations = {
      * @param {boolean} [overwrite=false] - Overwrite if exists
      * @returns {Promise<{success: boolean, source?: string, destination?: string, error?: string}>}
      */
-    async move(source, destination, overwrite = false) {
+    async move(source: string, destination: string, overwrite: boolean = false) {
         try {
             if (!source || typeof source !== 'string') {
                 return { success: false, error: 'Invalid source path', source };
@@ -503,7 +529,7 @@ const fsOperations = {
      * @param {string} filePath - Path to check
      * @returns {Promise<{success: boolean, stats?: object, error?: string, path: string}>}
      */
-    stat(filePath) {
+    stat(filePath: string) {
         try {
             if (!filePath || typeof filePath !== 'string') {
                 return { success: false, error: 'Invalid path', path: filePath };
@@ -551,17 +577,17 @@ const fsOperations = {
      * @param {Object} [options] - Dialog options
      * @returns {Promise<{success: boolean, files?: string[], canceled?: boolean, error?: string}>}
      */
-    async openFileDialog(options = {}) {
+    async openFileDialog(options: DialogOptions | undefined) {
         try {
             const result = await dialog.showOpenDialog({
-                title: options.title || 'Select File',
-                defaultPath: options.defaultPath || process.cwd(),
-                buttonLabel: options.buttonLabel || 'Select',
-                filters: options.filters || [
+                title: options?.title || 'Select File',
+                defaultPath: options?.defaultPath || process.cwd(),
+                buttonLabel: options?.buttonLabel || 'Select',
+                filters: options?.filters || [
                     { name: 'All Files', extensions: ['*'] }
                 ],
-                properties: options.properties || ['openFile'],
-                message: options.message
+                properties: options?.properties || ['openFile'],
+                message: options?.message
             });
 
             if (result.canceled) {
@@ -590,16 +616,16 @@ const fsOperations = {
      * @param {Object} [options] - Dialog options
      * @returns {Promise<{success: boolean, filePath?: string, canceled?: boolean, error?: string}>}
      */
-    async saveFileDialog(options = {}) {
+    async saveFileDialog(options: DialogOptions | undefined) {
         try {
             const result = await dialog.showSaveDialog({
-                title: options.title || 'Save File',
-                defaultPath: options.defaultPath || process.cwd(),
-                buttonLabel: options.buttonLabel || 'Save',
-                filters: options.filters || [
+                title: options?.title || 'Save File',
+                defaultPath: options?.defaultPath || process.cwd(),
+                buttonLabel: options?.buttonLabel || 'Save',
+                filters: options?.filters || [
                     { name: 'All Files', extensions: ['*'] }
                 ],
-                message: options.message
+                message: options?.message
             });
 
             if (result.canceled) {
@@ -627,7 +653,7 @@ const fsOperations = {
      * @param {string} filePath - Path to JSON file
      * @returns {Promise<{success: boolean, data?: any, error?: string, path: string}>}
      */
-    async readJSON(filePath) {
+    async readJSON(filePath: string) {
         try {
             const result = await this.readFile(filePath);
             if (!result.success) {
@@ -657,7 +683,7 @@ const fsOperations = {
      * @param {number} [indent=2] - JSON indentation
      * @returns {Promise<{success: boolean, path?: string, error?: string}>}
      */
-    async writeJSON(filePath, data, indent = 2) {
+    async writeJSON(filePath: string, data: object, indent = 2) {
         try {
             const jsonString = JSON.stringify(data, null, indent);
             return await this.writeFile(filePath, jsonString);
@@ -676,7 +702,7 @@ const fsOperations = {
      * @param {Function} callback - Callback on change
      * @returns {Promise<{success: boolean, watcher?: fs.FSWatcher, error?: string}>}
      */
-    async watchFile(filePath, callback) {
+    async watchFile(filePath: string, callback: CallableFunction) {
         try {
             const absolutePath = path.resolve(filePath);
             const watcher = fsSync.watch(absolutePath, (eventType, filename) => {
@@ -697,5 +723,3 @@ const fsOperations = {
         }
     }
 };
-
-module.exports = fsOperations;

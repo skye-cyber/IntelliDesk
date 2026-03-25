@@ -1,4 +1,4 @@
-function getformatDateTime(reverse = false) {
+export function getformatDateTime(reverse: boolean = false): string {
     // Step 1: Create a Date object
     const now = new Date();
 
@@ -17,5 +17,3 @@ function getformatDateTime(reverse = false) {
 
     return formattedDateTime;
 }
-
-module.exports = { getformatDateTime }

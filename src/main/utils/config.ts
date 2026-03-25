@@ -1,12 +1,11 @@
-const os = require('os');
-const path = require('path');
-const fs = require('fs');
-
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
 
 /**
  * Manage Agent mode configuration for tool use etc
  */
-class AgentConfigManager {
+export class AgentConfigManager {
     constructor() {
         this.config_file = path.join(os.homedir(), '.IntelliDesk/.config/agent_mode_config.json')
 
@@ -298,6 +297,5 @@ class AgentConfigManager {
     }
 }
 
-const agent = new AgentConfigManager()
+export const agent = new AgentConfigManager()
 
-module.exports = { agent }

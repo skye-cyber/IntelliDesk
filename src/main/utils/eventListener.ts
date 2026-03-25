@@ -1,9 +1,9 @@
-class EventHandler {
+export class EventHandler {
   constructor() {
     this.listeners = new Map();
   }
 
-  on(event, callback) {
+  on(event: Event, callback: CallableFunction) {
     const { ipcRenderer } = require('electron');
     const listener = (event, data) => callback(data);
     ipcRenderer.on(event, listener);
@@ -12,7 +12,7 @@ class EventHandler {
     return () => this.off(event, callback);
   }
 
-  off(event, callback) {
+  off(event: Event, callback: CallableFunction) {
     const { ipcRenderer } = require('electron');
     const listenerInfo = this.listeners.get(callback);
     if (listenerInfo) {
@@ -22,4 +22,4 @@ class EventHandler {
   }
 }
 
-module.exports = { EventHandler };
+export const eventhandler = new EventHandler()

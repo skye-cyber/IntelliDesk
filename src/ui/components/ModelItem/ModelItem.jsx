@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
-import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
+import { useCallback } from 'react';
+import { ChatUtil } from '../../../core/managers/Conversation/util';
 import { StartNewConversation } from '../Sidebar/Sidebar';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager';
 
 const chatutil = new ChatUtil()
 

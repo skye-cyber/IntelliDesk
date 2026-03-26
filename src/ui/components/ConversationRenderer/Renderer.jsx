@@ -24,7 +24,7 @@ export const UserMessage = ({ message, files = [] }) => {
 
     return (
         <>
-            <section className="block">
+            <section className="block font-handwriting">
                 <div className="flex items-end gap-x-2 justify-end">
                     <div
                         ref={messageRef}
@@ -143,7 +143,7 @@ export const ResponseWrapper = ({
     chatutil.render_math(message_id)
 
     return (
-        <div id={message_id} className='font-brand leading-loose text-gray-900 dark:text-white transition-colors duration-300'>
+        <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300'>
             <div id="ai_response_think" className="w-full bg-none rounded-lg rounded-bl-none transition-colors duration-700">
                 {thinkContent &&
                     <div className="think-section">

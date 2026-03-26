@@ -180,7 +180,14 @@ function setupMenu() {
         {
             label: 'View',
             submenu: [
-                { label: 'Reload', accelerator: 'CmdOrCtrl+R' },
+                {
+                    label: 'Reload', role: "reload", accelerator: 'CmdOrCtrl+R', click: (_, focusedWindow) => {
+                        if (focusedWindow && 'reload' in focusedWindow) {
+                            const view = focusedWindow.getFocusedWebContentsView?.();
+                            view?.webContents?.reload();
+                        }
+                    }
+                },
                 {
                     label: 'Toggle Developer Tools',
                     accelerator: 'F12',

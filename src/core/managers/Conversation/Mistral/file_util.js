@@ -1,4 +1,4 @@
-import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge";
+import { streamingPortalBridge } from "../../../PortalBridge.ts";
 import { StateManager } from "../../StatesManager";
 
 /**

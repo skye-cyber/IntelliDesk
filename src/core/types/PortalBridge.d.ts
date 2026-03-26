@@ -24,6 +24,19 @@ interface StreamingPortalOptions {
     target?: 'props' | 'streamData';
     [key: string]: any;
 }
+export interface PortalEventDetail {
+    portalId?: string;
+    componentType?: string;
+    containerId?: string;
+    props?: ComponentProps;
+    controller?: StreamController;
+    data?: ComponentProps;
+    options?: AppendOptions;
+    componentProps?: ComponentProps;
+    id?: string;
+    prefix?: boolean;
+    updates?: Record<string, any>;
+}
 interface DataPortalShowEvent extends CustomEvent {
     detail: {
         portalId: string;

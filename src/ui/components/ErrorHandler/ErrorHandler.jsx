@@ -1,5 +1,5 @@
 import React from 'react';
-import { staticPortalBridge } from '../../../core/PortalBridge';
+import { staticPortalBridge } from '../../../core/PortalBridge.ts';
 
 export class ErrorHandler {
     constructor() {

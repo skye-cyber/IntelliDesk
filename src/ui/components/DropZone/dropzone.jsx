@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { openPreview, closePreview, handleFiles, formatFileSize, getFileType } from './util.js'
-import { staticPortalBridge } from '../../../core/PortalBridge.js';
+import { staticPortalBridge } from '../../../core/PortalBridge.ts';
 import { StateManager } from '../../../core/managers/StatesManager.js';
 
 export const DropZone = ({ isOpen, onToggle }) => {

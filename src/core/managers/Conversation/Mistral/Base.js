@@ -2,18 +2,18 @@ import { appIsDev, chatutil, canvasutil } from "./shared"; // provides shared ob
 import { clientmanager } from "./ClientManager";
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
-import { GenerateId } from "../../../../../react-app/components/ConversationRenderer/utils";
+// import { GenerateId } from "../../../../ui/components/ConversationRenderer/utils";
 import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
-import errorHandler from "../../../../../react-app/components/ErrorHandler/ErrorHandler";
+import errorHandler from "../../../../ui/components/ErrorHandler/ErrorHandler";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
 import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
-import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge";
+import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge.ts";
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
-import { timer } from "../../../Timer/timer";
+// import { timer } from "../../../Timer/timer";
 import toolsIntegration from "./ToolIntegration";
 import toolManager from "./ToolManager";
 import mistralClientSimulator from "../../../tests/MistralClientSimulator";
-import { Mistral } from '@mistralai/mistralai';
+// import { Mistral } from '@mistralai/mistralai';
 
 
 let ai_ms_pid

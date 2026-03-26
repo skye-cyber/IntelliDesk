@@ -4,7 +4,7 @@ import { StateManager } from '../managers/StatesManager.js';
 import { HandleProcessingEventChanges } from '../Utils/chatUtils.js';
 
 let router
-import('@js/managers/router.js').then(({ Router }) => {
+import('../../core/managers/router.js').then(({ Router }) => {
     router = new Router()
 })
 

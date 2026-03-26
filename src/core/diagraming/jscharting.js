@@ -2,7 +2,7 @@ import * as JSC from 'jscharting';
 import { createChart, HistogramSeries } from 'lightweight-charts';
 import { waitForElement } from '../Utils/dom_utils';
 import { modalmanager } from '../StatusUIManager/Manager';
-import { staticPortalBridge } from '../PortalBridge';
+import { staticPortalBridge } from '../PortalBridge.ts';
 import { StateManager } from '../managers/StatesManager';
 
 const chartCache = new Map();

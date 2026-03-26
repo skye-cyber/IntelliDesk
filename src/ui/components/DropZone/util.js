@@ -1,7 +1,7 @@
 import { waitForElement } from "../../../core/Utils/dom_utils";
 import { Router } from "../../../core/managers/router";
 import { modalmanager } from "../../../core/StatusUIManager/Manager";
-import { staticPortalBridge } from "../../../core/PortalBridge";
+import { staticPortalBridge } from "../../../core/PortalBridge.ts";
 import { StateManager } from "../../../core/managers/StatesManager";
 
 // Update show/hide functions with new animations

@@ -28,7 +28,7 @@ import '../core/ChatExport/export';
 import '../core/Utils/keyshortcuts';
 import { StaticPortalContainer } from './StaticPortalContainer';
 import { StreamingPortalContainer } from './StreamingPortalContainer';
-import '../core/PortalBridge';
+import '../core/PortalBridge.ts';
 import './PortalTargetRegister';
 
 const App = () => {
@@ -41,7 +41,6 @@ const App = () => {
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
     const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
-
     return (
         <ErrorBoundary>
             <MainLayout>

@@ -13,6 +13,7 @@ import {
     ArrowUp,
     ArrowDown,
     Plus,
+    PanelLeftClose,
     Settings
 } from 'lucide-react';
 import { FieldGroup } from './Fields';
@@ -613,13 +614,16 @@ const ConfigEditor = () => {
         <div ref={EditorWrapper} onClick={(e) => (Editor.current.contains(e.currentTarget)) ? CloseEditor() : ''} id="EditorWrapper" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
             <div ref={Editor} className="w-full max-h-[100vh] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-1 md:p-1 transition-colors duration-500 ease-in-out">
                 {/* Header */}
-                <header className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 transition-colors duration-700 ease-in-out mb-4 text-center">
+                <header className="relative bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 transition-colors duration-700 ease-in-out mb-4 text-center">
                     <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-500 bg-clip-text text-transparent mb-1">
                         Configuration Editor
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
                         Edit field names and values with an elegant, user-friendly interface
                     </p>
+                    <button className='absolute z-10 top-2 right-4 group' onClick={CloseEditor}>
+                        <PanelLeftClose className='text-purple-700 dark:text-[#ffaaff] group-hover:scale-[105%] group-hover:translate-x-1 transition-transform duration-500 ease-in-out' />
+                    </button>
                 </header>
                 <div className="max-h-full max-w-full mx-auto scrollbar-custom mb-12">
                     {/* Main Editor */}

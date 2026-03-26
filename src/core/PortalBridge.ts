@@ -30,7 +30,7 @@ interface StreamingPortalOptions {
     [key: string]: any;
 }
 
-interface PortalEventDetail {
+export interface PortalEventDetail {
     portalId?: string;
     componentType?: string;
     containerId?: string;

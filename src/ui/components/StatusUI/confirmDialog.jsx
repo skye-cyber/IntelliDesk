@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 //import { modalmanager } from '../../../core/StatusUIManager/Manager';
-import { staticPortalBridge } from '../../../core/PortalBridge';
+import { staticPortalBridge } from '../../../core/PortalBridge.ts';
 
 export const ConfirmationDialog = ({ title, message, dialog_id, portal_id, resolve }) => {
     const portalRef = useRef(null)

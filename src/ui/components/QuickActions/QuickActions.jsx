@@ -22,7 +22,7 @@ export const QuickActions = () => {
         input.textContent = query
     })
     return (
-        <section id='suggestions' className="hidden mx-auto" style={{ zIndex: 0 }}>
+        <section id='suggestions' className=" mx-auto" style={{ zIndex: 0 }}>
             <div className="flex justify-center items-center text-center perspective-1000">
                 <div className="p-2 rounded-lg">
                     <h1 className="text-3xl font-bold text-cyan-300 holographic-text">

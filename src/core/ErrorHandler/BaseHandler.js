@@ -1,9 +1,9 @@
 import { HandleProcessingEventChanges } from "../Utils/chatUtils"
 import { handleDevErrors } from "./ErrorHandler"
-import errorHandler from "../../../react-app/components/ErrorHandler/ErrorHandler"
+import errorHandler from "../../ui/components/ErrorHandler/ErrorHandler"
 import { StateManager } from "../managers/StatesManager"
 import { appIsDev } from "../managers/Conversation/Mistral/shared"
-import { streamingPortalBridge } from "../PortalBridge"
+import { streamingPortalBridge } from "../PortalBridge.ts"
 import { clientmanager } from "../managers/Conversation/Mistral/ClientManager"
 
 

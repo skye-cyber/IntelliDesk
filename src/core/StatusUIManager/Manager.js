@@ -1,5 +1,5 @@
-import { GenerateId } from "../../../react-app/components/ConversationRenderer/utils";
-import { staticPortalBridge } from "../PortalBridge";
+import { GenerateId } from "../../ui/components/ConversationRenderer/utils";
+import { staticPortalBridge } from "../PortalBridge.ts";
 
 export class ModalManager {
     constructor() {

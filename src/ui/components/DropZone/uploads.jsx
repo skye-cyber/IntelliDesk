@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { staticPortalBridge } from "../../../core/PortalBridge";
+import { staticPortalBridge } from "../../../core/PortalBridge.ts";
 import { StateManager } from "../../../core/managers/StatesManager";
 
 export const UploadedFileIndicator = ({ portal_id }) => {

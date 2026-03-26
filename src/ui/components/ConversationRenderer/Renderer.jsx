@@ -1,15 +1,15 @@
 import React, { useCallback, useRef } from 'react';
 import { CopyMessage } from './utils';
-import { normalizeMathDelimiters } from '../../../renderer/js/MathBase/MathNormalize';
-import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../renderer/js/ChatExport/export';
+import { normalizeMathDelimiters } from '../../../core/MathBase/MathNormalize';
+import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../core/ChatExport/export';
 import { markitdown } from '../Code/CodeHighlighter';
 import { CodeBlockRenderer, SimpleUserCodeRenderer } from '../Code/CodeBlockRenderer';
-import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
-// import { unsafe } from '../../../renderer/js/Utils/chatUtils';
+import { ChatUtil } from '../../../core/managers/Conversation/util';
+// import { unsafe } from '../../../core/Utils/chatUtils';
 import { GenerateId } from './utils';
-import { mathStandardize } from '../../../renderer/js/MathBase/mathRenderer';
-import { normalizeCodeBlocks } from '../../../renderer/js/Code/codeNormalize';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { mathStandardize } from '../../../core/MathBase/mathRenderer';
+import { normalizeCodeBlocks } from '../../../core/Code/codeNormalize';
+import { StateManager } from '../../../core/managers/StatesManager';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 
 const chatutil = new ChatUtil()

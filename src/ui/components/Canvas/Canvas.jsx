@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Caret } from '@js/Utils/caret.js'
-import { ResizeClassToggler } from '@js/managers/Canvas/CanvasUtils.js';
-import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
-import { StateManager } from '@js/managers/StatesManager';
-//import { ChatDisplay } from '@js/managers/Conversation/util';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { Caret } from '../../../core/Utils/caret.js'
+import { ResizeClassToggler } from '../../../core/managers/Canvas/CanvasUtils.js';
+import { useTheme } from '../../components/Themes/useThemeHeadless.jsx';
+import { StateManager } from '../../../core/managers/StatesManager';
 import { Editor } from './editor';
-import { waitForElement } from '../../../renderer/js/Utils/dom_utils';
+import { waitForElement } from '../../../core/Utils/dom_utils';
 
 //const chatdisplay = new ChatDisplay()
 

@@ -1,4 +1,4 @@
-import { StateManager } from "../../../renderer/js/managers/StatesManager";
+import { StateManager } from "../../../core/managers/StatesManager";
 
 export function GenerateId(prefix = '', postfix = '', length = 6) {
     // Generate a random alphanumeric string (letters + digits) for valid class/ID characters

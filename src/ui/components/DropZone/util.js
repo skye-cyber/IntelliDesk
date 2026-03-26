@@ -1,8 +1,8 @@
-import { waitForElement } from "../../../renderer/js/Utils/dom_utils";
-import { Router } from "../../../renderer/js/managers/router";
-import { modalmanager } from "../../../renderer/js/StatusUIManager/Manager";
-import { staticPortalBridge } from "../../../renderer/js/PortalBridge";
-import { StateManager } from "../../../renderer/js/managers/StatesManager";
+import { waitForElement } from "../../../core/Utils/dom_utils";
+import { Router } from "../../../core/managers/router";
+import { modalmanager } from "../../../core/StatusUIManager/Manager";
+import { staticPortalBridge } from "../../../core/PortalBridge";
+import { StateManager } from "../../../core/managers/StatesManager";
 
 // Update show/hide functions with new animations
 export function showDropZoneModal() {

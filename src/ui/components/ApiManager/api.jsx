@@ -1,8 +1,8 @@
-import React, { useEffect, useCallback, useState, useRef } from 'react';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { useEffect, useCallback, useState, useRef } from 'react';
+import { StateManager } from '../../../core/managers/StatesManager';
 import { ApiNotSetWarning } from './Modals/warn';
 import { SuggestApiKeyConfig } from './Modals/suggestion';
-import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
+import { modalmanager } from '../../../core/StatusUIManager/Manager';
 
 StateManager.set('api_key_ok', false)
 

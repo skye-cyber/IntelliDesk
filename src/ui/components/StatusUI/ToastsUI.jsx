@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { GenerateId } from '../ConversationRenderer/utils';
-import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
-import { staticPortalBridge } from '../../../renderer/js/PortalBridge';
+import { modalmanager } from '../../../core/StatusUIManager/Manager';
+import { staticPortalBridge } from '../../../core/PortalBridge';
 
 const typeConfig = {
     success: {

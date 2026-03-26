@@ -3,16 +3,16 @@ const webpack = require('webpack');
 const CopyPlugin = require("copy-webpack-plugin");
 
 const entries = {
-    HF_Chat: './src/renderer/js/managers/HF_Chat.js',
-    //XPutility: './src/renderer/js/Utils/XPutility.js',
-    chatUtils: './src/renderer/js/Utils/chatUtils.js',
-    MistralChatsAdmin: './src/renderer/js/managers/MistralChatsAdmin.js',
-    //V_Utils: './src/renderer/js/diagraming/V_Utils.js',
-    //HF_Audio: './src/renderer/js/managers/HF_Audio.js',
-    //V_DG: './src/renderer/js/diagraming/V_DG.js',
-    //V_Charts: './src/renderer/js/diagraming/V_Charts.js',
-    //fileHandler: './src/renderer/js/Utils/fileHandler.js',
-    mathHandler: './src/renderer/js/MathBase/mathHandler.js'
+    HF_Chat: './src/core/managers/HF_Chat.js',
+    //XPutility: './src/core/Utils/XPutility.js',
+    chatUtils: './src/core/Utils/chatUtils.js',
+    MistralChatsAdmin: './src/core/managers/MistralChatsAdmin.js',
+    //V_Utils: './src/core/diagraming/V_Utils.js',
+    //HF_Audio: './src/core/managers/HF_Audio.js',
+    //V_DG: './src/core/diagraming/V_DG.js',
+    //V_Charts: './src/core/diagraming/V_Charts.js',
+    //fileHandler: './src/core/Utils/fileHandler.js',
+    mathHandler: './src/core/MathBase/mathHandler.js'
 };
 
 module.exports = Object.entries(entries).map(([name, entryPath]) => {

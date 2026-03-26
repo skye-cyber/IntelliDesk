@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { FieldGroup } from './Fields';
 import { PermissionBadge, TopLevelIcon, SaveIndicator, ToolIcon } from './Helpers';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager';
 
 // Default configuration
 const defaultConfig = {

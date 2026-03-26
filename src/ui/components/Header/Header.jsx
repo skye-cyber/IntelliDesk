@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ModelSelector } from '../ModelSelector/ModelSelector';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager';
 
 StateManager.set('currentModel', 'mistral-small-latest')
 

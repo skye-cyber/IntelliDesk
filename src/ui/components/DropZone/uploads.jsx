@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
-import { staticPortalBridge } from "../../../renderer/js/PortalBridge";
-import { StateManager } from "../../../renderer/js/managers/StatesManager";
+import { staticPortalBridge } from "../../../core/PortalBridge";
+import { StateManager } from "../../../core/managers/StatesManager";
 
 export const UploadedFileIndicator = ({ portal_id }) => {
 

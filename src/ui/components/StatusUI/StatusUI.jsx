@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { hideStatus } from '@js/StatusUIManager/SimpleManager.js'
+import { useCallback } from 'react';
+import { hideStatus } from '../../../core/StatusUIManager/SimpleManager.js'
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 
 export const StatusUI = ({ isOpen, onToggle }) => {

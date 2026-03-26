@@ -1,9 +1,9 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { SettingToggle } from '@components/Settings/settings_toggle.jsx';
-import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
-import { useTheme } from '@components/Themes/useThemeHeadless.jsx';
-import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { useCallback, useState, useEffect } from 'react';
+import { SettingToggle } from '../../components/Settings/settings_toggle.jsx';
+import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
+import { useTheme } from '../../components/Themes/useThemeHeadless.jsx';
+import { modalmanager } from '../../../core/StatusUIManager/Manager';
+import { StateManager } from '../../../core/managers/StatesManager';
 
 export const Settings = ({ isOpen, onToggle }) => {
     const [preferenceChange, setPreferenceChange] = useState(false);

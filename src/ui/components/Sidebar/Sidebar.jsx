@@ -1,13 +1,13 @@
-import React, { useEffect, useCallback, useRef, useState } from 'react';
-import { ChatManager } from '@js/managers/Conversation/ChatManager';
+import { useEffect, useCallback, useRef } from 'react';
+import { ChatManager } from '../../../core/managers/Conversation/ChatManager';
 import indellidesk from '@assets/intellidesk.png';
-import { waitForElement } from '../../../renderer/js/Utils/dom_utils';
-import { ChatOptions } from '@components/Chat/ChatOptions.jsx';
-import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
-import { ClosePrefixed } from '../../../renderer/js/PortalBridge';
-import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
+import { waitForElement } from '../../../core/Utils/dom_utils';
+import { ChatOptions } from '../../components/Chat/ChatOptions.jsx';
+import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
+import { closePrefixed } from '../../../core/PortalBridge.js';
+import { ChatUtil } from '../../../core/managers/Conversation/util';
 import { MessageList } from '../Chat/MessageList';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager';
 
 const chatutil = new ChatUtil()
 
@@ -16,7 +16,7 @@ StateManager.set("sidebar-open", false)
 const Manager = new ChatManager();
 export const StartNewConversation = (model, details = {}) => {
     // Clear chatArea
-    ClosePrefixed()
+    closePrefixed()
     //Display suggestion
     document.getElementById('suggestions')?.classList?.remove('hidden')
     const event = new CustomEvent("NewConversation", {

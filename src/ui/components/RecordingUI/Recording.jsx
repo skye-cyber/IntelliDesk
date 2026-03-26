@@ -1,9 +1,18 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { HfInference } from "@huggingface/inference";
-import { RecordingAnimator } from '@js/animations/WaveForm.js'
-import errorHandler from '@components/ErrorHandler/ErrorHandler.jsx';
-import '@js/Utils/chatUtils.js'
-import { timer } from '../../../renderer/js/Timer/timer';
+import { useEffect, useState, useRef, useCallback } from 'react';
+// import { HfInference } from "../../../core/huggingface/inference";
+import { RecordingAnimator } from '../../../core/animations/WaveForm.js'
+import errorHandler from '../../components/ErrorHandler/ErrorHandler.jsx';
+import '../../../core/Utils/chatUtils.js'
+import { timer } from '../../../core/Timer/timer';
+
+class Inference {
+    constructore(API_KEY) {
+        this.API_KEY = API_KEY
+    }
+    automaticSpeechRecognition({ }) {
+        return
+    }
+}
 
 export const Recording = ({ isOpen, onToggle }) => {
     const [isPaused, setIsPaused] = useState(false);
@@ -13,7 +22,7 @@ export const Recording = ({ isOpen, onToggle }) => {
     const [elapsedTime, setElapsedTime] = useState(null);
     const [currentAudioElement, setCurrentAudioElement] = useState(null);
     //const [LoaderEvent, setLoaderEvent] = useState(null);
-    const [hf_API_KEY, setHf_API_KEY] = useState(null);
+    const [API_KEY, setAPI_KEY] = useState(null);
     const [client, setClient] = useState(null);
     //const [mediaRecorder, setMediaRecorder] = useState(null);
     const [audioChunks, setAudioChunks] = useState([]);
@@ -235,11 +244,11 @@ export const Recording = ({ isOpen, onToggle }) => {
 
         fetchApiKey()
 
-        setClient(new HfInference(hf_API_KEY));
+        setClient(new Inference(API_KEY));
 
         openRecording()
 
-    }, [hf_API_KEY])
+    }, [API_KEY])
 
     const openRecording = useCallback(() => {
         showModal()
@@ -251,7 +260,7 @@ export const Recording = ({ isOpen, onToggle }) => {
 
     async function loadApiKey() {
         const key = '...'//await window.desk.api2.getKeys('huggingfacex');
-        setHf_API_KEY(key) //.huggingfaceKey); // Assign to global variable
+        setAPI_KEY(key) //.huggingfaceKey); // Assign to global variable
     }
     async function autoSpeech(data) {
         try {

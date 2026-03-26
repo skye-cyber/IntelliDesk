@@ -1,12 +1,157 @@
+/**
+ * Portal Bridge for managing dynamic component rendering
+ */
+
+// Type definitions
+interface ComponentProps {
+    [key: string]: any;
+    portal_id?: string;
+    onResolve?: (value: any) => void;
+}
+
+interface StreamController {
+    id: string;
+    update: (newProps: ComponentProps) => void;
+    close: () => void;
+    append: (data: ComponentProps) => void;
+    appendComponent: (componentType: string, componentProps: ComponentProps, options: AppendOptions) => void;
+}
+
+interface AppendOptions {
+    target?: 'componentChildren' | 'props';
+    position?: 'append' | 'prepend' | 'insertAt';
+    index?: number;
+    mergeStrategy?: 'append' | 'update' | 'replace';
+}
+
+interface StreamingPortalOptions {
+    mergeStrategy?: 'append' | 'update' | 'replace';
+    target?: 'props' | 'streamData';
+    [key: string]: any;
+}
+
+interface PortalEventDetail {
+    portalId?: string;
+    componentType?: string;
+    containerId?: string;
+    props?: ComponentProps;
+    controller?: StreamController;
+    data?: ComponentProps;
+    options?: AppendOptions;
+    componentProps?: ComponentProps;
+    id?: string;
+    prefix?: boolean;
+    updates?: Record<string, any>;
+}
+
+// Custom event types
+interface DataPortalShowEvent extends CustomEvent {
+    detail: {
+        portalId: string;
+        componentType: string;
+        props: ComponentProps;
+    };
+}
+
+interface DataPortalShowTargetedEvent extends CustomEvent {
+    detail: {
+        portalId: string;
+        componentType: string;
+        containerId: string;
+        props: ComponentProps;
+    };
+}
+
+interface DataPortalCloseEvent extends CustomEvent {
+    detail: {
+        id: string;
+        prefix: boolean;
+    };
+}
+
+interface DataPortalCloseContainerEvent extends CustomEvent {
+    detail: {
+        containerId: string;
+    };
+}
+
+interface StreamDataPortalCreateEvent extends CustomEvent {
+    detail: {
+        portalId: string;
+        componentType: string;
+        containerId: string;
+        props: ComponentProps;
+        controller: StreamController;
+    };
+}
+
+interface StreamDataPortalUpdateEvent extends CustomEvent {
+    detail: {
+        portalId: string;
+        props: ComponentProps;
+    };
+}
+
+interface StreamDataPortalAppendEvent extends CustomEvent {
+    detail: {
+        portalId: string;
+        data: ComponentProps;
+        options: StreamingPortalOptions;
+    };
+}
+
+interface StreamDataPortalAppendComponentEvent extends CustomEvent {
+    detail: {
+        portalId: string;
+        componentType: string;
+        componentProps: ComponentProps;
+        options: AppendOptions;
+    };
+}
+
+interface StreamDataPortalCloseEvent extends CustomEvent {
+    detail: {
+        portalId: string;
+        prefix: boolean;
+    };
+}
+
+interface BatchDataPortalUpdateEvent extends CustomEvent {
+    detail: {
+        updates: Record<string, any>;
+    };
+}
+
+declare global {
+    interface DocumentEventMap {
+        'data-portal-show': DataPortalShowEvent;
+        'data-portal-show-targeted': DataPortalShowTargetedEvent;
+        'data-portal-close': DataPortalCloseEvent;
+        'data-portal-close-container': DataPortalCloseContainerEvent;
+        'stream-data-portal-create': StreamDataPortalCreateEvent;
+        'stream-data-portal-update': StreamDataPortalUpdateEvent;
+        'stream-data-portal-append': StreamDataPortalAppendEvent;
+        'stream-data-portal-append-component': StreamDataPortalAppendComponentEvent;
+        'stream-data-portal-close': StreamDataPortalCloseEvent;
+        'batch-data-portal-update': BatchDataPortalUpdateEvent;
+    }
+}
+
 class StaticPortalBridge {
+    private portals: Map<string, Element>;
+    private subscribers: Map<string, Element>;
+    private portalContainers: Map<string, Element>;
+
     constructor() {
-        this.portals = new Map();
-        this.subscribers = new Map();
-        this.portalContainers = new Map(); // For targeted containers
+        this.portals = new Map<string, Element>();
+        this.subscribers = new Map<string, Element>();
+        this.portalContainers = new Map<string, Element>();
     }
 
-    // Register a target container for specific components
-    registerContainer(containerId: string, domElement) {
+    /**
+     * Register a target container for specific components
+     */
+    registerContainer(containerId: string, domElement: Element): void {
         this.portalContainers.set(containerId, domElement);
 
         // Create a portal root inside the target container if it doesn't exist
@@ -17,24 +162,29 @@ class StaticPortalBridge {
         }
     }
 
-    // Show component in a specific target container
-    showComponentInTarget(componentType: string, containerId: string, props: {} = {}, portal_prefix: string = '') {
-        const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    /**
+     * Show component in a specific target container
+     */
+    showComponentInTarget(
+        componentType: string,
+        containerId: string,
+        props: ComponentProps = {},
+        portalPrefix: string = ''
+    ): string {
+        const portalId = `${portalPrefix}${portalPrefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-        const new_props = {
+        const newProps: ComponentProps = {
             ...props,
             portal_id: portalId
-        }
+        };
 
         if (!this.portalContainers.has(containerId)) {
-            //console.warn(`Container ${containerId} not registered. Falling back to global.`);
-            return this.showComponent(componentType, new_props);
+            // Fall back to global
+            return this.showComponent(componentType, newProps);
         }
 
-        new_props.portal_id = portalId
-
         const event = new CustomEvent('data-portal-show-targeted', {
-            detail: { portalId, componentType, containerId, new_props }
+            detail: { portalId, componentType, containerId, props: newProps }
         });
 
         document.dispatchEvent(event);
@@ -42,9 +192,11 @@ class StaticPortalBridge {
         return portalId;
     }
 
-    // Original global show method
-    showComponent(componentType: string, props = {}, portal_prefix = '') {
-        const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    /**
+     * Original global show method
+     */
+    showComponent(componentType: string, props: ComponentProps = {}, portalPrefix: string = ''): string {
+        const portalId = `${portalPrefix}${portalPrefix ? '-' : ''}portal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
         const event = new CustomEvent('data-portal-show', {
             detail: { portalId, componentType, props }
@@ -54,22 +206,30 @@ class StaticPortalBridge {
         return portalId;
     }
 
-    closeComponent(portalId: string, prefix: boolean = false) {
+    /**
+     * Close a component
+     */
+    closeComponent(portalId: string, prefix: boolean = false): void {
         const event = new CustomEvent('data-portal-close', {
             detail: { id: portalId, prefix: prefix }
         });
         document.dispatchEvent(event);
     }
 
-    // Close all components in a specific container
-    closeAllInContainer(containerId: string) {
+    /**
+     * Close all components in a specific container
+     */
+    closeAllInContainer(containerId: string): void {
         const event = new CustomEvent('data-portal-close-container', {
             detail: { containerId }
         });
         document.dispatchEvent(event);
     }
 
-    showComponentAsync(componentType: string, props: {} = {}) {
+    /**
+     * Show component asynchronously with Promise
+     */
+    showComponentAsync(componentType: string, props: ComponentProps = {}): Promise<any> {
         return new Promise((resolve) => {
             this.showComponent(componentType, {
                 ...props,
@@ -78,7 +238,14 @@ class StaticPortalBridge {
         });
     }
 
-    showComponentInTargetAsync(componentType: string, containerId: string, props: {} = {}) {
+    /**
+     * Show component in target asynchronously with Promise
+     */
+    showComponentInTargetAsync(
+        componentType: string,
+        containerId: string,
+        props: ComponentProps = {}
+    ): Promise<any> {
         return new Promise((resolve) => {
             this.showComponentInTarget(componentType, containerId, {
                 ...props,
@@ -89,25 +256,41 @@ class StaticPortalBridge {
 }
 
 class StreamingPortalBridge {
+    private portals: Map<string, Element>;
+    private subscribers: Map<string, Element>;
+    private streamingPortals: Map<string, any>; // Stores component references
+
     constructor() {
-        this.portals = new Map();
-        this.streamingPortals = new Map();
+        this.portals = new Map<string, Element>();
+        this.subscribers = new Map<string, Element>();
+        this.streamingPortals = new Map<string, any>();
     }
 
-    registerStreamingComponent(componentName: string, Component) {
+    /**
+     * Register a streaming component
+     */
+    registerStreamingComponent(componentName: string, Component: any): void {
         this.streamingPortals.set(componentName, Component);
     }
 
-    createStreamingPortal(componentType: string, containerId: string, initialProps: {} = {}, portal_prefix: string = '') {
-        const portalId = `${portal_prefix}${portal_prefix ? '-' : ''}stream-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    /**
+     * Create a streaming portal
+     */
+    createStreamingPortal(
+        componentType: string,
+        containerId: string,
+        initialProps: ComponentProps = {},
+        portalPrefix: string = ''
+    ): StreamController {
+        const portalId = `${portalPrefix}${portalPrefix ? '-' : ''}stream-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-        const streamController = {
+        const streamController: StreamController = {
             id: portalId,
-            update: (newProps: {}) => this.updateStreamingPortal(portalId, newProps),
+            update: (newProps: ComponentProps) => this.updateStreamingPortal(portalId, newProps),
             close: () => this.closeStreamingPortal(portalId),
-            append: (data: {}) => this.appendToStreamingPortal(portalId, data),
-            appendComponent: (componentType: string, componentProps: {}, options: {}) =>
-                this.appendComponentToStreamingPortal(portalId, componentType, componentProps, options)
+            append: (data: ComponentProps) => this.appendToStreamingPortal(portalId, data),
+            appendComponent: (componentType: string, componentProps: ComponentProps, options: AppendOptions) =>
+            this.appendComponentToStreamingPortal(portalId, componentType, componentProps, options)
         };
 
         const event = new CustomEvent('stream-data-portal-create', {
@@ -124,14 +307,20 @@ class StreamingPortalBridge {
         return streamController;
     }
 
-    updateStreamingPortal(portalId: string, newProps: {}) {
+    /**
+     * Update streaming portal with new props
+     */
+    updateStreamingPortal(portalId: string, newProps: ComponentProps): void {
         const event = new CustomEvent('stream-data-portal-update', {
             detail: { portalId, props: newProps }
         });
         document.dispatchEvent(event);
     }
 
-    appendToStreamingPortal(portalId: string, data: {}, options = {}) {
+    /**
+     * Append data to streaming portal
+     */
+    appendToStreamingPortal(portalId: string, data: ComponentProps, options: StreamingPortalOptions = {}): void {
         const event = new CustomEvent('stream-data-portal-append', {
             detail: {
                 portalId,
@@ -148,15 +337,13 @@ class StreamingPortalBridge {
 
     /**
      * Append a component to a streaming portal
-     * @param {string} portalId - Target portal ID
-     * @param {string} componentType - Component type from registry
-     * @param {object} componentProps - Component props
-     * @param {object} options - Append options
-     * @param {string} options.target - 'componentChildren' (as children) or 'props' (as props.children)
-     * @param {string} options.position - 'append' (default), 'prepend', 'insertAt'
-     * @param {number} options.index - Index for insertAt
      */
-    appendComponentToStreamingPortal(portalId: string, componentType: string, componentProps: {} = {}, options: {} = {}) {
+    appendComponentToStreamingPortal(
+        portalId: string,
+        componentType: string,
+        componentProps: ComponentProps = {},
+        options: AppendOptions = {}
+    ): { portalId: string; componentType: string; componentProps: ComponentProps } {
         const event = new CustomEvent('stream-data-portal-append-component', {
             detail: {
                 portalId,
@@ -174,12 +361,14 @@ class StreamingPortalBridge {
         return { portalId, componentType, componentProps };
     }
 
-    // Convenience methods for common patterns
-
     /**
-     * Append a component as a child of the portal (in-place appending)
+     * Convenience: Append a component as a child of the portal (in-place appending)
      */
-    appendComponentAsChild(portalId: string, componentType: string, componentProps: {} = {}) {
+    appendComponentAsChild(
+        portalId: string,
+        componentType: string,
+        componentProps: ComponentProps = {}
+    ): { portalId: string; componentType: string; componentProps: ComponentProps } {
         return this.appendComponentToStreamingPortal(portalId, componentType, componentProps, {
             target: 'componentChildren',
             position: 'append'
@@ -187,9 +376,13 @@ class StreamingPortalBridge {
     }
 
     /**
-     * Prepend a component as a child of the portal
+     * Convenience: Prepend a component as a child of the portal
      */
-    prependComponentAsChild(portalId: string, componentType: string, componentProps: {} = {}) {
+    prependComponentAsChild(
+        portalId: string,
+        componentType: string,
+        componentProps: ComponentProps = {}
+    ): { portalId: string; componentType: string; componentProps: ComponentProps } {
         return this.appendComponentToStreamingPortal(portalId, componentType, componentProps, {
             target: 'componentChildren',
             position: 'prepend'
@@ -197,9 +390,14 @@ class StreamingPortalBridge {
     }
 
     /**
-     * Insert a component at a specific position
+     * Convenience: Insert a component at a specific position
      */
-    insertComponentAt(portalId: string, componentType: string, componentProps: {} = {}, index: number = 0) {
+    insertComponentAt(
+        portalId: string,
+        componentType: string,
+        componentProps: ComponentProps = {},
+        index: number = 0
+    ): { portalId: string; componentType: string; componentProps: ComponentProps } {
         return this.appendComponentToStreamingPortal(portalId, componentType, componentProps, {
             target: 'componentChildren',
             position: 'insertAt',
@@ -208,44 +406,63 @@ class StreamingPortalBridge {
     }
 
     /**
-     * Append a component as props.children (alternative approach)
+     * Convenience: Append a component as props.children (alternative approach)
      */
-    appendComponentToProps(portalId: string, componentType: string, componentProps: {} = {}) {
+    appendComponentToProps(
+        portalId: string,
+        componentType: string,
+        componentProps: ComponentProps = {}
+    ): { portalId: string; componentType: string; componentProps: ComponentProps } {
         return this.appendComponentToStreamingPortal(portalId, componentType, componentProps, {
             target: 'props',
             position: 'append'
         });
     }
 
-    updateProps(portalId: string, props: {}) {
+    /**
+     * Update props of a streaming portal
+     */
+    updateProps(portalId: string, props: ComponentProps): void {
         this.appendToStreamingPortal(portalId, props, {
             mergeStrategy: 'update',
             target: 'props'
         });
     }
 
-    appendStreamData(portalId: string, data: {}) {
+    /**
+     * Append stream data to portal
+     */
+    appendStreamData(portalId: string, data: ComponentProps): void {
         this.appendToStreamingPortal(portalId, data, {
             mergeStrategy: 'append',
             target: 'streamData'
         });
     }
 
-    replaceProps(portalId: string, props: {}) {
+    /**
+     * Replace props of a streaming portal
+     */
+    replaceProps(portalId: string, props: ComponentProps): void {
         this.appendToStreamingPortal(portalId, props, {
             mergeStrategy: 'replace',
             target: 'props'
         });
     }
 
-    closeStreamingPortal(portalId: string, prefix: boolean = false) {
+    /**
+     * Close a streaming portal
+     */
+    closeStreamingPortal(portalId: string, prefix: boolean = false): void {
         const event = new CustomEvent('stream-data-portal-close', {
             detail: { portalId: portalId, prefix: prefix }
         });
         document.dispatchEvent(event);
     }
 
-    batchUpdate(updates: {}) {
+    /**
+     * Batch update multiple portals
+     */
+    batchUpdate(updates: Record<string, any>): void {
         const event = new CustomEvent('batch-data-portal-update', {
             detail: { updates }
         });
@@ -253,14 +470,17 @@ class StreamingPortalBridge {
     }
 }
 
+// Singleton instances
+export const staticPortalBridge = new StaticPortalBridge();
+export const streamingPortalBridge = new StreamingPortalBridge();
 
-export function ClosePrefixed() {
-    for (let pid of ['user_message', 'ai_message']) {
-        staticPortalBridge.closeComponent(pid, true)
-        streamingPortalBridge.closeStreamingPortal(pid, true)
+/**
+ * Close all portals with specific prefixes
+ */
+export function closePrefixed(): void {
+    const prefixes = ['user_message', 'ai_message'];
+    for (const pid of prefixes) {
+        staticPortalBridge.closeComponent(pid, true);
+        streamingPortalBridge.closeStreamingPortal(pid, true);
     }
 }
-
-export const staticPortalBridge = new StaticPortalBridge();
-
-export const streamingPortalBridge = new StreamingPortalBridge();

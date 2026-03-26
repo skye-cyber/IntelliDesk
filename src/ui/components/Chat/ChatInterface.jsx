@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { QuickActions } from '@components/QuickActions/QuickActions';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { QuickActions } from '../../components/QuickActions/QuickActions';
 import { MessageList } from './MessageList';
-import { useElectron } from '@hooks/useElectron';
-import { showDropZoneModal } from '@components/DropZone/util.js'
-import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
-import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
-import { InputSection } from '@components/Input/InputSection';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
-import { InputPurify } from '../../../renderer/js/Utils/chatUtils';
+import { useElectron } from '../../hooks/useElectron';
+import { showDropZoneModal } from '../../components/DropZone/util.js'
+import { ChatUtil } from '../../../core/managers/Conversation/util';
+import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
+import { InputSection } from '../../components/Input/InputSection';
+import { StateManager } from '../../../core/managers/StatesManager';
+import { InputPurify } from '../../../core/Utils/chatUtils';
 import ConfigEditor from '../ConfigManager/ConfigEditor';
 
 

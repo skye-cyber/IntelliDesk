@@ -8,7 +8,7 @@ import { SystemPrompt } from './utils/system';
 import { fsOperations as fsops } from "./utils/fsOperations";
 import { getformatDateTime } from './utils/datetime';
 import { agent } from './utils/config';
-import { dbManager } from './utils/DatabaseManager';
+// import { dbManager } from './utils/db/DatabaseManager';
 import { shell } from 'electron';
 import type {
     ConversationMetadata,
@@ -23,7 +23,7 @@ import type {
     ApiType,
     Api2Type,
     CmdType,
-    ChatContent
+    // ChatContent
 } from './preload.type';
 
 
@@ -660,7 +660,7 @@ contextBridge.exposeInMainWorld('desk', {
     fsops,
     path,
     fs,
-    dbManager
+    // dbManager
 });
 
 document.addEventListener('DOMContentLoaded', function() {

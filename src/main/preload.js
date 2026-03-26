@@ -13,7 +13,7 @@ const system_1 = require("./utils/system");
 const fsOperations_1 = require("./utils/fsOperations");
 const datetime_1 = require("./utils/datetime");
 const config_1 = require("./utils/config");
-const DatabaseManager_1 = require("./utils/DatabaseManager");
+// import { dbManager } from './utils/db/DatabaseManager';
 const electron_2 = require("electron");
 // Global variables
 let ConversationId = "";
@@ -660,7 +660,7 @@ electron_1.contextBridge.exposeInMainWorld('desk', {
     fsops: fsOperations_1.fsOperations,
     path: path_1.default,
     fs: fs_1.default,
-    dbManager: DatabaseManager_1.dbManager
+    // dbManager
 });
 document.addEventListener('DOMContentLoaded', function () {
     ConversationHistory.chats = [{ role: "system", content: system_command }];

@@ -1,12 +1,12 @@
 import React from 'react';
-import { dot_interpreter } from '../../../renderer/js/diagraming/vizcharting';
-import { chart_interpret } from '../../../renderer/js/diagraming/jscharting';
-import { handleCodeCopy } from '../../../renderer/js/Utils/chatUtils';
-import { openInCanvas } from '../../../renderer/js/managers/Canvas/CanvasUtils';
-import { CanvasUtil } from '../../../renderer/js/managers/Canvas/CanvasUtils';
+import { dot_interpreter } from '../../../core/diagraming/vizcharting';
+import { chart_interpret } from '../../../core/diagraming/jscharting';
+import { handleCodeCopy } from '../../../core/Utils/chatUtils';
+import { openInCanvas } from '../../../core/managers/Canvas/CanvasUtils';
+import { CanvasUtil } from '../../../core/managers/Canvas/CanvasUtils';
 import { GenerateId } from '../ConversationRenderer/utils';
-import { html_preview } from '../../../renderer/js/managers/Canvas/html_render';
-import { exportCodeToFile } from '../../../renderer/js/Utils/exportCodeUtils';
+import { html_preview } from '../../../core/managers/Canvas/html_render';
+import { exportCodeToFile } from '../../../core/Utils/exportCodeUtils';
 
 //StateManager.set('processing', false);
 

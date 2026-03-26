@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { ChatManager } from '../../../renderer/js/managers/Conversation/ChatManager';
-import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
-import { staticPortalBridge } from '../../../renderer/js/PortalBridge';
+import { ChatManager } from '../../../core/managers/Conversation/ChatManager';
+import { modalmanager } from '../../../core/StatusUIManager/Manager';
+import { staticPortalBridge } from '../../../core/PortalBridge';
 
 const Manager = new ChatManager()
 

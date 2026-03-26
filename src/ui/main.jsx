@@ -1,7 +1,7 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
+// import React from 'react';
+// import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
-import '../renderer/js/polyfills/polyfills';
+import '../core/polyfills/polyfills';
 
 // Optimized mounting with better error handling and performance
 const mountApp = async () => {

@@ -1,7 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-//import { createPortal } from 'react-dom';
-import { ModelCategory } from '@components/ModelCategory/ModelCategory';
-
+import { ModelCategory } from '../../components/ModelCategory/ModelCategory';
 
 export const ModelSelector = ({ selectedModel = 'mistral-small-latest', onModelSelect, onClose }) => {
     const hfmodelCategories = [

@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { DiagramToPngExportSvg } from '../../../renderer/js/diagraming/utils';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { useCallback, useEffect, useRef } from 'react';
+import { DiagramToPngExportSvg } from '../../../core/diagraming/utils';
+import { StateManager } from '../../../core/managers/StatesManager';
 
 export const DiagramUi = ({ isOpen, onClose, content }) => {
     const view = useRef(null)

@@ -155,7 +155,6 @@ declare global {
             fsops: any;
             path: typeof path;
             fs: typeof fs;
-            dbManager: any;
         };
     }
     interface DocumentEventMap {

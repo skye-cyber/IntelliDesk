@@ -1,15 +1,15 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { showDropZoneModal } from '@components/DropZone/util.js'
-import { namespaceWatcher } from '../../../renderer/js/Utils/namespace_utils';
-import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { useCallback, useEffect, useState, useRef } from 'react';
+import { showDropZoneModal } from '../../components/DropZone/util.js'
+import { namespaceWatcher } from '../../../core/Utils/namespace_utils';
+import { ChatUtil } from '../../../core/managers/Conversation/util';
+import { StateManager } from '../../../core/managers/StatesManager';
 import { AutoCodeDetector } from '../Code/autoCodeDetector';
 
 const chatutil = new ChatUtil()
 
 let router
 //Import Dynamically
-import('@js/managers/router.js').then(({ Router }) => {
+import('../../../core/managers/router.js').then(({ Router }) => {
     router = new Router()
     // Set a namespaced variable for the watcher
     window.app = window.app || {};

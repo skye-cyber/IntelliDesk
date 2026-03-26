@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { LoadingIndicator, LoadingSpinner } from './LoadingIndicator';
+import { useEffect, useState, useCallback } from 'react';
+import { LoadingSpinner } from './LoadingIndicator';
 import indellidesk from '@assets/intellidesk.png';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager';
 
 export const MessageList = ({ }) => {
     const [isLoading, setLoading] = useState(true)

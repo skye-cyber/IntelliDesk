@@ -1,5 +1,5 @@
-import { waitForElement, waitForElementSimple } from "../renderer/js/Utils/dom_utils";
-import { staticPortalBridge, streamingPortalBridge } from "../renderer/js/PortalBridge";
+import { waitForElement, waitForElementSimple } from "../core/Utils/dom_utils";
+import { staticPortalBridge, streamingPortalBridge } from "../core/PortalBridge";
 
 waitForElement('#diag-modal-content', (el) => {
     staticPortalBridge.registerContainer('diagram_canvas', el);

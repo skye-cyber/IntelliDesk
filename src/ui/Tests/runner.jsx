@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { testSuite } from '../../renderer/js/tests/ToolCallingTestSuite';
+import { testSuite } from '../../core/tests/ToolCallingTestSuite';
 
 export const TestsRunner = () => {
     // State for test results

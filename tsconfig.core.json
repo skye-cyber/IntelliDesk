@@ -12,5 +12,5 @@
     "declarationDir": "./src/core/types"
   },
   "include": ["src/core/**/*"]
-  //"exclude": ["src/common/"]
+  "exclude": ["src/core/types/**/*"]
 }

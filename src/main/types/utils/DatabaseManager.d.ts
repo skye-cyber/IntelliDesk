@@ -1,4 +1,56 @@
+/**
+ * Database Manager - Handles database connections and operations
+ */
+import { Db } from "mongodb";
+import postgres from 'pg';
 import mysql from 'mysql2/promise';
+import { Database } from "sqlite";
+export interface DatabaseConfig {
+    type: 'sqlite' | 'mysql' | 'mariadb' | 'postgres' | 'postgresql' | 'mongodb';
+    database?: string;
+    host?: string;
+    port?: number;
+    username?: string;
+    password?: string;
+    connectionString?: string;
+    driver?: any;
+    options?: Record<string, any>;
+}
+export interface ConnectionInfo {
+    db: any;
+    config: DatabaseConfig;
+    lastUsed: Date;
+}
+export interface TableColumn {
+    name: string;
+    type: string;
+    notnull?: boolean;
+    default?: any;
+    pk?: boolean;
+    nullable?: boolean;
+    primary?: boolean;
+    unique?: boolean;
+}
+export interface TableSchema {
+    table: string;
+    columns: TableColumn[];
+}
+export interface QueryResult {
+    rowsAffected?: number;
+    lastID?: number;
+    rows?: any[];
+}
+export interface AddConnectionResult {
+    success: boolean;
+    message: string;
+}
+export interface ConnectionListItem {
+    name: string;
+    type: string;
+    database: string;
+    lastUsed: Date;
+    status: string;
+}
 export declare class DatabaseManager {
     private connections;
     private config;
@@ -6,58 +58,51 @@ export declare class DatabaseManager {
     /**
      * Load database configuration
      */
-    loadConfig(): any;
+    loadConfig(): Record<string, DatabaseConfig>;
     /**
      * Save database configuration
      */
     saveConfig(): void;
     /**
      * Get a database connection
-     * @param {string} name - Connection name or identifier
-     * @returns {Promise<object>} Database connection object
+     * @param name - Connection name or identifier
+     * @returns Database connection object
      */
     getConnection(name?: string): Promise<any>;
     /**
      * Get connection configuration
-     * @param {string} name - Connection name
-     * @returns {object} Connection configuration
+     * @param name - Connection name
+     * @returns Connection configuration
      */
-    getConnectionConfig(name: string): any;
+    getConnectionConfig(name: string): DatabaseConfig;
     /**
      * Parse connection string
-     * @param {string} connectionString - Database connection string
-     * @returns {object} Parsed configuration
+     * @param connectionString - Database connection string
+     * @returns Parsed configuration
      */
-    parseConnectionString(connectionString: string): {
-        type: string;
-        host: string;
-        port: string;
-        database: string;
-        username: string;
-        password: string;
-    };
+    parseConnectionString(connectionString: string): DatabaseConfig;
     /**
      * Create database connection based on type
-     * @param {object} config - Database configuration
-     * @returns {Promise<object>} Database connection
+     * @param config - Database configuration
+     * @returns Database connection
      */
-    createConnection(config: any): Promise<any>;
+    createConnection(config: DatabaseConfig): Promise<any>;
     /**
      * Create SQLite connection
      */
-    createSQLiteConnection(config: any): Promise<import("sqlite").Database<import("sqlite3").Database, import("sqlite3").Statement>>;
+    createSQLiteConnection(config: DatabaseConfig): Promise<Database>;
     /**
      * Create MySQL connection
      */
-    createMySQLConnection(config: any): Promise<mysql.Connection>;
+    createMySQLConnection(config: DatabaseConfig): Promise<mysql.Connection>;
     /**
      * Create PostgreSQL connection
      */
-    createPostgresConnection(config: any): Promise<any>;
+    createPostgresConnection(config: DatabaseConfig): Promise<postgres.Client>;
     /**
      * Create MongoDB connection
      */
-    createMongoDBConnection(config: any): Promise<import("mongodb").Db>;
+    createMongoDBConnection(config: DatabaseConfig): Promise<Db>;
     /**
      * Test if connection is alive
      */
@@ -65,7 +110,7 @@ export declare class DatabaseManager {
     /**
      * Close a database connection
      */
-    closeConnection(name: any): Promise<void>;
+    closeConnection(name: string): Promise<void>;
     /**
      * Close all database connections
      */
@@ -73,53 +118,38 @@ export declare class DatabaseManager {
     /**
      * List all available connections
      */
-    listConnections(): {
-        name: string;
-        type: any;
-        database: any;
-        lastUsed: any;
-        status: string;
-    }[];
+    listConnections(): ConnectionListItem[];
     /**
      * Add or update a database configuration
      */
-    addConnection(name: string, config: any): {
-        success: boolean;
-        message: string;
-    };
+    addConnection(name: string, config: DatabaseConfig): AddConnectionResult;
     /**
      * Remove a database configuration
      */
-    removeConnection(name: string): {
-        success: boolean;
-        message: string;
-    };
+    removeConnection(name: string): AddConnectionResult;
     /**
      * Execute a query on a specific connection
      * Utility method for other tools/components
      */
-    executeQuery(connectionName: string, query: string, parameters?: [string | object | number | undefined]): Promise<any>;
+    executeQuery(connectionName: string, query: string, parameters?: any[]): Promise<any>;
     /**
      * Get database schema/information
      */
-    getSchema(connectionName: string): Promise<{
-        table: any;
-        columns: any;
-    }[] | {
+    getSchema(connectionName: string): Promise<TableSchema[] | {
         error: string;
     }>;
-    getSQLiteSchema(db: any): Promise<{
-        table: any;
-        columns: any;
-    }[]>;
-    getMySQLSchema(db: any, database: any): Promise<{
-        table: any;
-        columns: any;
-    }[]>;
-    getPostgresSchema(db: any): Promise<{
-        table: any;
-        columns: any;
-    }[]>;
+    /**
+     * Get SQLite schema
+     */
+    getSQLiteSchema(db: any): Promise<TableSchema[]>;
+    /**
+     * Get MySQL schema
+     */
+    getMySQLSchema(db: any, database: string): Promise<TableSchema[]>;
+    /**
+     * Get PostgreSQL schema
+     */
+    getPostgresSchema(db: any): Promise<TableSchema[]>;
     /**
      * Cleanup old/unused connections
      */

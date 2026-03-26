@@ -93,7 +93,7 @@ export interface ApiType {
     setModel: (model: string) => void;
     clean: (data: Conversation) => Conversation | null;
     getmetadata: (file: string) => ConversationMetadata | undefined;
-    updateName: (name: string, save?: boolean) => string;
+    updateName: (name: string, save?: boolean) => string | undefined;
     updateContinueHistory: (item: ChatMessage) => void | false;
     clearAllImages: (history: Conversation) => any[] | false;
     clearImages: (history: Conversation) => any[] | false;

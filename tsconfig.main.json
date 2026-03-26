@@ -14,5 +14,5 @@
     "declarationDir": "./src/main/types"
   },
   "include": ["src/main/**/*"],
-  "exclude": ["src/main/types/**/*", "DatabaseManager.ts"]
+  "exclude": ["src/main/types/**/*", "src/main/utils/DatabaseManager.ts", "types.ts"]
 }

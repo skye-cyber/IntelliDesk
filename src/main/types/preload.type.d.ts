@@ -15,9 +15,10 @@ export type MultimodalMessage = Array<{
     text?: string;
     [key: string]: any;
 }>;
+export type ChatContent = string | MultimodalMessage;
 export interface ChatMessage {
     role: 'system' | 'user' | 'assistant';
-    content: string | MultimodalMessage;
+    content: ChatContent;
 }
 export interface Conversation {
     metadata: ConversationMetadata;
@@ -90,7 +91,7 @@ export interface ApiType {
     setModel: (model: string) => void;
     clean: (data: Conversation) => Conversation | null;
     getmetadata: (file: string) => ConversationMetadata | undefined;
-    updateName: (name: string, save?: boolean) => string;
+    updateName: (name: string, save?: boolean) => string | undefined;
     updateContinueHistory: (item: ChatMessage) => void | false;
     clearAllImages: (history: Conversation) => any[] | false;
     clearImages: (history: Conversation) => any[] | false;

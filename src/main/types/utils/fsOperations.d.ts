@@ -1,5 +1,5 @@
-import type { readFileSuccess, readFileError, writeFileSuccess, writeFileError, appendFileError, fileExistsStats, fileExistsStatError, watchFileSuccess, watchFileError, statPathError, statPathSuccess, fileOpError, FileInfoSuccess, mkdirSuccess, deleteSuccess, deleteError, copyError, copySuccess, moveSuccess, moveError, appendFileSuccess, openDialogResponse, openDialogError, saveDialogResponse, saveDialogError } from "./types";
 import { OpenDialogOptions } from "electron/utility";
+import type { readFileSuccess, readFileError, writeFileSuccess, writeFileError, appendFileSuccess, appendFileError, fileExistsStats, fileExistsStatError, fileOpError, FileInfoSuccess, mkdirSuccess, deleteSuccess, deleteError, copySuccess, copyError, moveSuccess, moveError, statPathSuccess, statPathError, watchFileSuccess, watchFileError, saveDialogResponse, saveDialogError, openDialogResponse, openDialogError } from "./types";
 export declare const fsOperations: {
     /**
      * Read file content
@@ -67,4 +67,4 @@ export declare const fsOperations: {
      */
     watchFile(filePath: string, callback: CallableFunction): Promise<watchFileSuccess | watchFileError>;
 };
-//# sourceMappingURL=fs.d.ts.map
+//# sourceMappingURL=fsOperations.d.ts.map

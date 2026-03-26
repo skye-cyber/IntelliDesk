@@ -35,6 +35,12 @@ export interface writeFileSuccess {
 }
 export type writeFileError = fileOpError;
 export type appendFileError = fileOpError;
+export interface appendFileSuccess {
+    success: boolean;
+    path: string;
+    size: number;
+    encoding: BufferEncoding | null;
+}
 export type fileExistsStatError = fileOpError;
 export interface fileExistsStats {
     success: boolean;
@@ -138,4 +144,28 @@ export interface moveSuccess {
     type: 'directory' | 'file';
 }
 export type moveError = copyError;
+export interface saveDialogResponse {
+    success: boolean;
+    path: string | null;
+    code: string | number | undefined;
+}
+export interface saveDialogError {
+    success: boolean;
+    error: string | undefined;
+    code: string | number | undefined;
+    path: string | null | undefined;
+    canceled: boolean;
+}
+export interface openDialogResponse {
+    success: boolean;
+    files: Array<string | any>;
+    canceled: boolean;
+}
+export interface openDialogError {
+    success: boolean;
+    error: string | undefined;
+    code: string | number | undefined;
+    files: Array<string | any>;
+    canceled: boolean;
+}
 //# sourceMappingURL=types.d.ts.map

@@ -127,6 +127,7 @@ function setupIPC() {
         }
         catch (err) {
             //console.log(err)
+            return '';
         }
     });
     electron_1.ipcMain.handle('get-dev-status', async () => {

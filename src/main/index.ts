@@ -146,6 +146,7 @@ function setupIPC() {
             return app.getVersion()
         } catch (err) {
             //console.log(err)
+            return ''
         }
     });
 

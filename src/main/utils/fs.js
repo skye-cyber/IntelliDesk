@@ -8,12 +8,19 @@ const electron_1 = require("electron");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const promises_1 = __importDefault(require("fs/promises"));
+// Type guard functions
+function isFileExistsStats(obj) {
+    return obj && typeof obj === 'object' && 'success' in obj && 'exists' in obj && 'isDirectory' in obj;
+}
+function isFileInfoSuccess(obj) {
+    return obj && typeof obj === 'object' && 'success' in obj && 'files' in obj;
+}
+function isReadFileSuccess(obj) {
+    return obj && typeof obj === 'object' && 'success' in obj && 'data' in obj;
+}
 exports.fsOperations = {
     /**
      * Read file content
-     * @param {string} filePath - Path to file
-     * @param {string} [encoding='utf8'] - File encoding
-     * @returns {Promise<{success: boolean, data?: string, error?: string, path: string}>}
      */
     async readFile(filePath, encoding = 'utf8') {
         try {
@@ -24,7 +31,7 @@ exports.fsOperations = {
             const data = await promises_1.default.readFile(absolutePath, { encoding: encoding });
             return {
                 success: true,
-                data,
+                data: data.toString(),
                 path: absolutePath,
                 size: data.length,
                 encoding: encoding
@@ -33,18 +40,14 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error && error.message ? error.message : null,
-                code: error && error.message ? error?.code : null,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 path: filePath
             };
         }
     },
     /**
      * Write content to file
-     * @param {string} filePath - Path to file
-     * @param {string} content - Content to write
-     * @param {string} [encoding='utf8'] - File encoding
-     * @returns {Promise<{success: boolean, path?: string, error?: string, bytesWritten?: number}>}
      */
     async writeFile(filePath, content, encoding = 'utf8') {
         try {
@@ -65,24 +68,20 @@ exports.fsOperations = {
                 success: true,
                 path: absolutePath,
                 bytesWritten: stats.size,
-                created: (existsCheck.success && existsCheck.exists)
+                created: isFileExistsStats(existsCheck) && existsCheck.exists
             };
         }
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 path: filePath
             };
         }
     },
     /**
      * Append content to file
-     * @param {string} filePath - Path to file
-     * @param {string} content - Content to append
-     * @param {string} [encoding='utf8'] - File encoding
-     * @returns {Promise<{success: boolean, path?: string, error?: string}>}
      */
     async appendFile(filePath, content, encoding = 'utf8') {
         try {
@@ -95,7 +94,6 @@ exports.fsOperations = {
             return {
                 success: true,
                 path: absolutePath,
-                data: undefined,
                 size: stats.size,
                 encoding: encoding,
             };
@@ -103,16 +101,14 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 path: filePath
             };
         }
     },
     /**
      * Check if file or directory exists
-     * @param {string} filePath - Path to check
-     * @returns {Promise<{success: boolean, exists: boolean, isFile?: boolean, isDirectory?: boolean, error?: string}>}
      */
     async exists(filePath) {
         try {
@@ -135,9 +131,9 @@ exports.fsOperations = {
             catch (error) {
                 if (error.code === 'ENOENT') {
                     return {
-                        success: true,
-                        error: error,
-                        code: 400,
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                        code: error?.code || 500,
                         path: absolutePath
                     };
                 }
@@ -147,17 +143,14 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error,
+                error: error instanceof Error ? error.message : 'Unknown error',
                 path: filePath,
-                code: error.code
+                code: error?.code || 500,
             };
         }
     },
     /**
      * List directory contents
-     * @param {string} dirPath - Directory path
-     * @param {boolean} [recursive=false] - List recursively
-     * @returns {Promise<{success: boolean, files?: Array, error?: string, path: string}>}
      */
     async readDir(dirPath, recursive = false) {
         try {
@@ -183,7 +176,7 @@ exports.fsOperations = {
                 };
                 if (recursive && item.isDirectory()) {
                     const subResult = await this.readDir(itemPath, recursive);
-                    if (subResult.success) {
+                    if (isFileInfoSuccess(subResult)) {
                         fileInfo.children = subResult.files;
                     }
                 }
@@ -199,17 +192,14 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 path: dirPath
             };
         }
     },
     /**
      * Create directory
-     * @param {string} dirPath - Directory path
-     * @param {boolean} [recursive=true] - Create parent directories
-     * @returns {Promise<{success: boolean, path?: string, error?: string, created: boolean}>}
      */
     async mkdir(dirPath, recursive = true) {
         try {
@@ -218,7 +208,7 @@ exports.fsOperations = {
             }
             const absolutePath = path_1.default.resolve(dirPath);
             const existsCheck = await this.exists(dirPath);
-            const existed = (existsCheck.success && existsCheck.exists);
+            const existed = isFileExistsStats(existsCheck) && existsCheck.exists;
             if (!existed) {
                 await promises_1.default.mkdir(absolutePath, { recursive });
             }
@@ -232,17 +222,14 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 path: dirPath
             };
         }
     },
     /**
      * Delete file or directory
-     * @param {string} filePath - Path to delete
-     * @param {boolean} [recursive=false] - Delete recursively for directories
-     * @returns {Promise<{success: boolean, path?: string, error?: string, type?: string}>}
      */
     async delete(filePath, recursive = false) {
         try {
@@ -257,16 +244,16 @@ exports.fsOperations = {
             }
             const absolutePath = path_1.default.resolve(filePath);
             const existsCheck = await this.exists(absolutePath);
-            if (existsCheck.success && !existsCheck.exists) {
+            if (!isFileExistsStats(existsCheck) || !existsCheck.exists) {
                 return {
                     success: false,
                     error: 'Path does not exist',
                     path: absolutePath,
-                    code: 403,
+                    code: 404,
                     type: undefined
                 };
             }
-            if (existsCheck.success && existsCheck.isDirectory) {
+            if (existsCheck.isDirectory) {
                 if (recursive) {
                     await promises_1.default.rm(absolutePath, { recursive: true, force: true });
                 }
@@ -298,8 +285,8 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 path: filePath,
                 type: undefined,
             };
@@ -307,10 +294,6 @@ exports.fsOperations = {
     },
     /**
      * Copy file or directory
-     * @param {string} source - Source path
-     * @param {string} destination - Destination path
-     * @param {boolean} [overwrite=false] - Overwrite if exists
-     * @returns {Promise<{success: boolean, source?: string, destination?: string, error?: string}>}
      */
     async copy(source, destination, overwrite = false) {
         try {
@@ -335,33 +318,33 @@ exports.fsOperations = {
             const sourcePath = path_1.default.resolve(source);
             let destPath = path_1.default.resolve(destination);
             const sourceExists = await this.exists(sourcePath);
-            if (sourceExists.success && !sourceExists.exists) {
+            if (!isFileExistsStats(sourceExists) || !sourceExists.exists) {
                 return {
                     success: false,
                     error: 'Source path does not exist',
                     source: sourcePath,
-                    code: 403,
+                    code: 404,
                     destination: destination
                 };
             }
             let destExists = await this.exists(destPath);
             // If destination exists and is a directory, append source filename
-            if (destExists.success && destExists.exists) {
+            if (isFileExistsStats(destExists) && destExists.exists) {
                 if (destExists.isDirectory && sourceExists.isFile) {
                     destPath = path_1.default.resolve(path_1.default.join(destPath, path_1.default.basename(sourcePath)));
                     destExists = await this.exists(destPath);
                 }
             }
-            if (destExists.success && destExists.exists && !overwrite) {
+            if (isFileExistsStats(destExists) && destExists.exists && !overwrite) {
                 return {
                     success: false,
                     error: 'Destination already exists. Use overwrite=true to replace.',
                     source: sourcePath,
                     destination: destPath,
-                    code: 403
+                    code: 409
                 };
             }
-            if (sourceExists.success && sourceExists.isDirectory) {
+            if (sourceExists.isDirectory) {
                 const realDest = path_1.default.join(destPath, path_1.default.basename(sourcePath));
                 await this._copyDirectory(sourcePath, realDest, overwrite);
             }
@@ -379,8 +362,8 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 source: source,
                 destination: destination
             };
@@ -390,8 +373,8 @@ exports.fsOperations = {
         const destParts = dst.split('/');
         const sourceParts = src.split('/');
         let root = '';
-        const destDirs = [undefined];
-        const sourceDirs = [undefined];
+        const destDirs = [];
+        const sourceDirs = [];
         destParts.forEach(part => {
             if (part.trim()) {
                 root += `/${part}`;
@@ -428,17 +411,13 @@ exports.fsOperations = {
     },
     /**
      * Move/rename file or directory
-     * @param {string} source - Source path
-     * @param {string} destination - Destination path
-     * @param {boolean} [overwrite=false] - Overwrite if exists
-     * @returns {Promise<{success: boolean, source?: string, destination?: string, error?: string}>}
      */
     async move(source, destination, overwrite = false) {
         try {
             if (!source || typeof source !== 'string') {
                 return {
                     success: false,
-                    code: 403,
+                    code: 400,
                     error: 'Invalid source path',
                     source: source,
                     destination: destination
@@ -456,31 +435,31 @@ exports.fsOperations = {
             const sourcePath = path_1.default.resolve(source);
             let destPath = path_1.default.resolve(destination);
             const sourceExists = await this.exists(sourcePath);
-            const sourceType = sourceExists.isDirectory ? 'directory' : 'file';
-            if (sourceExists.success && !sourceExists.exists) {
+            if (!isFileExistsStats(sourceExists) || !sourceExists.exists) {
                 return {
                     success: false,
                     error: 'Source path does not exist',
                     source: sourcePath,
                     destination: destination,
-                    code: 403
+                    code: 404
                 };
             }
+            const sourceType = sourceExists.isDirectory ? 'directory' : 'file';
             let destExists = await this.exists(destPath);
             // If destination exists and is a directory, append source filename
-            if (destExists.success && destExists.exists) {
+            if (isFileExistsStats(destExists) && destExists.exists) {
                 if (destExists.isDirectory) {
                     destPath = path_1.default.resolve(path_1.default.join(destPath, path_1.default.basename(sourcePath)));
                     destExists = await this.exists(destPath);
                 }
             }
-            if (destExists.success && destExists.exists && !overwrite) {
+            if (isFileExistsStats(destExists) && destExists.exists && !overwrite) {
                 return {
                     success: false,
                     error: 'Destination already exists. Use overwrite=true to replace.',
                     source: sourcePath,
                     destination: destPath,
-                    code: 403
+                    code: 409
                 };
             }
             await promises_1.default.rename(sourcePath, destPath);
@@ -495,8 +474,8 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 source: source,
                 destination: destination
             };
@@ -504,8 +483,6 @@ exports.fsOperations = {
     },
     /**
      * Get file/directory stats
-     * @param {string} filePath - Path to check
-     * @returns {Promise<{success: boolean, stats?: object, error?: string, path: string}>}
      */
     stat(filePath) {
         try {
@@ -546,16 +523,14 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 path: filePath
             };
         }
     },
     /**
      * Open file dialog to select files
-     * @param {Object} [options] - Dialog options
-     * @returns {Promise<{success: boolean, files?: string[], canceled?: boolean, error?: string}>}
      */
     async openFileDialog(options) {
         try {
@@ -566,13 +541,14 @@ exports.fsOperations = {
                 filters: options?.filters || [
                     { name: 'All Files', extensions: ['*'] }
                 ],
-                properties: options?.properties || [('openFile')],
+                properties: options?.properties || ['openFile'],
                 message: options?.message
             });
             if (result.canceled) {
                 return {
                     success: true,
                     canceled: true,
+                    code: undefined,
                     files: []
                 };
             }
@@ -585,14 +561,15 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message
+                canceled: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
+                files: []
             };
         }
     },
     /**
      * Open save file dialog
-     * @param {Object} [options] - Dialog options
-     * @returns {Promise<{success: boolean, filePath?: string, canceled?: boolean, error?: string}>}
      */
     async saveFileDialog(options) {
         try {
@@ -609,28 +586,29 @@ exports.fsOperations = {
                 return {
                     success: true,
                     canceled: true,
-                    path: result.filePath || null
+                    path: result.filePath || null,
+                    code: 403
                 };
             }
             return {
                 success: true,
                 path: result.filePath,
                 canceled: false,
+                code: 200
             };
         }
         catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: 500,
-                path: options?.defaultPath || ''
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
+                path: options?.defaultPath || '',
+                canceled: false
             };
         }
     },
     /**
      * Read file as JSON
-     * @param {string} filePath - Path to JSON file
-     * @returns {Promise<{success: boolean, data?: any, error?: string, path: string}>}
      */
     async readJSON(filePath) {
         try {
@@ -650,18 +628,14 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: `Failed to parse JSON: ${error.message}`,
+                error: error instanceof Error ? `Failed to parse JSON: ${error.message}` : 'Unknown error',
+                code: error?.code || 500,
                 path: filePath,
-                code: 500,
             };
         }
     },
     /**
      * Write data as JSON
-     * @param {string} filePath - Path to write
-     * @param {any} data - Data to write
-     * @param {number} [indent=2] - JSON indentation
-     * @returns {Promise<{success: boolean, path?: string, error?: string}>}
      */
     async writeJSON(filePath, data, indent = 2) {
         try {
@@ -671,17 +645,14 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: `Failed to write JSON: ${error.message}`,
+                error: error instanceof Error ? `Failed to write JSON: ${error.message}` : 'Unknown error',
+                code: error?.code || 500,
                 path: filePath,
-                code: 500
             };
         }
     },
     /**
      * Watch file for changes
-     * @param {string} filePath - File to watch
-     * @param {Function} callback - Callback on change
-     * @returns {Promise<{success: boolean, watcher?: fs.FSWatcher, error?: string}>}
      */
     async watchFile(filePath, callback) {
         try {
@@ -698,9 +669,9 @@ exports.fsOperations = {
         catch (error) {
             return {
                 success: false,
-                error: error.message,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: error?.code || 500,
                 path: filePath,
-                code: 500
             };
         }
     }

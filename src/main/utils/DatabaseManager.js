@@ -11,7 +11,6 @@ const mongodb_1 = require("mongodb");
 const pg_1 = __importDefault(require("pg"));
 const promise_1 = __importDefault(require("mysql2/promise"));
 const sqlite_1 = require("sqlite");
-//const open = window.desk.sqlite_open
 class DatabaseManager {
     constructor() {
         this.connections = new Map();
@@ -21,10 +20,19 @@ class DatabaseManager {
      * Load database configuration
      */
     loadConfig() {
-        // Try to load from config file, environment variables, or use defaults
         try {
-            const config = JSON.parse(localStorage.getItem('database_config') || '{}');
-            return config;
+            // Check if running in browser environment with localStorage
+            if (typeof localStorage !== 'undefined') {
+                const config = JSON.parse(localStorage.getItem('database_config') || '{}');
+                return config;
+            }
+            // Fallback for Node.js environment
+            return {
+                default: {
+                    type: 'sqlite',
+                    database: './database.sqlite'
+                }
+            };
         }
         catch (error) {
             return {
@@ -39,12 +47,14 @@ class DatabaseManager {
      * Save database configuration
      */
     saveConfig() {
-        localStorage.setItem('database_config', JSON.stringify(this.config));
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('database_config', JSON.stringify(this.config));
+        }
     }
     /**
      * Get a database connection
-     * @param {string} name - Connection name or identifier
-     * @returns {Promise<object>} Database connection object
+     * @param name - Connection name or identifier
+     * @returns Database connection object
      */
     async getConnection(name = 'default') {
         // Return existing connection if available
@@ -52,8 +62,8 @@ class DatabaseManager {
             const connection = this.connections.get(name);
             // Test if connection is still alive
             try {
-                await this.testConnection(connection);
-                return connection.db || connection;
+                await this.testConnection(connection.db);
+                return connection.db;
             }
             catch (error) {
                 // Connection is dead, remove it and create a new one
@@ -74,8 +84,8 @@ class DatabaseManager {
     }
     /**
      * Get connection configuration
-     * @param {string} name - Connection name
-     * @returns {object} Connection configuration
+     * @param name - Connection name
+     * @returns Connection configuration
      */
     getConnectionConfig(name) {
         // Return specific config if exists
@@ -83,30 +93,30 @@ class DatabaseManager {
             return this.config[name];
         }
         // Return default config
-        if (name === 'default' && !this.config.get_default_config()) {
+        if (name === 'default' && !this.config.default) {
             return {
                 type: 'sqlite',
                 database: './database.sqlite',
-                driver: sqlite3_1.sqlite3.Database
+                //driver: sqlite3.Database
             };
         }
         // Parse connection string
-        if (typeof name === 'string' && name.includes('://')) {
+        if (name.includes('://')) {
             return this.parseConnectionString(name);
         }
         throw new Error(`Database configuration not found for: ${name}`);
     }
     /**
      * Parse connection string
-     * @param {string} connectionString - Database connection string
-     * @returns {object} Parsed configuration
+     * @param connectionString - Database connection string
+     * @returns Parsed configuration
      */
     parseConnectionString(connectionString) {
         const url = new URL(connectionString);
         const config = {
             type: url.protocol.replace(':', ''),
             host: url.hostname,
-            port: url.port,
+            port: parseInt(url.port) || undefined,
             database: url.pathname.replace('/', ''),
             username: url.username,
             password: url.password
@@ -123,8 +133,8 @@ class DatabaseManager {
     }
     /**
      * Create database connection based on type
-     * @param {object} config - Database configuration
-     * @returns {Promise<object>} Database connection
+     * @param config - Database configuration
+     * @returns Database connection
      */
     async createConnection(config) {
         const { type } = config;
@@ -150,7 +160,7 @@ class DatabaseManager {
         try {
             const db = await (0, sqlite_1.open)({
                 filename: config.database || ':memory:',
-                driver: config.driver || sqlite3_1.sqlite3.Database
+                driver: config.driver //|| sqlite3.Database
             });
             // Enable foreign keys for SQLite
             await db.exec('PRAGMA foreign_keys = ON');
@@ -204,7 +214,8 @@ class DatabaseManager {
      */
     async createMongoDBConnection(config) {
         try {
-            const client = new mongodb_1.MongoClient(config.connectionString || `mongodb://${config.host || 'localhost'}:${config.port || 27017}`);
+            const connectionString = config.connectionString || `mongodb://${config.host || 'localhost'}:${config.port || 27017}`;
+            const client = new mongodb_1.MongoClient(connectionString);
             await client.connect();
             const db = client.db(config.database || 'test');
             return db;
@@ -220,7 +231,7 @@ class DatabaseManager {
         try {
             const db = connection.db || connection;
             // Try a simple query based on database type
-            if (db.run) { // SQLite
+            if (db.run && db.get) { // SQLite
                 await db.get('SELECT 1');
             }
             else if (db.execute) { // MySQL
@@ -244,7 +255,7 @@ class DatabaseManager {
     async closeConnection(name) {
         if (this.connections.has(name)) {
             const connection = this.connections.get(name);
-            const db = connection.db || connection;
+            const db = connection.db;
             try {
                 if (db.close) {
                     await db.close();
@@ -273,7 +284,7 @@ class DatabaseManager {
         return Array.from(this.connections.entries()).map(([name, conn]) => ({
             name,
             type: conn.config.type,
-            database: conn.config.database || conn.config.host,
+            database: conn.config.database || conn.config.host || '',
             lastUsed: conn.lastUsed,
             status: 'connected'
         }));
@@ -302,15 +313,15 @@ class DatabaseManager {
      * Execute a query on a specific connection
      * Utility method for other tools/components
      */
-    async executeQuery(connectionName, query, parameters = [undefined]) {
+    async executeQuery(connectionName, query, parameters = []) {
         const db = await this.getConnection(connectionName);
         try {
             if (db.run && db.all) { // SQLite
                 if (query.trim().toUpperCase().startsWith('SELECT')) {
-                    return await db.all(query, parameters);
+                    return await db.all(query, ...parameters);
                 }
                 else {
-                    const result = await db.run(query, parameters);
+                    const result = await db.run(query, ...parameters);
                     return { rowsAffected: result.changes, lastID: result.lastID };
                 }
             }
@@ -323,7 +334,6 @@ class DatabaseManager {
                 return result.rows;
             }
             else if (db.collection) { // MongoDB
-                // MongoDB queries would be handled differently
                 throw new Error('MongoDB queries should use native MongoDB syntax');
             }
         }
@@ -350,6 +360,9 @@ class DatabaseManager {
                 return { error: 'Schema inspection not supported for this database type' };
         }
     }
+    /**
+     * Get SQLite schema
+     */
     async getSQLiteSchema(db) {
         const tables = await db.all("SELECT name FROM sqlite_master WHERE type='table'");
         const schema = [];
@@ -357,7 +370,7 @@ class DatabaseManager {
             const columns = await db.all(`PRAGMA table_info(${table.name})`);
             schema.push({
                 table: table.name,
-                columns: columns.map(col => ({
+                columns: columns.map((col) => ({
                     name: col.name,
                     type: col.type,
                     notnull: col.notnull === 1,
@@ -368,25 +381,28 @@ class DatabaseManager {
         }
         return schema;
     }
+    /**
+     * Get MySQL schema
+     */
     async getMySQLSchema(db, database) {
         const [tables] = await db.execute(`
-            SELECT TABLE_NAME as table_name
-            FROM INFORMATION_SCHEMA.TABLES
-            WHERE TABLE_SCHEMA = ?
+        SELECT TABLE_NAME as table_name
+        FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = ?
         `, [database]);
         const schema = [];
         for (const table of tables) {
             const [columns] = await db.execute(`
-                SELECT COLUMN_NAME as name, DATA_TYPE as type,
-                       IS_NULLABLE as nullable, COLUMN_DEFAULT as default_value,
-                       COLUMN_KEY as key_type
-                FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
-                ORDER BY ORDINAL_POSITION
+            SELECT COLUMN_NAME as name, DATA_TYPE as type,
+            IS_NULLABLE as nullable, COLUMN_DEFAULT as default_value,
+            COLUMN_KEY as key_type
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+            ORDER BY ORDINAL_POSITION
             `, [database, table.table_name]);
             schema.push({
                 table: table.table_name,
-                columns: columns.map(col => ({
+                columns: columns.map((col) => ({
                     name: col.name,
                     type: col.type,
                     nullable: col.nullable === 'YES',
@@ -398,24 +414,27 @@ class DatabaseManager {
         }
         return schema;
     }
+    /**
+     * Get PostgreSQL schema
+     */
     async getPostgresSchema(db) {
         const tables = await db.query(`
-            SELECT tablename as table_name
-            FROM pg_tables
-            WHERE schemaname = 'public'
+        SELECT tablename as table_name
+        FROM pg_tables
+        WHERE schemaname = 'public'
         `);
         const schema = [];
         for (const table of tables.rows) {
             const columns = await db.query(`
-                SELECT column_name as name, data_type as type,
-                       is_nullable as nullable, column_default as default_value
-                FROM information_schema.columns
-                WHERE table_name = $1
-                ORDER BY ordinal_position
+            SELECT column_name as name, data_type as type,
+            is_nullable as nullable, column_default as default_value
+            FROM information_schema.columns
+            WHERE table_name = $1
+            ORDER BY ordinal_position
             `, [table.table_name]);
             schema.push({
                 table: table.table_name,
-                columns: columns.rows.map(col => ({
+                columns: columns.rows.map((col) => ({
                     name: col.name,
                     type: col.type,
                     nullable: col.nullable === 'YES',
@@ -431,7 +450,7 @@ class DatabaseManager {
     cleanupConnections(maxAgeMinutes = 30) {
         const now = new Date();
         for (const [name, connection] of this.connections.entries()) {
-            const age = (now - connection.lastUsed) / (1000 * 60); // minutes
+            const age = (now.getTime() - connection.lastUsed.getTime()) / (1000 * 60);
             if (age > maxAgeMinutes) {
                 this.closeConnection(name);
             }

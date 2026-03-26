@@ -10,7 +10,7 @@ const os_1 = __importDefault(require("os"));
 const child_process_1 = require("child_process");
 const buffer_1 = require("buffer");
 const system_1 = require("./utils/system");
-const fs_2 = require("./utils/fs");
+const fsOperations_1 = require("./utils/fsOperations");
 const datetime_1 = require("./utils/datetime");
 const config_1 = require("./utils/config");
 const DatabaseManager_1 = require("./utils/DatabaseManager");
@@ -162,6 +162,7 @@ const api = {
         }
         catch (err) {
             console.log(err);
+            return false;
         }
     },
     addHistory: (item) => {
@@ -175,14 +176,14 @@ const api = {
                 if (ConversationHistory.metadata.model === "multimodal") {
                     if (item?.content.length > 0) {
                         if (typeof item?.content[0] == 'object' && item?.content[0].text && typeof (item?.content[0].text) === "string") {
-                            const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replaceAll('`', '');
+                            const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replace(/`/, '');
                             ConversationHistory.metadata.highlight = highlight;
                         }
                     }
                 }
                 else {
                     if (typeof (item?.content) === "string") {
-                        const highlight = item?.content?.split(' ').slice(0, 8).join(' ').replaceAll('`', '');
+                        const highlight = item?.content?.split(' ').slice(0, 8).join(' ').replace(/`/, '');
                         ConversationHistory.metadata.highlight = highlight;
                     }
                 }
@@ -253,7 +254,7 @@ const api = {
                         text = text.trim();
                         return text ? { type: part?.type || 'text', text } : null;
                     })
-                        .filter(Boolean);
+                        .filter((item) => item !== null);
                 }
                 else if (typeof content === 'string') {
                     if (content.slice(-1) === ']') {
@@ -285,10 +286,11 @@ const api = {
             if (!api.stat(fpath))
                 return;
             const rdata = fs_1.default.readFileSync(fpath, 'utf-8');
-            return rdata ? JSON.parse(rdata)?.metadata : '';
+            return rdata ? JSON.parse(rdata)?.metadata : undefined;
         }
         catch (err) {
             console.log(err, file);
+            return undefined;
         }
     },
     updateName: (name, save = true) => {
@@ -397,6 +399,9 @@ const api = {
                 console.log("In temporary chat Not saving");
                 return filePath;
             }
+            // Actually save the conversation data to file
+            await api.write(filePath, conversationData);
+            console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         }
         catch (err) {
@@ -435,7 +440,7 @@ const api = {
     receive: (channel, func) => {
         const validChannels = ['reply-from-main-process', 'from-main-process-ToVision', 'from-main-process-ToChat'];
         if (validChannels.includes(channel)) {
-            electron_1.ipcRenderer.on(channel, (event, ...args) => func(...args));
+            electron_1.ipcRenderer.on(channel, (_, ...args) => func(...args));
         }
     },
     ThemeChangeDispatch: () => {
@@ -469,23 +474,26 @@ const api = {
         });
     },
     cleanFile: async (file) => {
-        fs_1.default.readFileSync(file, (err, data) => {
-            if (err)
-                throw err;
-            data = JSON.parse(data);
-            data.chats.forEach((res) => {
+        try {
+            const data = await fs_1.default.promises.readFile(file, 'utf-8');
+            const parsedData = JSON.parse(data);
+            parsedData.chats.forEach((res) => {
                 if (res.role === "user") {
-                    if (data.chats[data.chats.indexOf(res) + 1].role !== "assistant") {
-                        console.log("Pair: !index", data.chats.indexOf(res) + 1);
-                        data.chats.slice(data.chats.indexOf(res), data.chats.indexOf(res) + 1).values();
+                    if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role !== "assistant") {
+                        console.log("Pair: !index", parsedData.chats.indexOf(res) + 1);
+                        parsedData.chats.slice(parsedData.chats.indexOf(res), parsedData.chats.indexOf(res) + 1).values();
                     }
-                    else if (data.chats[data.chats.indexOf(res) + 1].role === "assistant") {
-                        console.log("Pair: OK", data.chats.indexOf(res));
+                    else if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role === "assistant") {
+                        console.log("Pair: OK", parsedData.chats.indexOf(res));
                     }
                 }
             });
             return true;
-        });
+        }
+        catch (err) {
+            console.error(err);
+            return false; // or return undefined
+        }
     },
     getDateTime: () => {
         return (0, datetime_1.getformatDateTime)(true);
@@ -529,9 +537,10 @@ const api = {
                 const prefData = fs_1.default.readFileSync(_fpath, 'utf-8');
                 return JSON.parse(prefData);
             }
+            return undefined;
         }
         catch (err) {
-            // console.log(err)
+            return undefined;
         }
     },
     saveRecording: async (blob) => {
@@ -551,6 +560,7 @@ const api = {
         }
         catch (err) {
             console.log(err);
+            return undefined;
         }
     },
     readFileData: async (filePath) => {
@@ -560,7 +570,7 @@ const api = {
         const data = fs_1.default.readFileSync(filePath);
         return data;
     },
-    saveImageBuffer: async (canvas, path, url = null) => {
+    saveImageBuffer: async (canvas, path, _ = null) => {
         try {
             return new Promise((resolve, reject) => {
                 canvas.toBlob(async (blob) => {
@@ -610,15 +620,15 @@ const api2 = {
     saveConversation: (conversation) => electron_1.ipcRenderer.invoke('save-conversation', conversation),
     deleteConversation: (conversationId) => electron_1.ipcRenderer.invoke('delete-conversation', conversationId),
     onChatResponse: (callback) => {
-        electron_1.ipcRenderer.on('chat-response', (event, response) => callback(response));
+        electron_1.ipcRenderer.on('chat-response', (_, response) => callback(response));
         return () => electron_1.ipcRenderer.removeAllListeners('chat-response');
     },
     onError: (callback) => {
-        electron_1.ipcRenderer.on('chat-error', (event, error) => callback(error));
+        electron_1.ipcRenderer.on('chat-error', (_, error) => callback(error));
         return () => electron_1.ipcRenderer.removeAllListeners('chat-error');
     },
     onThemeChange: (callback) => {
-        electron_1.ipcRenderer.on('theme-changed', (event, theme) => callback(theme));
+        electron_1.ipcRenderer.on('theme-changed', (_, theme) => callback(theme));
         return () => electron_1.ipcRenderer.removeAllListeners('theme-changed');
     }
 };
@@ -647,7 +657,7 @@ electron_1.contextBridge.exposeInMainWorld('desk', {
     api2,
     agent: config_1.agent,
     cmd,
-    fsops: fs_2.fsOperations,
+    fsops: fsOperations_1.fsOperations,
     path: path_1.default,
     fs: fs_1.default,
     dbManager: DatabaseManager_1.dbManager

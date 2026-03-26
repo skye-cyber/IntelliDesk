@@ -172,6 +172,7 @@ const api: ApiType = {
             }
         } catch (err) {
             console.log(err);
+            return false
         }
     },
     addHistory: (item: ChatMessage): Conversation => {
@@ -252,7 +253,7 @@ const api: ApiType = {
             const chat = data;
             const cleaned_chats = chat.chats
                 .map(item => {
-                    let content: ChatContent = item?.content;
+                    let content = item?.content;
 
                     if (Array.isArray(content)) {
                         content = content
@@ -264,7 +265,7 @@ const api: ApiType = {
                                 text = text.trim();
                                 return text ? { type: part?.type || 'text', text } : null;
                             })
-                            .filter(Boolean);
+                            .filter((item): item is { type: string; text: string } => item !== null);
                     } else if (typeof content === 'string') {
                         if (content.slice(-1) === ']') {
                             content = content.substring(0, content.length - 22);
@@ -296,6 +297,7 @@ const api: ApiType = {
             return rdata ? JSON.parse(rdata)?.metadata : undefined;
         } catch (err) {
             console.log(err, file);
+            return undefined
         }
     },
     updateName: (name: string, save: boolean = true): string | undefined => {
@@ -401,6 +403,10 @@ const api: ApiType = {
                 console.log("In temporary chat Not saving");
                 return filePath;
             }
+
+            // Actually save the conversation data to file
+            await api.write(filePath, conversationData);
+            console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         } catch (err) {
             console.error('Error saving conversation:', err);
@@ -437,7 +443,7 @@ const api: ApiType = {
     receive: (channel: string, func: (...args: any[]) => void): void => {
         const validChannels = ['reply-from-main-process', 'from-main-process-ToVision', 'from-main-process-ToChat'];
         if (validChannels.includes(channel)) {
-            ipcRenderer.on(channel, (event: IpcRendererEvent, ...args: any[]) => func(...args));
+            ipcRenderer.on(channel, (_: IpcRendererEvent, ...args: any[]) => func(...args));
         }
     },
     ThemeChangeDispatch: (): void => {
@@ -470,21 +476,24 @@ const api: ApiType = {
             });
     },
     cleanFile: async (file: string): Promise<boolean | undefined> => {
-        fs.readFile(file, (err: any, data: any) => {
-            if (err) throw err;
-            data = JSON.parse(data as any);
-            data.chats.forEach((res: any) => {
+        try {
+            const data = await fs.promises.readFile(file, 'utf-8');
+            const parsedData = JSON.parse(data);
+            parsedData.chats.forEach((res: any) => {
                 if (res.role === "user") {
-                    if (data.chats[data.chats.indexOf(res) + 1].role !== "assistant") {
-                        console.log("Pair: !index", data.chats.indexOf(res) + 1);
-                        data.chats.slice(data.chats.indexOf(res), data.chats.indexOf(res) + 1).values();
-                    } else if (data.chats[data.chats.indexOf(res) + 1].role === "assistant") {
-                        console.log("Pair: OK", data.chats.indexOf(res));
+                    if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role !== "assistant") {
+                        console.log("Pair: !index", parsedData.chats.indexOf(res) + 1);
+                        parsedData.chats.slice(parsedData.chats.indexOf(res), parsedData.chats.indexOf(res) + 1).values();
+                    } else if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role === "assistant") {
+                        console.log("Pair: OK", parsedData.chats.indexOf(res));
                     }
                 }
             });
             return true;
-        });
+        } catch (err) {
+            console.error(err);
+            return false; // or return undefined
+        }
     },
     getDateTime: (): string => {
         return getformatDateTime(true);
@@ -525,8 +534,9 @@ const api: ApiType = {
                 const prefData = fs.readFileSync(_fpath, 'utf-8');
                 return JSON.parse(prefData);
             }
+            return undefined
         } catch (err) {
-            // console.log(err)
+            return undefined
         }
     },
     saveRecording: async (blob: Blob): Promise<string | undefined> => {
@@ -547,6 +557,7 @@ const api: ApiType = {
             return savePath;
         } catch (err) {
             console.log(err);
+            return undefined
         }
     },
     readFileData: async (filePath: string): Promise<Buffer | false> => {
@@ -556,7 +567,7 @@ const api: ApiType = {
         const data = fs.readFileSync(filePath);
         return data;
     },
-    saveImageBuffer: async (canvas: HTMLCanvasElement, path: string, url: string | null = null): Promise<boolean | string> => {
+    saveImageBuffer: async (canvas: HTMLCanvasElement, path: string, _: string | null = null): Promise<boolean | string> => {
         try {
             return new Promise((resolve, reject) => {
                 canvas.toBlob(async (blob) => {
@@ -606,15 +617,15 @@ const api2: Api2Type = {
     saveConversation: (conversation: Conversation): Promise<void> => ipcRenderer.invoke('save-conversation', conversation),
     deleteConversation: (conversationId: string): Promise<void> => ipcRenderer.invoke('delete-conversation', conversationId),
     onChatResponse: (callback: (response: any) => void): () => void => {
-        ipcRenderer.on('chat-response', (event: IpcRendererEvent, response: any) => callback(response));
+        ipcRenderer.on('chat-response', (_: IpcRendererEvent, response: any) => callback(response));
         return () => ipcRenderer.removeAllListeners('chat-response');
     },
     onError: (callback: (error: any) => void): () => void => {
-        ipcRenderer.on('chat-error', (event: IpcRendererEvent, error: any) => callback(error));
+        ipcRenderer.on('chat-error', (_: IpcRendererEvent, error: any) => callback(error));
         return () => ipcRenderer.removeAllListeners('chat-error');
     },
     onThemeChange: (callback: (theme: string) => void): () => void => {
-        ipcRenderer.on('theme-changed', (event: IpcRendererEvent, theme: string) => callback(theme));
+        ipcRenderer.on('theme-changed', (_: IpcRendererEvent, theme: string) => callback(theme));
         return () => ipcRenderer.removeAllListeners('theme-changed');
     }
 };

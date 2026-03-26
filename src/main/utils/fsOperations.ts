@@ -3,16 +3,35 @@ import { OpenDialogOptions } from "electron/utility";
 import fsSync from "fs";
 import fs from "fs/promises";
 import path from "node:path";
-import type { readFileSuccess, readFileError, writeFileSuccess, writeFileError, appendFileSuccess, appendFileError, fileExistsStats, fileExistsStatError, fileOpError, FileInfoSuccess, mkdirSuccess, deleteSuccess, deleteError, copySuccess, copyError, moveSuccess, moveError, statPathSuccess, statPathError, dialogRessponse, watchFileSuccess, watchFileError } from "./types";
+import type {
+    readFileSuccess, readFileError, writeFileSuccess, writeFileError,
+    appendFileSuccess, appendFileError, fileExistsStats, fileExistsStatError,
+    fileOpError, FileInfoSuccess, mkdirSuccess, deleteSuccess, deleteError,
+    copySuccess, copyError, moveSuccess, moveError, statPathSuccess, statPathError,
+    watchFileSuccess,
+    watchFileError,
+    saveDialogResponse,
+    saveDialogError,
+    openDialogResponse,
+    openDialogError
+} from "./types";
 
+// Type guard functions
+function isWriteFileSuccess(obj: any): obj is writeFileSuccess {
+    return obj && typeof obj === 'object' && 'success' in obj && 'exists' in obj;
+}
 
+function isFileExistsStats(obj: any): obj is fileExistsStats {
+    return obj && typeof obj === 'object' && 'success' in obj && 'exists' in obj && 'isDirectory' in obj;
+}
+
+function isFileInfoSuccess(obj: any): obj is FileInfoSuccess {
+    return obj && typeof obj === 'object' && 'success' in obj && 'files' in obj;
+}
 
 export const fsOperations = {
     /**
      * Read file content
-     * @param {string} filePath - Path to file
-     * @param {string} [encoding='utf8'] - File encoding
-     * @returns {Promise<{success: boolean, data?: string, error?: string, path: string}>}
      */
     async readFile(filePath: string, encoding: BufferEncoding | null = 'utf8'): Promise<readFileSuccess | readFileError> {
         try {
@@ -21,7 +40,7 @@ export const fsOperations = {
             }
 
             const absolutePath = path.resolve(filePath);
-            const data = await fs.readFile(absolutePath, { encoding: encoding });
+            const data = await fs.readFile(absolutePath, { encoding: encoding as BufferEncoding | undefined });
 
             return {
                 success: true,
@@ -33,8 +52,8 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error && error.message ? error.message : null,
-                code: error && error.message ? error?.code : null,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath
             };
         }
@@ -42,10 +61,6 @@ export const fsOperations = {
 
     /**
      * Write content to file
-     * @param {string} filePath - Path to file
-     * @param {string} content - Content to write
-     * @param {string} [encoding='utf8'] - File encoding
-     * @returns {Promise<{success: boolean, path?: string, error?: string, bytesWritten?: number}>}
      */
     async writeFile(filePath: string, content: string, encoding: BufferEncoding | null = 'utf8'): Promise<writeFileSuccess | writeFileError> {
         try {
@@ -63,7 +78,7 @@ export const fsOperations = {
             const dir = path.dirname(absolutePath);
             await fs.mkdir(dir, { recursive: true });
 
-            await fs.writeFile(absolutePath, content, { encoding: encoding });
+            await fs.writeFile(absolutePath, content, { encoding: encoding as BufferEncoding | undefined });
 
             const stats = await fs.stat(absolutePath);
             const existsCheck = await this.exists(filePath);
@@ -72,13 +87,13 @@ export const fsOperations = {
                 success: true,
                 path: absolutePath,
                 bytesWritten: stats.size,
-                created: (existsCheck.success && existsCheck.exists)
+                created: (isFileExistsStats(existsCheck) && existsCheck.exists)
             };
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath
             };
         }
@@ -86,10 +101,6 @@ export const fsOperations = {
 
     /**
      * Append content to file
-     * @param {string} filePath - Path to file
-     * @param {string} content - Content to append
-     * @param {string} [encoding='utf8'] - File encoding
-     * @returns {Promise<{success: boolean, path?: string, error?: string}>}
      */
     async appendFile(filePath: string, content: string, encoding: BufferEncoding | null = 'utf8'): Promise<appendFileSuccess | appendFileError> {
         try {
@@ -98,7 +109,7 @@ export const fsOperations = {
             }
 
             const absolutePath = path.resolve(filePath);
-            await fs.appendFile(absolutePath, content, { encoding: encoding });
+            await fs.appendFile(absolutePath, content, { encoding: encoding as BufferEncoding | undefined });
 
             const stats = await fs.stat(absolutePath);
 
@@ -111,8 +122,8 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath
             };
         }
@@ -120,8 +131,6 @@ export const fsOperations = {
 
     /**
      * Check if file or directory exists
-     * @param {string} filePath - Path to check
-     * @returns {Promise<{success: boolean, exists: boolean, isFile?: boolean, isDirectory?: boolean, error?: string}>}
      */
     async exists(filePath: string): Promise<fileExistsStats | fileExistsStatError> {
         try {
@@ -142,12 +151,12 @@ export const fsOperations = {
                     modified: stats.mtime,
                     path: absolutePath
                 };
-            } catch (error) {
+            } catch (error: any) {
                 if (error.code === 'ENOENT') {
                     return {
-                        success: true,
-                        error: error,
-                        code: 400,
+                        success: false,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                        code: (error as NodeJS.ErrnoException)?.code || 500,
                         path: absolutePath
                     };
                 }
@@ -156,18 +165,15 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath,
-                code: error.code
             };
         }
     },
 
     /**
      * List directory contents
-     * @param {string} dirPath - Directory path
-     * @param {boolean} [recursive=false] - List recursively
-     * @returns {Promise<{success: boolean, files?: Array, error?: string, path: string}>}
      */
     async readDir(dirPath: string, recursive: boolean = false): Promise<fileOpError | FileInfoSuccess> {
         try {
@@ -183,7 +189,7 @@ export const fsOperations = {
                     const itemPath = path.join(absolutePath, item.name);
                     const stats = await fs.stat(itemPath);
 
-                    const fileInfo = {
+                    const fileInfo: any = {
                         name: item.name,
                         path: itemPath,
                         type: item.isDirectory() ? 'directory' :
@@ -198,7 +204,7 @@ export const fsOperations = {
 
                     if (recursive && item.isDirectory()) {
                         const subResult = await this.readDir(itemPath, recursive);
-                        if (subResult.success) {
+                        if (isFileInfoSuccess(subResult)) {
                             fileInfo.children = subResult.files;
                         }
                     }
@@ -216,8 +222,8 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: dirPath
             };
         }
@@ -225,9 +231,6 @@ export const fsOperations = {
 
     /**
      * Create directory
-     * @param {string} dirPath - Directory path
-     * @param {boolean} [recursive=true] - Create parent directories
-     * @returns {Promise<{success: boolean, path?: string, error?: string, created: boolean}>}
      */
     async mkdir(dirPath: string, recursive: boolean = true): Promise<mkdirSuccess | fileOpError> {
         try {
@@ -237,7 +240,7 @@ export const fsOperations = {
 
             const absolutePath = path.resolve(dirPath);
             const existsCheck = await this.exists(dirPath);
-            const existed = (existsCheck.success && existsCheck.exists);
+            const existed = (isFileExistsStats(existsCheck) && existsCheck.exists);
 
             if (!existed) {
                 await fs.mkdir(absolutePath, { recursive });
@@ -252,8 +255,8 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: dirPath
             };
         }
@@ -261,9 +264,6 @@ export const fsOperations = {
 
     /**
      * Delete file or directory
-     * @param {string} filePath - Path to delete
-     * @param {boolean} [recursive=false] - Delete recursively for directories
-     * @returns {Promise<{success: boolean, path?: string, error?: string, type?: string}>}
      */
     async delete(filePath: string, recursive: boolean = false): Promise<deleteSuccess | deleteError> {
         try {
@@ -280,17 +280,19 @@ export const fsOperations = {
             const absolutePath = path.resolve(filePath);
             const existsCheck = await this.exists(absolutePath);
 
-            if (existsCheck.success && !existsCheck.exists) {
+            if (!isFileExistsStats(existsCheck) || !existsCheck.exists) {
                 return {
                     success: false,
                     error: 'Path does not exist',
                     path: absolutePath,
-                    code: 403,
+                    code: 404,
                     type: undefined
                 };
             }
 
-            if (existsCheck.success && existsCheck.isDirectory) {
+            const isDirectory = existsCheck.isDirectory || false;
+
+            if (isDirectory) {
                 if (recursive) {
                     await fs.rm(absolutePath, { recursive: true, force: true });
                 } else {
@@ -314,14 +316,14 @@ export const fsOperations = {
             return {
                 success: true,
                 path: absolutePath,
-                type: existsCheck.isDirectory ? 'directory' : 'file',
+                type: isDirectory ? 'directory' : 'file',
                 deleted: true
             };
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath,
                 type: undefined,
             };
@@ -330,10 +332,6 @@ export const fsOperations = {
 
     /**
      * Copy file or directory
-     * @param {string} source - Source path
-     * @param {string} destination - Destination path
-     * @param {boolean} [overwrite=false] - Overwrite if exists
-     * @returns {Promise<{success: boolean, source?: string, destination?: string, error?: string}>}
      */
     async copy(source: string, destination: string, overwrite: boolean = false): Promise<copySuccess | copyError> {
         try {
@@ -360,37 +358,36 @@ export const fsOperations = {
             let destPath = path.resolve(destination);
 
             const sourceExists = await this.exists(sourcePath);
-            if (sourceExists.success && !sourceExists.exists) {
+            if (!isFileExistsStats(sourceExists) || !sourceExists.exists) {
                 return {
                     success: false,
                     error: 'Source path does not exist',
                     source: sourcePath,
-                    code: 403,
+                    code: 404,
                     destination: destination
                 };
             }
 
             let destExists = await this.exists(destPath);
             // If destination exists and is a directory, append source filename
-            if (destExists.success && destExists.exists) {
+            if (isFileExistsStats(destExists) && destExists.exists) {
                 if (destExists.isDirectory && sourceExists.isFile) {
                     destPath = path.resolve(path.join(destPath, path.basename(sourcePath)));
                     destExists = await this.exists(destPath);
                 }
             }
 
-            if (destExists.success && destExists.exists && !overwrite) {
+            if (isFileExistsStats(destExists) && destExists.exists && !overwrite) {
                 return {
                     success: false,
                     error: 'Destination already exists. Use overwrite=true to replace.',
                     source: sourcePath,
                     destination: destPath,
-                    code: 403
+                    code: 409
                 };
             }
 
-
-            if (sourceExists.success && sourceExists.isDirectory) {
+            if (isFileExistsStats(sourceExists) && sourceExists.isDirectory) {
                 const realDest = path.join(destPath, path.basename(sourcePath));
                 await this._copyDirectory(sourcePath, realDest, overwrite);
             } else {
@@ -407,8 +404,8 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 source: source,
                 destination: destination
             };
@@ -420,8 +417,8 @@ export const fsOperations = {
         const sourceParts = src.split('/');
 
         let root = '';
-        const destDirs: [string | null | undefined] = [undefined];
-        const sourceDirs: [string | null | undefined] = [undefined];
+        const destDirs: string[] = [];
+        const sourceDirs: string[] = [];
 
         destParts.forEach(part => {
             if (part.trim()) {
@@ -466,17 +463,13 @@ export const fsOperations = {
 
     /**
      * Move/rename file or directory
-     * @param {string} source - Source path
-     * @param {string} destination - Destination path
-     * @param {boolean} [overwrite=false] - Overwrite if exists
-     * @returns {Promise<{success: boolean, source?: string, destination?: string, error?: string}>}
      */
     async move(source: string, destination: string, overwrite: boolean = false): Promise<moveSuccess | moveError> {
         try {
             if (!source || typeof source !== 'string') {
                 return {
                     success: false,
-                    code: 403,
+                    code: 400,
                     error: 'Invalid source path',
                     source: source,
                     destination: destination
@@ -496,34 +489,35 @@ export const fsOperations = {
             let destPath = path.resolve(destination);
 
             const sourceExists = await this.exists(sourcePath);
-            const sourceType = sourceExists.isDirectory ? 'directory' : 'file';
 
-            if (sourceExists.success && !sourceExists.exists) {
+            if (!isFileExistsStats(sourceExists) || !sourceExists.exists) {
                 return {
                     success: false,
                     error: 'Source path does not exist',
                     source: sourcePath,
                     destination: destination,
-                    code: 403
+                    code: 404
                 };
             }
 
+            const sourceType = sourceExists.isDirectory ? 'directory' : 'file';
+
             let destExists = await this.exists(destPath);
             // If destination exists and is a directory, append source filename
-            if (destExists.success && destExists.exists) {
+            if (isFileExistsStats(destExists) && destExists.exists) {
                 if (destExists.isDirectory) {
                     destPath = path.resolve(path.join(destPath, path.basename(sourcePath)));
                     destExists = await this.exists(destPath);
                 }
             }
 
-            if (destExists.success && destExists.exists && !overwrite) {
+            if (isFileExistsStats(destExists) && destExists.exists && !overwrite) {
                 return {
                     success: false,
                     error: 'Destination already exists. Use overwrite=true to replace.',
                     source: sourcePath,
                     destination: destPath,
-                    code: 403
+                    code: 409
                 };
             }
 
@@ -539,8 +533,8 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 source: source,
                 destination: destination
             };
@@ -549,10 +543,8 @@ export const fsOperations = {
 
     /**
      * Get file/directory stats
-     * @param {string} filePath - Path to check
-     * @returns {Promise<{success: boolean, stats?: object, error?: string, path: string}>}
      */
-    stat(filePath: string): Promise<statPathSuccess | statPathError> {
+    stat(filePath: string): statPathSuccess | statPathError {
         try {
             if (!filePath || typeof filePath !== 'string') {
                 return {
@@ -593,8 +585,8 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: error.code,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath
             };
         }
@@ -602,10 +594,8 @@ export const fsOperations = {
 
     /**
      * Open file dialog to select files
-     * @param {Object} [options] - Dialog options
-     * @returns {Promise<{success: boolean, files?: string[], canceled?: boolean, error?: string}>}
      */
-    async openFileDialog(options: OpenDialogOptions) {
+    async openFileDialog(options: OpenDialogOptions): Promise<openDialogResponse | openDialogError> {
         try {
             const result = await dialog.showOpenDialog({
                 title: options?.title || 'Select File',
@@ -614,7 +604,7 @@ export const fsOperations = {
                 filters: options?.filters || [
                     { name: 'All Files', extensions: ['*'] }
                 ],
-                properties: options?.properties || [('openFile')],
+                properties: options?.properties || ['openFile'],
                 message: options?.message
             });
 
@@ -622,6 +612,7 @@ export const fsOperations = {
                 return {
                     success: true,
                     canceled: true,
+                    code: undefined,
                     files: []
                 };
             }
@@ -634,17 +625,18 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error.message
+                canceled: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
+                files: []
             };
         }
     },
 
     /**
      * Open save file dialog
-     * @param {Object} [options] - Dialog options
-     * @returns {Promise<{success: boolean, filePath?: string, canceled?: boolean, error?: string}>}
      */
-    async saveFileDialog(options: OpenDialogOptions): Promise<dialogRessponse | writeFileError> {
+    async saveFileDialog(options: OpenDialogOptions): Promise<saveDialogResponse | saveDialogError> {
         try {
             const result = await dialog.showSaveDialog({
                 title: options?.title || 'Save File',
@@ -660,7 +652,8 @@ export const fsOperations = {
                 return {
                     success: true,
                     canceled: true,
-                    path: result.filePath || null
+                    path: result.filePath || null,
+                    code: 403
                 };
             }
 
@@ -668,21 +661,21 @@ export const fsOperations = {
                 success: true,
                 path: result.filePath,
                 canceled: false,
+                code: 200
             };
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
-                code: 500,
-                path: options?.defaultPath || ''
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
+                path: options?.defaultPath || '',
+                canceled: false
             };
         }
     },
 
     /**
      * Read file as JSON
-     * @param {string} filePath - Path to JSON file
-     * @returns {Promise<{success: boolean, data?: any, error?: string, path: string}>}
      */
     async readJSON(filePath: string): Promise<readFileSuccess | readFileError> {
         try {
@@ -691,50 +684,43 @@ export const fsOperations = {
                 return result;
             }
 
-            const data = JSON.parse(result.data);
+            const data = JSON.parse((result as readFileSuccess).data as string);
             return {
                 success: true,
                 data: data,
                 path: result.path,
-                size: result.size,
+                size: (result as readFileSuccess).size,
                 encoding: null
             };
         } catch (error) {
             return {
                 success: false,
-                error: `Failed to parse JSON: ${error.message}`,
+                error: error instanceof Error ? `Failed to parse JSON: ${error.message}` : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath,
-                code: 500,
             };
         }
     },
 
     /**
      * Write data as JSON
-     * @param {string} filePath - Path to write
-     * @param {any} data - Data to write
-     * @param {number} [indent=2] - JSON indentation
-     * @returns {Promise<{success: boolean, path?: string, error?: string}>}
      */
-    async writeJSON(filePath: string, data: object, indent = 2): Promise<watchFileSuccess | writeFileError> {
+    async writeJSON(filePath: string, data: object, indent = 2): Promise<writeFileSuccess | writeFileError> {
         try {
             const jsonString = JSON.stringify(data, null, indent);
             return await this.writeFile(filePath, jsonString);
         } catch (error) {
             return {
                 success: false,
-                error: `Failed to write JSON: ${error.message}`,
+                error: error instanceof Error ? `Failed to write JSON: ${error.message}` : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath,
-                code: 500
             };
         }
     },
 
     /**
      * Watch file for changes
-     * @param {string} filePath - File to watch
-     * @param {Function} callback - Callback on change
-     * @returns {Promise<{success: boolean, watcher?: fs.FSWatcher, error?: string}>}
      */
     async watchFile(filePath: string, callback: CallableFunction): Promise<watchFileSuccess | watchFileError> {
         try {
@@ -751,9 +737,9 @@ export const fsOperations = {
         } catch (error) {
             return {
                 success: false,
-                error: error.message,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                code: (error as NodeJS.ErrnoException)?.code || 500,
                 path: filePath,
-                code: 500
             };
         }
     }

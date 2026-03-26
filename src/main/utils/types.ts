@@ -23,7 +23,7 @@ export interface readFileSuccess {
 
 export interface fileOpError {
     success: boolean,
-    error: string | any | unknown |null,
+    error: string | any | unknown | null,
     code: number | string | null | any | unknown,
     path: string
 }
@@ -163,3 +163,31 @@ export interface moveSuccess {
 }
 
 export type moveError = copyError
+
+export interface saveDialogResponse {
+    success: boolean,
+    path: string | null
+    code: string | number | undefined
+}
+
+export interface saveDialogError {
+    success: boolean,
+    error: string | undefined,
+    code: string | number | undefined,
+    path: string | null | undefined
+    canceled: boolean
+}
+
+export interface openDialogResponse {
+    success: boolean,
+    files: Array<string | any>
+    canceled: boolean
+}
+
+export interface openDialogError {
+    success: boolean,
+    error: string | undefined,
+    code: string | number | undefined,
+    files: Array<string | any>
+    canceled: boolean
+}

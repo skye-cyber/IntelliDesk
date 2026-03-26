@@ -38,6 +38,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
     "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "concurrently": "^9.2.1",
     "electron": "^34.1.1",
     "electron-builder": "^25.1.8",

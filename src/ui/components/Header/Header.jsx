@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ModelSelector } from '../ModelSelector/ModelSelector';
+import { ModelList } from './ModelList';
 import { StateManager } from '../../../core/managers/StatesManager';
 
 StateManager.set('currentModel', 'mistral-small-latest')
@@ -89,7 +89,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                         <div className="relative">
                             <button
                                 id="modelButton"
-                                className="rounded-lg ml-1 p-2 font-semibold bg-gray-200 hover:bg-blue-200 text-sky-900 dark:text-gray-100 rounded-md dark:bg-primary-900 dark:hover:bg-primary-700 hover:scale-[0.9] outline-none cursor-pointer transition-all duration-700"
+                                className="rounded-lg ml-1 p-2 font-semibold bg-gray-200 hover:bg-blue-200 text-sky-900 dark:text-gray-100 rounded-md dark:bg-[#07090c]/0 dark:hover:bg-[#11161e] hover:scale-[0.9] outline-none cursor-pointer transition-all duration-700"
                                 onClick={ModelSelectorToggle}
                             >
                                 <div className="flex">
@@ -116,7 +116,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                 </div>
             </header>
 
-            <ModelSelector
+            <ModelList
                 selectedModel={selectedModel}
                 onModelSelect={(model) => {
                     onModelChange(model);

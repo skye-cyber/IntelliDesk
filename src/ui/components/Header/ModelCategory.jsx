@@ -1,4 +1,4 @@
-import { ModelItem } from '../../components/ModelItem/ModelItem';
+import { ModelItem } from './ModelItem';
 
 export const ModelCategory = ({ category, selectedModel, onModelSelect }) => {
     const getSeparator = (type) => {

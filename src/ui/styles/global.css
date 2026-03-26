@@ -4248,14 +4248,14 @@ video {
   color: rgb(243 244 246 / var(--tw-text-opacity, 1));
 }
 
-.text-gray-300 {
-  --tw-text-opacity: 1;
-  color: rgb(209 213 219 / var(--tw-text-opacity, 1));
-}
-
 .text-gray-400 {
   --tw-text-opacity: 1;
   color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
+.text-gray-50 {
+  --tw-text-opacity: 1;
+  color: rgb(249 250 251 / var(--tw-text-opacity, 1));
 }
 
 .text-gray-500 {
@@ -4488,11 +4488,6 @@ video {
 .text-yellow-800 {
   --tw-text-opacity: 1;
   color: rgb(133 77 14 / var(--tw-text-opacity, 1));
-}
-
-.text-gray-50 {
-  --tw-text-opacity: 1;
-  color: rgb(249 250 251 / var(--tw-text-opacity, 1));
 }
 
 .underline {
@@ -6753,6 +6748,11 @@ h6 {
   background-color: rgb(26 26 58 / var(--tw-bg-opacity, 1));
 }
 
+.dark\:bg-\[\#1c1c1e\]:is(.dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(28 28 30 / var(--tw-bg-opacity, 1));
+}
+
 .dark\:bg-\[\#222\]:is(.dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(34 34 34 / var(--tw-bg-opacity, 1));
@@ -7060,24 +7060,23 @@ h6 {
   background-color: rgb(9 9 11 / var(--tw-bg-opacity, 1));
 }
 
-.dark\:bg-stone-900:is(.dark *) {
+.dark\:bg-\[\#0d1116\]:is(.dark *) {
   --tw-bg-opacity: 1;
-  background-color: rgb(28 25 23 / var(--tw-bg-opacity, 1));
+  background-color: rgb(13 17 22 / var(--tw-bg-opacity, 1));
 }
 
-.dark\:bg-stone-800:is(.dark *) {
+.dark\:bg-\[\#090c10\]:is(.dark *) {
   --tw-bg-opacity: 1;
-  background-color: rgb(41 37 36 / var(--tw-bg-opacity, 1));
+  background-color: rgb(9 12 16 / var(--tw-bg-opacity, 1));
 }
 
-.dark\:bg-zinc-900:is(.dark *) {
+.dark\:bg-\[\#07090c\]:is(.dark *) {
   --tw-bg-opacity: 1;
-  background-color: rgb(24 24 27 / var(--tw-bg-opacity, 1));
+  background-color: rgb(7 9 12 / var(--tw-bg-opacity, 1));
 }
 
-.dark\:bg-\[\#141618\]:is(.dark *) {
-  --tw-bg-opacity: 1;
-  background-color: rgb(20 22 24 / var(--tw-bg-opacity, 1));
+.dark\:bg-\[\#07090c\]\/0:is(.dark *) {
+  background-color: rgb(7 9 12 / 0);
 }
 
 .dark\:bg-opacity-95:is(.dark *) {
@@ -7880,6 +7879,21 @@ h6 {
 .dark\:hover\:bg-zinc-800:hover:is(.dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(39 39 42 / var(--tw-bg-opacity, 1));
+}
+
+.dark\:hover\:bg-\[\#07090c\]:hover:is(.dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(7 9 12 / var(--tw-bg-opacity, 1));
+}
+
+.dark\:hover\:bg-\[\#12171f\]:hover:is(.dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(18 23 31 / var(--tw-bg-opacity, 1));
+}
+
+.dark\:hover\:bg-\[\#11161e\]:hover:is(.dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(17 22 30 / var(--tw-bg-opacity, 1));
 }
 
 .dark\:hover\:from-blue-800\/20:hover:is(.dark *) {

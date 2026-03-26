@@ -36,7 +36,7 @@ function setAppIcon() {
     // Fallback to a generic icon or skip setting it
     if (!fs_1.default.existsSync(iconPath)) {
         console.warn('Icon not found, fallback triggered');
-        iconPath = null;
+        iconPath = '';
     }
 }
 setAppIcon();
@@ -45,7 +45,7 @@ setAppIcon();
  */
 function setupIPC() {
     // Handle notify events
-    electron_1.ipcMain.on('Notify', (event, data) => {
+    electron_1.ipcMain.on('Notify', (_, data) => {
         console.log('Received time data from renderer:', data.message);
         const timeTaken = data.message;
         if (mainWindow && !mainWindow.isFocused()) {
@@ -79,17 +79,17 @@ function setupIPC() {
         event.reply('reply-from-main-process', data);
     });
     // IPC handler to save keyschains
-    electron_1.ipcMain.handle('save-key-chain', async (event, chain) => {
+    electron_1.ipcMain.handle('save-key-chain', async (_, chain) => {
         await keytar_1.default.setPassword(SERVICE_NAME, 'mistral', chain);
         return { success: true };
     });
     // IPC handler to retrieve keyschains
-    electron_1.ipcMain.handle('get-key-chain', async (event, service = 'mistral') => {
+    electron_1.ipcMain.handle('get-key-chain', async (_, service = 'mistral') => {
         const MistralKeyChain = await keytar_1.default.getPassword(SERVICE_NAME, service) || [];
         return MistralKeyChain;
     });
     // IPC handler for keyschains reset
-    electron_1.ipcMain.handle('reset-key-chain', async (event, accounts) => {
+    electron_1.ipcMain.handle('reset-key-chain', async (_, accounts) => {
         accounts.forEach(async (account) => {
             try {
                 await keytar_1.default.deletePassword(SERVICE_NAME, account);
@@ -100,7 +100,7 @@ function setupIPC() {
         });
         return { success: true };
     });
-    electron_1.ipcMain.handle('save-dg-As-PNG', async (event, buffer, path) => {
+    electron_1.ipcMain.handle('save-dg-As-PNG', async (_, buffer, path) => {
         try {
             //console.log('Saving to:', path);
             const { filePath, canceled } = await electron_1.dialog.showSaveDialog({
@@ -121,7 +121,7 @@ function setupIPC() {
         }
     });
     // IPC handler for keys reset
-    electron_1.ipcMain.handle('get-app-version', async (event, accounts) => {
+    electron_1.ipcMain.handle('get-app-version', async () => {
         try {
             return electron_1.app.getVersion();
         }
@@ -129,7 +129,7 @@ function setupIPC() {
             //console.log(err)
         }
     });
-    electron_1.ipcMain.handle('get-dev-status', async (event) => {
+    electron_1.ipcMain.handle('get-dev-status', async () => {
         return isDev;
     });
     //Handle Documentation shortcut
@@ -173,17 +173,34 @@ function setupMenu() {
                 { label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut' },
                 { label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy' },
                 { label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' },
-                { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectall' }
+                { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll' }
             ]
         },
         {
             label: 'View',
             submenu: [
-                { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: (item, focusedWindow) => focusedWindow.reload() },
-                { label: 'Toggle Developer Tools', accelerator: 'F12', click: (item, focusedWindow) => focusedWindow.webContents.toggleDevTools() },
+                { label: 'Reload', accelerator: 'CmdOrCtrl+R' },
+                {
+                    label: 'Toggle Developer Tools',
+                    accelerator: 'F12',
+                    role: 'toggleDevTools',
+                    click: (_, focusedWindow) => {
+                        // Type guard for BaseWindow multi-view support
+                        if (focusedWindow && 'getWebContentsView' in focusedWindow) {
+                            const view = focusedWindow.getFocusedWebContentsView?.();
+                            view?.webContents?.toggleDevTools();
+                        }
+                        else if ('webContents' in focusedWindow) {
+                            focusedWindow.webContents.toggleDevTools();
+                        }
+                    },
+                },
                 { type: 'separator' },
-                { label: 'Zoom In', accelerator: 'CmdOrCtrl+=', click: (item, focusedWindow) => focusedWindow.webContents.send('zoom-in') },
-                { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', click: (item, focusedWindow) => focusedWindow.webContents.send('zoom-out') }
+                { role: 'resetZoom' },
+                { role: 'zoomIn' },
+                { role: 'zoomOut' },
+                { type: 'separator' },
+                { role: 'togglefullscreen', accelerator: 'F11' }
             ]
         },
         {

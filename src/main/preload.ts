@@ -1,38 +1,56 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { exec, ExecException } from 'child_process';
 import { Buffer } from 'buffer';
 import { SystemPrompt } from './utils/system';
-import { fsOperations as fsops } from './utils/fs';
+import { fsOperations as fsops } from "./utils/fsOperations";
 import { getformatDateTime } from './utils/datetime';
 import { agent } from './utils/config';
 import { dbManager } from './utils/DatabaseManager';
+import { shell } from 'electron';
+import type {
+    ConversationMetadata,
+    ChatMessage,
+    Conversation,
+    PreferenceData,
+    SaveDialogOptions,
+    // KeyChainOptions,
+    OpenDialogOptions,
+    CommandOptions,
+    CommandResult,
+    ApiType,
+    Api2Type,
+    CmdType,
+    ChatContent
+} from './preload.type';
 
-let ConversationId = "";
+
+// Global variables
+let ConversationId: string = "";
+let profile: string = "";
+let ConversationHistory: Conversation;
+
 
 window.global = window;
 
 contextBridge.exposeInMainWorld('global', window);
 
 try {
-    const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json')
+    const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
     if (fs.statfsSync(_fpath)) {
-        const rprofile = fs.readFileSync(_fpath, 'utf-8')
-        var profile = rprofile ? JSON.parse(rprofile)?.data?.preference : ''
+        const rprofile = fs.readFileSync(_fpath, 'utf-8');
+        profile = rprofile ? JSON.parse(rprofile)?.data?.preference : '';
     }
 } catch (err) {
-    if (!profile) profile = ''
+    if (!profile) profile = '';
 }
 
+const conversation_root: string = path.join(os.homedir(), '.IntelliDesk/.store');
+let system_command: string = SystemPrompt.StandardPrompt(profile);
 
-const conversation_root = path.join(os.homedir(), '.IntelliDesk/.store')
-
-let system_command = SystemPrompt.StandardPrompt(profile)
-
-let ConversationHistory =
-{
+ConversationHistory = {
     metadata: {
         model: 'multimodal',
         type: 'normal',
@@ -43,18 +61,17 @@ let ConversationHistory =
         highlight: ''
     },
     chats: []
-}
+};
 
-
-const api = {
-    getDownloadsPath: () => {
+const api: ApiType = {
+    getDownloadsPath: (): string => {
         const downloadsPath = path.join(os.homedir(), 'Downloads');
         return downloadsPath;
     },
-    home_dir: () => {
+    home_dir: (): string => {
         return os.homedir();
     },
-    mkdir: async (dir) => {
+    mkdir: async (dir: string): Promise<boolean> => {
         try {
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir);
@@ -65,19 +82,15 @@ const api = {
             return false;
         }
     },
-    write: async (path, data) => {
+    write: async (path: string, data: Conversation): Promise<Conversation> => {
         try {
-            // Create a deep clone to avoid mutating original
             let dataToSave = JSON.parse(JSON.stringify(data));
 
-            // Remove system instructions from clone only
             if (dataToSave.chats[0].role === 'system') {
                 dataToSave.chats.shift();
             }
 
-            //dataToSave = api.clean(dataToSave); // Do not clear doc/image data
             const fileData = JSON.stringify(dataToSave, null, 2);
-
             fs.writeFileSync(path, fileData);
             return ConversationHistory;
         } catch (err) {
@@ -85,22 +98,21 @@ const api = {
             return ConversationHistory;
         }
     },
-    read: async (fpath) => {
+    read: async (fpath: string): Promise<any> => {
         try {
-            if (!fpath) return false
-            const rdata = fs.readFileSync(fpath, 'utf-8')
+            if (!fpath) return false;
+            const rdata = fs.readFileSync(fpath, 'utf-8');
             let jdata = rdata ? JSON.parse(rdata) : '';
 
-            // Add compartibility feature to maintain conversations instegrity!
             if (jdata?.chats[0].role === "system") {
-                jdata.chats.shift()
+                jdata.chats.shift();
             }
-            return jdata
+            return jdata;
         } catch (err) {
             console.log(err);
         }
     },
-    readDir: async (dir) => {
+    readDir: async (dir: string): Promise<string[] | false> => {
         try {
             return fs.readdirSync(dir);
         } catch (err) {
@@ -108,271 +120,244 @@ const api = {
             return false;
         }
     },
-    stat: (filePath) => {
+    stat: (filePath: string): fs.Stats | false => {
         try {
             return fs.statSync(filePath);
         } catch (err) {
             console.error(err);
-            return false
+            return false;
         }
     },
-    getExt: (file) => {
+    getExt: (file: string): string => {
         return path.extname(file);
     },
-    getBasename: (_path, ext) => {
+    getBasename: (_path: string, ext?: string): string => {
         return path.basename(_path, ext);
     },
-    joinPath: (node, child) => {
+    joinPath: (node: string, child: string): string => {
         return path.join(node, child);
     },
-    RenameFile: (old_name, new_name, base_dir = conversation_root) => {
+    RenameFile: (old_name: string, new_name: string, base_dir: string = conversation_root): boolean => {
         try {
-            fs.renameSync(path.join(base_dir, `${old_name}.json`), path.join(base_dir, `${new_name}.json`))
-            return true
+            fs.renameSync(path.join(base_dir, `${old_name}.json`), path.join(base_dir, `${new_name}.json`));
+            return true;
         } catch (err) {
-            console.log(err)
-            return false
+            console.log(err);
+            return false;
         }
     },
-    RenameConversation: async (id, name, base_dir = conversation_root) => {
+    RenameConversation: async (id: string, name: string, base_dir: string = conversation_root): Promise<Conversation | boolean> => {
         try {
-            const fpath = path.join(base_dir, `${id}.json`)
+            const fpath = path.join(base_dir, `${id}.json`);
+            let data = await api.read(fpath);
+            if (!data) return ConversationHistory;
 
-            let data = await api.read(fpath)
-            if (!data) return ConversationHistory
-
-            data.metadata.name = name
-
-            api.saveConversation(data, id)
-            return true
+            data.metadata.name = name;
+            api.saveConversation(data, id);
+            return true;
         } catch (err) {
-            console.log(err)
-            return ConversationHistory
+            console.log(err);
+            return ConversationHistory;
         }
     },
-    deleteChat: (id, base_dir = conversation_root) => {
+    deleteChat: (id: string, base_dir: string = conversation_root): boolean | undefined => {
         try {
-            const file = path.join(base_dir, `${id}.json`)
+            const file = path.join(base_dir, `${id}.json`);
             if (fs.statSync(file)) {
-                fs.rmSync(file)
-                // Move the item to the trash
-                //trash([file])
-                return true
+                fs.rmSync(file);
+                return true;
             } else {
-                console.log('Item not found')
-                return false
+                console.log('Item not found');
+                return false;
             }
         } catch (err) {
             console.log(err);
         }
     },
-    addHistory: (item) => {
+    addHistory: (item: ChatMessage): Conversation => {
         try {
-            if (!typeof (item) === "object") return console.log("Invalid conversation item")
+            if (typeof item !== "object") {
+                console.log("Invalid conversation item");
+                return ConversationHistory;
+            }
 
-            ConversationHistory.chats.push(item)
+            ConversationHistory.chats.push(item);
 
             if (!ConversationHistory.metadata.highlight) {
                 if (ConversationHistory.metadata.model === "multimodal") {
-                    if (item?.content.length > 0 && item?.content[0].text && typeof (item?.content[0].text) === "string") {
-                        const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replaceAll('`', '')
-                        ConversationHistory.metadata.highlight = highlight
+                    if (item?.content.length > 0) {
+                        if (typeof item?.content[0] == 'object' && item?.content[0].text && typeof (item?.content[0].text) === "string") {
+
+                            const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replace(/`/, '');
+                            ConversationHistory.metadata.highlight = highlight;
+                        }
                     }
                 } else {
                     if (typeof (item?.content) === "string") {
-                        const highlight = item?.content?.split(' ').slice(0, 8).join(' ').replaceAll('`', '')
-                        ConversationHistory.metadata.highlight = highlight
+                        const highlight = item?.content?.split(' ').slice(0, 8).join(' ').replace(/`/, '');
+                        ConversationHistory.metadata.highlight = highlight;
                     }
                 }
             }
-            if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving!")
+            if (ConversationHistory.metadata.type === "temporary") {
+                console.log("In temporary chat Not saving!");
+                return ConversationHistory;
+            }
 
-            // Update update created_at
-            ConversationHistory.metadata.updated_at = getformatDateTime()
-            // Save to file
-            api.saveConversation(ConversationHistory)
-            return ConversationHistory
+            ConversationHistory.metadata.updated_at = getformatDateTime();
+            api.saveConversation(ConversationHistory);
+            return ConversationHistory;
         } catch (err) {
-            return ConversationHistory
+            return ConversationHistory;
         }
     },
-    getHistory: (filter = false) => {
+    getHistory: (filter: boolean = false): Conversation | ChatMessage[] => {
         const data = filter ? ConversationHistory.chats : ConversationHistory;
-
-        return data
+        return data;
     },
-    popHistory: (role = null) => {
+    popHistory: (role: string | null = null): Conversation => {
         try {
             if (!role) {
                 ConversationHistory.chats.pop();
             } else if (ConversationHistory.chats?.slice(-1)[0]?.role === role) {
                 ConversationHistory.chats.pop();
-                //console.log("Done, resting!")
             }
-            // Update update created_at
-            ConversationHistory.metadata.updated_at = getformatDateTime()
-            return ConversationHistory
+            ConversationHistory.metadata.updated_at = getformatDateTime();
+            return ConversationHistory;
         } catch (err) {
-            return ConversationHistory
+            return ConversationHistory;
         }
     },
-    getModel: () => {
-        return ConversationHistory.metadata.model
+    getModel: (): string => {
+        return ConversationHistory.metadata.model;
     },
-    setModel: (model) => {
+    setModel: (model: string): void => {
         try {
-            model = model?.toLocaleLowerCase()
+            model = model?.toLocaleLowerCase();
+            if (!['chat', 'multimodal'].includes(model)) return;
 
-            if (!['chat', 'multimodal'].includes(model)) return
-
-            ConversationHistory.metadata.model = model
+            ConversationHistory.metadata.model = model;
 
             if (ConversationHistory.chats[0].role === 'system') {
                 ConversationHistory.chats[0] = (model === "multimodal")
                     ? { role: "system", content: [{ type: "text", text: system_command }] }
-                    : { role: "system", content: system_command }
+                    : { role: "system", content: system_command };
             }
         } catch (error) {
-            console.log(error)
-            return ConversationHistory
+            console.log(error);
         }
     },
-    clean: (data) => {
-        // Removes documents from the conversation data
+    clean: (data: Conversation): Conversation | null => {
         try {
-            // Handle single conversation object instead of array
             const chat = data;
             const cleaned_chats = chat.chats
                 .map(item => {
-                    let content = item?.content;
+                    let content: ChatContent = item?.content;
 
-                    // Handle array-type content
                     if (Array.isArray(content)) {
                         content = content
                             .map(part => {
                                 let text = part?.text || '';
-
-                                // Apply your slice rule
                                 if (text.slice(-1) === ']') {
                                     text = text.substring(0, text.length - 22);
                                 }
-
                                 text = text.trim();
                                 return text ? { type: part?.type || 'text', text } : null;
                             })
                             .filter(Boolean);
-                    }
-
-                    // Handle string-type content
-                    else if (typeof content === 'string') {
+                    } else if (typeof content === 'string') {
                         if (content.slice(-1) === ']') {
                             content = content.substring(0, content.length - 22);
                         }
                         content = content.trim();
-                    }
-
-                    // Invalid or empty content
-                    else {
+                    } else {
                         content = '';
                     }
 
-                    // Skip empty entries
-                    const isEmpty =
-                        (Array.isArray(content) && content.length === 0) ||
-                        (typeof content === 'string' && !content);
-
+                    const isEmpty = (Array.isArray(content) && content.length === 0) || (typeof content === 'string' && !content);
                     if (isEmpty) return null;
 
                     return { role: item.role, content };
                 })
-                .filter(Boolean); // remove nulls
+                .filter(Boolean);
 
-            // If no valid chats, return null or handle as needed
             if (!cleaned_chats.length) return null;
-
-            return { ...chat, chats: cleaned_chats };
+            return { ...chat, chats: cleaned_chats as ChatMessage[] };
         } catch (err) {
             console.log(err);
-            // Return the original data or handle error appropriately
             return data;
         }
     },
-    getmetadata: (file) => {
+    getmetadata: (file: string): ConversationMetadata | undefined => {
         try {
-            const fpath = path.join(conversation_root, file)
+            const fpath = path.join(conversation_root, file);
             if (!api.stat(fpath)) return;
-            const rdata = fs.readFileSync(fpath, 'utf-8')
-            return rdata ? JSON.parse(rdata)?.metadata : ''
+            const rdata = fs.readFileSync(fpath, 'utf-8');
+            return rdata ? JSON.parse(rdata)?.metadata : undefined;
         } catch (err) {
-            console.log(err, file)
+            console.log(err, file);
         }
     },
-    updateName: (name, save = true) => {
+    updateName: (name: string, save: boolean = true): string | undefined => {
         try {
-            if (!name?.trim()) return ConversationHistory;
-            //console.log("Rename conversation to:", name)
-            ConversationHistory.metadata.name = name
-            if (save) api.saveConversation(ConversationHistory)
-            return ConversationHistory.metadata.name
+            if (!name?.trim()) return ConversationHistory.metadata.name;
+            ConversationHistory.metadata.name = name;
+            if (save) api.saveConversation(ConversationHistory);
+            return ConversationHistory.metadata.name;
         } catch (err) {
-            return ConversationHistory.metadata.name
+            return ConversationHistory.metadata.name;
         }
     },
-    updateContinueHistory: (item) => {
+    updateContinueHistory: (item: ChatMessage): void | false => {
         try {
-            if (!item) return console.log('Conversation item is null')
-            //console.log(ConversationHistory.chats.slice(-1)[0])
-            if (ConversationHistory.chats.slice(-1)[0].role === "user") api.popHistory() // Remove user message
+            if (!item) {
+                console.log('Conversation item is null');
+                return;
+            }
+
+            if (ConversationHistory.chats.slice(-1)[0].role === "user") api.popHistory();
 
             if (ConversationHistory.chats.slice(-1)[0].role === "assistant") {
-                const target_ai_response = JSON.parse(JSON.stringify(ConversationHistory))[0].chats.slice(-1)[0] // Clone content to avoid mutation
-                api.popHistory() // Remove the ai response
+                const target_ai_response = JSON.parse(JSON.stringify(ConversationHistory)).chats.slice(-1)[0];
+                api.popHistory();
 
-                if (target_ai_response.content === "object" && Array.isArray(target_ai_response.content)) {
-                    const new_text = `${target_ai_response.content[0].text} ${item.content[0].text}`
-                    target_ai_response.content[0] = { type: "text", text: new_text }
+                if (typeof target_ai_response.content === "object" && Array.isArray(target_ai_response.content)) {
+                    const new_text = `${target_ai_response.content[0].text} ${(item.content as any)[0].text}`;
+                    target_ai_response.content[0] = { type: "text", text: new_text };
                 } else {
-                    const new_text = `${target_ai_response.content} ${item.content}`
-                    target_ai_response.content = new_text
+                    const new_text = `${target_ai_response.content} ${item.content}`;
+                    target_ai_response.content = new_text;
                 }
-                //console.log(JSON.stringify(target_ai_response))
-                if (target_ai_response) api.addHistory(target_ai_response)
+                if (target_ai_response) api.addHistory(target_ai_response);
             }
         } catch (error) {
-            console.error(error)
-            return false
+            console.error(error);
+            return false;
         }
     },
-    clearAllImages: (history) => {
+    clearAllImages: (history: Conversation): any[] | false => {
         try {
-            // Convert history to array and process each message
             return history.chats.map(item => {
-                // Extract text content only and filter out image content
-                const cleanedContent = item.content.filter(val => val.type === "text").map(textContent => ({
+                const cleanedContent = (item.content as any[]).filter(val => val.type === "text").map(textContent => ({
                     ...textContent,
-                    // Process text further
-                    text: textContent.text.trim() // Remove extra whitespace
+                    text: textContent.text.trim()
                 }));
-
-                // Return the cleaned item with only text content
                 return {
                     ...item,
                     content: cleanedContent
                 };
             });
         } catch (err) {
-            return false
+            return false;
         }
     },
-    clearImages: (history) => {
+    clearImages: (history: Conversation): any[] | false => {
         try {
-            // Clean all messages by removing non-text content
             const cleanedHistory = history.chats.map(item => {
-                const cleanedContent = item.content
+                const cleanedContent = (item.content as any[])
                     .filter(val => val.type === "text")
                     .map(textContent => ({
                         ...textContent,
-                        // Remove extra whitespace from text
                         text: textContent.text.trim()
                     }));
                 return {
@@ -381,105 +366,95 @@ const api = {
                 };
             });
 
-            // Access the original last message before cleaning
             const lastMessage = history.chats[history.chats.length - 1];
-
-            // Messages have a property role that distinguishes user messages,
-            // and if the user message contains any image data
             if (
                 lastMessage &&
-                lastMessage.role === "user" &&  // adjust property if your structure differs
-                lastMessage.content.some(val => ["image_url", "file_url"].includes(val.type))
+                lastMessage.role === "user" &&
+                (lastMessage.content as any[]).some(val => ["image_url", "file_url"].includes(val.type))
             ) {
-                // Replace the cleaned version of the last message with the original last message
-                cleanedHistory.chats[cleanedHistory.chats.length - 1] = lastMessage;
+                (cleanedHistory as any)[cleanedHistory.length - 1] = lastMessage;
             }
 
             return cleanedHistory;
         } catch (err) {
-            return false
+            return false;
         }
     },
-    CreateNew: (conversation, model) => {
-        if (!ConversationId) ConversationId = api.generateUUID()
-        ConversationHistory.chats = conversation
-        ConversationHistory.metadata =
-        {
+    CreateNew: (conversation: ChatMessage[], model: string): void => {
+        if (!ConversationId) ConversationId = api.generateUUID();
+        ConversationHistory.chats = conversation;
+        ConversationHistory.metadata = {
             model: model,
             id: ConversationId,
             created_at: getformatDateTime(),
-            updated_at: getformatDateTime()
-        }
-        api.saveConversation(ConversationHistory)
+            updated_at: getformatDateTime(),
+            type: ConversationHistory.metadata.type,
+            name: ConversationHistory.metadata.name,
+            highlight: ConversationHistory.metadata.highlight
+        };
+        api.saveConversation(ConversationHistory);
     },
-    saveConversation: async (conversationData, conversationId = ConversationId) => {
+    saveConversation: async (conversationData: Conversation, conversationId: string = ConversationId): Promise<string> => {
         const filePath = `${conversation_root}/${conversationId}.json`;
-        //console.log(JSON.stringify(conversationData))
         try {
-            if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving")
-            //console.log("Saving: " + conversationId + filePath)
-            // await api.write(filePath, conversationData);
-            return filePath
+            if (ConversationHistory.metadata.type === "temporary") {
+                console.log("In temporary chat Not saving");
+                return filePath;
+            }
+            return filePath;
         } catch (err) {
             console.error('Error saving conversation:', err);
-            return filePath
+            return filePath;
         }
     },
-    generateUUID: () => {
+    generateUUID: (): string => {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-            return crypto.randomUUID(); // ✅ Modern secure UUID (v4)
+            return crypto.randomUUID();
         }
-
-        // 🧩 Fallback for older browsers or runtimes
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     },
-    getConversationId: () => {
+    getConversationId: (): string => {
         return ConversationId;
     },
-    setConversationId: (id) => {
+    setConversationId: (id: string): void => {
         ConversationId = id;
     },
-    setConversation: (data, id) => {
-        //api.saveConversation(data, data[0].metadata.id)
-        if (data.chats[0]?.role !== 'system') data.chats.unshift({ role: 'system', content: system_command })
+    setConversation: (data: Conversation, id?: string): void => {
+        if (data.chats[0]?.role !== 'system') data.chats.unshift({ role: 'system', content: system_command });
         ConversationHistory = data;
         ConversationId = id ? id : data.metadata.id;
     },
-    send: (channel, data) => {
-        // List of valid channels
+    send: (channel: string, data: any): void => {
         const validChannels = ['dispatch-to-main-process', 'Notify'];
         if (validChannels.includes(channel)) {
             ipcRenderer.send(channel, data);
         }
     },
-    receive: (channel, func) => {
+    receive: (channel: string, func: (...args: any[]) => void): void => {
         const validChannels = ['reply-from-main-process', 'from-main-process-ToVision', 'from-main-process-ToChat'];
         if (validChannels.includes(channel)) {
-            // Strip event as it includes `sender` and other properties
-            ipcRenderer.on(channel, (event, ...args) => func(...args));
+            ipcRenderer.on(channel, (event: IpcRendererEvent, ...args: any[]) => func(...args));
         }
     },
-    ThemeChangeDispatch: () => {
-        // Dispatch a custom event 'animationReady' on the element
+    ThemeChangeDispatch: (): void => {
         const event = new CustomEvent('ThemeChange');
         document.dispatchEvent(event);
     },
-    getNewChatUUId: () => {
+    getNewChatUUId: (): string => {
         return ConversationId;
     },
-    saveAndOpenImage: (downloadsPath, dataUrl) => {
+    saveAndOpenImage: (downloadsPath: string, dataUrl: string): void => {
         fetch(dataUrl)
             .then(res => res.blob())
             .then(blob => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    const buffer = Buffer.from(reader.result);
+                    const buffer = Buffer.from(reader.result as ArrayBuffer);
                     const outputPath = path.join(downloadsPath, 'IntelliDesk-output.jpg');
-
                     fs.writeFile(outputPath, buffer, (err) => {
                         if (err) {
                             console.error('Error saving image:', err);
@@ -494,107 +469,94 @@ const api = {
                 console.error('Error creating blob:', error);
             });
     },
-
-    cleanFile: async (file) => {
-        fs.readFileSync(file, (err, data) => {
+    cleanFile: async (file: string): Promise<boolean | undefined> => {
+        fs.readFile(file, (err: any, data: any) => {
             if (err) throw err;
-            data = JSON.parse(data);
-            //for (let [i, res] of data.e)
-            data.chats.forEach(res => {
-                // console.log(data)
+            data = JSON.parse(data as any);
+            data.chats.forEach((res: any) => {
                 if (res.role === "user") {
-
                     if (data.chats[data.chats.indexOf(res) + 1].role !== "assistant") {
-                        console.log("Pair: !index", data.chats.indexOf(res) + 1)
-                        data.chats.slice(data.chats.indexOf(res), data.chats.indexOf(res) + 1).values()
+                        console.log("Pair: !index", data.chats.indexOf(res) + 1);
+                        data.chats.slice(data.chats.indexOf(res), data.chats.indexOf(res) + 1).values();
                     } else if (data.chats[data.chats.indexOf(res) + 1].role === "assistant") {
-                        console.log("Pair: OK", data.chats.indexOf(res))
+                        console.log("Pair: OK", data.chats.indexOf(res));
                     }
                 }
-            })
-            return true
+            });
+            return true;
         });
     },
-    getDateTime: () => {
+    getDateTime: (): string => {
         return getformatDateTime(true);
     },
-    savePreference: async (data) => {
+    savePreference: async (data: any): Promise<boolean> => {
         try {
             const skeleton = {
                 data: data
-            }
-            const prefFile = ".preference.json"
+            };
+            const prefFile = ".preference.json";
             const prefPath = path.join(os.homedir(), '.IntelliDesk/.config');
             try {
                 fs.mkdirSync(prefPath, { recursive: true });
-                //console.log(`Directory created: ${prefPath}`);
-            } catch (error) {
+            } catch (error: any) {
                 console.error(`Error creating directory: ${error.message}`);
             }
             const prefFpath = path.join(prefPath, prefFile);
             fs.writeFileSync(prefFpath, JSON.stringify(skeleton));
-            return true
+            return true;
         } catch (err) {
-            //console.log(err);
-            return false
+            return false;
         }
     },
-    deletePreference: async (data = null) => {
+    deletePreference: async (data: any = null): Promise<boolean> => {
         try {
             const prefPath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
             fs.rmSync(prefPath, data);
-            return true
+            return true;
         } catch (err) {
             console.log(err);
-            return false
+            return false;
         }
     },
-    getPreferences: async () => {
+    getPreferences: async (): Promise<PreferenceData | undefined> => {
         try {
-            const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json')
+            const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
             if (fs.statfsSync(_fpath)) {
-                const prefData = fs.readFileSync(_fpath, 'utf-8')
-                //console.log(JSON.parse(prefData))
-                return JSON.parse(prefData)
+                const prefData = fs.readFileSync(_fpath, 'utf-8');
+                return JSON.parse(prefData);
             }
         } catch (err) {
-            //console.log(err)
+            // console.log(err)
         }
     },
-    saveRecording: async (blob) => {
+    saveRecording: async (blob: Blob): Promise<string | undefined> => {
         try {
             const randomFname = `hfaudio_${Math.random().toString(36).substring(1, 12)}`;
-            const savePath = path.join(os.homedir(), `.IntelliDesk/.cache/${randomFname}.wav`)
-            // Extract the directory path from the file path
+            const savePath = path.join(os.homedir(), `.IntelliDesk/.cache/${randomFname}.wav`);
             const dirPath = path.dirname(savePath);
 
-            // Create the directory if it doesn't exist
             if (!fs.existsSync(dirPath)) {
                 fs.mkdirSync(dirPath, { recursive: true });
                 console.log(`Directory '${dirPath}' created.`);
             }
-            // Convert Blob to ArrayBuffer
+
             const arrayBuffer = await blob.arrayBuffer();
-
-            // Convert ArrayBuffer to Buffer
             const buffer = Buffer.from(arrayBuffer);
-
-            // Write the Buffer to a file
             fs.writeFileSync(savePath, buffer);
             console.log(`File saved at ${savePath}`);
-            return savePath
+            return savePath;
         } catch (err) {
-            console.log(err)
+            console.log(err);
         }
     },
-    readFileData: async (filePath) => {
+    readFileData: async (filePath: string): Promise<Buffer | false> => {
         if (!fs.existsSync(filePath)) {
-            return false
+            return false;
         }
-        data = fs.readFileSync(filePath)
-        return data
+        const data = fs.readFileSync(filePath);
+        return data;
     },
-    saveImageBuffer: async (canvas, path, url = null) => {
+    saveImageBuffer: async (canvas: HTMLCanvasElement, path: string, url: string | null = null): Promise<boolean | string> => {
         try {
             return new Promise((resolve, reject) => {
                 canvas.toBlob(async (blob) => {
@@ -604,95 +566,68 @@ const api = {
                     }
 
                     try {
-                        // Convert the Blob to an ArrayBuffer
                         const arrayBuffer = await blob.arrayBuffer();
-                        // Create a Buffer from the ArrayBuffer
                         const buffer = Buffer.from(arrayBuffer);
-
-                        // Invoke the IPC method to save the image
                         const response = await ipcRenderer.invoke('save-dg-As-PNG', buffer, path);
-                        console.log(response)
+                        console.log(response);
                         resolve(response === true);
                     } catch (err) {
                         reject(err);
                     }
                 }, 'image/png');
-            })
-
+            });
         } catch (err) {
-            console.log(err)
-            return 'Runtime error: Failed to save image'
+            console.log(err);
+            return 'Runtime error: Failed to save image';
         }
     }
 };
 
-const api2 = {
-    // Key chain apis
-    saveKeyChain: async (keychain) => ipcRenderer.invoke('save-key-chain', keychain),
-    getKeyChain: async (account = 'mistral') => ipcRenderer.invoke('get-key-chain', account),
-    resetKeyChain: async (accounts) => ipcRenderer.invoke('reset-key-chain', accounts),
-
-    appVersion: async () => ipcRenderer.invoke('get-app-version',),
-    appIsDev: async () => ipcRenderer.invoke('get-dev-status',),
-
-    // Chat functionality
-    sendChatMessage: (message, model, options) => ipcRenderer.invoke('send-chat-message', { message, model, options }),
-
-    // File dialogs
-    showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
-    showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
-    attachFiles: () => ipcRenderer.invoke('attach-files'),
-
-    // Model management
-    getAvailableModels: () => ipcRenderer.invoke('get-available-models'),
-
-    // Settings
-    getSettings: () => ipcRenderer.invoke('get-settings'),
-    saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
-
-    // Theme
-    getTheme: () => ipcRenderer.invoke('get-theme'),
-    setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
-
-    // Voice recording
-    startRecording: () => ipcRenderer.invoke('start-recording'),
-    stopRecording: () => ipcRenderer.invoke('stop-recording'),
-
-    // Code/Canvas
-    saveCodeToFile: (code, filePath) => ipcRenderer.invoke('save-code-to-file', { code, filePath }),
-    loadCodeFromFile: (filePath) => ipcRenderer.invoke('load-code-from-file', { filePath }),
-
-    // Conversations
-    getConversations: () => ipcRenderer.invoke('get-conversations'),
-    saveConversation: (conversation) => ipcRenderer.invoke('save-conversation', conversation),
-    deleteConversation: (conversationId) => ipcRenderer.invoke('delete-conversation', conversationId),
-
-    // Event listeners for real-time updates
-    onChatResponse: (callback) => {
-        ipcRenderer.on('chat-response', (event, response) => callback(response));
+const api2: Api2Type = {
+    saveKeyChain: async (keychain: any): Promise<any> => ipcRenderer.invoke('save-key-chain', keychain),
+    getKeyChain: async (account: string = 'mistral'): Promise<any> => ipcRenderer.invoke('get-key-chain', account),
+    resetKeyChain: async (accounts: any): Promise<any> => ipcRenderer.invoke('reset-key-chain', accounts),
+    appVersion: async (): Promise<string> => ipcRenderer.invoke('get-app-version'),
+    appIsDev: async (): Promise<boolean> => ipcRenderer.invoke('get-dev-status'),
+    sendChatMessage: (message: string, model: string, options: any): Promise<any> => ipcRenderer.invoke('send-chat-message', { message, model, options }),
+    showSaveDialog: (options: SaveDialogOptions): Promise<any> => ipcRenderer.invoke('show-save-dialog', options),
+    showOpenDialog: (options: OpenDialogOptions): Promise<any> => ipcRenderer.invoke('show-open-dialog', options),
+    attachFiles: (): Promise<any> => ipcRenderer.invoke('attach-files'),
+    getAvailableModels: (): Promise<string[]> => ipcRenderer.invoke('get-available-models'),
+    getSettings: (): Promise<any> => ipcRenderer.invoke('get-settings'),
+    saveSettings: (settings: any): Promise<void> => ipcRenderer.invoke('save-settings', settings),
+    getTheme: (): Promise<string> => ipcRenderer.invoke('get-theme'),
+    setTheme: (theme: string): Promise<void> => ipcRenderer.invoke('set-theme', theme),
+    startRecording: (): Promise<void> => ipcRenderer.invoke('start-recording'),
+    stopRecording: (): Promise<void> => ipcRenderer.invoke('stop-recording'),
+    saveCodeToFile: (code: string, filePath: string): Promise<void> => ipcRenderer.invoke('save-code-to-file', { code, filePath }),
+    loadCodeFromFile: (filePath: string): Promise<string> => ipcRenderer.invoke('load-code-from-file', { filePath }),
+    getConversations: (): Promise<Conversation[]> => ipcRenderer.invoke('get-conversations'),
+    saveConversation: (conversation: Conversation): Promise<void> => ipcRenderer.invoke('save-conversation', conversation),
+    deleteConversation: (conversationId: string): Promise<void> => ipcRenderer.invoke('delete-conversation', conversationId),
+    onChatResponse: (callback: (response: any) => void): () => void => {
+        ipcRenderer.on('chat-response', (event: IpcRendererEvent, response: any) => callback(response));
         return () => ipcRenderer.removeAllListeners('chat-response');
     },
-
-    onError: (callback) => {
-        ipcRenderer.on('chat-error', (event, error) => callback(error));
+    onError: (callback: (error: any) => void): () => void => {
+        ipcRenderer.on('chat-error', (event: IpcRendererEvent, error: any) => callback(error));
         return () => ipcRenderer.removeAllListeners('chat-error');
     },
-
-    onThemeChange: (callback) => {
-        ipcRenderer.on('theme-changed', (event, theme) => callback(theme));
+    onThemeChange: (callback: (theme: string) => void): () => void => {
+        ipcRenderer.on('theme-changed', (event: IpcRendererEvent, theme: string) => callback(theme));
         return () => ipcRenderer.removeAllListeners('theme-changed');
     }
 };
 
-const cmd = {
-    execute: (command, options = {}) => {
+// {
+//     encoding: 'utf8',
+//     ...options
+// },
+
+const cmd: CmdType = {
+    execute: (command: string, _: CommandOptions = {}): Promise<CommandResult> => {
         return new Promise((resolve) => {
-            exec(command, {
-                encoding: 'utf8',
-                ...options
-            }, (error, stdout, stderr) => {
-                // Always resolve, never reject, so caller can handle both cases
-                // console.log("CMD E:", error, "STDOUT:", stdout, "STDERR:", stderr)
+            exec(command, (error: ExecException | null, stdout: string, stderr: string) => {
                 resolve({
                     success: !error,
                     error: error,
@@ -718,29 +653,21 @@ contextBridge.exposeInMainWorld('desk', {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    //initialize conversation histories when is ready/loaded
     ConversationHistory.chats = [{ role: "system", content: system_command }];
-    ConversationId = api.generateUUID()
+    ConversationId = api.generateUUID();
+    ConversationHistory.metadata.id = ConversationId;
+});
 
-    ConversationHistory.metadata.id = ConversationId
-})
-
-document.addEventListener('NewConversation', function(e) {
-    //console.log("NewConversation Event Recieved")
-
-    const details = e.detail
-
+document.addEventListener('NewConversation', function(e: CustomEvent<{ type?: string }>) {
+    const details = e.detail;
     if (details?.type?.toLocaleLowerCase() === "temporary") ConversationHistory.metadata.type = "temporary";
+    ConversationId = api.generateUUID();
+    ConversationHistory.chats = [{ role: "system", content: system_command }];
+    ConversationHistory.metadata.id = ConversationId;
+});
 
-    ConversationId = api.generateUUID()
-    ConversationHistory.chats = [{ role: "system", content: system_command }]
-    ConversationHistory.metadata.id = ConversationId
-})
-
-
-document.addEventListener('keydown', (event) => {
-    if (event.ctrlKey && event.key === 'D' || event.ctrlKey && event.key === 'd') {
-        //event.preventDefault(); // Prevent any default action
-        ipcRenderer.invoke('show-documentation')
+document.addEventListener('keydown', (event: KeyboardEvent) => {
+    if ((event.ctrlKey && event.key === 'D') || (event.ctrlKey && event.key === 'd')) {
+        ipcRenderer.invoke('show-documentation');
     }
 });

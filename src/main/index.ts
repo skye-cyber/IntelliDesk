@@ -12,7 +12,7 @@
  * @module ElectronMain
  */
 
-import { app, BrowserWindow, ipcMain, Notification, dialog, Menu, Tray } from 'electron';
+import { app, BrowserWindow, ipcMain, Notification, dialog, Menu, Tray, IpcMainEvent, IpcMainInvokeEvent} from 'electron';
 import path from 'path';
 import fs from 'fs';
 // import isDev from 'electron-is-dev';
@@ -29,7 +29,7 @@ let mainWindow: BrowserWindow | null = null;
 
 const isDev = !app.isPackaged;
 
-let iconPath: string | null
+let iconPath: string
 
 function setAppIcon() {
     iconPath = isDev
@@ -39,7 +39,7 @@ function setAppIcon() {
     // Fallback to a generic icon or skip setting it
     if (!fs.existsSync(iconPath)) {
         console.warn('Icon not found, fallback triggered');
-        iconPath = null;
+        iconPath = '';
     }
 }
 
@@ -51,7 +51,7 @@ setAppIcon()
  */
 function setupIPC() {
     // Handle notify events
-    ipcMain.on('Notify', (event, data) => {
+    ipcMain.on('Notify', (_: IpcMainEvent, data) => {
         console.log('Received time data from renderer:', data.message);
 
         const timeTaken = data.message;
@@ -93,19 +93,19 @@ function setupIPC() {
     });
 
     // IPC handler to save keyschains
-    ipcMain.handle('save-key-chain', async (event, chain) => {
+    ipcMain.handle('save-key-chain', async (_, chain) => {
         await keytar.setPassword(SERVICE_NAME, 'mistral', chain);
         return { success: true };
     });
 
     // IPC handler to retrieve keyschains
-    ipcMain.handle('get-key-chain', async (event, service = 'mistral') => {
+    ipcMain.handle('get-key-chain', async (_: IpcMainInvokeEvent, service = 'mistral') => {
         const MistralKeyChain = await keytar.getPassword(SERVICE_NAME, service) || [];
         return MistralKeyChain
     });
 
     // IPC handler for keyschains reset
-    ipcMain.handle('reset-key-chain', async (event, accounts) => {
+    ipcMain.handle('reset-key-chain', async (_: IpcMainInvokeEvent, accounts: Array<string>) => {
         accounts.forEach(async (account) => {
             try {
                 await keytar.deletePassword(SERVICE_NAME, account);
@@ -117,13 +117,13 @@ function setupIPC() {
     });
 
 
-    ipcMain.handle('save-dg-As-PNG', async (event, buffer, path) => {
+    ipcMain.handle('save-dg-As-PNG', async (_: IpcMainInvokeEvent, buffer: Buffer, path: string) => {
         try {
             //console.log('Saving to:', path);
             const { filePath, canceled } = await dialog.showSaveDialog({
                 title: 'Save Diagram as PNG',
                 defaultPath: path,
-                    filters: [{ name: 'PNG Image', extensions: ['png'] }]
+                filters: [{ name: 'PNG Image', extensions: ['png'] }]
             });
 
             if (canceled || !filePath) {
@@ -141,7 +141,7 @@ function setupIPC() {
 
 
     // IPC handler for keys reset
-    ipcMain.handle('get-app-version', async (event, accounts) => {
+    ipcMain.handle('get-app-version', async () => {
         try {
             return app.getVersion()
         } catch (err) {
@@ -149,7 +149,7 @@ function setupIPC() {
         }
     });
 
-    ipcMain.handle('get-dev-status', async (event) => {
+    ipcMain.handle('get-dev-status', async () => {
         return isDev
     })
 
@@ -161,7 +161,7 @@ app.disableHardwareAcceleration()
 
 
 function show_documentation() {
-    const _docWindow = new BrowserWindow({
+    const _docWindow: BrowserWindow = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
@@ -198,17 +198,33 @@ function setupMenu() {
                 { label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut' },
                 { label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy' },
                 { label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' },
-                { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectall' }
+                { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll' }
             ]
         },
         {
             label: 'View',
             submenu: [
-                { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: (item, focusedWindow: BrowserWindow) => focusedWindow.reload() },
-                { label: 'Toggle Developer Tools', accelerator: 'F12', click: (item, focusedWindow: BrowserWindow) => focusedWindow.webContents.toggleDevTools() },
+                { label: 'Reload', accelerator: 'CmdOrCtrl+R' },
+                {
+                    label: 'Toggle Developer Tools',
+                    accelerator: 'F12',
+                    role: 'toggleDevTools',
+                    click: (_, focusedWindow) => {
+                        // Type guard for BaseWindow multi-view support
+                        if (focusedWindow && 'getWebContentsView' in focusedWindow) {
+                            const view = (focusedWindow as any).getFocusedWebContentsView?.();
+                            view?.webContents?.toggleDevTools();
+                        } else if ('webContents' in (focusedWindow as any)) {
+                            (focusedWindow as any).webContents.toggleDevTools();
+                        }
+                    },
+                },
                 { type: 'separator' },
-                { label: 'Zoom In', accelerator: 'CmdOrCtrl+=', click: (item, focusedWindow: BrowserWindow) => focusedWindow.webContents.send('zoom-in') },
-                { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', click: (item, focusedWindow: BrowserWindow) => focusedWindow.webContents.send('zoom-out') }
+                { role: 'resetZoom' },
+                { role: 'zoomIn' },
+                { role: 'zoomOut' },
+                { type: 'separator' },
+                { role: 'togglefullscreen', accelerator: 'F11' }
             ]
         },
         {

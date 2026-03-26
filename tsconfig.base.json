@@ -17,5 +17,5 @@
     "noFallthroughCasesInSwitch": true
     //"noEmit": true,          // Let Vite emit, tsc just checks
   },
-  "exclude": ["node_modules", "dist", "assets", "common", "icons", "scripts", "styles"]
+  "exclude": ["node_modules", "dist", "assets", "common", "icons", "scripts", "styles", "types"]
 }

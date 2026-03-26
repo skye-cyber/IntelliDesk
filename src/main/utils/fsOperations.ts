@@ -1,33 +1,10 @@
 import { dialog } from "electron";
-import fsSync from 'fs';
-import path from "path"
-import fs from "fs/promises"
-import type {
-    readFileSuccess,
-    readFileError,
-    writeFileSuccess,
-    writeFileError,
-    appendFileError,
-    fileExistsStats,
-    fileExistsStatError,
-    watchFileSuccess,
-    watchFileError,
-    // readJSONError,
-    dialogRessponse,
-    statPathError,
-    statPathSuccess,
-    fileOpError,
-    FileInfoSuccess,
-    mkdirSuccess,
-    deleteSuccess,
-    deleteError,
-    copyError,
-    copySuccess,
-    moveSuccess,
-    moveError,
-    appendFileSuccess
-} from "./types";
 import { OpenDialogOptions } from "electron/utility";
+import fsSync from "fs";
+import fs from "fs/promises";
+import path from "node:path";
+import type { readFileSuccess, readFileError, writeFileSuccess, writeFileError, appendFileSuccess, appendFileError, fileExistsStats, fileExistsStatError, fileOpError, FileInfoSuccess, mkdirSuccess, deleteSuccess, deleteError, copySuccess, copyError, moveSuccess, moveError, statPathSuccess, statPathError, dialogRessponse, watchFileSuccess, watchFileError } from "./types";
+
 
 
 export const fsOperations = {
@@ -89,7 +66,7 @@ export const fsOperations = {
             await fs.writeFile(absolutePath, content, { encoding: encoding });
 
             const stats = await fs.stat(absolutePath);
-            const existsCheck = await this.exists(filePath)
+            const existsCheck = await this.exists(filePath);
 
             return {
                 success: true,
@@ -259,8 +236,8 @@ export const fsOperations = {
             }
 
             const absolutePath = path.resolve(dirPath);
-            const existsCheck = await this.exists(dirPath)
-            const existed = (existsCheck.success && existsCheck.exists)
+            const existsCheck = await this.exists(dirPath);
+            const existed = (existsCheck.success && existsCheck.exists);
 
             if (!existed) {
                 await fs.mkdir(absolutePath, { recursive });
@@ -414,7 +391,7 @@ export const fsOperations = {
 
 
             if (sourceExists.success && sourceExists.isDirectory) {
-                const realDest = path.join(destPath, path.basename(sourcePath))
+                const realDest = path.join(destPath, path.basename(sourcePath));
                 await this._copyDirectory(sourcePath, realDest, overwrite);
             } else {
                 await fs.copyFile(sourcePath, destPath);
@@ -439,33 +416,33 @@ export const fsOperations = {
     },
 
     findCommonRoot(src: string, dst: string): string | null | undefined {
-        const destParts = dst.split('/')
-        const sourceParts = src.split('/')
+        const destParts = dst.split('/');
+        const sourceParts = src.split('/');
 
-        let root = ''
-        const destDirs: [string | null | undefined] = [undefined]
-        const sourceDirs: [string | null | undefined] = [undefined]
+        let root = '';
+        const destDirs: [string | null | undefined] = [undefined];
+        const sourceDirs: [string | null | undefined] = [undefined];
 
         destParts.forEach(part => {
             if (part.trim()) {
-                root += `/${part}`
-                destDirs.push(root)
+                root += `/${part}`;
+                destDirs.push(root);
             }
-        })
+        });
 
-        root = ''
+        root = '';
 
         sourceParts.forEach(part => {
             if (part.trim()) {
-                root += `/${part}`
-                sourceDirs.push(root)
+                root += `/${part}`;
+                sourceDirs.push(root);
             }
-        })
+        });
 
-        const sharedRoots = destDirs.filter(dir => sourceDirs.includes(dir))
-        const rightMostRoot = sharedRoots.slice(-1)[0]
+        const sharedRoots = destDirs.filter(dir => sourceDirs.includes(dir));
+        const rightMostRoot = sharedRoots.slice(-1)[0];
 
-        return rightMostRoot
+        return rightMostRoot;
     },
 
     /**
@@ -519,7 +496,7 @@ export const fsOperations = {
             let destPath = path.resolve(destination);
 
             const sourceExists = await this.exists(sourcePath);
-            const sourceType = sourceExists.isDirectory ? 'directory' : 'file'
+            const sourceType = sourceExists.isDirectory ? 'directory' : 'file';
 
             if (sourceExists.success && !sourceExists.exists) {
                 return {
@@ -589,7 +566,7 @@ export const fsOperations = {
             const absolutePath = path.resolve(filePath);
             const stats = fsSync.statSync(absolutePath);
 
-            const mode = stats.mode.toString(8)
+            const mode = stats.mode.toString(8);
 
             return {
                 success: true,

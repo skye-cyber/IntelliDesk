@@ -1,18 +1,20 @@
 export class EventHandler {
+  private listeners: Map<CallableFunction, { event: Event; listener: (event: Event, ...args: any[]) => void }>;
+
   constructor() {
     this.listeners = new Map();
   }
 
-  on(event: Event, callback: CallableFunction) {
+  on(event: Event, callback: CallableFunction): () => void {
     const { ipcRenderer } = require('electron');
-    const listener = (event, data) => callback(data);
+    const listener = (event: Event, data: any) => callback(event, data);
     ipcRenderer.on(event, listener);
 
     this.listeners.set(callback, { event, listener });
     return () => this.off(event, callback);
   }
 
-  off(event: Event, callback: CallableFunction) {
+  off(event: Event, callback: CallableFunction): void {
     const { ipcRenderer } = require('electron');
     const listenerInfo = this.listeners.get(callback);
     if (listenerInfo) {
@@ -22,4 +24,4 @@ export class EventHandler {
   }
 }
 
-export const eventhandler = new EventHandler()
+export const eventhandler = new EventHandler();

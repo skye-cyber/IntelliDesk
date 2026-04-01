@@ -30,12 +30,19 @@ export function CopyMessage(element, html = false) {
         element.innerHTML :
         element.textContent;
 
+    const detail = {
+        detail: {
+            info: {
+                head: html ? "Clone successfull!" : "Text Copied ssuccessfully",
+                body: ""
+            }
+        }
+    }
+
     if (textToCopy.length >= 0) {
         try {
             navigator.clipboard.writeText(textToCopy);
-            html ?
-                StateManager.get('showCopyFeedback')("Clone successfull!") :
-                StateManager.get('showCopyFeedback')()
+            document.dispatchEvent(new CustomEvent('show-copy-feedback', { detail: detail }))
         } catch (err) {
             console.error('Failed to copy: ', err);
         }

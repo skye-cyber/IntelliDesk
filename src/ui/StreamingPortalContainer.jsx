@@ -4,7 +4,7 @@ import { Diagram } from './components/DiagramUI/diagram';
 import { UserMessage, AiMessage, ResponseWrapper, StreamingAiMessage } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { FileItem } from './components/DropZone/dropzone';
-import { LoadingAnimation } from './components/StatusUI/StatusUI';
+import { LoadingAnimation } from './components/StatusUI/loader';
 import ToolResponse from './components/Chat/ToolResponse';
 import ToolErrorHandler from './components/Chat/ToolErrorHandler';
 import ToolCallDisplay from './components/Chat/ToolCallDisplay';

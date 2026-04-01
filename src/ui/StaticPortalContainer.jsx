@@ -5,7 +5,7 @@ import { UserMessage, AiMessage } from './components/ConversationRenderer/Render
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { FileItem } from './components/DropZone/dropzone';
 import { UploadedFileIndicator } from './components/DropZone/uploads';
-import { LoadingAnimation } from './components/StatusUI/StatusUI';
+import { LoadingAnimation } from './components/StatusUI/loader';
 import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
 import { ConfirmationDialog } from './components/StatusUI/confirmDialog';
 import { DateSplit } from './components/Chat/datesplit';

@@ -30,6 +30,8 @@ import { StaticPortalContainer } from './StaticPortalContainer';
 import { StreamingPortalContainer } from './StreamingPortalContainer';
 import '../core/PortalBridge.ts';
 import './PortalTargetRegister';
+import ConfigEditor from './components/ConfigManager/ConfigEditor.jsx';
+import { CopyFeedback } from './components/StatusUI/copy.jsx';
 
 const App = () => {
     //const { electron } = useElectron();
@@ -44,7 +46,7 @@ const App = () => {
     return (
         <ErrorBoundary>
             <MainLayout>
-                <div data-portal-container="mainContainer" id="main-container"  className='flex flex-1 overflow-hidden max-w-full'>
+                <div data-portal-container="mainContainer" id="main-container" className='flex flex-1 overflow-hidden max-w-full'>
                     <span className='data-portal-root fixed z-[99]'></span>
                     <div className='flex flex-shrink'>
                         <ErrorBoundary>
@@ -69,6 +71,13 @@ const App = () => {
                     <ErrorBoundary>
                         <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
                     </ErrorBoundary>
+                    <ErrorBoundary>
+                        <ConfigEditor />
+                    </ErrorBoundary>
+                    {/* Copy Feedback Modal*/}
+                    <CopyFeedback />
+                    {/* Loading Modal */}
+                    {/*<Loader />*/}
                 </div>
                 <ErrorBoundary>
                     <DiagramUi isOpen={true} onToggle={null} />
@@ -87,7 +96,7 @@ const App = () => {
                 </ErrorBoundary>
 
                 <ErrorBoundary>
-                <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
+                    <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
                 </ErrorBoundary>
 
                 <ErrorBoundary>

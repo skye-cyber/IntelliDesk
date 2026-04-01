@@ -46,7 +46,11 @@
 /* ===== DARK THEME (Optimized for #12142a background) ===== */
 .dark .hljs {
     background-color: #09091d;
-    border: 1px solid #23263e;
+    border: 1px solid #181824;
+}
+
+.hljs {
+    border: 1px solid #f3f3f3;
 }
 
 /* Syntax Elements - Dark Theme */

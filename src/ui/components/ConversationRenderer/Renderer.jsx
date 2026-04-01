@@ -56,7 +56,7 @@ export const AiMessage = ({ children, ...props }) => {
     return (
         <ErrorBoundary>
             <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
-                <section id="ai_response" className="relative w-fit max-w-full mb-[2vh] py-2 px-4">
+                <section id="ai_response" className="relative w-full max-w-full mb-[2vh] py-2 px-4">
                     {/* This is where child components will appear eg too- responses */}
                     {children &&
                         <div ref={messageRef} className="child-components">{children}</div>

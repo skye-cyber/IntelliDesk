@@ -5,9 +5,9 @@ import { UserMessage, AiMessage, ResponseWrapper, StreamingAiMessage } from './c
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { FileItem } from './components/DropZone/dropzone';
 import { LoadingAnimation } from './components/StatusUI/loader';
-import ToolResponse from './components/Chat/ToolResponse';
-import ToolErrorHandler from './components/Chat/ToolErrorHandler';
-import ToolCallDisplay from './components/Chat/ToolCallDisplay';
+import ToolResponse from './components/Tools/ToolResponse';
+import ToolErrorHandler from './components/Tools/ToolErrorHandler';
+import ToolCallDisplay from './components/Tools/ToolCallDisplay';
 
 const streamingComponentRegistry = {
     Diagram,

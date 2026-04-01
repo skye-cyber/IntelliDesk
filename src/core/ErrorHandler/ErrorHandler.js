@@ -1,3 +1,5 @@
+/// <reference path="../../main/preload.type.ts" />
+
 import { Timer } from '../Timer/timer.js';
 // import { waitForNamespace } from '../Utils/namespace_utils.js';
 import { StateManager } from '../managers/StatesManager.js';

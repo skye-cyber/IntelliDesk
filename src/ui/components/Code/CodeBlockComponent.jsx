@@ -1,4 +1,3 @@
-import React from 'react';
 import { dot_interpreter } from '../../../core/diagraming/vizcharting';
 import { chart_interpret } from '../../../core/diagraming/jscharting';
 import { handleCodeCopy } from '../../../core/Utils/chatUtils';
@@ -42,7 +41,7 @@ export const CodeBlockComponent = ({
 
     return (
         <div className="w-full block bg-gray-200 dark:bg-zinc-800  rounded-md transition-colors duration-100">
-            <section id="code-actions" className="flex justify-between w-full bg-gray-200 rounded-t-md dark:bg-zinc-800 box-border transition-colors duration-700">
+            <section id="code-actions" className="flex justify-between w-full bg-gray-200 rounded-t-md dark:bg-[#101030] box-border transition-colors duration-700">
                 {/* Language */}
                 <p className="code-language p-1 justify-start rounded-md text-slate-950 dark:text-white rounded-lg font-normal text-sm cursor-pointer opacity-80 hover:opacity-50">
                     {valid_language}
@@ -88,7 +87,7 @@ export const CodeBlockComponent = ({
                 </div>
             </section>
             <div className='w-full'>
-                <code data-value={codeblock_id} id={codeblock_id} className={`hljs ${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border border-white shadow-inner dark:shadow-outer dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none overflow-x-auto overflow-x-auto`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
+                <code data-value={codeblock_id} id={codeblock_id} className={`hljs ${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none overflow-x-auto overflow-x-auto`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
             </div>
         </div>
     )

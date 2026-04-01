@@ -1,3 +1,4 @@
+/// <reference path="../../main/preload.type.ts" />
 import { HandleProcessingEventChanges } from "../Utils/chatUtils"
 import { handleDevErrors } from "./ErrorHandler"
 import errorHandler from "../../ui/components/ErrorHandler/ErrorHandler"

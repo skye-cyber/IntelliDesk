@@ -30,7 +30,7 @@ import { StaticPortalContainer } from './StaticPortalContainer';
 import { StreamingPortalContainer } from './StreamingPortalContainer';
 import '../core/PortalBridge.ts';
 import './PortalTargetRegister';
-import ConfigEditor from './components/ConfigManager/ConfigEditor.jsx';
+import ConfigEditor from './pages/ConfigEditor.jsx';
 import { CopyFeedback } from './components/StatusUI/copy.jsx';
 
 const App = () => {

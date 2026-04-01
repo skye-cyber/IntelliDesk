@@ -14,7 +14,15 @@ export function addCopyListeners() {
                 setTimeout(() => {
                     button.children[1].textContent = 'copy';
                 }, 2000);
-                showCopyModal();
+                const detail = {
+                    detail: {
+                        info: {
+                            head: "Text Copied ssuccessfully",
+                            body: ""
+                        }
+                    }
+                }
+                document.dispatchEvent(new CustomEvent('show-copy-feedback', { detail: detail }))
             } catch (err) {
                 console.error('Failed to copy: ', err);
             }
@@ -33,7 +41,15 @@ export async function handleCodeCopy(b_id, id = null) {
         setTimeout(() => {
             BtText.textContent = 'copy';
         }, 2000);
-        showCopyModal();
+        const detail = {
+            detail: {
+                info: {
+                    head: "Text Copied ssuccessfully",
+                    body: ""
+                }
+            }
+        }
+        document.dispatchEvent(new CustomEvent('show-copy-feedback', { detail: detail }))
     } catch (err) {
         console.error('Failed to copy: ', err);
     }

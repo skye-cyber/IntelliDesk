@@ -7,7 +7,7 @@ import { Buffer } from 'buffer';
 import { SystemPrompt } from './utils/system';
 import { fsOperations as fsops } from "./utils/fsOperations";
 import { getformatDateTime } from './utils/datetime';
-import { agent } from './utils/config';
+import { agent } from './utils/ToolAgent';
 // import { dbManager } from './utils/db/DatabaseManager';
 import { shell } from 'electron';
 import type {

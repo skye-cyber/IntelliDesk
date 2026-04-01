@@ -12,7 +12,7 @@ const buffer_1 = require("buffer");
 const system_1 = require("./utils/system");
 const fsOperations_1 = require("./utils/fsOperations");
 const datetime_1 = require("./utils/datetime");
-const config_1 = require("./utils/config");
+const ToolAgent_1 = require("./utils/ToolAgent");
 // import { dbManager } from './utils/db/DatabaseManager';
 const electron_2 = require("electron");
 // Global variables
@@ -655,7 +655,7 @@ const cmd = {
 electron_1.contextBridge.exposeInMainWorld('desk', {
     api,
     api2,
-    agent: config_1.agent,
+    agent: ToolAgent_1.agent,
     cmd,
     fsops: fsOperations_1.fsOperations,
     path: path_1.default,

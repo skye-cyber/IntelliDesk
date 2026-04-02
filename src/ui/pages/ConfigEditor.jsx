@@ -152,6 +152,11 @@ const ConfigEditor = () => {
         }
     }, []);
 
+    const SaveConfig = useCallback(async () => {
+        window.desk.agent.set_config(config)
+        window.desk.agent.write_config()
+    })
+
     const LoadConfig = useCallback(async () => {
         const conf = window.desk.agent.config
         if (!conf) return
@@ -160,21 +165,25 @@ const ConfigEditor = () => {
 
     const handleUpdateField = (path, value) => {
         setConfig(prev => {
-            const newConfig = { ...prev };
-            let current = newConfig;
-
-            // Navigate to the correct nested property
             const parts = path.split('.');
-            for (let i = 0; i < parts.length - 1; i++) {
-                current = current[parts[i]];
-            }
 
-            // Update the value
-            current[parts[parts.length - 1]] = value;
-            return newConfig;
+            const updateNested = (obj, keys) => {
+                if (keys.length === 1) {
+                    return {
+                        ...obj,
+                        [keys[0]]: value,
+                    };
+                }
+
+                const [head, ...rest] = keys;
+                return {
+                    ...obj,
+                    [head]: updateNested(obj[head] ?? {}, rest),
+                };
+            };
+
+            return updateNested(prev, parts);
         });
-
-        showSaveIndicator();
     };
 
     const handleRenameField = (oldPath, newName) => {
@@ -401,7 +410,7 @@ const ConfigEditor = () => {
                         Add New Field
                     </button>
                     <button
-                        onClick={() => showSaveIndicator()}
+                        onClick={SaveConfig}
                         className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
                     >
                         <Save size={18} />

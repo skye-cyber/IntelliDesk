@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const SettingToggle = ({ id, label, description, icon, checked, onChange }) => {
 
     const handleChange = (e) => {

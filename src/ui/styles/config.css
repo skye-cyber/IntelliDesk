@@ -631,3 +631,45 @@ background: linear-gradient(to bottom, #4b5563, #374151);
     background-origin: border-box;
     background-image: linear-gradient(to bottom right, hsl(0 0% 100% 0.8), hsl(0 0% 100% 0.8)), linear-gradient(135deg, rgba(255,0,255,170) 0%, rgba(0,0,255,85) 50%, rgba(0,255,255,170) 100%);
 }
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-in-from-bottom-4 {
+    from {
+        transform: translateY(1rem);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-in {
+    animation-duration: 0.2s;
+    animation-fill-mode: both;
+}
+
+.fade-in {
+    animation-name: fade-in;
+}
+
+.slide-in-from-bottom-4 {
+    animation-name: slide-in-from-bottom-4;
+}
+
+.duration-200 {
+    animation-duration: 0.2s;
+}
+
+@keyframes shrink {
+    from { width: 100%; }
+    to { width: 0%; }
+}

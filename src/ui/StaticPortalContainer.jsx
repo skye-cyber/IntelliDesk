@@ -10,6 +10,7 @@ import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
 import { ConfirmationDialog } from './components/StatusUI/confirmDialog';
 import { DateSplit } from './components/Chat/datesplit';
 import { Toast } from './components/StatusUI/Toasts';
+import { ToolPermissionRequest } from './components/Tools/ToolPermRequest';
 
 const componentRegistry = {
     Diagram,
@@ -22,7 +23,8 @@ const componentRegistry = {
     ErrorModal,
     Toast,
     ConfirmationDialog,
-    DateSplit
+    DateSplit,
+    ToolPermissionRequest
 };
 
 export const StaticPortalContainer = () => {

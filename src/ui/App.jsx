@@ -12,9 +12,8 @@ import './styles/code-theme.css'
 import { Recording } from './components/RecordingUI/Recording';
 import '../core/Timer/timer.js'
 import { DiagramUi } from './components/DiagramUI/diagram.jsx'
-import { Settings } from './components/Settings/Settings.jsx';
+import { Settings } from './pages/Settings.jsx';
 import { StatusUI } from './components/StatusUI/StatusUI.jsx';
-//import '../core/StatusUIManager/SuccessModal.js'
 import '../core/StatusUIManager/Manager.js'
 import { APIKeysManager } from './components/ApiManager/api';
 import { DropZone } from './components/DropZone/dropzone.jsx'
@@ -32,6 +31,8 @@ import '../core/PortalBridge.ts';
 import './PortalTargetRegister';
 import ConfigEditor from './pages/ConfigEditor.jsx';
 import { CopyFeedback } from './components/StatusUI/copy.jsx';
+import { Provider } from 'react-redux';
+import { store } from './store/index.js';
 
 const App = () => {
     //const { electron } = useElectron();
@@ -45,74 +46,61 @@ const App = () => {
     const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
     return (
         <ErrorBoundary>
-            <MainLayout>
-                <div data-portal-container="mainContainer" id="main-container" className='flex flex-1 overflow-hidden max-w-full'>
-                    <span className='data-portal-root fixed z-[99]'></span>
-                    <div className='flex flex-shrink'>
-                        <ErrorBoundary>
-                            <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
-                        </ErrorBoundary>
-                        <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
-                            <ErrorBoundary>
-                                <Header
-                                    onToggleSidebar={toggleSidebar}
-                                    selectedModel={selectedModel}
-                                    onModelChange={setSelectedModel}
-                                />
-                            </ErrorBoundary>
-                            <ErrorBoundary>
-                                <ChatInterface
-                                    isCanvasOpen={isCanvasOpen}
-                                    onToggleCanvas={toggleCanvas}
-                                    onToggleRecording={toggleRecording} />
-                            </ErrorBoundary>
+            <Provider store={store}>
+                <MainLayout>
+                    <ErrorBoundary>
+                        <div data-portal-container="mainContainer" id="main-container" className='flex flex-1 overflow-hidden max-w-full'>
+                            <span className='data-portal-root fixed z-[99]'></span>
+                            <div className='flex flex-shrink'>
+                                <ErrorBoundary>
+                                    <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+                                </ErrorBoundary>
+                                <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
+                                    <ErrorBoundary>
+                                        <Header onToggleSidebar={toggleSidebar} selectedModel={selectedModel} onModelChange={setSelectedModel}
+                                        />
+                                    </ErrorBoundary>
+                                    <ErrorBoundary>
+                                        <ChatInterface
+                                            isCanvasOpen={isCanvasOpen}
+                                            onToggleCanvas={toggleCanvas}
+                                            onToggleRecording={toggleRecording} />
+                                    </ErrorBoundary>
+                                </div>
+                            </div>
+                            <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
+
+                            <ConfigEditor />
+                            {/* Copy Feedback Modal*/}
+                            <CopyFeedback />
+                            {/* Loading Modal */}
+                            {/*<Loader />*/}
                         </div>
-                    </div>
-                    <ErrorBoundary>
-                        <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
                     </ErrorBoundary>
                     <ErrorBoundary>
-                        <ConfigEditor />
+                        <DiagramUi isOpen={true} onToggle={null} />
+
+                        <Settings isOpen={true} onToggle={null} />
+
+                        <StatusUI isOpen={true} onToggle={null} />
+
+                        <APIKeysManager isOpen={true} onToggle={null} />
+
+                        <DropZone isOpen={true} onToggle={null} />
+
+                        <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
+
+                        <NotificationFlyer isOpen={true} onToggle={null} />
+
+                        <Notifcation isOpen={true} onToggle={null} />
                     </ErrorBoundary>
-                    {/* Copy Feedback Modal*/}
-                    <CopyFeedback />
-                    {/* Loading Modal */}
-                    {/*<Loader />*/}
-                </div>
+                </MainLayout>
+                {/* Portal containers for vanilla JS components */}
                 <ErrorBoundary>
-                    <DiagramUi isOpen={true} onToggle={null} />
+                    <StaticPortalContainer />
+                    <StreamingPortalContainer />
                 </ErrorBoundary>
-                <ErrorBoundary>
-                    <Settings isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                    <StatusUI isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                    <APIKeysManager isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                    <DropZone isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <NotificationFlyer isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                    <Notifcation isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-            </MainLayout>
-            {/* Portal containers for vanilla JS components */}
-            <ErrorBoundary>
-                <StaticPortalContainer />
-            </ErrorBoundary>
-            <ErrorBoundary>
-                <StreamingPortalContainer />
-            </ErrorBoundary>
+            </Provider>
         </ErrorBoundary >
     );
 };

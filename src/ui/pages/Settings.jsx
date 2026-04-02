@@ -1,9 +1,9 @@
 import { useCallback, useState, useEffect } from 'react';
-import { SettingToggle } from '../../components/Settings/settings_toggle.jsx';
-import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
-import { useTheme } from '../../components/Themes/useThemeHeadless.jsx';
-import { modalmanager } from '../../../core/StatusUIManager/Manager';
-import { StateManager } from '../../../core/managers/StatesManager';
+import { SettingToggle } from '../components/Settings/settings_toggle.jsx';
+import { StateManager } from '../../core/managers/StatesManager.js';
+import { modalmanager } from '../../core/StatusUIManager/Manager.js';
+import { useTheme } from '../components/Themes/useThemeHeadless.jsx';
+import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary.jsx';
 
 export const Settings = ({ isOpen, onToggle }) => {
     const [preferenceChange, setPreferenceChange] = useState(false);
@@ -285,7 +285,7 @@ export const Settings = ({ isOpen, onToggle }) => {
         }
     }, [CloseSettings])
     return (
-        <div onClick={shouldClose} id="settingsModal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
+        <div onClick={shouldClose} id="settingsModal" className="fixed inset-0 z-[51] flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
             {/* Modal Content */}
             <div
                 className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl p-0 w-full mx-4 md:mx-auto max-w-2xl max-h-[98vh] overflow-hidden backdrop-blur-lg transition-colors duration-700 ease-in-out"

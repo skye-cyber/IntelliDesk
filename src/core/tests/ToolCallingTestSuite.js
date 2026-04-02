@@ -5,7 +5,7 @@
  */
 
 import toolManager from '../managers/Conversation/Mistral/ToolManager.js';
-import toolsIntegration from '../managers/Conversation/Mistral/ToolIntegration.js';
+import toolsIntegration from '../managers/Conversation/Mistral/ToolCallHandler.js';
 
 /**
  * Mistral Vibe Response Simulator

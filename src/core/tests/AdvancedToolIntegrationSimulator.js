@@ -6,7 +6,7 @@
 
 import { StateManager } from '../managers/StatesManager.js';
 import toolManager from '../managers/Conversation/Mistral/ToolManager.js';
-import toolsIntegration from '../managers/Conversation/Mistral/ToolIntegration.js';
+import toolsIntegration from '../managers/Conversation/Mistral/ToolCallHandler.js';
 
 /**
  * Advanced AI Simulator with Tool Integration

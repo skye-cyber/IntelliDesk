@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { ExecException } from 'child_process';
-import { agent } from './utils/ToolAgent';
+import { AgentType } from './utils/ToolAgent';
 export interface ConversationMetadata {
     model: string;
     type?: string;
@@ -151,7 +151,7 @@ declare global {
         desk: {
             api: ApiType;
             api2: Api2Type;
-            agent: typeof agent;
+            agent: AgentType;
             cmd: CmdType;
             fsops: any;
             path: typeof path;

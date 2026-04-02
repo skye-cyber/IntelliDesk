@@ -655,7 +655,7 @@ const cmd = {
 electron_1.contextBridge.exposeInMainWorld('desk', {
     api,
     api2,
-    agent: ToolAgent_1.agent,
+    agent: ToolAgent_1.Agent,
     cmd,
     fsops: fsOperations_1.fsOperations,
     path: path_1.default,

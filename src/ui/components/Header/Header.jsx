@@ -38,7 +38,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
         };
 
         const handleClick = (e) => {
-            if (!document.getElementById('model-selector')?.contains(e.target) && ! document.getElementById('modelButton')?.parentElement.contains(e.target)) {
+            if (!document.getElementById('model-selector')?.contains(e.target) && !document.getElementById('modelButton')?.parentElement.contains(e.target)) {
                 hideSelectorModal()
             }
         }
@@ -121,7 +121,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                 onModelSelect={(model) => {
                     onModelChange(model);
                     setIsModelDropdownOpen(false);
-                    StateManager.set('currentModel',model);
+                    StateManager.set('currentModel', model);
                 }}
                 onClose={() => setIsModelDropdownOpen(false)}
             />

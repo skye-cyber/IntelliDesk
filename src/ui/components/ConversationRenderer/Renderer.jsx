@@ -1,11 +1,10 @@
-import React, { useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { CopyMessage } from './utils';
 import { normalizeMathDelimiters } from '../../../core/MathBase/MathNormalize';
 import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../core/ChatExport/export';
 import { markitdown } from '../Code/CodeHighlighter';
 import { CodeBlockRenderer, SimpleUserCodeRenderer } from '../Code/CodeBlockRenderer';
 import { ChatUtil } from '../../../core/managers/Conversation/util';
-// import { unsafe } from '../../../core/Utils/chatUtils';
 import { GenerateId } from './utils';
 import { mathStandardize } from '../../../core/MathBase/mathRenderer';
 import { normalizeCodeBlocks } from '../../../core/Code/codeNormalize';
@@ -16,7 +15,6 @@ const chatutil = new ChatUtil()
 
 export const UserMessage = ({ message, files = [] }) => {
     const messageRef = useRef(null)
-
     const userContent = markitdown(message);
     const selector_class = GenerateId('user-ms')
 

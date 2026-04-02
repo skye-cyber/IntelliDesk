@@ -3,8 +3,8 @@
  * Bridges between AI function calls and tool execution
  */
 import toolManager from './ToolManager';
-import { StateManager } from '../../StatesManager';
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
+import { staticPortalBridge } from '../../../PortalBridge';
 
 export class IntegrateTools {
     constructor() {
@@ -29,6 +29,20 @@ export class IntegrateTools {
 
                 const toolName = toolCall.function.name;
                 const params = toolCall.function.arguments;
+                const TOOL_AUTHORIZED = false  // Or set to default from agentConfig
+
+                // Authorize tools here ...
+                staticPortalBridge.showComponent('ToolPermissionRequest',
+                    {
+                        toolName: toolName,
+                        toolArgs: params,
+                        onDecision: () => { }
+                    },
+                    'tool_perm_request'
+                )
+
+                // Check redux store for authorization status
+                // while not authorized wait until timeout then cance/deny-> Raise SIGINT for completion loop to stop here
 
                 // Execute the tool
                 const toolResult = await this.toolManager.executeTool(toolName, params, {

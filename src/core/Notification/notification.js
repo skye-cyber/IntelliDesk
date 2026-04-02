@@ -1,5 +1,5 @@
 export function Notify(_color = null, time = null, text = "") {
-    const modal = document.getElementById('quickaiNotify');
+    const modal = document.getElementById('intellideskNotify');
     const message = document.getElementById('messageContent');
     const timeTaken = document.getElementById('timeTaken');
     if (text) {

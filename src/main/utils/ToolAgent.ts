@@ -21,14 +21,43 @@ export interface AgentConfig {
     };
 }
 
+
+const write_config = (config = null): boolean => {
+    try {
+        console.log(config_manager.config_file)
+        const config_ = config ? config : config_manager.config
+        fs.writeFileSync(config_manager.config_file, JSON.stringify(config_, null, 2));
+        return true;
+    } catch (err) {
+        console.error('Error writing to local config:', err);
+        return false;
+    }
+}
+
+const load_config = (instance: any | null = null): string => {
+    // config_manager.check_local_config();
+    if(!instance) instance = config_manager
+    try {
+        const str_data = fs.readFileSync(instance.config_file, 'utf8');
+        try {
+            const local_config: AgentConfig = JSON.parse(str_data)
+            if (local_config) instance.config = local_config
+        } catch (err) { }
+        return str_data
+    } catch (err) {
+        console.error('Error reading config file:', err);
+        return JSON.stringify(instance.default_config);
+    }
+}
+
 /**
  * Manage Agent mode configuration for tool use etc
  */
 export class AgentConfigManager {
-    private config_file: string;
-    private default_config: AgentConfig;
-    private config: AgentConfig;
-    private ignore_file: string;
+    public config_file: string;
+    public default_config: AgentConfig;
+    public config: AgentConfig;
+    public ignore_file: string;
 
     constructor() {
         this.config_file = path.join(os.homedir(), '.IntelliDesk/.config/agent_mode_config.json');
@@ -202,39 +231,16 @@ export class AgentConfigManager {
         this.check_local_config();
         this.ensure_ignore_file_exist();
     }
-
-    /**
-     * Set a new configuration
-     * @param config New config (object or JSON string)
-     * @returns this
-     */
-    set_config(config: AgentConfig | string): this {
-        let new_config: AgentConfig | undefined;
-        if (typeof config === 'string') {
-            try {
-                new_config = JSON.parse(config);
-            } catch (e) {
-                console.error('Failed to parse JSON config:', e);
-                return this;
-            }
-        } else if (typeof config === 'object' && config !== null) {
-            new_config = config;
-        }
-        if (!new_config) return this;
-        this.config = new_config;
-        return this;
-    }
-
     /**
      * Check if local config file exists; create it if missing
      */
     check_local_config(): boolean {
         if (!fs.existsSync(this.config_file)) {
-            return this.write_config();
+            return write_config();
         }
+        load_config(this)
         return true;
     }
-
     /**
      * Ensure the ignore file exists (used by grep tool)
      */
@@ -251,57 +257,113 @@ export class AgentConfigManager {
         }
         return true;
     }
+}
+
+// Singleton instance
+export const config_manager = new AgentConfigManager();
+
+export interface AgentType {
+    set_config: (config: AgentConfig | string) => AgentType;
+    check_local_config: () => boolean;
+    ensure_ignore_file_exist: () => boolean;
+    get_config: () => AgentConfig;
+    write_config: () => boolean;
+    update_local_config: () => boolean;
+    read_config: () => string;
+    validate_config: () => boolean;
+    get_tool_config: (toolName: string) => ToolConfig;
+    set_tool_permission: (toolName: string, permission: 'always' | 'ask' | 'never') => AgentType;
+    enable_tool: (toolName: string) => AgentType;
+    disable_tool: (toolName: string) => AgentType;
+    require_confirmation_for_tool: (toolName: string) => AgentType;
+    get_default_config: () => AgentConfig,
+    config: AgentConfig;
+}
+
+export const Agent: AgentType = {
+    /**
+     * Set a new configuration
+     * @param config New config (object or JSON string)
+     * @returns this
+     */
+    set_config(config: AgentConfig | string): AgentType {
+        let new_config: AgentConfig | undefined;
+        if (typeof config === 'string') {
+            try {
+                new_config = JSON.parse(config);
+            } catch (e) {
+                console.error('Failed to parse JSON config:', e);
+                return Agent;
+            }
+        } else if (typeof config === 'object' && config !== null) {
+            new_config = config;
+        }
+        if (!new_config) return Agent;
+        config_manager.config = new_config;
+        return Agent;
+    },
+
+    /**
+     * Check if local config file exists; create it if missing
+     */
+    check_local_config(): boolean {
+        if (!fs.existsSync(config_manager.config_file)) {
+            return Agent.write_config();
+        }
+        return true;
+    },
+
+    /**
+     * Ensure the ignore file exists (used by grep tool)
+     */
+    ensure_ignore_file_exist(): boolean {
+        if (!fs.existsSync(config_manager.ignore_file)) {
+            try {
+                const patterns = config_manager.config.tools.grep.exclude_patterns;
+                const content = patterns ? patterns.join('\n') : '';
+                fs.writeFileSync(config_manager.ignore_file, content);
+            } catch (err) {
+                console.error('Error writing to local ignore file:', err);
+                return false;
+            }
+        }
+        return true;
+    },
 
     /**
      * Get the current configuration as an object
      */
     get_config(): AgentConfig {
-        const configContent = this.read_config();
+        const configContent = Agent.read_config();
         return JSON.parse(configContent) as AgentConfig;
-    }
+    },
 
     /**
      * Write the current configuration to disk
      */
-    write_config(): boolean {
-        try {
-            fs.writeFileSync(this.config_file, JSON.stringify(this.config, null, 2));
-            return true;
-        } catch (err) {
-            console.error('Error writing to local config:', err);
-            return false;
-        }
-    }
+    write_config: write_config,
 
     /**
      * Update the local config file if the in-memory config differs
      */
     update_local_config(): boolean {
-        const currentConfig = this.get_config();
-        if (JSON.stringify(currentConfig) !== JSON.stringify(this.config)) {
-            return this.write_config();
+        const currentConfig = Agent.get_config();
+        if (JSON.stringify(currentConfig) !== JSON.stringify(config_manager.config)) {
+            return Agent.write_config();
         }
         return true;
-    }
+    },
 
     /**
      * Read the configuration file from disk
      */
-    read_config(): string {
-        this.check_local_config();
-        try {
-            return fs.readFileSync(this.config_file, 'utf8');
-        } catch (err) {
-            console.error('Error reading config file:', err);
-            return JSON.stringify(this.default_config);
-        }
-    }
+    read_config: load_config,
 
     /**
      * Validate and normalize the current configuration
      */
     validate_config(): boolean {
-        const tools = this.config.tools || {};
+        const tools = config_manager.config.tools || {};
         const validPermissions: Array<'always' | 'ask' | 'never'> = ['always', 'ask', 'never'];
 
         for (const [toolName, toolConfig] of Object.entries(tools)) {
@@ -319,54 +381,52 @@ export class AgentConfigManager {
             }
         }
         return true;
-    }
+    },
 
     /**
      * Get configuration for a specific tool
      */
     get_tool_config(toolName: string): ToolConfig {
-        return this.config.tools[toolName] || { permission: 'never' };
-    }
+        return config_manager.config.tools[toolName] || { permission: 'never' };
+    },
 
     /**
      * Set permission for a specific tool
      */
-    set_tool_permission(toolName: string, permission: 'always' | 'ask' | 'never'): this {
-        if (!this.config.tools[toolName]) {
-            this.config.tools[toolName] = { permission };
+    set_tool_permission(toolName: string, permission: 'always' | 'ask' | 'never'): typeof Agent {
+        if (!config_manager.config.tools[toolName]) {
+            config_manager.config.tools[toolName] = { permission };
         } else {
-            this.config.tools[toolName].permission = permission;
+            config_manager.config.tools[toolName].permission = permission;
         }
-        return this;
-    }
+        return Agent;
+    },
 
     /**
      * Enable a tool (set permission to "always")
      */
-    enable_tool(toolName: string): this {
-        return this.set_tool_permission(toolName, 'always');
-    }
+    enable_tool(toolName: string): AgentType {
+        return Agent.set_tool_permission(toolName, 'always');
+    },
 
     /**
      * Disable a tool (set permission to "never")
      */
-    disable_tool(toolName: string): this {
-        return this.set_tool_permission(toolName, 'never');
-    }
+    disable_tool(toolName: string): AgentType {
+        return Agent.set_tool_permission(toolName, 'never');
+    },
 
     /**
      * Require confirmation for a tool (set permission to "ask")
      */
-    require_confirmation_for_tool(toolName: string): this {
-        return this.set_tool_permission(toolName, 'ask');
-    }
+    require_confirmation_for_tool(toolName: string): typeof Agent {
+        return Agent.set_tool_permission(toolName, 'ask');
+    },
     /**
      * Create getter for private default config
      */
     get_default_config(): AgentConfig {
-        return this.default_config
-    }
+        return config_manager.default_config
+    },
+    config: config_manager.config
 }
-
-// Singleton instance
-export const agent = new AgentConfigManager();

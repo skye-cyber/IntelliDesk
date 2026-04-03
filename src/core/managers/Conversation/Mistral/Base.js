@@ -3,7 +3,6 @@ import { clientmanager } from "./ClientManager";
 import { StateManager } from '../../StatesManager';
 import { waitForElement } from '../../../Utils/dom_utils';
 // import { GenerateId } from "../../../../ui/components/ConversationRenderer/utils";
-import { HandleProcessingEventChanges } from "../../../Utils/chatUtils";
 import errorHandler from "../../../../ui/components/ErrorHandler/ErrorHandler";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
 import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
@@ -68,7 +67,7 @@ export async function MistralBase({
         StateManager.set('ai_messages_portal', message_portal)
 
         // change send button appearance to processing status
-        HandleProcessingEventChanges('show')
+        globalEventBus.emit('executioncycle:start')
         StateManager.set('processing', true);
 
         // Scroll to bottom
@@ -314,13 +313,13 @@ export async function MistralBase({
 
         }
 
-        StateManager.set('processing', false);
+        globalEventBus.emit('executioncycle:end')
 
         //stop timer
         //timer.trackTime("stop");
 
         // Reset send button appearance
-        HandleProcessingEventChanges('hide')
+        globalEventBus.emit('executioncycle:end')
 
         // render diagrams from this response
         // if (StateManager.get('current_message_id')) {

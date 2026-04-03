@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { openPreview, closePreview, handleFiles, formatFileSize, getFileType } from './util.js'
 import { staticPortalBridge } from '../../../core/PortalBridge.ts';
 import { StateManager } from '../../../core/managers/StatesManager.js';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 export const DropZone = ({ isOpen, onToggle }) => {
     const dropZoneRef = useRef(null)
@@ -93,7 +94,8 @@ export const DropZone = ({ isOpen, onToggle }) => {
         if (inputText) {
             //Reset the input field content
             //MistraMultimodal({ text: inputText })
-            StateManager.get('onSend')(inputText)
+//             StateManager.get('onSend')(inputText)
+            globalEventBus.emit('useraction:submit:incycle' , inputText)
             CloseDropZone()
         }
     })

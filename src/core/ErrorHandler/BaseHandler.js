@@ -1,5 +1,4 @@
 /// <reference path="../../main/preload.type.ts" />
-import { HandleProcessingEventChanges } from "../Utils/chatUtils"
 import { handleDevErrors } from "./ErrorHandler"
 import errorHandler from "../../ui/components/ErrorHandler/ErrorHandler"
 import { StateManager } from "../managers/StatesManager"
@@ -11,6 +10,7 @@ import { globalEventBus } from "../Globals/eventBus.ts"
 
 export async function BaseErrorHandler(error, ai_ms_pid, callback) {
     globalEventBus.emit('executioncycle:end')
+
     window.desk.api.popHistory("user")
     const user_text = StateManager.get('userInputText')
 

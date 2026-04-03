@@ -3,7 +3,7 @@
 import { Timer } from '../Timer/timer.js';
 // import { waitForNamespace } from '../Utils/namespace_utils.js';
 import { StateManager } from '../managers/StatesManager.js';
-import { HandleProcessingEventChanges } from '../Utils/chatUtils.js';
+import { globalEventBus } from '../Globals/eventBus.js';
 
 let router
 import('../../core/managers/router.js').then(({ Router }) => {
@@ -152,7 +152,7 @@ export class RequestErrorHandler {
 
         // Update UI state
 
-        HandleProcessingEventChanges('hide');
+        globalEventBus.emit('executioncycle:end')
 
         if (this.shouldShowError(error)) {
             this.displayErrorModal(error, context);

@@ -6,6 +6,7 @@ export type EventMap = {
     'permission:denied': [toolName: string];
     'executioncycle:start': []
     'executioncycle:end': []
+    'useraction:submit:incycle': [text: string]
 };
 
 export type EventCallback<T extends keyof EventMap> = (...args: EventMap[T]) => void;

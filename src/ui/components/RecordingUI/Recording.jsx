@@ -4,6 +4,7 @@ import { RecordingAnimator } from '../../../core/animations/WaveForm.js'
 import errorHandler from '../../components/ErrorHandler/ErrorHandler.jsx';
 import '../../../core/Utils/chatUtils.js'
 import { timer } from '../../../core/Timer/timer';
+import { globalEventBus } from '../../../core/Globals/eventBus.js';
 
 class Inference {
     constructore(API_KEY) {
@@ -430,7 +431,7 @@ export const Recording = ({ isOpen, onToggle }) => {
             //start Timerimer
             refs.current.Timer.trackTime("start");
 
-            window.HandleProcessingEventChanges('show')
+            globalEventBus.emit('executioncycle:start')
             // Add audio to user interface
             displayUserAudio(fpath)
             //Read data from file
@@ -442,7 +443,7 @@ export const Recording = ({ isOpen, onToggle }) => {
             // add ai reponse to the interface
             displayResponse(response)
 
-            window.HandleProcessingEventChanges('hide')
+            globalEventBus.emit('executioncycle:end')
             //stop Timerimer
             refs.current.Timer.trackTime("stop");
 
@@ -472,7 +473,7 @@ export const Recording = ({ isOpen, onToggle }) => {
             message: 'Processing recording...'
         }, refs.current.currentLoader);
 
-        window.HandleProcessingEventChanges('hide')
+        globalEventBus.emit('executioncycle:end')
 
         //interrupt Timer
         refs.current.Timer.trackTime("interrupt");

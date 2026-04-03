@@ -62,18 +62,38 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     })
 
     useEffect(() => {
-        const startCycle = globalEventBus.on('executioncycle:start', () => setIncycle(true))
-        const endCycle = globalEventBus.on('executioncycle:end', () => setIncycle(false))
+        // Signal handlers
+        const startCycle = globalEventBus.on('executioncycle:start', () => {
+            setIncycle(true)
+            StateManager.set('processing', true);
+        })
+        const endCycle = globalEventBus.on('executioncycle:end', () => {
+            setIncycle(false)
+            StateManager.set('processing', false);
+        })
+        const onSigint = globalEventBus.on('sigint', () => {
+            setIncycle(false)
+            StateManager.set('processing', false);
+        })
+        const userSubmit = globalEventBus.on('useraction:submit:incycle', (text) => {
+            setIncycle(false)
+            StateManager.set('processing', false);
+            handleSend(text)
+            console.log("Submit event:", text)
+        })
         return () => {
             startCycle.unsubscribe()
             endCycle.unsubscribe()
+            onSigint.unsubscribe()
+            userSubmit.unsubscribe()
         }
     })
 
 
     const handleSend = useCallback((input_text = null) => {
         //
-        if (StateManager.get('processing')) return sigint.raise()
+        console.log("Got:", input_text)
+        if (incycle || StateManager.get('processing')) return //sigint.raise()
 
         if (!StateManager.get('api_key_ok')) {
             showApiNotSetWarning()
@@ -86,7 +106,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 inputValue !== "" // prevent ""
                 && inputValue.replaceAll('&nbsp;', '').trim() // prevent &nbsp;
                 && inputValue?.trim() // prevent " "
-                && !StateManager.get('processing') // only when not already working
 
             )
             if (shouldProcess) {
@@ -119,8 +138,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             }
         }
     })
-
-    StateManager.set('onSend', handleSend)
 
 
     useEffect(() => {
@@ -458,7 +475,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         }
 
         // Enter to send !sendButtonRef.current.classList.contains('hidden')
-        if (e.key === 'Enter' && incycle && !e.ctrlKey && !e.shiftKey) {
+        if (e.key === 'Enter' && !incycle && !e.ctrlKey && !e.shiftKey) {
             e.preventDefault()
             handleSend();
             return;
@@ -471,6 +488,11 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         const range = selection?.getRangeAt(0)
 
         return { selection: selection, selectionStart: range?.startOffset, selectionEnd: range.endOffset }
+    }
+
+    const onSendClick = () => {
+        if (incycle) return sigint.raise()
+            handleSend()
     }
 
     useEffect(() => {
@@ -526,7 +548,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                         <button
                             id="sendBtn"
                             ref={sendButtonRef}
-                            onClick={handleSend}
+                            onClick={onSendClick}
                             className="flex relative items-center justify-center h-10 w-10 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2 mb-2" aria-label="Send message" title="Send message">
                             <div id="normalSend" className={`${incycle ? 'hidden' : 'flex'} items-center justify-center h-full w-full`}>
                                 <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

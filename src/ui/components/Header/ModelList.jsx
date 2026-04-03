@@ -180,7 +180,7 @@ export const ModelList = ({ selectedModel = 'mistral-small-latest', onModelSelec
         },
         {
             title: "OCR Models", models: [
-                {value:"mistral-ocr-latest", name:"mistral-ocr-lates", description:"OCR model from mistral",platform:"mistral", recommended:true}
+                {value:"mistral-ocr-latest", name:"mistral-ocr-latest", description:"OCR model from mistral",platform:"mistral", recommended:true}
             ]
         }
 

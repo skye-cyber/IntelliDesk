@@ -37,11 +37,15 @@ exports.Agent = exports.config_manager = exports.AgentConfigManager = void 0;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
+const shared_1 = require("./shared");
 const write_config = (config = null) => {
     try {
-        console.log(exports.config_manager.config_file);
-        const config_ = config ? config : exports.config_manager.config;
-        fs.writeFileSync(exports.config_manager.config_file, JSON.stringify(config_, null, 2));
+        let conf = config;
+        if (!config && exports.config_manager) {
+            conf = exports.config_manager.config;
+        }
+        fs.mkdirSync(path.dirname(shared_1.AGENT_CONFIG_FILE), { recursive: true });
+        fs.writeFileSync(shared_1.AGENT_CONFIG_FILE, JSON.stringify(conf, null, 2), { flag: 'w' });
         return true;
     }
     catch (err) {
@@ -54,7 +58,7 @@ const load_config = (instance = null) => {
     if (!instance)
         instance = exports.config_manager;
     try {
-        const str_data = fs.readFileSync(instance.config_file, 'utf8');
+        const str_data = fs.readFileSync(shared_1.AGENT_CONFIG_FILE, 'utf8');
         try {
             const local_config = JSON.parse(str_data);
             if (local_config)
@@ -73,167 +77,8 @@ const load_config = (instance = null) => {
  */
 class AgentConfigManager {
     constructor() {
-        this.config_file = path.join(os.homedir(), '.IntelliDesk/.config/agent_mode_config.json');
-        this.default_config = {
-            tool_paths: [],
-            mcp_servers: [],
-            enabled_tools: [],
-            disabled_tools: [],
-            skill_paths: [],
-            tools: {
-                bash: {
-                    permission: 'always',
-                    max_output_bytes: 16000,
-                    default_timeout: 30,
-                    allowlist: [
-                        'echo',
-                        'find',
-                        'git diff',
-                        'git log',
-                        'git status',
-                        'tree',
-                        'whoami',
-                        'cat',
-                        'file',
-                        'head',
-                        'ls',
-                        'pwd',
-                        'stat',
-                        'tail',
-                        'uname',
-                        'wc',
-                        'which',
-                    ],
-                    denylist: [
-                        'gdb',
-                        'pdb',
-                        'passwd',
-                        'nano',
-                        'vim',
-                        'vi',
-                        'emacs',
-                        'bash -i',
-                        'sh -i',
-                        'zsh -i',
-                        'fish -i',
-                        'dash -i',
-                        'screen',
-                        'tmux',
-                    ],
-                    denylist_standalone: [
-                        'python',
-                        'python3',
-                        'ipython',
-                        'bash',
-                        'sh',
-                        'nohup',
-                        'vi',
-                        'vim',
-                        'emacs',
-                        'nano',
-                        'su',
-                    ],
-                },
-                grep: {
-                    permission: 'always',
-                    allowlist: [],
-                    denylist: [],
-                    max_output_bytes: 64000,
-                    default_max_matches: 100,
-                    default_timeout: 60,
-                    exclude_patterns: [
-                        '.venv/',
-                        'venv/',
-                        '.env/',
-                        'env/',
-                        'node_modules/',
-                        '.git/',
-                        '__pycache__/',
-                        '.pytest_cache/',
-                        '.mypy_cache/',
-                        '.tox/',
-                        '.nox/',
-                        '.coverage/',
-                        'htmlcov/',
-                        'dist/',
-                        'build/',
-                        '.idea/',
-                        '.vscode/',
-                        '*.egg-info',
-                        '*.pyc',
-                        '*.pyo',
-                        '*.pyd',
-                        '.DS_Store',
-                        'Thumbs.db',
-                    ],
-                    codeignore_file: '.intellideskignore',
-                },
-                search_replace: {
-                    permission: 'always',
-                    allowlist: [],
-                    denylist: [],
-                    max_content_size: 100000,
-                    create_backup: false,
-                    fuzzy_threshold: 0.9,
-                },
-                todo: {
-                    permission: 'always',
-                    allowlist: [],
-                    denylist: [],
-                    max_todos: 100,
-                },
-                write_file: {
-                    permission: 'always',
-                    allowlist: [],
-                    denylist: [],
-                    max_write_bytes: 64000,
-                    create_parent_dirs: true,
-                },
-                read_file: {
-                    permission: 'always',
-                    allowlist: [],
-                    denylist: [],
-                    max_read_bytes: 64000,
-                    max_state_history: 10,
-                },
-                search_web: {
-                    permission: 'ask',
-                    max_results: 5,
-                    timeout: 10,
-                    safe_search: true,
-                },
-                get_weather: {
-                    permission: 'ask',
-                    default_unit: 'celsius',
-                    cache_duration: 300, // 5 minutes in seconds
-                    api_timeout: 5,
-                },
-                calculate: {
-                    permission: 'always',
-                    max_expression_length: 100,
-                    max_precision: 10,
-                    allow_complex_numbers: false,
-                },
-                file_operations: {
-                    max_recurse_depth: 30, // prevents memory pressure for large directories
-                    permission: 'ask',
-                    allowlist: ['read', 'list', 'copy', 'stats', 'exists', 'read_dir'],
-                    denylist: ['delete', 'write', 'move'],
-                    max_file_size: 1048576, // 1MB
-                    safe_paths: ['/home', '/tmp', '/var/tmp'],
-                },
-                database_query: {
-                    permission: 'never',
-                    max_rows: 100,
-                    timeout: 15,
-                },
-                send_message: {
-                    permission: 'ask',
-                    max_message_length: 500,
-                    allowed_types: ['text', 'email', 'sms'],
-                },
-            },
-        };
+        this.config_file = path.join(os.homedir(), '.IntelliDesk/.config/agent_config.json');
+        this.default_config = shared_1.PREPED_DEFAULT_AGENT_CONFIG;
         this.config = this.default_config;
         this.ignore_file = path.join(os.homedir(), '.IntelliDesk/.config/', this.config.tools.grep.codeignore_file);
         this.check_local_config();
@@ -243,8 +88,8 @@ class AgentConfigManager {
      * Check if local config file exists; create it if missing
      */
     check_local_config() {
-        if (!fs.existsSync(this.config_file)) {
-            return write_config();
+        if (!fs.existsSync(shared_1.AGENT_CONFIG_FILE)) {
+            return write_config(shared_1.PREPED_DEFAULT_AGENT_CONFIG);
         }
         load_config(this);
         return true;
@@ -299,7 +144,7 @@ exports.Agent = {
      * Check if local config file exists; create it if missing
      */
     check_local_config() {
-        if (!fs.existsSync(exports.config_manager.config_file)) {
+        if (!fs.existsSync(shared_1.AGENT_CONFIG_FILE)) {
             return exports.Agent.write_config();
         }
         return true;
@@ -326,7 +171,8 @@ exports.Agent = {
      */
     get_config() {
         const configContent = exports.Agent.read_config();
-        return JSON.parse(configContent);
+        const config = JSON.parse(configContent);
+        return (0, shared_1.PREP_AGENT_CONFIG)(config);
     },
     /**
      * Write the current configuration to disk
@@ -407,6 +253,6 @@ exports.Agent = {
     get_default_config() {
         return exports.config_manager.default_config;
     },
-    config: exports.config_manager.config
+    config: (0, shared_1.PREP_AGENT_CONFIG)(exports.config_manager.config)
 };
 //# sourceMappingURL=ToolAgent.js.map

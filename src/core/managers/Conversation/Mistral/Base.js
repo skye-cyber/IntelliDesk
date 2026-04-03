@@ -10,13 +10,19 @@ import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge.ts";
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
 // import { timer } from "../../../Timer/timer";
-import toolsIntegration from "./ToolIntegration";
+import toolExecutor from "./ToolCallHandler.js";
 import toolManager from "./ToolManager";
 import mistralClientSimulator from "../../../tests/MistralClientSimulator";
+import { globalEventBus } from "../../../Globals/eventBus.ts";
 // import { Mistral } from '@mistralai/mistralai';
 
 
 let ai_ms_pid
+
+let SIGINT = false
+
+// set event handlers
+globalEventBus.on('sigint', () => SIGINT = true)
 
 /**
  * Base function for Mistral AI interactions
@@ -29,6 +35,7 @@ export async function MistralBase({
     functionName
 }) {
     try {
+
         if (!text?.trim()) return console.log("Message is empty")
 
         StateManager.set('user-text', text)
@@ -86,13 +93,13 @@ export async function MistralBase({
         // Check if we should enable tool calling
         const enableToolCalling = availableTools.length > 0 && StateManager.get('enable_tools');
 
-        if (enableToolCalling) {
+        if (!enableToolCalling) {
             // Start tool calling session with conversation state
             const toolSession = await handleToolCallingSession(
                 mistralClientSimulator.client,  //clientmanager.MistralClient,
                 model_name,
                 availableTools,
-                toolsIntegration
+                toolExecutor
             );
 
             // if (toolSession.finalResponse || !toolSession.hasFinalResponse) {
@@ -125,6 +132,7 @@ export async function MistralBase({
             })
 
             let output = "";
+            let fullResponse = ""
             let thinkContent = "";
             let actualResponse = "";
             let isThinking = false;
@@ -133,6 +141,12 @@ export async function MistralBase({
             let continued = false;
 
             for await (const chunk of stream) {
+                if (SIGINT) {
+                    SIGINT = false
+                    console.log("SIGINT ...")
+                    return
+                }
+
                 const choice = chunk?.data?.choices?.[0];
                 if (!choice?.delta?.content) continue;
 
@@ -332,15 +346,16 @@ export async function MistralBase({
  * @param {instance} client {2}
  * @param {String} modelName {2}
  * @param {Array} availableTools {2}
- * @param {instance} toolIntegration {2}
+ * @param {instance} toolExecutor {2}
  * @param {number} [maxIterations=5] {1}
  */
-async function handleToolCallingSession(client, modelName, availableTools, toolIntegration, maxIterations = 20) {
+async function handleToolCallingSession(client, modelName, availableTools, toolExecutor, maxIterations = 20) {
     let iteration = 0;
     let finalResponse = null;
     let conversationHistory = window.desk.api.getHistory(true);
     let toolCallHistory = [];
     let hasFinalResponse = false;
+    let TOOL_ABORT = false;
 
     // Initialize session state
     const sessionState = {
@@ -351,9 +366,25 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
         conversationContext: {}
     };
 
+    const endStream = () => {
+        const toolSummary = generateToolUsageSummary(toolCallHistory);
+        return {
+            finalResponse: finalResponse,
+            toolCallHistory: toolCallHistory,
+            iterationCount: iteration,
+            sessionState: sessionState,
+            toolSummary: toolSummary,
+            hasFinalResponse: hasFinalResponse
+        };
+    }
+
+    globalEventBus.once('permission:denied', () => TOOL_ABORT = true)
+
     while (iteration < maxIterations && !hasFinalResponse) {
         iteration++;
         sessionState.iterationCount = iteration;
+
+        if (SIGINT || TOOL_ABORT) break
 
         try {
             // Get AI response with potential tool calls
@@ -384,9 +415,10 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
                 console.log(`[Tool Session] Iteration ${iteration}: Processing ${aiMessage.tool_calls.length} tool calls`);
 
                 // Process all tool calls in this iteration
-                const toolResults = await toolIntegration.processToolCalls(
+                const toolResults = await toolExecutor.processToolCalls(
                     aiMessage.tool_calls
                 );
+                console.log("Tool Result:", toolResults)
 
                 // Store tool call information
                 toolCallHistory.push({
@@ -443,17 +475,7 @@ async function handleToolCallingSession(client, modelName, availableTools, toolI
         }
     }
 
-    // Generate summary of tool usage
-    const toolSummary = generateToolUsageSummary(toolCallHistory);
-
-    return {
-        finalResponse: finalResponse,
-        toolCallHistory: toolCallHistory,
-        iterationCount: iteration,
-        sessionState: sessionState,
-        toolSummary: toolSummary,
-        hasFinalResponse: hasFinalResponse
-    };
+    return endStream()
 }
 
 /**

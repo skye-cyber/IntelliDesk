@@ -422,7 +422,7 @@ async function prepDirectories() {
         //console.log(`Ensured base directory: ${baseDir}`);
 
         // Define subdirectories to be created inside .IntelliDesk
-        const subdirs = ['.config', '.store', '.cache'];
+        const subdirs = ['.config', '.store', '.cache', 'sessions', '.locks'];
 
         subdirs.forEach(sub => {
             const fullPath = path.join(baseDir, sub);

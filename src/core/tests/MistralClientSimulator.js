@@ -141,9 +141,57 @@ export class MistralClientSimulator {
 
         // Store conversation history
         this.conversationHistory = messages || [];
+        const rtext = `Key Features Added:
+Dual Purpose: Opens canvas + toggles AI canvas access
+Visual Hierarchy: Gradient background with status indicators
+Interactive States:
+Hover effects with scale and shadow
+Animated toggle ring for AI status
+Pulsing dot indicator
+Mini Checkbox: Subtle but clear toggle for AI permission
+Status Text: Shows "AI ready" vs "AI active" states
+Smooth Transitions: All state changes are animated
+Accessibility: Proper ARIA attributes and keyboard navigation
+The toggle now clearly communicates both the canvas state and AI permission status while maintaining an elegant, professional appearance.Key Features Added:
 
+Dual Purpose: Opens canvas + toggles AI canvas access
+Visual Hierarchy: Gradient background with status indicators
+Interactive States:
+Hover effects with scale and shadow
+Animated toggle ring for AI status
+Pulsing dot indicator
+Mini Checkbox: Subtle but clear toggle for AI permission
+Status Text: Shows "AI ready" vs "AI active" states
+Smooth Transitions: All state changes are animated
+Accessibility: Proper ARIA attributes and keyboard navigation
+The toggle now clearly communicates both the canvas state and AI permission status while maintaining an elegant, professional appearance.Key Features Added:
+
+Dual Purpose: Opens canvas + toggles AI canvas access
+Visual Hierarchy: Gradient background with status indicators
+Interactive States:
+Hover effects with scale and shadow
+Animated toggle ring for AI status
+Pulsing dot indicator
+Mini Checkbox: Subtle but clear toggle for AI permission
+Status Text: Shows "AI ready" vs "AI active" states
+Smooth Transitions: All state changes are animated
+Accessibility: Proper ARIA attributes and keyboard navigation
+The toggle now clearly communicates both the canvas state and AI permission status while maintaining an elegant, professional appearance.Key Features Added:
+
+Dual Purpose: Opens canvas + toggles AI canvas access
+Visual Hierarchy: Gradient background with status indicators
+Interactive States:
+Hover effects with scale and shadow
+Animated toggle ring for AI status
+Pulsing dot indicator
+Mini Checkbox: Subtle but clear toggle for AI permission
+Status Text: Shows "AI ready" vs "AI active" states
+Smooth Transitions: All state changes are animated
+Accessibility: Proper ARIA attributes and keyboard navigation
+The toggle now clearly communicates both the canvas state and AI permission status while maintaining an elegant, professional appearance.Key Features Added:
+`
         // Generate a realistic AI response
-        const responseText = this.generateAIResponse(messages);
+        const responseText = rtext// this.generateAIResponse(messages);
         const lastMessage = this.conversationHistory[this.conversationHistory.length - 1];
         const userMessageArr = lastMessage?.content || "";
 
@@ -281,7 +329,9 @@ export class MistralClientSimulator {
 
         // Analyze conversation context to decide
         const lastMessage = this.conversationHistory[this.conversationHistory.length - 1];
-        const userMessage = lastMessage?.content || "";
+        const content = lastMessage?.content;
+        let userMessage = typeof content === 'object' ? content.text : content
+
 
         // If this is the first iteration, likely need tools
         if (scenario.iteration === 0) {
@@ -398,7 +448,7 @@ export class MistralClientSimulator {
             'file': "I can help with file operations. Would you like me to read, write, or analyze files?",
             'system': "I can analyze your system. Would you like me to check disk usage, memory, or other system information?",
             'calculate': "I can perform calculations. What would you like me to calculate?",
-            'search': "I can search for information. What are you looking for?"
+            'search': "I can search for information. What are you looking for?",
         };
 
         // Try to match keywords

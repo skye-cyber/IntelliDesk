@@ -231,7 +231,6 @@ export const ToolPermissionRequest: React.FC<ToolPermissionRequestProps> = ({
                 onTimeout();
             }
             handleDecision(defaultAction);
-            staticPortalBridge.closeComponent(portal_id)
         }, 200);
     }, [cleanupTimers, defaultAction, onDecision, onTimeout, portal_id]);
 
@@ -295,7 +294,6 @@ export const ToolPermissionRequest: React.FC<ToolPermissionRequestProps> = ({
         cleanupTimers();
         setIsExiting(true);
         // Resolve in Redux
-        console.log("Resolving...", toolName)
         dispatch(resolvePermissionRequest({
             toolName: toolName,
             decision
@@ -308,6 +306,8 @@ export const ToolPermissionRequest: React.FC<ToolPermissionRequestProps> = ({
         }));
 
         setTimeout(() => onDecision(decision), 200);
+        staticPortalBridge.closeComponent(portal_id)
+        staticPortalBridge.closeComponent('tool_perm_request', true)
     };
 
     const handleCopy = () => {

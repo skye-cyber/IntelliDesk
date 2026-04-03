@@ -378,7 +378,7 @@ async function prepDirectories() {
         fs_1.default.mkdirSync(baseDir, { recursive: true });
         //console.log(`Ensured base directory: ${baseDir}`);
         // Define subdirectories to be created inside .IntelliDesk
-        const subdirs = ['.config', '.store', '.cache'];
+        const subdirs = ['.config', '.store', '.cache', 'sessions', '.locks'];
         subdirs.forEach(sub => {
             const fullPath = path_1.default.join(baseDir, sub);
             fs_1.default.mkdirSync(fullPath, { recursive: true });

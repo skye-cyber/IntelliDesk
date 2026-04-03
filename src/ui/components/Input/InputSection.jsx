@@ -4,6 +4,7 @@ import { namespaceWatcher } from '../../../core/Utils/namespace_utils';
 import { ChatUtil } from '../../../core/managers/Conversation/util';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { AutoCodeDetector } from '../Code/autoCodeDetector';
+import { globalEventBus, sigint } from '../../../core/Globals/eventBus.js';
 
 const chatutil = new ChatUtil()
 
@@ -49,6 +50,8 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     const [isCodeMode, setIsCodeMode] = useState(false);
     const [detectedLanguage, setDetectedLanguage] = useState('');
     const textareaRef = useRef(null);
+    const [incycle, setIncycle] = useState(false)
+    const sendButtonRef = useRef(null);
 
     const showApiNotSetWarning = useCallback(() => {
         const ApiwarnModal = document.getElementById('ApiNotSetModal');
@@ -58,7 +61,20 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         ApiWarnContent.classList.add('animate-enter')
     })
 
+    useEffect(() => {
+        const startCycle = globalEventBus.on('executioncycle:start', () => setIncycle(true))
+        const endCycle = globalEventBus.on('executioncycle:end', () => setIncycle(false))
+        return () => {
+            startCycle.unsubscribe()
+            endCycle.unsubscribe()
+        }
+    })
+
+
     const handleSend = useCallback((input_text = null) => {
+        //
+        if (StateManager.get('processing')) return sigint.raise()
+
         if (!StateManager.get('api_key_ok')) {
             showApiNotSetWarning()
         } else {
@@ -66,7 +82,14 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             if (input_text) setInputValue(input_text)
 
             const userInput = textareaRef.current;
-            if (inputValue.trim() && !StateManager.get('processing')) {
+            const shouldProcess = (
+                inputValue !== "" // prevent ""
+                && inputValue.replaceAll('&nbsp;', '').trim() // prevent &nbsp;
+                && inputValue?.trim() // prevent " "
+                && !StateManager.get('processing') // only when not already working
+
+            )
+            if (shouldProcess) {
                 // Avail orginal text for retries incase of errors
                 StateManager.set('userInputText', inputValue.trim())
 
@@ -79,6 +102,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                     .replaceAll('&nbsp;', ' ')
                     .replaceAll('<br>', '\n')
 
+                if (!formattedMessage.trim()) return
                 userInput.innerHTML = "";
                 userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
 
@@ -433,34 +457,13 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             document.execCommand('insertHTML', false, '<br><br>');
         }
 
-        // Enter to send
-        const sendBtn = document.getElementById("sendBtn")
-
-        if (e.key === 'Enter' && !sendBtn.classList.contains('hidden') && !e.ctrlKey && !e.shiftKey) {
+        // Enter to send !sendButtonRef.current.classList.contains('hidden')
+        if (e.key === 'Enter' && incycle && !e.ctrlKey && !e.shiftKey) {
             e.preventDefault()
             handleSend();
             return;
         }
 
-        // Auto-close backticks for inline code
-        /*
-         * if (e.key === '`' && !isCodeMode) {
-            const textarea = textareaRef.current;
-            const start = textarea.selectionStart;
-            const before = input.substring(0, start);
-            const after = input.substring(start);
-
-            // Check if we're inside an inline code block
-            const backticksBefore = (before.match(/`/g) || []).length;
-            const backticksAfter = (after.match(/`/g) || []).length;
-
-            if (backticksBefore % 2 !== 0 && backticksAfter % 2 !== 0) {
-                // We're inside an inline code block, insert paired backtick
-                e.preventDefault();
-                insertText('`', '', '`');
-            }
-        }
-        */
     };
 
     const getSelection = () => {
@@ -520,8 +523,12 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
                     <section className=''>
                         {/* Send Button - Always prominent */}
-                        <button id="sendBtn" onClick={handleSend} className="flex relative items-center justify-center h-10 w-10 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2 mb-2" aria-label="Send message" title="Send message">
-                            <div id="normalSend" className="flex items-center justify-center h-full w-full">
+                        <button
+                            id="sendBtn"
+                            ref={sendButtonRef}
+                            onClick={handleSend}
+                            className="flex relative items-center justify-center h-10 w-10 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl ml-2 mb-2" aria-label="Send message" title="Send message">
+                            <div id="normalSend" className={`${incycle ? 'hidden' : 'flex'} items-center justify-center h-full w-full`}>
                                 <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
                                         <linearGradient id="planeGradient2" x1="0" y1="0" x2="1" y2="1">
@@ -532,7 +539,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                                     <path fill="url(#planeGradient2)" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                                 </svg>
                             </div>
-                            <div id="spinningSquares" className="hidden absolute inset-0 flex items-center justify-center">
+                            <div id="spinningSquares" className={`${incycle ? 'absolute' : 'hidden'} inset-0 flex items-center justify-center`}>
                                 <span className="ripple-single-1"></span>
                                 <span className="ripple-single-2"></span>
                                 <span className="ripple-single-3"></span>

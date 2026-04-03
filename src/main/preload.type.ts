@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { ExecException } from 'child_process';
 import { AgentType } from './utils/ToolAgent';
+import { SessionManagerType, LockManagerType } from './utils/SessionManager';
 
 // Type definitions
 export interface ConversationMetadata {
@@ -9,6 +10,7 @@ export interface ConversationMetadata {
     type?: string;
     name?: string;
     id: string;
+    sessionId: string | null
     created_at: string;
     updated_at: string;
     highlight?: string;
@@ -93,7 +95,7 @@ export interface ApiType {
     getModel: () => string;
     setModel: (model: string) => void;
     clean: (data: Conversation) => Conversation | null;
-    getmetadata: (file: string) => ConversationMetadata | undefined;
+    getmetadata: (file?: string | undefined | null) => ConversationMetadata | undefined;
     updateName: (name: string, save?: boolean) => string | undefined;
     updateContinueHistory: (item: ChatMessage) => void | false;
     clearAllImages: (history: Conversation) => any[] | false;
@@ -162,6 +164,8 @@ declare global {
             fsops: any;
             path: typeof path;
             fs: typeof fs;
+            sessionmanager: SessionManagerType
+            lockmanager: LockManagerType
             // dbManager: any;
         };
     }

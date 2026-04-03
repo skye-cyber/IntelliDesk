@@ -25,7 +25,8 @@ import type {
     CmdType,
     // ChatContent
 } from './preload.type';
-
+import { SessionManager as sessionmanager, LockManager as lockmanager } from './utils/SessionManager';
+import { USER_PREFERENCE_CONFIG_FILE, STORE_DIR, DEFAULT_DOWNLOAD_PATH, CACHE_DIR } from './utils/shared';
 
 // Global variables
 let ConversationId: string = "";
@@ -38,16 +39,16 @@ window.global = window;
 contextBridge.exposeInMainWorld('global', window);
 
 try {
-    const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
-    if (fs.statfsSync(_fpath)) {
-        const rprofile = fs.readFileSync(_fpath, 'utf-8');
+    ;
+    if (fs.statfsSync(USER_PREFERENCE_CONFIG_FILE)) {
+        const rprofile = fs.readFileSync(USER_PREFERENCE_CONFIG_FILE, 'utf-8');
         profile = rprofile ? JSON.parse(rprofile)?.data?.preference : '';
     }
 } catch (err) {
     if (!profile) profile = '';
 }
 
-const conversation_root: string = path.join(os.homedir(), '.IntelliDesk/.store');
+const conversation_root: string = STORE_DIR
 let system_command: string = SystemPrompt.StandardPrompt(profile);
 
 ConversationHistory = {
@@ -56,6 +57,7 @@ ConversationHistory = {
         type: 'normal',
         name: '',
         id: ConversationId,
+        sessionId: null,
         created_at: getformatDateTime(),
         updated_at: getformatDateTime(),
         highlight: ''
@@ -65,8 +67,7 @@ ConversationHistory = {
 
 const api: ApiType = {
     getDownloadsPath: (): string => {
-        const downloadsPath = path.join(os.homedir(), 'Downloads');
-        return downloadsPath;
+        return DEFAULT_DOWNLOAD_PATH;
     },
     home_dir: (): string => {
         return os.homedir();
@@ -164,6 +165,9 @@ const api: ApiType = {
         try {
             const file = path.join(base_dir, `${id}.json`);
             if (fs.statSync(file)) {
+                // Delete session and lock first
+                const sessionId = ConversationHistory.metadata.sessionId
+                if (sessionId) sessionmanager.delete(sessionId)
                 fs.rmSync(file);
                 return true;
             } else {
@@ -183,6 +187,9 @@ const api: ApiType = {
             }
 
             ConversationHistory.chats.push(item);
+
+            // Create session here and Update sessionId to avoid session creation refresh tat endup unused
+            ConversationHistory.metadata.sessionId = sessionmanager.create(ConversationId).sessionId
 
             if (!ConversationHistory.metadata.highlight) {
                 if (ConversationHistory.metadata.model === "multimodal") {
@@ -289,8 +296,9 @@ const api: ApiType = {
             return data;
         }
     },
-    getmetadata: (file: string): ConversationMetadata | undefined => {
+    getmetadata: (file?: string | undefined | null): ConversationMetadata | undefined => {
         try {
+            if (!file) return ConversationHistory.metadata
             const fpath = path.join(conversation_root, file);
             if (!api.stat(fpath)) return;
             const rdata = fs.readFileSync(fpath, 'utf-8');
@@ -390,6 +398,7 @@ const api: ApiType = {
             id: ConversationId,
             created_at: getformatDateTime(),
             updated_at: getformatDateTime(),
+            sessionId: null,
             type: ConversationHistory.metadata.type,
             name: ConversationHistory.metadata.name,
             highlight: ConversationHistory.metadata.highlight
@@ -503,24 +512,15 @@ const api: ApiType = {
             const skeleton = {
                 data: data
             };
-            const prefFile = ".preference.json";
-            const prefPath = path.join(os.homedir(), '.IntelliDesk/.config');
-            try {
-                fs.mkdirSync(prefPath, { recursive: true });
-            } catch (error: any) {
-                console.error(`Error creating directory: ${error.message}`);
-            }
-            const prefFpath = path.join(prefPath, prefFile);
-            fs.writeFileSync(prefFpath, JSON.stringify(skeleton));
+            fs.writeFileSync(USER_PREFERENCE_CONFIG_FILE, JSON.stringify(skeleton));
             return true;
         } catch (err) {
             return false;
         }
     },
-    deletePreference: async (data: any = null): Promise<boolean> => {
+    deletePreference: async (): Promise<boolean> => {
         try {
-            const prefPath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
-            fs.rmSync(prefPath, data);
+            fs.rmSync(USER_PREFERENCE_CONFIG_FILE);
             return true;
         } catch (err) {
             console.log(err);
@@ -529,9 +529,8 @@ const api: ApiType = {
     },
     getPreferences: async (): Promise<PreferenceData | undefined> => {
         try {
-            const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
-            if (fs.statfsSync(_fpath)) {
-                const prefData = fs.readFileSync(_fpath, 'utf-8');
+            if (fs.statfsSync(USER_PREFERENCE_CONFIG_FILE)) {
+                const prefData = fs.readFileSync(USER_PREFERENCE_CONFIG_FILE, 'utf-8');
                 return JSON.parse(prefData);
             }
             return undefined
@@ -542,13 +541,7 @@ const api: ApiType = {
     saveRecording: async (blob: Blob): Promise<string | undefined> => {
         try {
             const randomFname = `hfaudio_${Math.random().toString(36).substring(1, 12)}`;
-            const savePath = path.join(os.homedir(), `.IntelliDesk/.cache/${randomFname}.wav`);
-            const dirPath = path.dirname(savePath);
-
-            if (!fs.existsSync(dirPath)) {
-                fs.mkdirSync(dirPath, { recursive: true });
-                console.log(`Directory '${dirPath}' created.`);
-            }
+            const savePath = path.join(CACHE_DIR, `${randomFname}.wav`);
 
             const arrayBuffer = await blob.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
@@ -660,6 +653,8 @@ contextBridge.exposeInMainWorld('desk', {
     fsops,
     path,
     fs,
+    sessionmanager,
+    lockmanager
     // dbManager
 });
 

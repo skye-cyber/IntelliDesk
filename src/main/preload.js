@@ -15,6 +15,8 @@ const datetime_1 = require("./utils/datetime");
 const ToolAgent_1 = require("./utils/ToolAgent");
 // import { dbManager } from './utils/db/DatabaseManager';
 const electron_2 = require("electron");
+const SessionManager_1 = require("./utils/SessionManager");
+const shared_1 = require("./utils/shared");
 // Global variables
 let ConversationId = "";
 let profile = "";
@@ -22,9 +24,9 @@ let ConversationHistory;
 window.global = window;
 electron_1.contextBridge.exposeInMainWorld('global', window);
 try {
-    const _fpath = path_1.default.join(os_1.default.homedir(), '.IntelliDesk/.config/.preference.json');
-    if (fs_1.default.statfsSync(_fpath)) {
-        const rprofile = fs_1.default.readFileSync(_fpath, 'utf-8');
+    ;
+    if (fs_1.default.statfsSync(shared_1.USER_PREFERENCE_CONFIG_FILE)) {
+        const rprofile = fs_1.default.readFileSync(shared_1.USER_PREFERENCE_CONFIG_FILE, 'utf-8');
         profile = rprofile ? JSON.parse(rprofile)?.data?.preference : '';
     }
 }
@@ -32,7 +34,7 @@ catch (err) {
     if (!profile)
         profile = '';
 }
-const conversation_root = path_1.default.join(os_1.default.homedir(), '.IntelliDesk/.store');
+const conversation_root = shared_1.STORE_DIR;
 let system_command = system_1.SystemPrompt.StandardPrompt(profile);
 ConversationHistory = {
     metadata: {
@@ -40,6 +42,7 @@ ConversationHistory = {
         type: 'normal',
         name: '',
         id: ConversationId,
+        sessionId: null,
         created_at: (0, datetime_1.getformatDateTime)(),
         updated_at: (0, datetime_1.getformatDateTime)(),
         highlight: ''
@@ -48,8 +51,7 @@ ConversationHistory = {
 };
 const api = {
     getDownloadsPath: () => {
-        const downloadsPath = path_1.default.join(os_1.default.homedir(), 'Downloads');
-        return downloadsPath;
+        return shared_1.DEFAULT_DOWNLOAD_PATH;
     },
     home_dir: () => {
         return os_1.default.homedir();
@@ -152,6 +154,10 @@ const api = {
         try {
             const file = path_1.default.join(base_dir, `${id}.json`);
             if (fs_1.default.statSync(file)) {
+                // Delete session and lock first
+                const sessionId = ConversationHistory.metadata.sessionId;
+                if (sessionId)
+                    SessionManager_1.SessionManager.delete(sessionId);
                 fs_1.default.rmSync(file);
                 return true;
             }
@@ -172,6 +178,8 @@ const api = {
                 return ConversationHistory;
             }
             ConversationHistory.chats.push(item);
+            // Create session here and Update sessionId to avoid session creation refresh tat endup unused
+            ConversationHistory.metadata.sessionId = SessionManager_1.SessionManager.create(ConversationId).sessionId;
             if (!ConversationHistory.metadata.highlight) {
                 if (ConversationHistory.metadata.model === "multimodal") {
                     if (item?.content.length > 0) {
@@ -282,6 +290,8 @@ const api = {
     },
     getmetadata: (file) => {
         try {
+            if (!file)
+                return ConversationHistory.metadata;
             const fpath = path_1.default.join(conversation_root, file);
             if (!api.stat(fpath))
                 return;
@@ -386,6 +396,7 @@ const api = {
             id: ConversationId,
             created_at: (0, datetime_1.getformatDateTime)(),
             updated_at: (0, datetime_1.getformatDateTime)(),
+            sessionId: null,
             type: ConversationHistory.metadata.type,
             name: ConversationHistory.metadata.name,
             highlight: ConversationHistory.metadata.highlight
@@ -503,26 +514,16 @@ const api = {
             const skeleton = {
                 data: data
             };
-            const prefFile = ".preference.json";
-            const prefPath = path_1.default.join(os_1.default.homedir(), '.IntelliDesk/.config');
-            try {
-                fs_1.default.mkdirSync(prefPath, { recursive: true });
-            }
-            catch (error) {
-                console.error(`Error creating directory: ${error.message}`);
-            }
-            const prefFpath = path_1.default.join(prefPath, prefFile);
-            fs_1.default.writeFileSync(prefFpath, JSON.stringify(skeleton));
+            fs_1.default.writeFileSync(shared_1.USER_PREFERENCE_CONFIG_FILE, JSON.stringify(skeleton));
             return true;
         }
         catch (err) {
             return false;
         }
     },
-    deletePreference: async (data = null) => {
+    deletePreference: async () => {
         try {
-            const prefPath = path_1.default.join(os_1.default.homedir(), '.IntelliDesk/.config/.preference.json');
-            fs_1.default.rmSync(prefPath, data);
+            fs_1.default.rmSync(shared_1.USER_PREFERENCE_CONFIG_FILE);
             return true;
         }
         catch (err) {
@@ -532,9 +533,8 @@ const api = {
     },
     getPreferences: async () => {
         try {
-            const _fpath = path_1.default.join(os_1.default.homedir(), '.IntelliDesk/.config/.preference.json');
-            if (fs_1.default.statfsSync(_fpath)) {
-                const prefData = fs_1.default.readFileSync(_fpath, 'utf-8');
+            if (fs_1.default.statfsSync(shared_1.USER_PREFERENCE_CONFIG_FILE)) {
+                const prefData = fs_1.default.readFileSync(shared_1.USER_PREFERENCE_CONFIG_FILE, 'utf-8');
                 return JSON.parse(prefData);
             }
             return undefined;
@@ -546,12 +546,7 @@ const api = {
     saveRecording: async (blob) => {
         try {
             const randomFname = `hfaudio_${Math.random().toString(36).substring(1, 12)}`;
-            const savePath = path_1.default.join(os_1.default.homedir(), `.IntelliDesk/.cache/${randomFname}.wav`);
-            const dirPath = path_1.default.dirname(savePath);
-            if (!fs_1.default.existsSync(dirPath)) {
-                fs_1.default.mkdirSync(dirPath, { recursive: true });
-                console.log(`Directory '${dirPath}' created.`);
-            }
+            const savePath = path_1.default.join(shared_1.CACHE_DIR, `${randomFname}.wav`);
             const arrayBuffer = await blob.arrayBuffer();
             const buffer = buffer_1.Buffer.from(arrayBuffer);
             fs_1.default.writeFileSync(savePath, buffer);
@@ -660,6 +655,8 @@ electron_1.contextBridge.exposeInMainWorld('desk', {
     fsops: fsOperations_1.fsOperations,
     path: path_1.default,
     fs: fs_1.default,
+    sessionmanager: SessionManager_1.SessionManager,
+    lockmanager: SessionManager_1.LockManager
     // dbManager
 });
 document.addEventListener('DOMContentLoaded', function () {

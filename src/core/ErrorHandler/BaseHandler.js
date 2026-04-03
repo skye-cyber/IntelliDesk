@@ -6,10 +6,11 @@ import { StateManager } from "../managers/StatesManager"
 import { appIsDev } from "../managers/Conversation/Mistral/shared"
 import { streamingPortalBridge } from "../PortalBridge.ts"
 import { clientmanager } from "../managers/Conversation/Mistral/ClientManager"
+import { globalEventBus } from "../Globals/eventBus.ts"
 
 
 export async function BaseErrorHandler(error, ai_ms_pid, callback) {
-    HandleProcessingEventChanges("hide")
+    globalEventBus.emit('executioncycle:end')
     window.desk.api.popHistory("user")
     const user_text = StateManager.get('userInputText')
 

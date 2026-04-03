@@ -6,9 +6,8 @@ import { showDropZoneModal } from '../../components/DropZone/util.js'
 import { ChatUtil } from '../../../core/managers/Conversation/util';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '../../components/Input/InputSection';
-// import { StateManager } from '../../../core/managers/StatesManager';
-// import { InputPurify } from '../../../core/Utils/chatUtils';
 import { staticPortalBridge } from '../../../core/PortalBridge.ts';
+import { useEventBus } from '../../hooks/useBusEvent.js';
 
 const chatutil = new ChatUtil()
 

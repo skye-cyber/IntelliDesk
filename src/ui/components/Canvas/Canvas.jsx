@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Caret } from '../../../core/Utils/caret.js'
-import { ResizeClassToggler } from '../../../core/managers/Canvas/CanvasUtils.js';
+import { canvasutil, CanvasUtil, ResizeClassToggler } from '../../../core/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '../../components/Themes/useThemeHeadless.jsx';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { Editor } from './editor';
 import { waitForElement } from '../../../core/Utils/dom_utils';
+import { globalEventBus } from '../../../core/Globals/eventBus.js';
+import { ChatDisplay } from '../../../core/managers/Conversation/util.js';
 
 //const chatdisplay = new ChatDisplay()
 
@@ -18,6 +20,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
     const [shouldRender, setShouldRender] = useState(false);
     const isControlledCloseRef = useRef(false); // Track if WE initiated the close
     const { isDark } = useTheme();
+    const codeViewRef = useRef(null)
 
     // Use refs for values that change during animation
     const scrollState = useRef({
@@ -134,19 +137,27 @@ export const Canvas = ({ isOpen, onToggle }) => {
         updatePreview();
     }
 
+    useEffect(() => {
+        const opencode = globalEventBus.on('opencode:in:canvas', (ref) => openInCanvas(ref.innerHTML))
+
+        const openInCanvas = (code) => {
+            if (!code) return
+            console.log(canvasutil.isCanvasOn())
+            if (!canvasutil.isCanvasOn()) onToggle()
+
+            if (!codeViewRef.current || !codeViewRef.current?.innerHTML) return
+
+            codeViewRef.current.innerHTML = code
+            ChatDisplay.chats_size_adjust()
+            canvasUpdate()
+        }
+
+        return () => {
+            opencode.unsubscribe()
+        }
+    })
+
     StateManager.set('canvasUpdate', canvasUpdate)
-
-    // set canvas for update
-    const setCanvas4Update = useCallback((e) => {
-        const { codeView } = refs.current;
-
-        openCanvas();
-        const codeBlock = e.parentElement.parentElement.querySelector('code');
-        const html = codeBlock.innerHTML;
-        const validLanguage = codeBlock.id
-        codeView.innerHTML = `<code id="${validLanguage}" class="hljs ${validLanguage} block whitespace-pre w-full rounded-md bg-none font-mono transition-colors duration-500">${html}</code>`;
-        canvasUpdate()
-    }, []);
 
     const updateLineNumbers = useCallback((e = null) => {
         const { codeView, lineNumbers, lineCounter } = refs.current;
@@ -172,42 +183,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
         // Ensure we have at least 1 line
         lineCount = Math.max(lineCount, 1);
-
-        let numbers = '';
-        for (let i = 1; i <= lineCount; i++) {
-            numbers += i + '\n';
-        }
-
-        lineNumbers.textContent = numbers;
-        if (lineCounter) lineCounter.textContent = lineCount;
-    }, []);
-
-    const SuperupdateLineNumbers = useCallback((e = null) => {
-        const { codeView, lineNumbers, lineCounter } = refs.current;
-        if (!codeView || !lineNumbers) return;
-
-        const getLineCount = () => {
-            // Method 1: Count by div elements (structural lines)
-            const divCount = codeView.querySelectorAll('div').length;
-
-            // Method 2: Count by text lines
-            const text = codeView.textContent || '';
-            const textLineCount = text.split('\n').length;
-
-            // Method 3: Count by actual visible lines (for wrapped text)
-            const computedStyle = window.getComputedStyle(codeView);
-            const lineHeight = parseInt(computedStyle.lineHeight) || 20;
-            const paddingTop = parseInt(computedStyle.paddingTop) || 0;
-            const paddingBottom = parseInt(computedStyle.paddingBottom) || 0;
-
-            const contentHeight = codeView.scrollHeight - paddingTop - paddingBottom;
-            const visibleLines = Math.max(1, Math.round(contentHeight / lineHeight));
-
-            // Return the maximum count to ensure all lines are numbered
-            return Math.max(divCount, textLineCount, visibleLines, 1);
-        };
-
-        const lineCount = getLineCount();
 
         let numbers = '';
         for (let i = 1; i <= lineCount; i++) {
@@ -394,44 +369,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
             }
         };
     }, []);
-
-    const UserMessagesWfitAdjust = useCallback((task = 'add') => {
-        //if (!isCanvasOpen) return;
-        const { chatArea } = refs.current;
-        const Rlist = chatArea.querySelectorAll('#AIRes');
-        if (!Rlist.length) return;
-
-        const method = task === 'add' ? 'add' : 'remove';
-        for (const element of Rlist) {
-            element.classList[method]('w-fit');
-        }
-    }, [])
-
-    const mainLayoutAWfitAdjust = useCallback((task = 'scale') => {
-        const { mainLayoutA } = refs.current
-        return
-        /*
-         * if (task === "scale") {
-            mainLayoutA.classList.remove('w-[40vw]');
-            mainLayoutA.classList.add('w-full');
-        } else {
-            mainLayoutA.classList.remove('w-full');
-            mainLayoutA.classList.add('w-[40vw]');
-        }
-        */
-    }, [])
-
-    const AiMessagesWfitAdjust = useCallback((task = 'add') => {
-        //if (!isCanvasOpen) return;
-        const { chatArea } = refs.current;
-        const Rlist = chatArea.querySelectorAll('#ai_response');
-        if (!Rlist.length) return;
-
-        const method = task === 'add' ? 'add' : 'remove';
-        for (const element of Rlist) {
-            element.classList[method]('w-fit');
-        }
-    }, [])
 
     const InputSectionWfitAdjust = useCallback((task = 'add') => {
         //if (!isCanvasOpen) return;
@@ -629,7 +566,9 @@ export const Canvas = ({ isOpen, onToggle }) => {
                         {/* Code content scrollable container */}
                         <div id="code-scroll-wrapper" className="flex flex-row flex-1 pl-2 overflow-hidden">
                             {/* Code Content */}
-                            <pre id="code-view"
+                            <pre
+                                ref={codeViewRef}
+                                id="code-view"
                                 tabIndex="0"
                                 aria-label="Code editor view"
                                 className="relative flex-1 h-auto h-full whitespace-pre-wrap leading-[1.5rem] text-sm font-mono transform transition-tranform duration-100 focus:ring-none focus:outline-none cursor-pen overflow-auto scrollbar-custom border-l border-primary-400 pt-3"

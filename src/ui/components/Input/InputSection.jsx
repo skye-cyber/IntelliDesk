@@ -65,19 +65,19 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         // Signal handlers
         const startCycle = globalEventBus.on('executioncycle:start', () => {
             setIncycle(true)
-            StateManager.set('processing', true);
+            // StateManager.set('processing', true);
         })
         const endCycle = globalEventBus.on('executioncycle:end', () => {
             setIncycle(false)
-            StateManager.set('processing', false);
+            // StateManager.set('processing', false);
         })
         const onSigint = globalEventBus.on('sigint', () => {
             setIncycle(false)
-            StateManager.set('processing', false);
+            // StateManager.set('processing', false);
         })
         const userSubmit = globalEventBus.on('useraction:submit:incycle', (text) => {
             setIncycle(false)
-            StateManager.set('processing', false);
+            // StateManager.set('processing', false);
             handleSend(text)
             console.log("Submit event:", text)
         })
@@ -93,7 +93,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
     const handleSend = useCallback((input_text = null) => {
         //
         console.log("Got:", input_text)
-        if (incycle || StateManager.get('processing')) return //sigint.raise()
+        if (incycle) return //sigint.raise() // sigint is handled on submit bt click elsewhere
 
         if (!StateManager.get('api_key_ok')) {
             showApiNotSetWarning()
@@ -119,6 +119,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                     .replaceAll('&lt;', '<')
                     .replaceAll('&amp;', '&')
                     .replaceAll('&nbsp;', ' ')
+                    .replace("&quot;", '"')
                     .replaceAll('<br>', '\n')
 
                 if (!formattedMessage.trim()) return
@@ -274,11 +275,11 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             // Toggle the canvas for any other part of the button
             //console.log('Canvas area clicked - toggling canvas');
             onToggleCanvas(); // canvas toggle function
-            StateManager.set('i-isCanvasOpen', isCanvasOpen)
+            StateManager.set('isCanvasOpen', isCanvasOpen)
         }
     }, [onToggleCanvas]); // Add dependencies
 
-    const onAICanvasToggle = (event) => {
+    const onCanvasToggle = (event) => {
         const isChecked = event.target.checked;
         setIsAIActive(isChecked);
 
@@ -492,7 +493,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
     const onSendClick = () => {
         if (incycle) return sigint.raise()
-            handleSend()
+        handleSend()
     }
 
     useEffect(() => {
@@ -571,7 +572,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 </section>
             </section>
 
-            <Tools shouldToggleCanvas={shouldToggleCanvas} onAICanvasToggle={onAICanvasToggle} onToggleRecording={onToggleRecording} closeTools={closeTools} handleCodeBlock={handleCodeBlock} handleInlineCode={handleInlineCode} detectedLanguage={detectedLanguage} />
+            <Tools shouldToggleCanvas={shouldToggleCanvas} onCanvasToggle={onCanvasToggle} onToggleRecording={onToggleRecording} closeTools={closeTools} handleCodeBlock={handleCodeBlock} handleInlineCode={handleInlineCode} detectedLanguage={detectedLanguage} />
 
             {/* Scroll to bottom button */}
             <ScrollToBottomButton onClick={() => chatutil.scrollToBottom(document.getElementById('chatArea'), false)} />
@@ -582,11 +583,25 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 const Tools = ({
     onToggleRecording,
     shouldToggleCanvas,
-    onAICanvasToggle,
+    onCanvasToggle,
     closeTools,
     handleInlineCode,
     handleCodeBlock,
     detectedLanguage }) => {
+
+    const canvasCheckBoxRef = useRef(null)
+
+    useEffect(() => {
+        const toggleCanvas = globalEventBus.on('opencode:in:canvas', () => {
+            const originalCallback = onCanvasToggle
+            onCanvasToggle = () => _
+            canvasCheckBoxRef.current.checked = true
+            onCanvasToggle = originalCallback
+        })
+        return () => {
+            toggleCanvas.unsubscribe()
+        }
+    })
     return (
         <section
             id="tool-modal"
@@ -684,7 +699,7 @@ const Tools = ({
                     <div className="absolute inset-0 bg-gradient-to-r from-green-200 to-emerald-300 dark:from-green-800 dark:to-emerald-700 opacity-0 transition-opacity duration-300"
                         id="aiActivePulse"></div>
 
-                    {/* AI Toggle Indicator */}
+                    {/* Canvas Toggle Indicator */}
                     <div className="relative flex items-center justify-start">
                         <div id="aiToggleRing" className="absolute w-5 h-5 border-2 border-blue-300 dark:border-teal-400 rounded-full transition-all duration-300 opacity-0 scale-125"></div>
                         <div id="iconContainer" className="relative transition-transform duration-300 group-hover:scale-110">
@@ -698,7 +713,7 @@ const Tools = ({
                             </svg>
                         </div>
                     </div>
-                    {/* Text and AI Status */}
+                    {/* Text and Canvas Status */}
                     <div className="flex flex-col items-start min-w-fit">
                         <div className='flex gap-2'>
                             <span className="text-[12px] font-bold tracking-wide select-none whitespace-nowrap inline">&lt;/&gt; <span className='hidden xs:inline'>Canvas</span></span>
@@ -713,10 +728,11 @@ const Tools = ({
                             {/* Mini Checkbox Indicator */}
                             <div className="relative flex ml-0.5">
                                 <input
+                                    ref={canvasCheckBoxRef}
                                     type="checkbox"
                                     id="aiCanvasToggle"
                                     className="absolute opacity-0 w-0 h-0"
-                                    onChange={onAICanvasToggle}
+                                    onChange={onCanvasToggle}
                                 />
                                 <label
                                     htmlFor="aiCanvasToggle"

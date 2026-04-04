@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { globalEventBus } from "../../../core/Globals/eventBus";
 export const CopyFeedback = ({ text = {
     head: 'Copied to clipboard',
     body: 'Ready to paste anywhere'
@@ -9,8 +10,8 @@ export const CopyFeedback = ({ text = {
     const titleRef = useRef(null)
 
     // Function to show the modal
-    const showFeedback = useCallback((e) => {
-        setInfo(e.detail?.detail?.info)
+    const showFeedback = useCallback((info) => {
+        setInfo(info)
         // Slide modal to 20% height and make it visible after 1 second
         setTimeout(() => {
             modalRef.current.classList.add('top-1/5', 'opacity-100', 'pointer-events-auto');
@@ -31,9 +32,9 @@ export const CopyFeedback = ({ text = {
     })
 
     useEffect(() => {
-        document.addEventListener('show-copy-feedback', showFeedback)
+        const copy = globalEventBus.on('copy:feedback', (detail) => showFeedback(detail))
         return () => {
-            document.removeEventListener('show-copy-feedback', showFeedback)
+            copy.unsubscribe()
         }
     })
 

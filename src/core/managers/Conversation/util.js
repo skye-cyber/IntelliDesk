@@ -138,10 +138,7 @@ export class ChatUtil {
 }
 
 export class ChatDisplay {
-    constructor() {
-        //
-    }
-    chats_size_adjust(task = 'scale_down') {
+    static chats_size_adjust(task = 'scale_down') {
         const user_chats = document.querySelectorAll('#ai_response')
         const ai_chats = document.querySelectorAll('#user_message')
         if (task === "scale_down") {

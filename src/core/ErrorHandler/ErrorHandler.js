@@ -144,7 +144,7 @@ export class RequestErrorHandler {
         this.currentError = error;
         this.errorContext = context;
 
-        StateManager.set('processing', false);
+        globalEventBus.emit('executioncycle:end')
 
         // Track interruption time
         const timer = new Timer();

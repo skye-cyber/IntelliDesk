@@ -68,7 +68,6 @@ export async function MistralBase({
 
         // change send button appearance to processing status
         globalEventBus.emit('executioncycle:start')
-        StateManager.set('processing', true);
 
         // Scroll to bottom
         chatutil.scrollToBottom(chatArea, true);

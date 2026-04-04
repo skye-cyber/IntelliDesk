@@ -1,6 +1,4 @@
 import { waitForElement } from "../../Utils/dom_utils";
-import { ChatDisplay } from "../Conversation/util";
-import { StateManager } from "../StatesManager";
 
 export class ResizeClassToggler {
     constructor(target, toggleTarget, breakpoint = 640, className = 'sm:flex') {
@@ -35,10 +33,6 @@ export class ResizeClassToggler {
 }
 
 export class CanvasUtil {
-    constructor() {
-        //
-    }
-
     NormalizeCanvasCode(codeView) {
         codeView = codeView ? codeView : waitForElement('#code-view', (el) => codeView = el)
 
@@ -74,18 +68,4 @@ export class CanvasUtil {
     }
 }
 
-export function openInCanvas(id) {
-    const codeBlock = document.querySelector(`[data-value^="${id}"]`)
-    const code = codeBlock?.innerHTML
-    const chatdisplay = new ChatDisplay()
-
-    if (!new CanvasUtil().isCanvasOpen()) document.getElementById('ToggleCanvasBt')?.click()
-
-    waitForElement('#code-view', (el) => {
-        el.innerHTML = code
-        chatdisplay.chats_size_adjust()
-        StateManager.get('canvasUpdate')()
-    });
-}
-
-window.openInCanvas = openInCanvas;
+export const canvasutil = new CanvasUtil()

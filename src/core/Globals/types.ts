@@ -1,3 +1,10 @@
+import { RefAttributes } from "react";
+
+interface copyDtetail {
+    head: string
+    body: string
+}
+
 export type EventMap = {
     'sigint': [timestamp: number];
     'execution:abort': [reason: string];
@@ -7,6 +14,9 @@ export type EventMap = {
     'executioncycle:start': []
     'executioncycle:end': []
     'useraction:submit:incycle': [text: string]
+    'opencode:in:canvas': [ref: RefAttributes<any>['ref']]
+    'copy:feedback': [detail: copyDtetail]
+    'clone:feedback': []
 };
 
 export type EventCallback<T extends keyof EventMap> = (...args: EventMap[T]) => void;

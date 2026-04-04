@@ -7,8 +7,6 @@ import { modalmanager } from '../StatusUIManager/Manager';
 
 const chatutil = new ChatUtil()
 
-StateManager.set('processing', false)
-
 
 const multimodal = chatutil.get_multimodal_models()
 const ms_models = chatutil.get_models()
@@ -87,7 +85,6 @@ export class Router {
         // clear buffer initialy
         StateManager.set('codeBuffer', null);
 
-        if (StateManager.get('processing') === true) return;
         const model = StateManager.get('currentModel');
 
         //Intercept image generation

@@ -1,3 +1,4 @@
+import { globalEventBus } from "../../../core/Globals/eventBus";
 import { StateManager } from "../../../core/managers/StatesManager";
 
 export function GenerateId(prefix = '', postfix = '', length = 6) {
@@ -31,18 +32,14 @@ export function CopyMessage(element, html = false) {
         element.textContent;
 
     const detail = {
-        detail: {
-            info: {
-                head: html ? "Clone successfull!" : "Text Copied ssuccessfully",
-                body: ""
-            }
-        }
+        head: html ? "Clone successfull!" : "Text Copied ssuccessfully",
+        body: ""
     }
 
     if (textToCopy.length >= 0) {
         try {
             navigator.clipboard.writeText(textToCopy);
-            document.dispatchEvent(new CustomEvent('show-copy-feedback', { detail: detail }))
+            globalEventBus.emit('copy:feedback', detail)
         } catch (err) {
             console.error('Failed to copy: ', err);
         }

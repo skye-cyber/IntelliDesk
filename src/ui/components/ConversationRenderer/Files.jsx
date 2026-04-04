@@ -1,4 +1,4 @@
-export const FileContainer = ({ files }) => {
+export const FileContainer = ({ setOpen, files }) => {
     const file_container_id = `file_container-${Math.random().toString(36).substring(2, 6)}`;
 
     // Handle case where files is undefined or empty
@@ -7,7 +7,7 @@ export const FileContainer = ({ files }) => {
     }
 
     return (
-        <div id={file_container_id} className="flex justify-end">
+        <div id={file_container_id} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)} className="flex justify-end">
             <article className="flex flex-row md:flex-row w-fit p-1 rounded-lg">
                 {files.map((file, index) => {
                     // Handle different file object structures

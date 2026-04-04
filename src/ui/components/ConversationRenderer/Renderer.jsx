@@ -20,12 +20,14 @@ export const UserMessage = ({ message, files = [] }) => {
     const [optionsOpen, setOptionsOpen] = useState(false)
     const [expanded, setEpanded] = useState(false)
     const [expandable, setExpandable] = useState(false)
+    const [dimensions, setDimensions] = useState([])
 
     useEffect(() => {
         if (!messageRef.current) return
 
         const computedStyle = getComputedStyle(messageRef.current)
-        setExpandable(!expanded && computedStyle.height >= computedStyle.maxHeight)
+        setExpandable(!expanded && parseInt(computedStyle.height) >= parseInt(computedStyle.maxHeight))
+        setDimensions([parseInt(computedStyle.width)], parseInt(computedStyle.height))
 
     }, [messageRef.current, expanded])
 
@@ -43,12 +45,12 @@ export const UserMessage = ({ message, files = [] }) => {
                         <SimpleUserCodeRenderer htmlContent={userContent} />
                     </div>
                     {expandable && (
-                        <div onClick={() => setEpanded(!expanded)} className={`absolute bottom-[0.5px] right-0 h-36 bg-gradient-to-t from-gray-100/80 dark:from-[#14143e] to-transparent pointer-events-click ${expanded ? '' : 'cursor-row-resize'} w-[80%] rounded-bl-lg`} />
+                        <div onClick={() => setEpanded(!expanded)} className={`absolute bottom-[0.5px] right-0 h-36 bg-gradient-to-t from-gray-100/80 dark:from-[#14143e] to-transparent pointer-events-click ${expanded ? '' : 'cursor-row-resize'} max-w-[80%] rounded-bl-lg`} style={{width: dimensions[0]}} />
                     )}
                 </div>
 
                 <div className='flex justify-end'>
-                    <FileContainer files={files} />
+                    <FileContainer setOpen={setOptionsOpen} files={files} />
                 </div>
                 <UserMessageOptions messageref={messageRef} isOpen={optionsOpen} setOpen={setOptionsOpen} />
             </section >

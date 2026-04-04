@@ -49,6 +49,17 @@ export const DropZone = ({ isOpen, onToggle }) => {
         });
     })
 
+    function OpenDropZone() {
+        const modal = dropzoneContainer.current
+        const content = dropzoneContent.current
+
+        modal.classList.remove('hidden')
+        setTimeout(() => {
+            content.classList.add('scale-100', 'opacity-100');
+            content.classList.remove('scale-95', 'opacity-0');
+        }, 500)
+    }
+
     function CloseDropZone() {
         const modal = dropzoneContainer.current
         const content = dropzoneContent.current
@@ -72,16 +83,6 @@ export const DropZone = ({ isOpen, onToggle }) => {
         if (!document.getElementById('modalContent').contains(e.target)) closePreview();
     })
 
-    const handleEscape = useCallback((e) => {
-        if (e.key === 'Escape' && !e.shiftKey) {
-            if (!uploadsPreviewRef.current?.classList.contains('hidden')) {
-                return closePreview()
-            }
-            CloseDropZone();
-        }
-
-    });
-
     const HandleFileSubmit = useCallback((e) => {
         e.preventDefault()
         const userInput = dropzoneInputRef.current;
@@ -94,8 +95,8 @@ export const DropZone = ({ isOpen, onToggle }) => {
         if (inputText) {
             //Reset the input field content
             //MistraMultimodal({ text: inputText })
-//             StateManager.get('onSend')(inputText)
-            globalEventBus.emit('useraction:submit:incycle' , inputText)
+            //             StateManager.get('onSend')(inputText)
+            globalEventBus.emit('useraction:submit:incycle', inputText)
             CloseDropZone()
         }
     })
@@ -110,13 +111,17 @@ export const DropZone = ({ isOpen, onToggle }) => {
     useEffect(() => {
         const dropzoneInput = dropzoneInputRef.current
         dropzoneInput.addEventListener('keydown', handleEnter)
-        document.addEventListener('close-dropzone', CloseDropZone)
-        document.addEventListener('close-preview', closePreview)
+        const dropzoneOpen = globalEventBus.on('dropzone:open', OpenDropZone)
+        const dropzoneClose = globalEventBus.on('dropzone:close', CloseDropZone)
+        const previewOpen = globalEventBus.on('fileupload:preview:open', openPreview)
+        const previewClose = globalEventBus.on('fileupload:preview:close', closePreview)
 
         return () => {
+            previewOpen.unsubscribe()
+            previewClose.unsubscribe()
             dropzoneInput.removeEventListener('keydown', handleEnter)
-            document.removeEventListener('close-dropzone', CloseDropZone)
-            document.removeEventListener('close-preview', closePreview)
+            dropzoneOpen.unsubscribe()
+            dropzoneClose.unsubscribe()
         }
     })
     return (

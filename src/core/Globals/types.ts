@@ -19,7 +19,26 @@ export type EventMap = {
     'clone:feedback': []
     'canvas:open': []
     'canvas:content:update': [content: string]
+    'agent:editor:open': []
+    'agent:editor:close': []
+    'setting:open': []
+    'settings:close': []
+    'setting:toggle': []
+    'tool:result:open': []
+    'tool:result:close': []
+    'panel:chats:expand': []
+    'panel:chats:shrink': []
+    'panel:chats:toggle': []
+    'key:down': [event: KeyboardEvent]
+    'key:up': [event: KeyboardEvent]
+    'key:press': [event: KeyboardEvent]
+    'scroll:bottom': []
+    'fileupload:preview:open': []
+    'fileupload:preview:close': []
+    'dropzone:open': []
+    'dropzone:close': []
 };
+
 
 export type EventCallback<T extends keyof EventMap> = (...args: EventMap[T]) => void;
 export type EventSubscription = { unsubscribe: () => void };

@@ -6,7 +6,6 @@ import { showDropZoneModal } from '../../components/DropZone/util.js'
 import { ChatUtil } from '../../../core/managers/Conversation/util';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '../../components/Input/InputSection';
-import { staticPortalBridge } from '../../../core/PortalBridge.ts';
 
 const chatutil = new ChatUtil()
 
@@ -131,77 +130,6 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                 <div data-portal-container='ConfirmdialogContainer' id='confirm-dialog-container'></div>
             </section>
         </>
-    );
-};
-
-
-export const ToolPermissionDemo = () => {
-    const [showDialog, setShowDialog] = useState(false);
-    const [lastDecision, setLastDecision] = useState(null);
-
-    const handleDecision = (decision) => {
-        setLastDecision(decision);
-        setShowDialog(false);
-        console.log('User decision:', decision);
-
-        // Handle different decision types
-        switch (decision) {
-            case 'allow_once':
-                // Execute tool once
-                break;
-            case 'allow_session':
-                // Store in sessionStorage
-                sessionStorage.setItem('tool_permission', 'allowed');
-                break;
-            case 'allow_always':
-                // Store in localStorage
-                localStorage.setItem('tool_permission', 'allowed');
-                break;
-            case 'deny_once':
-                // Deny this execution
-                break;
-            case 'deny_always':
-                // Store denial in localStorage
-                localStorage.setItem('tool_permission', 'denied');
-                break;
-        }
-        staticPortalBridge.closeComponent('tool_perm_request', true)
-    };
-    const showPerUi = () => {
-        const args = {
-            command: "rm -rf /tmp/important_fitool_perm_requesttool_perm_requesttool_perm_requesttool_perm_requesttool_perm_requesttool_perm_requesttool_perm_requestles && echo 'Clean up temporary files'",
-            working_directory: "/home/user/projects",
-            timeout: 30
-        }
-        staticPortalBridge.showComponent('ToolPermissionRequest',
-            {
-                toolName: 'bash',
-                toolArgs: args,
-                onDecision: handleDecision
-            },
-            'tool_perm_request'
-        )
-        setShowDialog(true)
-    }
-
-    return (
-        <div className="min-h-[50%] bg-gray-100 dark:bg-gray-950 p-8">
-            {lastDecision && (
-                <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
-                    <p className="text-sm">Last decision: {lastDecision}</p>
-                </div>
-            )}
-
-            {!showDialog && (
-                <button
-                    onClick={showPerUi}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                    Show Demo Again
-                </button>
-            )}
-            <PermissionHistory />
-        </div>
     );
 };
 

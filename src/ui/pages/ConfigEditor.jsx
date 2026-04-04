@@ -20,6 +20,7 @@ import {
 import { FieldGroup } from '../components/Config/ToolEditor/Fields';
 import { PermissionBadge, TopLevelIcon, SaveIndicator, ToolIcon } from '../components/Config/ToolEditor/Helpers';
 import { StateManager } from '../../core/managers/StatesManager';
+import { globalEventBus } from '../../core/Globals/eventBus';
 
 // Default configuration
 const defaultConfig = {
@@ -619,8 +620,14 @@ const ConfigEditor = () => {
         }, 800);
     }, []);
 
-    StateManager.set('OpenEditor', OpenEditor)
-    StateManager.set('CloseEditor', CloseEditor)
+    useEffect(() => {
+        const openEditor = globalEventBus.on('agent:editor:open', OpenEditor)
+        const closeEditor = globalEventBus.on('agent:editor:close', CloseEditor)
+        return () => {
+            openEditor.unsubscribe()
+            closeEditor.unsubscribe()
+        }
+    })
 
     return (
         <div ref={EditorWrapper} onClick={(e) => (Editor.current.contains(e.currentTarget)) ? CloseEditor() : ''} id="EditorWrapper" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
@@ -654,7 +661,7 @@ const ConfigEditor = () => {
                                     {topLevelItems.map(item => (
                                         <button
                                             key={item.id}
-                                            disabled={ disabledConfig.includes(item.id)}
+                                            disabled={disabledConfig.includes(item.id)}
                                             onClick={() => {
                                                 setSelectedTopLevel(item.id);
                                                 setSelectedTool(null);

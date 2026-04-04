@@ -1,15 +1,17 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { SettingToggle } from '../components/Settings/settings_toggle.jsx';
 import { StateManager } from '../../core/managers/StatesManager.js';
 import { modalmanager } from '../../core/StatusUIManager/Manager.js';
 import { useTheme } from '../components/Themes/useThemeHeadless.jsx';
 import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary.jsx';
+import { globalEventBus } from '../../core/Globals/eventBus.js';
+import { SettingsIcon } from 'lucide-react';
 
 export const Settings = ({ isOpen, onToggle }) => {
-    const [preferenceChange, setPreferenceChange] = useState(false);
+    // const [preferenceChange, setPreferenceChange] = useState(false);
     const [currentPreference, setCurrentPreference] = useState('');
-
-    const { isDark, toggleTheme, setTheme } = useTheme();
+    const settingContainer = useRef(null)
+    const { setTheme } = useTheme();
 
     const [settings, setSettings] = useState({
         autoscroll: true,
@@ -81,12 +83,21 @@ export const Settings = ({ isOpen, onToggle }) => {
         if (languagePref) languagePref.value = settings.language;
     }, [settings]);
 
-    const CloseSettings = useCallback(() => {
-        const settingsModal = document.getElementById('settingsModal');
-        settingsModal.classList.remove('translate-x-0');
-        settingsModal.classList.add('translate-x-full');
+    const OpenSettings = useCallback(() => {
+        settingContainer.current.classList.remove('hidden')
+
         setTimeout(() => {
-            settingsModal.classList.add('hidden');
+            settingContainer.current.classList.remove('translate-x-full')
+            settingContainer.current.classList.add('translate-x-0')
+
+        }, 10)
+    }, [])
+
+    const CloseSettings = useCallback(() => {
+        settingContainer.current.classList.remove('translate-x-0');
+        settingContainer.current.classList.add('translate-x-full');
+        setTimeout(() => {
+            settingContainer.current.classList.add('hidden');
         }, 800);
     }, []);
 
@@ -113,7 +124,7 @@ export const Settings = ({ isOpen, onToggle }) => {
     }, []);
 
     const handlePreferenceInput = useCallback((e) => {
-        setPreferenceChange(true);
+        // setPreferenceChange(true);
         const prefInput = e.target;
         prefInput.style.height = 'auto';
         prefInput.style.height = Math.min(prefInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
@@ -161,7 +172,7 @@ export const Settings = ({ isOpen, onToggle }) => {
         prefContentSection.classList.add('hidden'); //Hide preference display block
         prefInput.style.height = Math.min(prefInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
 
-        setPreferenceChange(true);
+        //setPreferenceChange(true);
 
     }, [currentPreference])
 
@@ -279,20 +290,30 @@ export const Settings = ({ isOpen, onToggle }) => {
     }, [settings])
 
     useEffect(() => {
-        document.addEventListener('close-settings', CloseSettings);
+        const openSettings = globalEventBus.on('setting:open', OpenSettings)
+        const closeSettings = globalEventBus.on('setting:close', CloseSettings)
+        const settingsToggle = globalEventBus.on('setting:toggle', () => {
+            settingContainer.current.classList.contains('hidden') ? OpenSettings() : CloseSettings()
+        })
         return () => {
-            document.removeEventListener('close-settings', CloseSettings);
+            openSettings.unsubscribe()
+            closeSettings.unsubscribe()
+            settingsToggle.unsubscribe()
         }
-    }, [CloseSettings])
+    }, [])
+
     return (
-        <div onClick={shouldClose} id="settingsModal" className="fixed inset-0 z-[51] flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
+        <div ref={settingContainer}
+            onClick={shouldClose}
+            id="settingsModal"
+            className="fixed inset-0 z-[51] flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700 ease-in-out">
             {/* Modal Content */}
             <div
-                className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl p-0 w-full mx-4 md:mx-auto max-w-2xl max-h-[98vh] overflow-hidden backdrop-blur-lg transition-colors duration-700 ease-in-out"
+                className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl p-0 w-full mx-4 md:mx-auto max-w-2xl max-h-[98vh] overflow-hidden backdrop-blur-lg"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 transition-colors duration-700 ease-in-out">
+                <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                             <div className="p-2 bg-blue-500/10 rounded-xl">
@@ -316,7 +337,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                             onClick={CloseSettings}
                             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl group"
                         >
-                            <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
@@ -488,7 +509,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 <button
                                     onClick={() => {
                                         CloseSettings()
-                                        StateManager.get('OpenEditor')()
+                                        globalEventBus.emit('agent:editor:open')
                                     }}
                                     className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-accent-500 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
                                 >

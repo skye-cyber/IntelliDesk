@@ -17,11 +17,7 @@ import {
 } from 'lucide-react';
 import { staticPortalBridge } from '../../../core/PortalBridge.ts';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-    toggleExpanded,
-    setCopied,
-    addNotification
-} from '../../store/uiSlice';
+import { addNotification } from '../../store/uiSlice';
 import {
     resolvePermissionRequest,
     addPermissionRequest

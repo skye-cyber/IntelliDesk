@@ -1,21 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ModelList } from './ModelList';
 import { StateManager } from '../../../core/managers/StatesManager';
+import { globalEventBus } from '../../../core/Globals/eventBus';
 
 StateManager.set('currentModel', 'mistral-small-latest')
 
 export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-    const OpenSettings = useCallback(() => {
-        const settings = document.getElementById('settingsModal')
-        settings.classList.remove('hidden')
-
-        setTimeout(() => {
-            settings.classList.remove('translate-x-full')
-            settings.classList.add('translate-x-0')
-
-        }, 10)
-    }, [])
 
     function hideSelectorModal() {
         const selector = document.getElementById('model-selector')
@@ -45,17 +36,15 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
 
         document.addEventListener('click', handleClick);
         document.addEventListener('keydown', handleEscape);
-        document.addEventListener('open-settings', OpenSettings);
         document.addEventListener('hide-model-selector', hideSelectorModal);
         return () => {
             document.removeEventListener('keydown', handleEscape);
-            document.removeEventListener('open-settings', OpenSettings);
             document.removeEventListener('click', handleClick);
             document.addEventListener('hide-model-selector', hideSelectorModal);
         }
-    }, [isModelDropdownOpen, hideSelectorModal, OpenSettings]);
+    }, [isModelDropdownOpen, hideSelectorModal]);
 
-    const ModelSelectorToggle = useCallback((e) => {
+    const ModelSelectorToggle = useCallback(() => {
         if (isModelDropdownOpen || document.getElementById('model-selector')?.classList.contains('translate-x-0')) {
             hideSelectorModal()
         } else {
@@ -76,7 +65,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                                 className="absolute z-5 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-700"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    document.dispatchEvent(new CustomEvent('toggle-panel'))
+                                    globalEventBus.emit('panel:chats:expand')
                                 }}
                             >
                                 <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,7 +95,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                     </section>
 
                     {/* Settings Button */}
-                    <section onClick={OpenSettings} className="absolute right-0 z-5 hover:scale-[0.85] transition-transform duration-700">
+                    <section onClick={() => globalEventBus.emit('setting:open')} className="absolute right-0 z-5 hover:scale-[0.85] transition-transform duration-700">
                         <button id="settings" title="Settings" className="mr-[3vw]">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 fill-current text-gray-800 dark:text-gray-200 transition-colors duration-200">
                                 <path d="M19.14 12.936c.06-.437.06-.874 0-1.31l2.007-1.55c.21-.16.27-.44.14-.67l-2.4-4.155c-.12-.21-.36-.29-.57-.21l-2.337 1.017c-.56-.43-1.17-.79-1.83-1.07l-.354-2.6c-.04-.26-.27-.46-.54-.46h-5c-.27 0-.51.2-.54.46l-.354 2.6c-.66.28-1.28.64-1.83 1.07L5.22 5.89c-.21-.08-.45 0-.57.21l-2.4 4.155c-.12.21-.07.51.14.67l2.007 1.55c-.06.437-.06.874 0 1.31l-2.007 1.55c-.21.16-.27.44-.14.67l2.4 4.155c.12.21.36.29.57.21l2.337-1.017c.56.43 1.17.79 1.83 1.07l.354 2.6c.04.26.27.46.54.46h5c.27 0 .51-.2.54-.46l.354-2.6c.66-.28 1.28-.64 1.83-1.07l2.337-1.017c.21-.08.45 0 .57.21l2.4 4.155c.12.21.07.51-.14.67l-2.007 1.55c.06.437.06.874 0 1.31zM12 16a4 4 0 110-8 4 4 0 010 8z" />

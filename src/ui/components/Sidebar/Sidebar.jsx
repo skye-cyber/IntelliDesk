@@ -9,6 +9,7 @@ import { ChatUtil } from '../../../core/managers/Conversation/util';
 import { MessageList } from '../Chat/MessageList';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { PanelLeftClose } from 'lucide-react';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 const chatutil = new ChatUtil()
 
@@ -44,7 +45,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
 
     }, [isOpen]);
 
-    const showPanel = useCallback(() => {
+    const expandPanel = useCallback(() => {
         onToggle();
         waitForElement('#conversationPane', (panel) => {
             panel.querySelectorAll('.verbose-hide').forEach(el => el.classList.remove('hidden'));
@@ -62,7 +63,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
         StateManager.set("sidebar-open", true)
     }, [onToggle]);
 
-    const hidePanel = useCallback(() => {
+    const shrinkPanel = useCallback(() => {
         waitForElement('#conversationPane', (panel) => {
             panel.querySelectorAll('.verbose-hide').forEach(el => el.classList.add('hidden'));
             panel.classList.remove('fixed', 'z-[41]', 'left-0', 'top-0', 'w-[300px]', 'lg:relative', 'lg:top-auto', 'md:left-auto', 'md:w-[25vw]', 'lg:w-[20vw]', 'md:block')
@@ -80,9 +81,9 @@ export const Sidebar = ({ isOpen, onToggle }) => {
 
     const togglePanel = useCallback(() => {
         if (document.querySelector('.verbose-hide')?.classList?.contains('hidden')) {
-            showPanel()
+            expandPanel()
         } else {
-            hidePanel()
+            shrinkPanel()
         }
     })
 
@@ -143,7 +144,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             if (e.key === 'Escape') {
                 if (!document.getElementById('chatOptions-overlay')?.classList.contains('hidden')) return
                 if (document.getElementById('searchInput')?.classList.contains('hidden')) {
-                    hidePanel();
+                    shrinkPanel();
                 }
                 hideSearchInput();
             }
@@ -154,7 +155,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             if (!document.getElementById('chatOptions-overlay')?.classList.contains('hidden')) return Manager.hideConversationOptions()
 
             if (!document.getElementById('conversationPane')?.contains(e.target) && !document.getElementById('modelButton')?.contains(e.taget) && !e.target?.role != 'menuitem') {
-                hidePanel();
+                shrinkPanel();
             }
         };
 
@@ -162,19 +163,19 @@ export const Sidebar = ({ isOpen, onToggle }) => {
 
 
         document.addEventListener('keydown', handleEscape);
-        //document.addEventListener('click', handleClick);
-        document.addEventListener('close-panel', hidePanel);
-        document.addEventListener('open-panel', showPanel);
-        document.addEventListener('toggle-panel', togglePanel);
+        const panelExpand = globalEventBus.on('panel:chats:expand', expandPanel)
+        const panelShrink = globalEventBus.on('panel:chats:shrink', shrinkPanel)
+        const panelToggle = globalEventBus.on('panel:chats:expand', togglePanel)
+        // const keydown = globalEventBus.on('key:down', handleEscape)
 
         return () => {
+            panelExpand.unsubscribe()
+            panelShrink.unsubscribe()
+            panelToggle.unsubscribe()
+            // keydown.unsubscribe()
             document.removeEventListener('keydown', handleEscape);
-            //document.removeEventListener('click', handleClick);
-            document.removeEventListener('close-panel', hidePanel);
-            document.removeEventListener('open-panel', showPanel);
-            document.removeEventListener('toggle-panel', togglePanel);
         };
-    }, [isOpen, hidePanel, showPanel, hideSearchInput]);
+    }, [isOpen, shrinkPanel, expandPanel, hideSearchInput]);
 
 
     return (
@@ -291,7 +292,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                         Powered by IntelliDesk
                     </span>
                     <button
-                        onClick={() => document.getElementById('settings').click()}
+                        onClick={() => globalEventBus.emit('setting:toggle')}
                         className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 focus:outline-none focus:ring-none"
                         title="Settings"
                     >

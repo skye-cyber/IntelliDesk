@@ -1,6 +1,6 @@
 import { waitForElement } from "../../Utils/dom_utils";
 
-export class ResizeClassToggler {
+export class CanvasResizeHandler {
     constructor(target, toggleTarget, breakpoint = 640, className = 'sm:flex') {
         this.target = target //document.getElementById(targetId);
         this.toggleTarget = toggleTarget //document.getElementById(toggleTarget);
@@ -49,7 +49,7 @@ export class CanvasUtil {
     }
 
     isCanvasOn() {
-        const check = document.getElementById('aiCanvasToggle')?.checked
+        const check = document.getElementById('CanvasToggle')?.checked
         return check
     }
 

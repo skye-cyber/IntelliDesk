@@ -14,7 +14,7 @@ export class Caret {
         this.rect
     }
 
-    updateHandPosition() {
+    updatePenPosition() {
         const sel = window.getSelection();
         if (!sel.rangeCount) {
             this.handIndicator.style.opacity = '0';

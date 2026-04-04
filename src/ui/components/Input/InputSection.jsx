@@ -45,9 +45,7 @@ const LANGUAGE_EXTENSIONS = {
 
 export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
     // State management for the toggle
-    const [isAIActive, setIsAIActive] = useState(false);
     const [inputValue, setInputValue] = useState('');
-    const [isCodeMode, setIsCodeMode] = useState(false);
     const [detectedLanguage, setDetectedLanguage] = useState('');
     const textareaRef = useRef(null);
     const [incycle, setIncycle] = useState(false)
@@ -259,13 +257,13 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         //event.stopPropagation();
 
         // Check if the click was on the AI toggle checkbox or its label
-        const aiToggleElement = document.getElementById('aiCanvasToggle');
+        const aiToggleElement = document.getElementById('CanvasToggle');
         const clickedElement = event.target;
 
         // Check if the click was directly on the checkbox or within its label
         const isAIToggleClick = aiToggleElement?.contains(clickedElement) ||
             clickedElement === aiToggleElement ||
-            clickedElement.htmlFor === 'aiCanvasToggle';
+            clickedElement.htmlFor === 'CanvasToggle';
 
         if (isAIToggleClick) {
             // Let the checkbox handle its own change event
@@ -281,14 +279,13 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
     const onCanvasToggle = (event) => {
         const isChecked = event.target.checked;
-        setIsAIActive(isChecked);
 
         const aiStatusDot = document.getElementById('aiStatusDot');
         const aiStatusText = document.getElementById('aiStatusText');
         const aiToggleRing = document.getElementById('aiToggleRing');
         const aiActivePulse = document.getElementById('aiActivePulse');
-        const checkmark = document.querySelector('#aiCanvascheckmark');
-        const glow = document.getElementById('aiCanvasToggleGlow');
+        const checkmark = document.querySelector('#Canvascheckmark');
+        const glow = document.getElementById('CanvasToggleGlow');
 
         if (isChecked) {
             // AI Active state
@@ -399,15 +396,14 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
         if (selectionStart === 0 && selectionEnd === 0) return
 
-        console.log(selectionEnd)
         // Full selection if no selection
         if (!selectionStart || selectionStart === selectionEnd) selectionStart = 0
 
-        const before = input.substring(0, selectionStart);
-        const after = input.substring(selectionEnd);
+        //         const before = inputValue.substring(0, selectionStart);
+        //         const after = inputValue.substring(selectionEnd);
 
-        const newText = before + wrapBefore + textToInsert + wrapAfter + after;
-        setInput(newText);
+        //         const newText = before + wrapBefore + textToInsert + wrapAfter + after;
+        textareaRef.current.innerHTML = (inputValue + textToInsert)
 
         //console.log(newText)
         // Set cursor position after inserted text
@@ -465,7 +461,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
         // Handle Tab key for indentation in code mode
         if (e.key === 'Tab' && !e.shiftKey) {
             e.preventDefault();
-            insertText('    ');
+            // insertText('    ');
             return;
         }
 
@@ -590,18 +586,18 @@ const Tools = ({
     detectedLanguage }) => {
 
     const canvasCheckBoxRef = useRef(null)
-
-    useEffect(() => {
-        const toggleCanvas = globalEventBus.on('opencode:in:canvas', () => {
-            const originalCallback = onCanvasToggle
-            onCanvasToggle = () => _
-            canvasCheckBoxRef.current.checked = true
-            onCanvasToggle = originalCallback
-        })
-        return () => {
-            toggleCanvas.unsubscribe()
-        }
-    })
+    //
+    //     useEffect(() => {
+    //         const toggleCanvas = globalEventBus.on('opencode:in:canvas', () => {
+    //             const originalCallback = onCanvasToggle
+    //             onCanvasToggle = () => _
+    //             canvasCheckBoxRef.current.checked = true
+    //             onCanvasToggle = originalCallback
+    //         })
+    //         return () => {
+    //             toggleCanvas.unsubscribe()
+    //         }
+    //     })
     return (
         <section
             id="tool-modal"
@@ -685,7 +681,7 @@ const Tools = ({
                 <div className="whitespace-nowrap pl-1 pr-1 hidden md:inline">Preview</div>
             </button>
 
-            {/* Right side: AI & Canvas Tools */}
+            {/* Right side: Canvas Tools */}
             <div className="hidden xs:flex items-center space-x-1 bg-white/0 dark:bg-gray-800/0 rounded-lg select-none">
                 {/* Multi-Purpose Canvas Toggle */}
                 <button
@@ -730,17 +726,17 @@ const Tools = ({
                                 <input
                                     ref={canvasCheckBoxRef}
                                     type="checkbox"
-                                    id="aiCanvasToggle"
+                                    id="CanvasToggle"
                                     className="absolute opacity-0 w-0 h-0"
                                     onChange={onCanvasToggle}
                                 />
                                 <label
-                                    htmlFor="aiCanvasToggle"
+                                    htmlFor="CanvasToggle"
                                     className="relative flex items-center justify-center w-4 h-4 border-2 border-blue-400 dark:border-teal-500 rounded bg-white dark:bg-slate-700 transition-all duration-300 cursor-pointer group/checkbox hover:border-blue-600 dark:hover:border-teal-300"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     {/* Checkmark */}
-                                    <svg id="aiCanvascheckmark"
+                                    <svg id="Canvascheckmark"
                                         className="w-2.5 h-2.5 text-green-600 dark:text-teal-400 opacity-0 transition-all duration-200 scale-50"
                                         fill="none"
                                         stroke="currentColor"
@@ -750,7 +746,7 @@ const Tools = ({
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                     </svg>
                                     {/* Glow effect when checked */}
-                                    <div id="aiCanvasToggleGlow" className="absolute inset-0 rounded bg-green-500 dark:bg-teal-500 opacity-0 scale-150 transition-all duration-300 blur-sm"></div>
+                                    <div id="CanvasToggleGlow" className="absolute inset-0 rounded bg-green-500 dark:bg-teal-500 opacity-0 scale-150 transition-all duration-300 blur-sm"></div>
                                 </label>
                             </div>
                         </div>

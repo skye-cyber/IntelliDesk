@@ -3,6 +3,7 @@ import { debounceRenderKaTeX } from "../../MathBase/mathRenderer";
 import { chart_interpret } from "../../diagraming/jscharting";
 import { dot_interpreter } from "../../diagraming/vizcharting";
 import { waitForElement } from "../../Utils/dom_utils";
+import { globalEventBus } from "../../Globals/eventBus";
 
 export class ChatUtil {
     constructor() {
@@ -133,7 +134,7 @@ export class ChatUtil {
         document.getElementById('suggestions')?.classList?.add('hidden')
     }
     open_canvas() {
-        document.getElementById('ToggleCanvasBt')?.click()
+        globalEventBus.emit('canvas:open')
     }
 }
 

@@ -13,15 +13,13 @@ const canvasutil = new CanvasUtil()
 export const CodeBlockComponent = ({
     highlighted,
     valid_language,
-    copy_button_id = GenerateId('copy-button'),
     codeblock_id = GenerateId('code-block'),
     download_button_id = GenerateId('download'),
-    open_in_canvas_id = GenerateId('open-canvas'),
     render_button_id = GenerateId('render-button'),
 }) => {
 
     const codeblockRef = useRef(null)
-    const copyCodeRef = useRef(null)
+    // const copyCodeRef = useRef(null)
     const [copyText, setCopyText] = useState('copy')
 
     // Move these hooks outside of any conditions - call them unconditionally
@@ -67,7 +65,6 @@ export const CodeBlockComponent = ({
                 </p>
                 <div className="flex justify-between items-center space-x-2">
                     <button
-                        id={open_in_canvas_id}
                         onClick={() => globalEventBus.emit('opencode:in:canvas', codeblockRef.current)}
                         className="flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700 focus:outline-none" aria-pressed="false" title="Open coding canvas">
                         {/* simple plus icon (SVG) */}
@@ -78,7 +75,7 @@ export const CodeBlockComponent = ({
                     </button>
 
                     {/* Copy button */}
-                    <button id={copy_button_id} onClick={() => handleCodeCopy(copy_button_id, codeblock_id)} className="copy-button flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700 focus:outline-none">
+                    <button onClick={() => handleCodeCopy()} className="copy-button flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700 focus:outline-none">
                         <svg className="w-4 h-4 feather feather-copy mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>

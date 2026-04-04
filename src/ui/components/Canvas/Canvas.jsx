@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Caret } from '../../../core/Utils/caret.js'
-import { canvasutil, CanvasUtil, ResizeClassToggler } from '../../../core/managers/Canvas/CanvasUtils.js';
+import { canvasutil, CanvasUtil, CanvasResizeHandler } from '../../../core/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '../../components/Themes/useThemeHeadless.jsx';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { Editor } from './editor';
@@ -13,14 +13,12 @@ import { ChatDisplay } from '../../../core/managers/Conversation/util.js';
 StateManager.set('isCanvasActive', false)
 
 export const Canvas = ({ isOpen, onToggle }) => {
-    const [isCanvasActive, setIsCanvasActive] = useState(false);
-    const [codeViewVisible, setCodeViewVisible] = useState(true);
-    const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
-    const [shouldRender, setShouldRender] = useState(false);
     const isControlledCloseRef = useRef(false); // Track if WE initiated the close
     const { isDark } = useTheme();
     const codeViewRef = useRef(null)
+    const canvasRef = useRef(null)
+    const codeViewButtonRef = useRef(null)
 
     // Use refs for values that change during animation
     const scrollState = useRef({
@@ -33,11 +31,8 @@ export const Canvas = ({ isOpen, onToggle }) => {
     // Single ref object for all DOM elements
     const refs = useRef({
         chatArea: null,
-        canvas: null,
-        btnCode: null,
         btnPreview: null,
         btnCopy: null,
-        codeView: null,
         previewView: null,
         lineNumbers: null,
         codeBlockContainer: null,
@@ -57,7 +52,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
     // Handle opening
     useEffect(() => {
         if (isOpen) {
-            setShouldRender(true);
             // Wait for render then show with animation
             setTimeout(() => setIsVisible(true), 10);
         }
@@ -66,10 +60,10 @@ export const Canvas = ({ isOpen, onToggle }) => {
     // Handle close animation then notify parent
     const handleClose = useCallback((notifyParent = true) => {
         hideCanvas()
-        setIsVisible(false);
         // Wait for animation to complete before unmounting
         setTimeout(() => {
-            setShouldRender(false);
+            setIsVisible(false);
+
             if (notifyParent) {
                 onToggle(); // Only notify parent if this was user-initiated
             }
@@ -91,11 +85,8 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
         const currentRefs = refs.current;
         currentRefs.chatArea = document.getElementById('chatArea')
-        currentRefs.canvas = document.getElementById('canvas-wrapper');
-        currentRefs.btnCode = document.getElementById('btn-code');
         currentRefs.btnPreview = document.getElementById('btn-preview');
         currentRefs.btnCopy = document.getElementById('btn-copy');
-        currentRefs.codeView = document.getElementById('code-view');
         currentRefs.previewView = document.getElementById('preview-view');
         currentRefs.lineNumbers = document.getElementById('line-numbers');
         currentRefs.codeBlockContainer = document.getElementById('code-block-container');
@@ -111,23 +102,22 @@ export const Canvas = ({ isOpen, onToggle }) => {
         currentRefs.mainLayoutA = document.getElementById('mainLayoutA');
 
         // Set initial active state
-        setIsCanvasActive(currentRefs.ToggleCanvasBt?.checked);
         initialize()
     }, [isOpen]);
 
     const initialize = useCallback(() => {
-        const { userInput, imageGen, ToggleCanvasBt, lineNumbers, codeView, handIndicator, codeScrollWrapper } = refs.current;
+        const { lineNumbers, handIndicator, codeScrollWrapper } = refs.current;
+        const codeView = codeViewRef.current
+
         const resizeObserver = new ResizeObserver(() => {
             lineNumbers.style.height = codeView.scrollHeight + 5 + 'px';
         });
         resizeObserver.observe(codeView);
         // Update line numbers initially and whenever content changes
         canvasUpdate();
-        new Caret(codeView, handIndicator, codeScrollWrapper, scrollState.current.currentScroll).updateHandPosition()
+        new Caret(codeView, handIndicator, codeScrollWrapper, scrollState.current.currentScroll).updatePenPosition()
 
         openCanvas()
-        new ResizeClassToggler(userInput, ToggleCanvasBt, 430, 'sm:flex');
-        //new ResizeClassToggler(userInput, imageGen, 400, 'sm:flex');
 
         new Editor(codeView, [updateHandIndicator, updateLineNumbers])
     }, []);
@@ -137,30 +127,10 @@ export const Canvas = ({ isOpen, onToggle }) => {
         updatePreview();
     }
 
-    useEffect(() => {
-        const opencode = globalEventBus.on('opencode:in:canvas', (ref) => openInCanvas(ref.innerHTML))
+    const updateLineNumbers = useCallback(() => {
+        const { lineNumbers, lineCounter } = refs.current;
+        const codeView = codeViewRef.current
 
-        const openInCanvas = (code) => {
-            if (!code) return
-            console.log(canvasutil.isCanvasOn())
-            if (!canvasutil.isCanvasOn()) onToggle()
-
-            if (!codeViewRef.current || !codeViewRef.current?.innerHTML) return
-
-            codeViewRef.current.innerHTML = code
-            ChatDisplay.chats_size_adjust()
-            canvasUpdate()
-        }
-
-        return () => {
-            opencode.unsubscribe()
-        }
-    })
-
-    StateManager.set('canvasUpdate', canvasUpdate)
-
-    const updateLineNumbers = useCallback((e = null) => {
-        const { codeView, lineNumbers, lineCounter } = refs.current;
         if (!codeView || !lineNumbers) return;
 
         // For contenteditable, we need to handle both text and HTML content
@@ -194,10 +164,10 @@ export const Canvas = ({ isOpen, onToggle }) => {
     }, []);
 
     const setActiveButton = useCallback((activeBtn) => {
-        const { btnCode, btnPreview } = refs.current;
-        if (!btnCode || !btnPreview) return;
+        const { btnPreview } = refs.current;
+        if (!codeViewButtonRef.current || !btnPreview) return;
 
-        [btnCode, btnPreview].forEach(btn => {
+        [codeViewButtonRef.current, btnPreview].forEach(btn => {
             btn.classList.remove('bg-purple-600', 'text-white', 'shadow-md', 'hover:bg-purple-700');
             btn.classList.add('bg-purple-100', 'dark:bg-purple-800', 'text-purple-800', 'dark:text-purple-300', 'hover:bg-purple-200', 'dark:hover:bg-purple-700', 'shadow-sm');
         });
@@ -208,11 +178,10 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
     // Event handlers
     const handleCodeView = useCallback(() => {
-        const { codeBlockContainer, previewView, btnCode } = refs.current;
+        const { codeBlockContainer, previewView } = refs.current;
         codeBlockContainer?.classList.remove('hidden');
         previewView?.classList.add('hidden');
-        setActiveButton(btnCode);
-        setCodeViewVisible(true);
+        setActiveButton(codeViewButtonRef.current);
     }, [setActiveButton]);
 
     const handlePreviewView = useCallback(() => {
@@ -220,14 +189,14 @@ export const Canvas = ({ isOpen, onToggle }) => {
         codeBlockContainer?.classList.add('hidden');
         previewView?.classList.remove('hidden');
         setActiveButton(btnPreview);
-        setCodeViewVisible(false);
         updatePreview();
     }, [setActiveButton]);
 
     // Update preview content with latest code output
     const updatePreview = useCallback(() => {
         // A very simple preview: if the code contains a console.log with string, extract and show that string.
-        const { codeView, previewView } = refs.current;
+        const { previewView } = refs.current;
+        const codeView = codeViewRef.current
 
         // This is a naive demo
         try {
@@ -247,7 +216,9 @@ export const Canvas = ({ isOpen, onToggle }) => {
     }, [])
 
     const handleCopy = useCallback(async () => {
-        const { btnCopy, codeView } = refs.current;
+        const { btnCopy } = refs.current;
+        const codeView = codeViewRef.current
+
         if (!codeView || !btnCopy) return;
 
         try {
@@ -272,7 +243,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
     // Single source of truth for scroll values
     const animateScroll = useCallback(() => {
-        const { codeView } = refs.current;
+        const codeView = codeViewRef.current
 
         if (!codeView || !scrollState.current.isScrolling) return;
 
@@ -304,7 +275,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
     // Start/stop animation helper
     const startScrollAnimation = useCallback((newTargetScroll) => {
-        const { codeView } = refs.current;
+        const codeView = codeViewRef.current
         const maxScroll = codeView.scrollWidth + 50
 
         // Clamp target scroll
@@ -327,15 +298,16 @@ export const Canvas = ({ isOpen, onToggle }) => {
     }, [animateScroll]);
 
     // Improved wheel handler
-    const handleWheelScroll = useCallback((e) => {
-        const { codeView, codeScrollWrapper, handIndicator } = refs.current;
+    const handleWheelScroll = useCallback(() => {
+        const { codeScrollWrapper, handIndicator } = refs.current;
+        const codeView = codeViewRef.current
 
         if (!codeView) return;
 
         // Update typing indicator
         if (handIndicator && Caret) {
             new Caret(codeView, handIndicator, codeScrollWrapper, scrollState.current.currentScroll)
-                .updateHandPosition();
+                .updatePenPosition();
         }
 
     }, [startScrollAnimation, Caret]);
@@ -348,7 +320,8 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
     // Sync scroll (make sure this is properly attached)
     const syncScroll = useCallback((e) => {
-        const { codeView, lineNumbers } = refs.current;
+        const { lineNumbers } = refs.current;
+        const codeView = codeViewRef.current
         if (!codeView || !lineNumbers) return;
 
         requestAnimationFrame(() => {
@@ -389,22 +362,13 @@ export const Canvas = ({ isOpen, onToggle }) => {
     }, [])
 
 
-    // Open canvas
     const openCanvas = useCallback(() => {
-        // Avoid double trigger as trigger has been dispatched by InputSection
-        //onToggle()
-
-        let { canvas } = refs.current
+        let canvas = canvasRef.current
 
         canvas?.classList.remove('hidden');
         setTimeout(() => {
             canvas?.classList.remove('translate-x-[100vw]');
-            setIsCanvasOpen(true);
-            StateManager.set('isCanvasActive', true)
-            //AiMessagesWfitAdjust('remove');
-            //UserMessagesWfitAdjust("remove")
             InputSectionWfitAdjust('add')
-            //mainLayoutAWfitAdjust('retract')
         }, 400)
         waitForElement('#main-container-center', (container) => {
             if (StateManager.get("sidebar-open")) {
@@ -418,32 +382,17 @@ export const Canvas = ({ isOpen, onToggle }) => {
         //Adjust main interface width for max space usage
         waitForElement('#chatArea-wrapper', (container) => {
             container.classList.remove('md:w-[80%]', 'lg:w-[70%]', 'xl:w-[60%]')
-            //container.classList.add('w-[100%]')
         });
-    }, [setIsCanvasOpen])
+    }, [])
 
-
-    useEffect(() => {
-        document.addEventListener('open-canvas', openCanvas)
-
-        return () => {
-            document.removeEventListener('open-canvas', openCanvas)
-        }
-    })
-    StateManager.set('openCanvas', openCanvas)
-
-    // Hide canvas
     const hideCanvas = useCallback(() => {
-        const { canvas } = refs.current;
+        const canvas = canvasRef.current
+        canvas?.classList.add('translate-x-[100vw]');
 
         setTimeout(() => {
-            canvas.classList.add('hidden');
-            setIsCanvasOpen(false);
-            //AiMessagesWfitAdjust('add');
-            //UserMessagesWfitAdjust("remove")
+            canvas?.classList.add('hidden');
             InputSectionWfitAdjust('remove')
-            //mainLayoutAWfitAdjust('scale')
-        }, 400)
+        }, 800)
 
         waitForElement('#main-container-center', (container) => {
 
@@ -457,42 +406,73 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
         // Re-Adjust main interface width to normal
         waitForElement('#chatArea-wrapper', (container) => {
-            //container.classList.remove('w-[100%]')
             container.classList.add('md:w-[80%]', 'lg:w-[70%]', 'xl:w-[60%]')
         });
-    }, [setIsCanvasOpen, onToggle])
+    }, [onToggle])
 
-
-    function updateTheme() {
-        const { isDark } = refs.current
-        const moon = document.getElementById('icon-moon')
-        const sun = document.getElementById('icon-sun')
-
-        if (isDark) {
-            sun.classList.add('hidden')
-            moon.classList.remove('hidden')
-        } else {
-            moon.classList.add('hidden')
-            sun.classList.remove('hidden')
-        }
-        document.getElementById('themeSwitch').click()
-        refs.current.isDark = !isDark
-    }
 
     const updateHandIndicator = useCallback((e) => {
-        const { codeView, handIndicator, codeScrollWrapper } = refs.current;
+        const { handIndicator, codeScrollWrapper } = refs.current;
+        const codeView = codeViewRef.current
 
         if (!codeView.contains(e.target)) {
             handIndicator.style.opacity = '0';
         } else {
-            new Caret(codeView, handIndicator, codeScrollWrapper, scrollState.current.currentScroll).updateHandPosition();
+            new Caret(codeView, handIndicator, codeScrollWrapper, scrollState.current.currentScroll).updatePenPosition();
         }
     }, [Caret])
+
+    const handleKeyDown = (e) => {
+        // Handle Tab key for indentation in code mode
+        if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            // insertText('   ');
+            return;
+        }
+
+    };
+
+    useEffect(() => {
+        const openInCanvas = (code) => {
+            if (!code) return
+
+            if (!canvasutil.isCanvasOpen()) onToggle()
+            setTimeout(() => {
+                if (!codeViewRef.current || !codeViewRef.current?.innerHTML) return
+                codeViewRef.current.innerHTML = code
+                ChatDisplay.chats_size_adjust()
+                canvasUpdate()
+            }, 1000)
+        }
+
+        const opencode = globalEventBus.on('opencode:in:canvas', (ref) => openInCanvas(ref.innerHTML))
+        const openCanvas = globalEventBus.on('canvas:open', onToggle)
+        const canvasContentUpdate = globalEventBus.on('canvas:content:update', (content) => {
+            if (!content) return
+
+            setTimeout(() => {
+                if (!codeViewRef.current || !codeViewRef.current?.innerHTML) return
+
+                codeViewRef.current.innerHTML = content
+                ChatDisplay.chats_size_adjust()
+                canvasUpdate()
+            }, 1000)
+        })
+
+        return () => {
+            openCanvas.unsubscribe()
+            canvasContentUpdate.unsubscribe()
+            opencode.unsubscribe()
+        }
+    })
 
     if (!isOpen) return null;
 
     return (
-        <section id="canvas-wrapper" className="hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-secondary-900 dark:via-blend-900 dark:to-accent-900 h-[100vh] flex items-center justify-center font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500/0 rounded-xl rounded-b-none transform transition-transform transition-all duration-700 ease-in-out p-0.5">
+        <section
+            ref={canvasRef}
+            id="canvas-wrapper"
+            className="hidden flex-shrink -right-3 translate-x-[100vw] w-[60vw] bg-gradient-to-tr from-purple-100 via-purple-200 to-pink-100 dark:from-secondary-900 dark:via-blend-900 dark:to-accent-900 h-[100vh] flex items-center justify-center font-sans text-gray-800 dark:text-purple-200 border-x border-y border-t-0 border-r-0 border-blue-500 dark:border-cyan-500/0 rounded-xl rounded-b-none transform transition-transform transition-all duration-700 ease-in-out p-0.5">
 
             <div aria-label="AI code canvas container" className="mt-0! w-full max-w-5xl bg-white dark:bg-primary-800 rounded-xl shadow-xl rounded-b-none flex flex-col h-full overflow-hidden ring-1 ring-purple-200 dark:ring-purple-700">
                 {/* Header with title and theme toggle */}
@@ -515,16 +495,17 @@ export const Canvas = ({ isOpen, onToggle }) => {
                     {/* Buttons row */}
                     <div className="flex justify-end gap-1 lg:gap-2 xl:gap-4 mr-1 select-none transform transition-transform transition-all duration-500 ease-in-out transition-colors duration-500">
                         <button
+                            ref={codeViewButtonRef}
                             onClick={handleCodeView}
-                            id="btn-code"
                             className="flex items-center gap-1 px-0 xs:p-0.5 md:px-3 py-1 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-md transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 font-normal text-md text-sm" title="Show Code">
                             &lt;/&gt; Code
                         </button>
 
                         <button
                             onClick={handlePreviewView}
+                            disabled={true}
                             id="btn-preview"
-                            className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-700 shadow-sm transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm" title="Show Preview">
+                            className="hidden lg:-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-700 shadow-sm transition duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm" title="Show Preview">
                             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4h12v12H4z" /></svg>
                             Preview
                         </button>
@@ -574,6 +555,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
                                 className="relative flex-1 h-auto h-full whitespace-pre-wrap leading-[1.5rem] text-sm font-mono transform transition-tranform duration-100 focus:ring-none focus:outline-none cursor-pen overflow-auto scrollbar-custom border-l border-primary-400 pt-3"
                                 contentEditable="true"
                                 spellCheck="false"
+                                onKeyDown={handleKeyDown}
                                 data-portal-container="code_canvas"
                                 onScroll={syncScroll}
                                 onClick={(e) => { updateHandIndicator(e); updateLineNumbers(e); }}

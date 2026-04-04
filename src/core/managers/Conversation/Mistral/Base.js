@@ -210,10 +210,7 @@ export async function MistralBase({
                 if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
                     if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
 
-                    waitForElement('#code-view', (el) => {
-                        el.innerHTML = StateManager.get('codeBuffer').code;
-                        StateManager.get('canvasUpdate')();
-                    });
+                    globalEventBus.emit('canvas:content:update', StateManager.get('codeBuffer').code)
                 }
 
                 if (actualResponse.includes('<continued>') || actualResponse.includes('<continued')) {

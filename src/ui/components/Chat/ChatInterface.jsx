@@ -7,7 +7,6 @@ import { ChatUtil } from '../../../core/managers/Conversation/util';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '../../components/Input/InputSection';
 import { staticPortalBridge } from '../../../core/PortalBridge.ts';
-import { useEventBus } from '../../hooks/useBusEvent.js';
 
 const chatutil = new ChatUtil()
 

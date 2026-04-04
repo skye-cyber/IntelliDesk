@@ -48,26 +48,26 @@ const App = () => {
         <ErrorBoundary>
             <Provider store={store}>
                 <MainLayout>
-                    <ErrorBoundary>
-                        <div data-portal-container="mainContainer" id="main-container" className='flex flex-1 overflow-hidden max-w-full'>
-                            <span className='data-portal-root fixed z-[99]'></span>
-                            <div className='flex flex-shrink'>
+                    <div data-portal-container="mainContainer" id="main-container" className='flex flex-1 overflow-hidden max-w-full'>
+                        <span className='data-portal-root fixed z-[99]'></span>
+                        <div className='flex flex-shrink'>
+                            <ErrorBoundary>
+                                <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+                            </ErrorBoundary>
+                            <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
                                 <ErrorBoundary>
-                                    <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+                                    <Header onToggleSidebar={toggleSidebar} selectedModel={selectedModel} onModelChange={setSelectedModel}
+                                    />
                                 </ErrorBoundary>
-                                <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
-                                    <ErrorBoundary>
-                                        <Header onToggleSidebar={toggleSidebar} selectedModel={selectedModel} onModelChange={setSelectedModel}
-                                        />
-                                    </ErrorBoundary>
-                                    <ErrorBoundary>
-                                        <ChatInterface
-                                            isCanvasOpen={isCanvasOpen}
-                                            onToggleCanvas={toggleCanvas}
-                                            onToggleRecording={toggleRecording} />
-                                    </ErrorBoundary>
-                                </div>
+                                <ErrorBoundary>
+                                    <ChatInterface
+                                        isCanvasOpen={isCanvasOpen}
+                                        onToggleCanvas={toggleCanvas}
+                                        onToggleRecording={toggleRecording} />
+                                </ErrorBoundary>
                             </div>
+                        </div>
+                        <ErrorBoundary>
                             <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
 
                             <ConfigEditor />
@@ -75,8 +75,8 @@ const App = () => {
                             <CopyFeedback />
                             {/* Loading Modal */}
                             {/*<Loader />*/}
-                        </div>
-                    </ErrorBoundary>
+                        </ErrorBoundary>
+                    </div>
                     <ErrorBoundary>
                         <DiagramUi isOpen={true} onToggle={null} />
 

@@ -17,6 +17,8 @@ export type EventMap = {
     'opencode:in:canvas': [ref: RefAttributes<any>['ref']]
     'copy:feedback': [detail: copyDtetail]
     'clone:feedback': []
+    'canvas:open': []
+    'canvas:content:update': [content: string]
 };
 
 export type EventCallback<T extends keyof EventMap> = (...args: EventMap[T]) => void;

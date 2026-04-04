@@ -27,32 +27,32 @@
     }
 
     h1 {
-        font-size: 2.2rem; /* 40px */
+        font-size: 1.8rem; /* 40px */
         font-weight: 700;  /* bold */
     }
 
     h2 {
-        font-size: 1.8rem;   /* 32px */
+        font-size: 1.3rem;   /* 32px */
         font-weight: 600;  /* semi-bold */
     }
 
     h3 {
-        font-size: 1.55rem; /* 28px */
+        font-size: 1.3rem; /* 28px */
         font-weight: 500;   /* medium */
     }
 
     h4 {
-        font-size: 1.3rem;  /* 24px */
+        font-size: 1.1rem;  /* 24px */
         font-weight: 400;   /* normal */
     }
 
     h5 {
-        font-size: 1.05rem; /* 20px */
+        font-size: 0.8rem; /* 20px */
         font-weight: 300;   /* light */
     }
 
     h6 {
-        font-size: 0.8rem;    /* 16px */
+        font-size: 0.4rem;    /* 16px */
         font-weight: 200;   /* extra light */
     }
 }
@@ -85,6 +85,61 @@
     animation: pulse 1s infinite;
 }
 
+
+/* Works in ALL modern browsers */
+.scrollbar-code {
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #c6c694 transparent;
+
+    /* Ensure scrolling works */
+    overflow: auto;
+}
+
+/* WebKit browsers (Chrome, Edge, Safari) */
+.scrollbar-code::-webkit-scrollbar {
+    width: 2px;           /* Custom width - Firefox's "thin" is ~8px */
+    height: 2px;
+}
+
+.scrollbar-code::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 2px 0;        /* Optional: spacing */
+}
+
+.scrollbar-code::-webkit-scrollbar-thumb {
+    background: #c6c694;
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+.scrollbar-code::-webkit-scrollbar-thumb:hover {
+    background: #d4d4a8;  /* Lighter on hover */
+}
+
+/* Optional: Make scrollbar invisible when not hovering */
+.scrollbar-code {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s;
+}
+
+.scrollbar-code:hover {
+    scrollbar-color: #c6c694 transparent;
+}
+.dark .scrollbar-code:hover {
+    scrollbar-color: #555500 transparent;
+}
+
+.scrollbar-code:hover::-webkit-scrollbar-thumb {
+    background: #c6c694;
+}
+
+.dark .scrollbar-code:hover::-webkit-scrollbar-thumb {
+    background: #555500;
+}
+.scrollbar-code::-webkit-scrollbar-thumb {
+    background: transparent;
+}
 
 .scrollbar-custom{
     scrollbar-width: thin;
@@ -672,4 +727,83 @@ background: linear-gradient(to bottom, #4b5563, #374151);
 @keyframes shrink {
     from { width: 100%; }
     to { width: 0%; }
+}
+
+/* Think section animations */
+@keyframes gradient-x {
+    0%, 100% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.animate-gradient-x {
+    animation: gradient-x 2s ease infinite;
+}
+
+.animate-blink {
+    animation: blink 1s step-end infinite;
+}
+
+.animate-typing {
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Smooth scrollbar for content */
+.thinking-content {
+    scrollbar-width: thin;
+    scrollbar-color: #4a5568 transparent;
+}
+
+.thinking-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.thinking-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thinking-content::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 10px;
 }

@@ -82,9 +82,6 @@ export class Router {
     requestRouter(text) {
         if (!text) modalmanager.showMessage("No text provided", "error")
 
-        // clear buffer initialy
-        StateManager.set('codeBuffer', null);
-
         const model = StateManager.get('currentModel');
 
         //Intercept image generation

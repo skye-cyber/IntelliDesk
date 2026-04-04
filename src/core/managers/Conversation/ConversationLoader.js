@@ -60,7 +60,14 @@ export class ConversationLoader {
                             this.renderUserMessage(message.content, model);
                             this.portal = null
                         } else if (message.role === "assistant") {
-                            await this.renderAIMessage(message.content[0]?.text);
+                            // Handle carefuly incase some chats are model mislabeled
+                            let textContent = null
+                            if (typeof message.content === 'object') {
+                                textContent = message.content[0]?.text
+                            } else {
+                                textContent = message.content
+                            }
+                            if (textContent) await this.renderAIMessage(textContent);
                         } else if (message.role === "tool") {
                             this.renderToolContent(message)
                         }
@@ -155,7 +162,7 @@ export class ConversationLoader {
         var userText = null;
 
         let files
-        if (model.toLocaleLowerCase() === 'multimodal') {
+        if (model.toLocaleLowerCase() === 'multimodal' && typeof content === 'object') {
             files = content.filter(c => c.type === "document_url")
 
             // Check if content is an array and has at least one element before accessing content[0]

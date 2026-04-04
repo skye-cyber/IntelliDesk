@@ -23,8 +23,6 @@ export const appIsDev = async () => {
     }
 };
 
-StateManager.set('codeBuffer', {})
-
 StateManager.set('user_message_pid', null)
 StateManager.set('ai_message_pid', null)
 

@@ -4,14 +4,14 @@ import { normalizeMathDelimiters } from '../../../core/MathBase/MathNormalize';
 import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../core/ChatExport/export';
 import { markitdown } from '../Code/CodeHighlighter';
 import { CodeBlockRenderer, SimpleUserCodeRenderer } from '../Code/CodeBlockRenderer';
-import { ChatUtil } from '../../../core/managers/Conversation/util';
+import { chatutil } from '../../../core/managers/Conversation/util';
 import { GenerateId } from './utils';
 import { mathStandardize } from '../../../core/MathBase/mathRenderer';
 import { normalizeCodeBlocks } from '../../../core/Code/codeNormalize';
 import { StateManager } from '../../../core/managers/StatesManager';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
+import { GlassThinkingSection } from './Reasoning';
 
-const chatutil = new ChatUtil()
 
 export const UserMessage = ({ message, files = [] }) => {
     const messageRef = useRef(null)
@@ -22,7 +22,7 @@ export const UserMessage = ({ message, files = [] }) => {
 
     return (
         <>
-            <section className="block font-handwriting">
+            <section className="block font-handwriting  text-[15px]">
                 <div className="flex items-end gap-x-2 justify-end">
                     <div
                         ref={messageRef}
@@ -31,12 +31,11 @@ export const UserMessage = ({ message, files = [] }) => {
                     </div>
                 </div>
 
+                <div className='flex justify-end'>
+                    <FileContainer files={files} />
+                </div>
                 <UserMessageOptions messageref={messageRef} />
             </section >
-
-            <div className='flex justify-end'>
-                <FileContainer files={files} />
-            </div>
         </>
     )
 }
@@ -112,8 +111,6 @@ export const ResponseWrapper = ({
 }) => {
     const foldRef = useRef(null)
     const foldSVGRef = useRef(null)
-    const hasContent_hasThink = actualContent && thinkContent
-    // const thinking_thinkcontent = isThinking && thinkContent
 
     let processedHtmlContent
 
@@ -129,7 +126,7 @@ export const ResponseWrapper = ({
 
     const htmlThinkContent = thinkContent ? markitdown(normalizeMathDelimiters(thinkContent)) : null;
 
-    const FoldThinkSection = useCallback(() => {
+    const toggleThink = useCallback(() => {
         const content = foldRef.current;
 
         if (content) {
@@ -141,34 +138,10 @@ export const ResponseWrapper = ({
     chatutil.render_math(message_id)
 
     return (
-        <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300'>
+        <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[14px]'>
             <div id="ai_response_think" className="w-full bg-none rounded-lg rounded-bl-none transition-colors duration-700">
                 {thinkContent &&
-                    <div className="think-section">
-                        <div className="flex items-center justify-between">
-                            <strong className="leading-widest text-light text-blue-400 dark:text-blue-400 text-sm"><i>Thinking:</i></strong>
-                            <button
-                                className="text-sm text-gray-600 dark:text-gray-200 focus:ring-none focus:outline-none"
-                                onClick={FoldThinkSection}
-                            >
-                                <svg ref={foldSVGRef} className="h-5 w-5fold_svg mb-0 fold-icon transition-transform duration-500 fill-gray-400 dark:fill-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path d="M297.4 169.4C309.9 156.9 330.2 156.9 342.7 169.4L534.7 361.4C547.2 373.9 547.2 394.2 534.7 406.7C522.2 419.2 501.9 419.2 489.4 406.7L320 237.3L150.6 406.6C138.1 419.1 117.8 419.1 105.3 406.6C92.8 394.1 92.8 373.8 105.3 361.3L297.3 169.3z" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div ref={foldRef}>
-                            <div id="think-content" className='text-gray-500 text-sm dark:text-gray-300'>
-                                <CodeBlockRenderer htmlContent={htmlThinkContent} />
-                            </div>
-                        </div>
-                        {hasContent_hasThink &&
-                            <p className="w-full rounded-lg border-[0.1rem] border-blue-200 dark:border-blue-400 mb-2"></p>
-                        }
-                    </div>
-                }
-
-                {hasContent_hasThink &&
-                    <strong className="hidden text-green-400 dark:text-green-400">Response:</strong>
+                    <GlassThinkingSection htmlThinkContent={thinkContent} isThinking={isThinking} />
                 }
 
             </div>
@@ -176,6 +149,7 @@ export const ResponseWrapper = ({
         </div>
     )
 }
+
 
 export const FileContainer = ({ files }) => {
     const file_container_id = `file_container-${Math.random().toString(36).substring(2, 6)}`;

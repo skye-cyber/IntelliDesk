@@ -148,47 +148,22 @@ Interactive States:
 Hover effects with scale and shadow
 Animated toggle ring for AI status
 Pulsing dot indicator
-Mini Checkbox: Subtle but clear toggle for AI permission
-Status Text: Shows "AI ready" vs "AI active" states
-Smooth Transitions: All state changes are animated
-Accessibility: Proper ARIA attributes and keyboard navigation
-The toggle now clearly communicates both the canvas state and AI permission status while maintaining an elegant, professional appearance.Key Features Added:
-
+\`\`\`react
+<div className='w-full'>
+<code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id}\n className={\`hljs \${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono\n text-sm  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px]\n overflow-auto\`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
+</div>
+<div className='w-full'>
+<code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id}\n className={\`hljs \${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto\`} \ndangerouslySetInnerHTML={{ __html: highlighted }}></code>
+</div>
+<div className='w-full'>
+<code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} \nclassName={\`hljs \${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto\`} \ndangerouslySetInnerHTML={{ __html: highlighted }}></code>
+</div>
+<div className='w-full'>
+<code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} \nclassName={\`hljs \${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto\`} \ndangerouslySetInnerHTML={{ __html: highlighted }}></code>
+</div>
+\`\`\`
 Dual Purpose: Opens canvas + toggles AI canvas access
 Visual Hierarchy: Gradient background with status indicators
-Interactive States:
-Hover effects with scale and shadow
-Animated toggle ring for AI status
-Pulsing dot indicator
-Mini Checkbox: Subtle but clear toggle for AI permission
-Status Text: Shows "AI ready" vs "AI active" states
-Smooth Transitions: All state changes are animated
-Accessibility: Proper ARIA attributes and keyboard navigation
-The toggle now clearly communicates both the canvas state and AI permission status while maintaining an elegant, professional appearance.Key Features Added:
-
-Dual Purpose: Opens canvas + toggles AI canvas access
-Visual Hierarchy: Gradient background with status indicators
-Interactive States:
-Hover effects with scale and shadow
-Animated toggle ring for AI status
-Pulsing dot indicator
-Mini Checkbox: Subtle but clear toggle for AI permission
-Status Text: Shows "AI ready" vs "AI active" states
-Smooth Transitions: All state changes are animated
-Accessibility: Proper ARIA attributes and keyboard navigation
-The toggle now clearly communicates both the canvas state and AI permission status while maintaining an elegant, professional appearance.Key Features Added:
-
-Dual Purpose: Opens canvas + toggles AI canvas access
-Visual Hierarchy: Gradient background with status indicators
-Interactive States:
-Hover effects with scale and shadow
-Animated toggle ring for AI status
-Pulsing dot indicator
-Mini Checkbox: Subtle but clear toggle for AI permission
-Status Text: Shows "AI ready" vs "AI active" states
-Smooth Transitions: All state changes are animated
-Accessibility: Proper ARIA attributes and keyboard navigation
-The toggle now clearly communicates both the canvas state and AI permission status while maintaining an elegant, professional appearance.Key Features Added:
 `
         // Generate a realistic AI response
         const responseText = rtext// this.generateAIResponse(messages);

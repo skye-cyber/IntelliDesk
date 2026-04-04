@@ -1,14 +1,11 @@
 import { dot_interpreter } from '../../../core/diagraming/vizcharting';
 import { chart_interpret } from '../../../core/diagraming/jscharting';
-import { CanvasUtil } from '../../../core/managers/Canvas/CanvasUtils';
+import { canvasutil } from '../../../core/managers/Canvas/CanvasUtils';
 import { GenerateId } from '../ConversationRenderer/utils';
 import { html_preview } from '../../../core/managers/Canvas/html_render';
 import { exportCodeToFile } from '../../../core/Utils/exportCodeUtils';
 import { useRef, useState } from 'react';
 import { globalEventBus } from '../../../core/Globals/eventBus';
-import { StateManager } from '../../../core/managers/StatesManager';
-
-const canvasutil = new CanvasUtil()
 
 export const CodeBlockComponent = ({
     highlighted,
@@ -36,8 +33,8 @@ export const CodeBlockComponent = ({
     }
 
     if (canvasutil.isCanvasOn()) {
-        //increament code buffer
-        StateManager.set('codeBuffer', { lang: valid_language, code: `<code id="${valid_language}" data-value=${codeblock_id} id="${codeblock_id}" class="hljs ${valid_language} block whitespace-pre w-full rounded-md bg-none font-code transition-colors duration-500">${highlighted}</code>` })
+        if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
+        globalEventBus.emit('canvas:content:update', codeblockRef?.current?.innerHTML )
     }
     async function handleCodeCopy() {
         const textToCopy = codeblockRef.current?.innerText;
@@ -106,7 +103,7 @@ export const CodeBlockComponent = ({
                 </div>
             </section>
             <div className='w-full'>
-                <code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} className={`hljs ${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none overflow-x-auto overflow-x-auto`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
+                <code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} className={`hljs ${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-code m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre text-[13px]  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto font-code`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
             </div>
         </div>
     )

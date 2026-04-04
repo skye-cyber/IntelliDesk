@@ -89,8 +89,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
 
     const handleSend = useCallback((input_text = null) => {
-        //
-        console.log("Got:", input_text)
         if (incycle) return //sigint.raise() // sigint is handled on submit bt click elsewhere
 
         if (!StateManager.get('api_key_ok')) {

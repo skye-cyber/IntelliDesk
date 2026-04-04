@@ -207,11 +207,7 @@ export async function MistralBase({
                     }
                 }
 
-                if (StateManager.get('codeBuffer') && StateManager.get('codeBuffer').code) {
-                    if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
-
-                    globalEventBus.emit('canvas:content:update', StateManager.get('codeBuffer').code)
-                }
+                // Canvas code update is handled by codeblock component emit bus event
 
                 if (actualResponse.includes('<continued>') || actualResponse.includes('<continued')) {
                     // In first run set <continue> tag as chunk to avoid breaking due to stray chunks that may be part of it, rawDelta cannot be anything except for items in the tag
@@ -253,7 +249,7 @@ export async function MistralBase({
                             }
                         });
                 } else {
-                    console.log(thinkContent)
+                    // console.log(thinkContent)
                     streaming_message_portal.update({
                         actualContent: actualResponse,
                         isThinking: isThinking,

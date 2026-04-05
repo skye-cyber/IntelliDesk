@@ -2,11 +2,19 @@
  * Base class for all tool handlers
  * Provides common functionality for tool execution, validation, and error handling
  */
-import { StateManager } from '../../StatesManager';
+import { ToolConfig, AgentType } from "../../main/utils/ToolAgent";
+import { StateManager } from "../managers/StatesManager";
+import { ToolError, ToolResult, ToolSchema } from "./types";
 
 
 export class ToolBase {
-    constructor(name, description) {
+    public name: string
+    public description: string
+    public agent: AgentType
+    public config: ToolConfig
+    public schema: ToolSchema
+
+    constructor(name: string, description: string) {
         this.name = name;
         this.description = description;
         this.agent = window.desk.agent
@@ -17,7 +25,7 @@ export class ToolBase {
     /**
      * Define the tool schema (to be implemented by subclasses)
      */
-    defineSchema() {
+    defineSchema(): ToolSchema {
         return {
             type: "function",
             function: {
@@ -35,7 +43,7 @@ export class ToolBase {
     /**
      * Validate tool execution based on configuration
      */
-    validateExecution() {
+    validateExecution(): boolean {
         const permission = this.config.permission || "always";
 
         if (permission === "never") {
@@ -53,7 +61,7 @@ export class ToolBase {
     /**
      * Execute the tool with error handling
      */
-    async execute(params, context = {}) {
+    async execute(params: string, context: Record<any, any> = {}) {
         try {
             this.validateExecution();
 
@@ -83,14 +91,14 @@ export class ToolBase {
     /**
      * Actual tool execution (to be implemented by subclasses)
      */
-    async _execute(params, context) {
+    async _execute(params: Map<any, any> | string, context: Record<any, any> = {}): Promise<Record<any, any>> {
         throw new Error(`Tool ${this.name} execution not implemented`);
     }
 
     /**
      * Format the result for AI consumption
      */
-    formatResult(result) {
+    formatResult(result: Record<any, any>): ToolResult {
         return {
             success: true,
             tool: this.name,
@@ -102,12 +110,13 @@ export class ToolBase {
     /**
      * Handle errors consistently
      */
-    async handleError(error, params) {
+    async handleError(error: Error, params: string): Promise<ToolError> {
         return {
             success: false,
             tool: this.name,
             error: error.message,
             params: params,
+            result: {},
             timestamp: new Date().toISOString()
         };
     }
@@ -115,7 +124,7 @@ export class ToolBase {
     /**
      * Log tool execution
      */
-    logExecution(status, params, result) {
+    logExecution(status: string, params: string, result: Record<any, any>) {
         console.log(`[TOOL:${this.name}] ${status.toUpperCase()}`, {
             //params: params,
             result: status === 'error' ? result.error : 'success',
@@ -147,7 +156,7 @@ export class ToolBase {
     /**
      * Get tool configuration
      */
-    getConfig() {
+    getConfig(): ToolConfig {
         return this.config;
     }
 }

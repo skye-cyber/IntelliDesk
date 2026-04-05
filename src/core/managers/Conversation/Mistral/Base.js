@@ -9,8 +9,8 @@ import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 import { staticPortalBridge, streamingPortalBridge } from "../../../PortalBridge.ts";
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
 // import { timer } from "../../../Timer/timer";
-import toolExecutor from "./ToolCallHandler.js";
-import toolManager from "./ToolManager";
+import toolExecutor from "../../../Tools/ToolCallHandler.ts";
+import toolManager from "../../../Tools/ToolManager.ts";
 import mistralClientSimulator from "../../../tests/MistralClientSimulator";
 import { globalEventBus } from "../../../Globals/eventBus.ts";
 // import { Mistral } from '@mistralai/mistralai';
@@ -87,11 +87,10 @@ export async function MistralBase({
 
         // Initialize tools integration
         const availableTools = toolManager.getAvailableToolSchemas();
-
         // Check if we should enable tool calling
         const enableToolCalling = availableTools.length > 0 && StateManager.get('enable_tools');
 
-        if (!enableToolCalling) {
+        if (enableToolCalling) {
             // Start tool calling session with conversation state
             const toolSession = await handleToolCallingSession(
                 mistralClientSimulator.client,  //clientmanager.MistralClient,

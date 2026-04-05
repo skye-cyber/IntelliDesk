@@ -5,7 +5,6 @@
  */
 
 import { nameConversationTool } from './tools/NameConversationTool';
-import { StateManager } from '../../StatesManager';
 
 /**
  * Conversation Naming Utility

@@ -43,6 +43,7 @@ export class BashTool extends ToolBase {
     }
 
     async _execute({ command, timeout }, context) {
+        console.log(command, timeout)
         // Apply timeout from config if not specified
         const effectiveTimeout = (timeout && typeof (timeout) === 'number') ? timeout : this.config.default_timeout || 30;
 

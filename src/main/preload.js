@@ -10,7 +10,7 @@ const os_1 = __importDefault(require("os"));
 const child_process_1 = require("child_process");
 const buffer_1 = require("buffer");
 const system_1 = require("./utils/system");
-const fsOperations_1 = require("./utils/fsOperations");
+const filesystem_1 = require("./utils/filesystem");
 const datetime_1 = require("./utils/datetime");
 const ToolAgent_1 = require("./utils/ToolAgent");
 // import { dbManager } from './utils/db/DatabaseManager';
@@ -178,8 +178,10 @@ const api = {
                 return ConversationHistory;
             }
             ConversationHistory.chats.push(item);
-            // Create session here and Update sessionId to avoid session creation refresh tat endup unused
-            ConversationHistory.metadata.sessionId = SessionManager_1.SessionManager.create(ConversationId).sessionId;
+            // Create session here and Update sessionId to avoid session creation refresh that endup unused
+            if (!ConversationHistory.metadata.sessionId) {
+                ConversationHistory.metadata.sessionId = SessionManager_1.SessionManager.create(ConversationId).sessionId;
+            }
             if (!ConversationHistory.metadata.highlight) {
                 if (ConversationHistory.metadata.model === "multimodal") {
                     if (item?.content.length > 0) {
@@ -407,12 +409,13 @@ const api = {
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
             if (ConversationHistory.metadata.type === "temporary") {
-                console.log("In temporary chat Not saving");
+                // console.log("In temporary chat Not saving");
                 return filePath;
             }
+            console.debug(conversationData);
             // Actually save the conversation data to file
-            await api.write(filePath, conversationData);
-            console.log(`Conversation saved: ${conversationId}`);
+            // await api.write(filePath, conversationData);
+            // console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         }
         catch (err) {
@@ -652,7 +655,7 @@ electron_1.contextBridge.exposeInMainWorld('desk', {
     api2,
     agent: ToolAgent_1.Agent,
     cmd,
-    fsops: fsOperations_1.fsOperations,
+    fsops: filesystem_1.fsOperations,
     path: path_1.default,
     fs: fs_1.default,
     sessionmanager: SessionManager_1.SessionManager,
@@ -676,5 +679,13 @@ document.addEventListener('keydown', (event) => {
     if ((event.ctrlKey && event.key === 'D') || (event.ctrlKey && event.key === 'd')) {
         electron_1.ipcRenderer.invoke('show-documentation');
     }
+});
+window.addEventListener('onbeforeunload', () => {
+    console.log("onUnload: Clear session");
+    alert("Clear session");
+    const sessonId = ConversationHistory.metadata.sessionId;
+    if (!sessonId)
+        return;
+    SessionManager_1.SessionManager.clear(sessonId);
 });
 //# sourceMappingURL=preload.js.map

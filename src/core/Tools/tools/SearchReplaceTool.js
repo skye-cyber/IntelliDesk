@@ -56,7 +56,6 @@ export class SearchReplaceTool extends ToolBase {
 
             // Find the search pattern in the file
             const searchIndex = modifiedContent.indexOf(searchPattern);
-            console.log(searchIndex, searchPattern)
             if (searchIndex !== -1) {
                 // Replace the content
                 modifiedContent = modifiedContent.substring(0, searchIndex) +
@@ -94,7 +93,6 @@ export class SearchReplaceTool extends ToolBase {
         let inReplace = false;
 
         for (const line of lines) {
-            console.log(line)
             if (line.trim() === '<<<<<<< SEARCH') {
                 currentBlock = { search: '', replace: '' };
                 inSearch = true;

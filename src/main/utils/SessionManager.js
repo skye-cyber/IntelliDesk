@@ -38,6 +38,7 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 const ToolAgent_1 = require("./ToolAgent");
+const shared_1 = require("./shared");
 const session_root = path.join(os.homedir(), '.IntelliDesk/sessions');
 const lock_root = path.join(os.homedir(), '.IntelliDesk/.locks');
 const generateUUID = () => {
@@ -115,7 +116,7 @@ exports.LockManager = {
         try {
             for (const file of lock_files) {
                 const lock_id = file.slice(8, -5);
-                console.log("Lock_id", lock_id);
+                // console.log("Lock_id", lock_id)
                 exports.SessionManager.delete(lock_id);
             }
             return true;
@@ -136,7 +137,7 @@ exports.LockManager = {
 exports.SessionManager = {
     create: (chat_id) => {
         const session_id = `session_${generateUUID()}_${chat_id.slice(-4)}`;
-        console.log("OnversationId", chat_id);
+        // console.log("conversationId", chat_id)
         const tools = ToolAgent_1.Agent.get_config().tools;
         const enabled = {};
         const disabled = {};
@@ -185,7 +186,7 @@ exports.SessionManager = {
             const lock_id = sess_data.lock_id;
             if (lock_id)
                 exports.LockManager.delete(lock_id);
-            fs.rmdirSync(path.join(session_root, `${session_id}.json`));
+            fs.rmSync(path.join(session_root, `${session_id}.json`));
             return true;
         }
         catch (err) {
@@ -202,12 +203,19 @@ exports.SessionManager = {
         write_file(path.join(session_root, `${session_id}.json`), new_sess_data);
         return new_sess_data;
     },
+    update_permission: (session_id, permission, toolName) => {
+        const session = exports.SessionManager.read(session_id);
+        if (session && session.enabled_tools) {
+            session.enabled_tools[toolName].permission = permission;
+            write_file(path.join(session_root, `${session_id}.json`), session);
+        }
+        return session;
+    },
     purge: () => {
         const session_files = fs.readdirSync(session_root);
         try {
             for (const file of session_files) {
-                const session_id = file.slice(8, -5); // slice(8, -10)
-                console.log("Sess_id", session_id);
+                const session_id = file.slice(0, -5); // slice(0, -10)
                 exports.SessionManager.delete(session_id);
             }
             return true;
@@ -218,11 +226,25 @@ exports.SessionManager = {
         }
     },
     validate: (session_id) => {
-        const sess_data = exports.SessionManager.read(session_id);
-        if (sess_data)
-            return true;
-        return false;
+        try {
+            const sess_data = exports.SessionManager.read(session_id);
+            if (!sess_data)
+                return false;
+            const conversationId = sess_data.session_chat_id;
+            if (fs.statfsSync(path.join(shared_1.STORE_DIR, `${conversationId}.json`))) {
+                return true;
+            }
+            return false;
+        }
+        catch (err) {
+            return false;
+        }
     },
-    clear: () => undefined
+    clear: (session_id) => {
+        if (!exports.SessionManager.validate(session_id)) {
+            exports.SessionManager.delete(session_id);
+        }
+        return true;
+    }
 };
 //# sourceMappingURL=SessionManager.js.map

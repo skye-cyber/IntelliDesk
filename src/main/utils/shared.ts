@@ -41,6 +41,8 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
                 'uname',
                 'wc',
                 'which',
+                'df',
+                'print'
             ],
             denylist: [
                 'gdb',
@@ -76,7 +78,7 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
             permission: 'always',
             allowlist: [],
             denylist: [],
-            max_output_bytes: 64000,
+            max_output_bytes: 128000,
             default_max_matches: 100,
             default_timeout: 60,
             exclude_patterns: [
@@ -152,7 +154,7 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
             max_precision: 10,
             allow_complex_numbers: false,
         },
-        file_operations: {
+        filesystem: {
             max_recurse_depth: 30, // prevents memory pressure for large directories
             permission: 'ask',
             allowlist: ['read', 'list', 'copy', 'stats', 'exists', 'read_dir'],

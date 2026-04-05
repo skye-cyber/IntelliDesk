@@ -14,7 +14,7 @@ import type {
     watchFileError,
     statPathError,
     statPathSuccess,
-    fileOpError,
+    FileSystemError,
     FileInfoSuccess,
     mkdirSuccess,
     deleteSuccess,
@@ -190,7 +190,7 @@ export const fsOperations = {
     /**
      * List directory contents
      */
-    async readDir(dirPath: string, recursive: boolean = false): Promise<fileOpError | FileInfoSuccess> {
+    async readDir(dirPath: string, recursive: boolean = false): Promise<FileSystemError | FileInfoSuccess> {
         try {
             if (!dirPath || typeof dirPath !== 'string') {
                 return { success: false, code: 400, error: 'Invalid directory path', path: dirPath };
@@ -247,7 +247,7 @@ export const fsOperations = {
     /**
      * Create directory
      */
-    async mkdir(dirPath: string, recursive: boolean = true): Promise<mkdirSuccess | fileOpError> {
+    async mkdir(dirPath: string, recursive: boolean = true): Promise<mkdirSuccess | FileSystemError> {
         try {
             if (!dirPath || typeof dirPath !== 'string') {
                 return { success: false, code: 400, error: 'Invalid directory path', path: dirPath };
@@ -265,7 +265,6 @@ export const fsOperations = {
                 success: true,
                 path: absolutePath,
                 created: !existed,
-                bytesWritten: 0
             };
         } catch (error) {
             return {

@@ -5,7 +5,7 @@
  */
 
 import { StateManager } from '../managers/StatesManager.js';
-import toolManager from '../managers/Conversation/Mistral/ToolManager.js';
+import toolManager from '../Tools/ToolManager.ts';
 
 /**
  * Mistral Client Simulator
@@ -314,7 +314,7 @@ Visual Hierarchy: Gradient background with status indicators
         }
 
         // If we've already made 2 tool calls, time for final response
-        if (scenario.toolCallsMade >= 2) {
+        if (scenario.toolCallsMade >= 1) {
             return false;
         }
 
@@ -326,7 +326,7 @@ Visual Hierarchy: Gradient background with status indicators
             lowerCaseMsg.includes('comprehensive') ||
             lowerCaseMsg.includes('detailed') ||
             lowerCaseMsg.includes('complete')) {
-            return scenario.toolCallsMade < 2; // Allow up to 2 tool calls
+            return scenario.toolCallsMade < 5; // Allow up to 2 tool calls
         }
 
         // Simple questions might only need one tool call
@@ -336,8 +336,8 @@ Visual Hierarchy: Gradient background with status indicators
             return scenario.toolCallsMade < 1; // Only one tool call
         }
 
-        // Default: allow one more tool call
-        return scenario.toolCallsMade < 1;
+        // Default: allow 20 more tool call
+        return scenario.toolCallsMade < 20;
     }
 
     /**
@@ -565,7 +565,7 @@ Visual Hierarchy: Gradient background with status indicators
             const grepTool = tools.find(t => t.function.name.includes('grep'));
             if (grepTool) {
                 toolCalls.push(this.createToolCall(grepTool.function.name, {
-                    pattern: "test",
+                    pattern: "IntelliDesk",
                     path: "/home/skye/Documents/playground/README2.md"
                 }));
                 aiResponse = "Perfoming pattern grep...";

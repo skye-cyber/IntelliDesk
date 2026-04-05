@@ -5,7 +5,7 @@ import os from 'os';
 import { exec, ExecException } from 'child_process';
 import { Buffer } from 'buffer';
 import { SystemPrompt } from './utils/system';
-import { fsOperations as fsops } from "./utils/fsOperations";
+import { fsOperations as fsops } from "./utils/filesystem";
 import { getformatDateTime } from './utils/datetime';
 import { Agent as agent } from './utils/ToolAgent';
 // import { dbManager } from './utils/db/DatabaseManager';
@@ -188,9 +188,10 @@ const api: ApiType = {
 
             ConversationHistory.chats.push(item);
 
-            // Create session here and Update sessionId to avoid session creation refresh tat endup unused
-            ConversationHistory.metadata.sessionId = sessionmanager.create(ConversationId).sessionId
-
+            // Create session here and Update sessionId to avoid session creation refresh that endup unused
+            if (!ConversationHistory.metadata.sessionId) {
+                ConversationHistory.metadata.sessionId = sessionmanager.create(ConversationId).sessionId
+            }
             if (!ConversationHistory.metadata.highlight) {
                 if (ConversationHistory.metadata.model === "multimodal") {
                     if (item?.content.length > 0) {
@@ -409,13 +410,13 @@ const api: ApiType = {
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
             if (ConversationHistory.metadata.type === "temporary") {
-                console.log("In temporary chat Not saving");
+                // console.log("In temporary chat Not saving");
                 return filePath;
             }
-
+            console.debug(conversationData)
             // Actually save the conversation data to file
-            await api.write(filePath, conversationData);
-            console.log(`Conversation saved: ${conversationId}`);
+            // await api.write(filePath, conversationData);
+            // console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         } catch (err) {
             console.error('Error saving conversation:', err);
@@ -677,3 +678,11 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
         ipcRenderer.invoke('show-documentation');
     }
 });
+
+window.addEventListener('onbeforeunload', ()=>{
+    console.log("onUnload: Clear session")
+    alert("Clear session")
+    const sessonId = ConversationHistory.metadata.sessionId
+    if (!sessonId) return
+        sessionmanager.clear(sessonId)
+})

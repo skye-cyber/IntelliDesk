@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { Agent, ToolConfig } from './ToolAgent';
+import { STORE_DIR } from './shared';
 
 export interface ToolConfigEnabled {
     permission: 'always' | 'ask';
@@ -51,9 +52,10 @@ export interface LockManagerType {
 export interface SessionManagerType {
     create: (chat_id: string) => SessionInfor
     delete: (session_id: string) => boolean
-    clear: () => undefined
+    clear: (session_id: string) => boolean
     purge: () => boolean
     update: (session_id: string, data: Partial<Session>) => Session // Update session
+    update_permission: (session_id: string, permission: 'ask' | 'always', toolName: string) => Session
     read: (session_id: string) => Session | null // Read session content
     validate: (session_id: string) => boolean //check if session is valid
 }
@@ -136,7 +138,7 @@ export const LockManager: LockManagerType = {
         try {
             for (const file of lock_files) {
                 const lock_id = file.slice(8, -5)
-                console.log("Lock_id", lock_id)
+                // console.log("Lock_id", lock_id)
                 SessionManager.delete(lock_id)
             }
             return true
@@ -156,7 +158,7 @@ export const LockManager: LockManagerType = {
 export const SessionManager: SessionManagerType = {
     create: (chat_id: string): SessionInfor => {
         const session_id = `session_${generateUUID()}_${chat_id.slice(-4)}`
-        console.log("OnversationId", chat_id)
+        // console.log("conversationId", chat_id)
 
         const tools: Record<string, ToolConfig> = Agent.get_config().tools
         const enabled: Record<string, ToolConfigEnabled> = {}
@@ -203,7 +205,7 @@ export const SessionManager: SessionManagerType = {
         try {
             const lock_id = sess_data.lock_id
             if (lock_id) LockManager.delete(lock_id)
-            fs.rmdirSync(path.join(session_root, `${session_id}.json`))
+            fs.rmSync(path.join(session_root, `${session_id}.json`))
             return true
         } catch (err) {
             return false
@@ -219,12 +221,19 @@ export const SessionManager: SessionManagerType = {
         write_file(path.join(session_root, `${session_id}.json`), new_sess_data)
         return new_sess_data as Session
     },
+    update_permission: (session_id: string, permission: 'ask' | 'always', toolName: string): Session => {
+        const session = SessionManager.read(session_id)
+        if (session && session.enabled_tools) {
+            session.enabled_tools[toolName].permission = permission
+            write_file(path.join(session_root, `${session_id}.json`), session)
+        }
+        return session as Session
+    },
     purge: (): boolean => {
         const session_files = fs.readdirSync(session_root)
         try {
             for (const file of session_files) {
-                const session_id = file.slice(8, -5) // slice(8, -10)
-                console.log("Sess_id", session_id)
+                const session_id = file.slice(0, -5) // slice(0, -10)
                 SessionManager.delete(session_id)
             }
             return true
@@ -234,9 +243,22 @@ export const SessionManager: SessionManagerType = {
         }
     },
     validate: (session_id: string): boolean => {
-        const sess_data = SessionManager.read(session_id) as Session
-        if (sess_data) return true
-        return false
+        try {
+            const sess_data = SessionManager.read(session_id) as Session
+            if (!sess_data) return false
+            const conversationId = sess_data.session_chat_id
+            if (fs.statfsSync(path.join(STORE_DIR, `${conversationId}.json`))) {
+                return true
+            }
+            return false
+        } catch (err) {
+            return false
+        }
     },
-    clear: () => undefined
+    clear: (session_id: string): boolean => {
+        if(!SessionManager.validate(session_id)){
+            SessionManager.delete(session_id)
+        }
+        return true
+    }
 }

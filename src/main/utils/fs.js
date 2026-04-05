@@ -216,7 +216,6 @@ exports.fsOperations = {
                 success: true,
                 path: absolutePath,
                 created: !existed,
-                bytesWritten: 0
             };
         }
         catch (error) {

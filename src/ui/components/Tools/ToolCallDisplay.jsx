@@ -37,9 +37,9 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
 
         if (typeof result === 'string') {
             // Truncate long results for preview
-            if (result.length > 200 && !showFullContent) {
-                return result.substring(0, 200) + '...';
-            }
+            // if (result.length > 200 && !showFullContent) {
+            //     return result//.substring(0, 1600) + '...';
+            // }
             return result;
         }
 
@@ -107,7 +107,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
         params = !toolCall?.result.success ? JSON.parse(toolCall?.result?.params) : toolCall?.result
     } catch (err) { }
 
-    console.log(toolCall)
+    //console.log(toolCall)
     function get_action_comment() {
         const tool = toolCall.toolName
         let comment
@@ -131,7 +131,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
             case 'grep':
                 comment = `Got ${toolResult.matchCount} matche(s)`
                 break
-            case 'file_operations':
+            case 'filesystem':
                 const operation = toolResult.operation
                 if (operation === 'write') {
                     comment = `Wrote ${toolResult.bytes_written} bytes`
@@ -166,7 +166,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
         let result
 
         switch (tool) {
-            case 'file_operations':
+            case 'filesystem':
                 const operation = toolResult.operation
                 if (operation === 'list') {
                     result = toolResult.items
@@ -315,7 +315,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                                     <p className="flex ml-2 text-xs text-blue-600 font-semibold dark:text-green-200">{get_action_comment()}</p>
                                 </div>
                                 <div className="bg-green-50/80 dark:bg-green-900/30 rounded border border-green-200/50 dark:border-green-700/30 p-2">
-                                    <pre className="text-xs text-green-700 dark:text-green-300 overflow-x-auto max-h-32 font-mono whitespace-pre-wrap scrollbar-custom">
+                                    <pre className="text-xs text-green-700 dark:text-green-300 overflow-x-auto max-h-[100px] font-mono whitespace-pre-wrap scrollbar-custom">
                                         {getToolResult()}
                                     </pre>
                                     {typeof toolCall.result === 'string' && toolCall.result.length > 200 && (

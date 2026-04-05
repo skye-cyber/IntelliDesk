@@ -1,5 +1,5 @@
-import type { readFileSuccess, readFileError, writeFileSuccess, writeFileError, appendFileError, fileExistsStats, fileExistsStatError, watchFileSuccess, watchFileError, statPathError, statPathSuccess, FileSystemError, FileInfoSuccess, mkdirSuccess, deleteSuccess, deleteError, copyError, copySuccess, moveSuccess, moveError, appendFileSuccess, openDialogResponse, openDialogError, saveDialogResponse, saveDialogError } from "./types";
 import { OpenDialogOptions } from "electron/utility";
+import type { readFileSuccess, readFileError, writeFileSuccess, writeFileError, appendFileSuccess, appendFileError, fileExistsStats, fileExistsStatError, FileSystemError, FileInfoSuccess, mkdirSuccess, deleteSuccess, deleteError, copySuccess, copyError, moveSuccess, moveError, statPathSuccess, statPathError, watchFileSuccess, watchFileError, saveDialogResponse, saveDialogError, openDialogResponse, openDialogError, rmdirError, rmdirSuccess } from "./types";
 export declare const fsOperations: {
     /**
      * Read file content
@@ -24,7 +24,11 @@ export declare const fsOperations: {
     /**
      * Create directory
      */
-    mkdir(dirPath: string, recursive?: boolean): Promise<mkdirSuccess | FileSystemError>;
+    mkdir(dirPath: string): Promise<mkdirSuccess | FileSystemError>;
+    /**
+     * Remove empty directory
+     */
+    rmdir(dirPath: string, recursive?: boolean): Promise<rmdirError | rmdirSuccess>;
     /**
      * Delete file or directory
      */
@@ -67,4 +71,4 @@ export declare const fsOperations: {
      */
     watchFile(filePath: string, callback: CallableFunction): Promise<watchFileSuccess | watchFileError>;
 };
-//# sourceMappingURL=fs.d.ts.map
+//# sourceMappingURL=filesystem.d.ts.map

@@ -3,12 +3,12 @@
  * Bridges between AI function calls and tool execution
  */
 import toolManager from './ToolManager';
-import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
-import { staticPortalBridge } from '../../../PortalBridge.ts';
-import { useSelector } from 'react-redux';
+import { BaseErrorHandler } from "../ErrorHandler/BaseHandler";
+import { staticPortalBridge } from '../PortalBridge.ts';
 import type { ToolCall } from './types';
-import { Session } from '../../../../main/utils/SessionManager.ts';
-import { emit } from '../../../Globals/eventBus.ts';
+import type { Session } from '../../main/utils/SessionManager.ts';
+import { emit } from '../Globals/eventBus.ts';
+
 
 interface toolHistoryItem {
     toolName: string
@@ -33,7 +33,7 @@ export class ToolExecutor {
     constructor() {
         this.toolManager = toolManager;
         this.toolCallHistory = [];
-        this.maxToolCalls = 20; // Prevent infinite tool loops
+        this.maxToolCalls = 100; // Prevent infinite tool loops
     }
 
     /**
@@ -44,16 +44,16 @@ export class ToolExecutor {
 
         for (const toolCall of toolCalls) {
             try {
-                console.log("Call Index:", this.toolCallHistory.length)
+                // console.log("Call Index:", this.toolCallHistory.length)
                 // Check if we've exceeded max tool calls
                 if (this.toolCallHistory.length >= this.maxToolCalls) {
                     throw new Error(`Maximum tool calls (${this.maxToolCalls}) exceeded`);
                 }
 
                 const toolName = toolCall.function.name;
-                const params = toolCall.function.arguments;
+                const params = toolCall.function.arguments as string;  // gete params/arguments
                 const metadata = window.desk.api.getmetadata()
-                const sessionId = metadata ? metadata.sessionId : null
+                let sessionId = metadata ? metadata.sessionId : null
 
                 let session: Session | null = null
                 if (sessionId) {
@@ -78,8 +78,6 @@ export class ToolExecutor {
                     TOOL_AUTHORIZED = toolConfig.permission === 'always'  // set to default from agentConfig
                     TOOL_BLOCKED = toolConfig.permission === "never"
                 }
-
-                console.log(TOOL_AUTHORIZED, TOOL_BLOCKED)
 
                 // if tool is blocked raise sigint
                 if ((toolConfig.permission === 'never' && !TOOL_AUTHORIZED) || TOOL_BLOCKED) {
@@ -110,7 +108,9 @@ export class ToolExecutor {
                     authorized = true;
                     // If user chose 'always_allow', you might want to persist that preference
                     if (decision === 'always_allow') {
-                        // TODO: Update session config so future calls are auto‑approved
+                        if (sessionId) {
+                            session = window.desk.sessionmanager.update_permission(sessionId, 'always', toolName)
+                        }
                     }
                 }
 

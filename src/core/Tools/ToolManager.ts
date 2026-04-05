@@ -3,25 +3,39 @@
  * Handles tool registration, execution, and integration with AI
  */
 import { ToolBase } from './ToolBase';
-import { StateManager } from '../../StatesManager';
+import { StateManager } from '../managers/StatesManager';
 import { BashTool } from './tools/BashTool';
 import { GrepTool } from './tools/GrepTool';
-import { GetWeatherTool } from './tools/GetWeatherTool'
-import { TodoTool } from './tools/TodoTool';
+// import { GetWeatherTool } from './tools/GetWeatherTool'
+// import { TodoTool } from './tools/TodoTool';
 import { WriteFileTool } from './tools/WriteFileTool';
 import { ReadFileTool } from './tools/ReadFileTool';
 import { SearchReplaceTool } from './tools/SearchReplaceTool';
 import { SearchWebTool } from './tools/SearchWebTool';
 import { CalculateTool } from './tools/CalculateTool';
-import { FileOperationsTool } from './tools/FileOperationsTool';
+import { FileSystemTool } from './tools/FileSystemTool';
 import { DatabaseQueryTool } from './tools/DatabaseQueryTool';
 import { NameConversationTool } from './tools/NameConversationTool';
 //import { SendMessageTool } from './tools/SendMessageTool';
+import type { AgentType, ToolConfig } from "../../main/utils/ToolAgent";
+import type { ToolError, ToolResult, ToolSchema, ToolCall, ToolStat } from './types';
 
 
 StateManager.set('enable_tools', true)
 
+const instBase = new ToolBase('', '')
+
+interface Tool {
+    name: string
+    description: string
+    schema: ToolSchema
+}
+
 export class ToolManager {
+    private agent: AgentType
+    public tools: Map<string, typeof instBase>;
+    public availableTools: Tool[]
+
     constructor() {
         this.agent = window.desk.agent
         this.tools = new Map();
@@ -34,18 +48,18 @@ export class ToolManager {
      */
     registerCoreTools() {
         //Import and register each tool
-        this.registerTool('bash', new BashTool());
-        this.registerTool('grep', new GrepTool());
-        this.registerTool('search_replace', new SearchReplaceTool());
+        this.registerTool('bash', new BashTool() as any);
+        this.registerTool('grep', new GrepTool() as any);
+        this.registerTool('search_replace', new SearchReplaceTool() as any);
         //this.registerTool('todo', new TodoTool());
-        this.registerTool('write_file', new WriteFileTool());
-        this.registerTool('read_file', new ReadFileTool());
-        this.registerTool('search_web', new SearchWebTool());
+        this.registerTool('write_file', new WriteFileTool() as any);
+        this.registerTool('read_file', new ReadFileTool() as any);
+        this.registerTool('search_web', new SearchWebTool() as any);
         //this.registerTool('get_weather', new GetWeatherTool());
-        this.registerTool('calculate', new CalculateTool());
-        this.registerTool('file_operations', new FileOperationsTool());
-        this.registerTool('database_query', new DatabaseQueryTool());
-        this.registerTool('name_conversation', new NameConversationTool());
+        this.registerTool('calculate', new CalculateTool() as any);
+        this.registerTool('file_operations', new FileSystemTool() as any);
+        this.registerTool('database_query', new DatabaseQueryTool() as any);
+        this.registerTool('name_conversation', new NameConversationTool() as any);
         //this.registerTool('send_message', new SendMessageTool());
 
         this.updateAvailableTools();
@@ -54,9 +68,17 @@ export class ToolManager {
     /**
      * Register a tool
      */
-    registerTool(name, tool) {
+    registerTool(name: string, tool: typeof ToolBase) {
         if (tool instanceof ToolBase) {
-            this.tools.set(name, tool);
+            try {
+                // Check if tool is hard disabled: if so do not register it
+                const config = this.agent.config
+                if (Object.keys(config.disabled_tools).includes(name) || config.tools[name]?.permission === 'never') return
+
+                this.tools.set(name, tool);
+            } catch (err) {
+                console.error(`During tool: ${name} registration: ${err}`)
+            }
         } else {
             console.error(`Tool ${name} must extend ToolBase`);
         }
@@ -82,7 +104,7 @@ export class ToolManager {
     /**
      * Execute a tool by name
      */
-    async executeTool(toolName, params, context = {}) {
+    async executeTool(toolName: string, params: string, context: Record<any, any> = {}) {
         const tool = this.tools.get(toolName);
 
         if (!tool) {
@@ -102,14 +124,14 @@ export class ToolManager {
     /**
      * Get tool by name
      */
-    getTool(toolName) {
+    getTool(toolName: string): typeof instBase | undefined {
         return this.tools.get(toolName);
     }
 
     /**
      * Check if tool is available
      */
-    isToolAvailable(toolName) {
+    isToolAvailable(toolName: string): boolean {
         const tool = this.tools.get(toolName);
         return tool ? tool.isAvailable() : false;
     }
@@ -117,8 +139,8 @@ export class ToolManager {
     /**
      * Get all tool configurations
      */
-    getAllToolConfigs() {
-        const configs = {};
+    getAllToolConfigs(): Record<string, ToolConfig> {
+        const configs: Record<string, ToolConfig> = {};
         this.tools.forEach((tool, name) => {
             configs[name] = tool.getConfig();
         });
@@ -138,24 +160,29 @@ export class ToolManager {
     /**
      * Execute multiple tools in sequence
      */
-    async executeToolSequence(sequence, sharedContext = {}) {
-        const results = [];
+    async executeToolSequence(sequence: Array<ToolCall>, sharedContext = {}) {
+        const results: Array<ToolResult | ToolError> = [];
 
-        for (const { tool: toolName, params } of sequence) {
+        for (const toolCall of sequence) {     //{ tool: toolName, params }
+            const toolName = toolCall.function.name
+            const params = toolCall.function.arguments
             try {
-                const result = await this.executeTool(toolName, params, sharedContext);
+                const result = await this.executeTool(toolName, params as any, sharedContext);
                 results.push(result);
 
                 // Update shared context with result
                 sharedContext[`${toolName}_result`] = result;
 
             } catch (error) {
-                results.push({
+                const tool_error: ToolError = {
                     tool: toolName,
                     success: false,
+                    result: {},
                     error: error.message,
-                    params: params
-                });
+                    params: params as any,
+                    timestamp: new Date().toISOString()
+                }
+                results.push(tool_error as ToolError);
             }
         }
 
@@ -165,7 +192,7 @@ export class ToolManager {
     /**
      * Get tool statistics
      */
-    getToolStats() {
+    getToolStats(): ToolStat {
         const stats = {
             totalTools: this.tools.size,
             availableTools: this.availableTools.length,

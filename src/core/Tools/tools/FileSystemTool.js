@@ -7,24 +7,24 @@ const path = window.desk.path
 const fs = window.desk.fs
 const fsops = window.desk.fsops
 
-export class FileOperationsTool extends ToolBase {
+export class FileSystemTool extends ToolBase {
     constructor() {
-        super('file_operations', 'Perform file operations (read, write, list, stats, delete, copy, move, exists, read_dir)');
+        super('filesystem', 'Perform file operations (read, write, list, stats, delete, copy, move, exists, read_dir, rmdir)');
     }
 
     defineSchema() {
         return {
             type: "function",
             function: {
-                name: "file_operations",
-                description: "Perform file operations (read, write, list, stats, delete, copy, move, exists, read_dir)",
+                name: "filesystem",
+                description: "Perform file system operations (read, write, list, stats, delete, copy, move, exists, read_dir, rmdir)",
                 parameters: {
                     type: "object",
                     properties: {
                         operation: {
                             type: "string",
-                            enum: ["read", "write", "list", "delete", "copy", "move", "stats", 'exists', 'read_dir'],
-                            description: "File operation to perform"
+                            enum: ["read", "write", "list", "delete", "copy", "move", "stats", 'exists', 'read_dir', 'rmdir'],
+                            description: "Filesystem operation to perform"
                         },
                         path: {
                             type: "string",
@@ -80,6 +80,8 @@ export class FileOperationsTool extends ToolBase {
                 return this.exists(filePath)
             case 'read_dir':
                 return this.readDir(filePath, recursive)
+            case 'rmdir':
+                return this
             default:
                 throw new Error(`Unsupported operation: ${operation}`);
         }
@@ -140,6 +142,15 @@ export class FileOperationsTool extends ToolBase {
         if (result.success) return {
             ...result,
             operation: "existence_check"
+        }
+        throw new Error(result.error)
+    }
+
+    async readDir(filePath, recursive) {
+        const result = await fs.rmdirSync(filePath, recursive)
+        if (result.success) return {
+            ...result,
+            operation: "read_dir"
         }
         throw new Error(result.error)
     }

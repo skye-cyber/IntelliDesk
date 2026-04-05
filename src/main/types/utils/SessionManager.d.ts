@@ -39,9 +39,10 @@ export interface LockManagerType {
 export interface SessionManagerType {
     create: (chat_id: string) => SessionInfor;
     delete: (session_id: string) => boolean;
-    clear: () => undefined;
+    clear: (session_id: string) => boolean;
     purge: () => boolean;
     update: (session_id: string, data: Partial<Session>) => Session;
+    update_permission: (session_id: string, permission: 'ask' | 'always', toolName: string) => Session;
     read: (session_id: string) => Session | null;
     validate: (session_id: string) => boolean;
 }

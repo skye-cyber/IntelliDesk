@@ -342,6 +342,10 @@ export class FileSystemTool extends ToolBase {
             throw new Error('Invalid file path');
         }
 
+        if (['/', '\\'].includes(filePath)) {
+            throw new Error('File path cannot be root');
+        }
+
         if (filePath.includes('..') || filePath.includes('~')) {
             throw new Error('File path contains invalid characters');
         }

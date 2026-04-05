@@ -237,6 +237,8 @@ export const Agent: AgentType = {
      * Get configuration for a specific tool
      */
     get_tool_config(toolName: string): ToolConfig {
+        // Bypass for tool rename since it is an internal tool
+        if (toolName === 'name_conversation') return { permission: 'always' }
         return config_manager.config.tools[toolName] || { permission: 'never' };
     },
 

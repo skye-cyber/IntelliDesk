@@ -59,6 +59,9 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
                 'dash -i',
                 'screen',
                 'tmux',
+                'unlink',
+                'sudo',
+                'su'
             ],
             denylist_standalone: [
                 'python',

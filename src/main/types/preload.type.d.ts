@@ -4,7 +4,7 @@ import { ExecException } from 'child_process';
 import { AgentType } from './utils/ToolAgent';
 import { SessionManagerType, LockManagerType } from './utils/SessionManager';
 export interface ConversationMetadata {
-    model: string;
+    model: string | 'multimodal' | 'chat';
     type?: string;
     name?: string;
     id: string;
@@ -86,6 +86,9 @@ export interface ApiType {
     joinPath: (node: string, child: string) => string;
     RenameFile: (old_name: string, new_name: string, base_dir?: string) => boolean;
     RenameConversation: (id: string, name: string, base_dir?: string) => Promise<Conversation | boolean>;
+    readStore: () => Promise<string[]>;
+    validateStore: () => Promise<boolean>;
+    loadConversation: (id: string) => Promise<Conversation | undefined>;
     deleteChat: (id: string, base_dir?: string) => boolean | undefined;
     addHistory: (item: ChatMessage) => Conversation;
     getHistory: (filter?: boolean) => Conversation | ChatMessage[];
@@ -103,7 +106,7 @@ export interface ApiType {
     generateUUID: () => string;
     getConversationId: () => string;
     setConversationId: (id: string) => void;
-    setConversation: (data: Conversation, id?: string) => void;
+    setConversation: (data: Conversation, id?: string) => boolean;
     send: (channel: string, data: any) => void;
     receive: (channel: string, func: (...args: any[]) => void) => void;
     ThemeChangeDispatch: () => void;

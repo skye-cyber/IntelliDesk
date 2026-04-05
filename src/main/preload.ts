@@ -161,6 +161,25 @@ const api: ApiType = {
             return ConversationHistory;
         }
     },
+    readStore: async (): Promise<string[]> => {
+        const files = await api.readDir(STORE_DIR)
+        if (!files) return []
+        return files
+    },
+    validateStore: async (): Promise<boolean> => {
+        const files = await api.readDir(STORE_DIR)
+        if (!files) return false
+        return files.length > 0
+    },
+    loadConversation: async (id: string): Promise<Conversation | undefined> => {
+        const filepath = path.join(STORE_DIR, `${id}.json`)
+        // Check if file exists
+        if (!api.stat(filepath)) return undefined
+        const data: Conversation = await api.read(filepath)
+        if (!data) return undefined
+        api.setConversation(data)
+        return ConversationHistory
+    },
     deleteChat: (id: string, base_dir: string = conversation_root): boolean | undefined => {
         try {
             const file = path.join(base_dir, `${id}.json`);
@@ -415,7 +434,7 @@ const api: ApiType = {
             }
             console.debug(conversationData)
             // Actually save the conversation data to file
-            // await api.write(filePath, conversationData);
+            //await api.write(filePath, conversationData);
             // console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         } catch (err) {
@@ -439,10 +458,15 @@ const api: ApiType = {
     setConversationId: (id: string): void => {
         ConversationId = id;
     },
-    setConversation: (data: Conversation, id?: string): void => {
-        if (data.chats[0]?.role !== 'system') data.chats.unshift({ role: 'system', content: system_command });
-        ConversationHistory = data;
-        ConversationId = id ? id : data.metadata.id;
+    setConversation: (data: Conversation, id?: string): boolean => {
+        try {
+            if (data.chats[0]?.role !== 'system') data.chats.unshift({ role: 'system', content: system_command });
+            ConversationHistory = data;
+            ConversationId = id ? id : data.metadata.id;
+            return true
+        } catch (err) {
+            return false
+        }
     },
     send: (channel: string, data: any): void => {
         const validChannels = ['dispatch-to-main-process', 'Notify'];
@@ -679,10 +703,10 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
     }
 });
 
-window.addEventListener('onbeforeunload', ()=>{
+window.addEventListener('onbeforeunload', () => {
     console.log("onUnload: Clear session")
     alert("Clear session")
     const sessonId = ConversationHistory.metadata.sessionId
     if (!sessonId) return
-        sessionmanager.clear(sessonId)
+    sessionmanager.clear(sessonId)
 })

@@ -150,6 +150,29 @@ const api = {
             return ConversationHistory;
         }
     },
+    readStore: async () => {
+        const files = await api.readDir(shared_1.STORE_DIR);
+        if (!files)
+            return [];
+        return files;
+    },
+    validateStore: async () => {
+        const files = await api.readDir(shared_1.STORE_DIR);
+        if (!files)
+            return false;
+        return files.length > 0;
+    },
+    loadConversation: async (id) => {
+        const filepath = path_1.default.join(shared_1.STORE_DIR, `${id}.json`);
+        // Check if file exists
+        if (!api.stat(filepath))
+            return undefined;
+        const data = await api.read(filepath);
+        if (!data)
+            return undefined;
+        api.setConversation(data);
+        return ConversationHistory;
+    },
     deleteChat: (id, base_dir = conversation_root) => {
         try {
             const file = path_1.default.join(base_dir, `${id}.json`);
@@ -414,7 +437,7 @@ const api = {
             }
             console.debug(conversationData);
             // Actually save the conversation data to file
-            // await api.write(filePath, conversationData);
+            //await api.write(filePath, conversationData);
             // console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         }
@@ -440,10 +463,16 @@ const api = {
         ConversationId = id;
     },
     setConversation: (data, id) => {
-        if (data.chats[0]?.role !== 'system')
-            data.chats.unshift({ role: 'system', content: system_command });
-        ConversationHistory = data;
-        ConversationId = id ? id : data.metadata.id;
+        try {
+            if (data.chats[0]?.role !== 'system')
+                data.chats.unshift({ role: 'system', content: system_command });
+            ConversationHistory = data;
+            ConversationId = id ? id : data.metadata.id;
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
     },
     send: (channel, data) => {
         const validChannels = ['dispatch-to-main-process', 'Notify'];

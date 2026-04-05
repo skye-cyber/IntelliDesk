@@ -50,7 +50,6 @@ export class NameConversationTool extends ToolBase {
 
         let finalName = conversation_name;
 
-        console.log("Fname:", finalName)
         // If we should extract from content (legacy support)
         if (extract_from_content && context?.content) {
             finalName = this.extractNameFromContent(context.content) || finalName;
@@ -76,8 +75,7 @@ export class NameConversationTool extends ToolBase {
         }
 
         // Rename via api
-        const newName = window.desk.api.updateName(finalName, false)
-        console.log("New name:", newName)
+         window.desk.api.updateName(finalName, false)
 
         return result;
     }

@@ -74,6 +74,8 @@ exports.DEFAULT_AGENT_CONFIG = {
                 'uname',
                 'wc',
                 'which',
+                'df',
+                'print'
             ],
             denylist: [
                 'gdb',

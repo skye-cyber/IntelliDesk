@@ -408,7 +408,6 @@ async function handleToolCallingSession(client, modelName, availableTools, toolE
                 const toolResults = await toolExecutor.processToolCalls(
                     aiMessage.tool_calls
                 );
-                console.log("Tool Result:", toolResults)
 
                 // Store tool call information
                 toolCallHistory.push({

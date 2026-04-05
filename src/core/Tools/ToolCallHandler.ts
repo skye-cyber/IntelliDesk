@@ -65,7 +65,7 @@ export class ToolExecutor {
                 let TOOL_BLOCKED = false
 
                 // If session exists use session config
-                if (session) {
+                if (session && toolName !== 'name_conversation') {
                     TOOL_AUTHORIZED = Object.keys(session.enabled_tools).includes(toolName)
                     // TODO: Remove disabled tools from available too instead
                     // Session replicates global agent config for te initial setup so should safely reflect it's state' unless user explicitly modifyied it in which case session takes precedence
@@ -90,8 +90,6 @@ export class ToolExecutor {
                 // If permission is 'never' ie BLOCKED Sigint shall ba raise before here
                 // Decide if we need to ask for permission
                 const needPermission = !TOOL_AUTHORIZED || toolConfig.permission === 'ask';
-                let authorized = TOOL_AUTHORIZED;
-
                 if (needPermission) {
                     // Wait for user decision or timeout (12 seconds)
                     const decision = await this.requestPermissionWithTimeout(
@@ -105,7 +103,6 @@ export class ToolExecutor {
                         // User denied → raise SIGINT or skip this tool
                         return results; // or throw
                     }
-                    authorized = true;
                     // If user chose 'always_allow', you might want to persist that preference
                     if (decision === 'always_allow') {
                         if (sessionId) {

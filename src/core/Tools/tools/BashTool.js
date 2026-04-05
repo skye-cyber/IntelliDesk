@@ -43,7 +43,6 @@ export class BashTool extends ToolBase {
     }
 
     async _execute({ command, timeout }, context) {
-        console.log(command, timeout)
         // Apply timeout from config if not specified
         const effectiveTimeout = (timeout && typeof (timeout) === 'number') ? timeout : this.config.default_timeout || 30;
 
@@ -79,7 +78,8 @@ export class BashTool extends ToolBase {
             /dd\s+if=.*\s+of=.*/,
             /chmod\s+777/,
             />\s*\/dev\/sda/,
-            /mv\s+.*\s+\/dev\/null/
+            /mv\s+.*\s+\/dev\/null/,
+            /unlink/
         ];
 
         for (const pattern of dangerousPatterns) {

@@ -29,6 +29,8 @@ export type EventMap = {
     'panel:chats:expand': []
     'panel:chats:shrink': []
     'panel:chats:toggle': []
+    'panel:loader:show': []
+    'panel:loader:hide': []
     'key:down': [event: KeyboardEvent]
     'key:up': [event: KeyboardEvent]
     'key:press': [event: KeyboardEvent]

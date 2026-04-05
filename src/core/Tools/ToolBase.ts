@@ -125,11 +125,11 @@ export class ToolBase {
      * Log tool execution
      */
     logExecution(status: string, params: string, result: Record<any, any>) {
-        console.log(`[TOOL:${this.name}] ${status.toUpperCase()}`, {
+        console.log(`[TOOL:${this.name}] ${status.toUpperCase()}`)//, {
             //params: params,
-            result: status === 'error' ? result.error : 'success',
+            //result: status === 'error' ? result.error : 'success',
             //timestamp: new Date().toISOString()
-        });
+        //});
 
         // Store in state for debugging
         StateManager.set('lastToolExecution', {

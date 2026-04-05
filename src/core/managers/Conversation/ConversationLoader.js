@@ -1,34 +1,16 @@
 import { waitForElement } from "../../Utils/dom_utils";
-import { ChatUtil } from "./util";
-import { ChatDisplay } from "./util";
+import { chatutil } from "./util";
 import { closePrefixed } from "../../PortalBridge.ts";
 import { modalmanager } from "../../StatusUIManager/Manager";
 import { streamingPortalBridge } from "../../PortalBridge.ts";
 import { StateManager } from "../StatesManager";
 
 export class ConversationLoader {
-    constructor(storagePath) {
-        this.storagePath = storagePath;
+    constructor() {
         this.chatArea
-        this.chatutil = new ChatUtil()
-        this.chatdisplay = new ChatDisplay()
+        this.chatutil = chatutil
         waitForElement('#chatArea', (el) => this.chatArea = el)
         this.portal = null
-    }
-
-    // Load conversation from a JSON file
-    async loadConversation(conversationId) {
-        const filePath = `${this.storagePath}/${conversationId}.json`;
-        try {
-            if (window.desk.api.stat(filePath)) {
-                const data = await window.desk.api.read(filePath);
-
-                return [data, data?.metadata?.model || 'chat']
-            }
-        } catch (err) {
-            console.error('Error loading conversation:', err);
-        }
-        return null;
     }
 
     change_model(value = 'mistral-large-latest') {
@@ -42,8 +24,9 @@ export class ConversationLoader {
         }
     }
     // Render the conversation in the web interface
-    async renderConversation(conversationData, model = "chat") {
+    async renderConversation(conversationData) {
         try {
+            const model = conversationData.chats.model
             if (conversationData.chats) this.chatutil.hide_suggestions()
 
             closePrefixed()
@@ -231,3 +214,4 @@ export class ConversationLoader {
     }
 }
 
+export const conversationloader = new ConversationLoader()

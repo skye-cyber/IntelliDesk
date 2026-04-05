@@ -67,9 +67,9 @@ export const TopLevelIcon = ({ itemId }) => {
     return <Icon className="text-indigo-500 dark:text-indigo-400" size={20} />;
 };
 
-export const SaveIndicator = ({ show }) => (
-    <div className={`fixed z-[60] bottom-6 right-6 flex items-center gap-3 px-4 py-3 bg-emerald-500 text-white rounded-xl shadow-lg transition-all duration-300 transform ${show ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+export const SaveIndicator = ({ show, message }) => (
+    <div className={`fixed z-[70] bottom-6 right-6 flex items-center gap-3 px-4 py-3 bg-emerald-500 text-white rounded-xl shadow-lg transition-all duration-300 transform ${show ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
         <CheckCircle size={20} />
-        <span>Configuration saved successfully!</span>
+        <span>{message ? message : 'Configuration saved successfully!'}</span>
     </div>
 );

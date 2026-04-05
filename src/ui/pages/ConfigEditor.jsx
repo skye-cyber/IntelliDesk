@@ -31,6 +31,7 @@ const ConfigEditor = () => {
     const [viewMode, setViewMode] = useState('editor'); // 'editor' or 'json'
     const EditorWrapper = useRef(null)
     const Editor = useRef(null)
+    const [indicatorMessage, setIndicatorMessage] = useState(null)
 
     // Initialize with first tool
     useEffect(() => {
@@ -45,7 +46,8 @@ const ConfigEditor = () => {
 
     const SaveConfig = useCallback(async () => {
         window.desk.agent.set_config(config)
-        window.desk.agent.write_config()
+        const success = window.desk.agent.write_config()
+        if (success) showSaveIndicator()
     })
 
     const LoadConfig = useCallback(async () => {
@@ -98,7 +100,7 @@ const ConfigEditor = () => {
             return newConfig;
         });
 
-        showSaveIndicator();
+        showSaveIndicator('Field Renamed successfully');
     };
 
     const handleDeleteField = (path) => {
@@ -119,12 +121,16 @@ const ConfigEditor = () => {
             return newConfig;
         });
 
-        showSaveIndicator();
+        showSaveIndicator("Field delete successfully");
     };
 
-    const showSaveIndicator = () => {
+    const showSaveIndicator = (message = null) => {
+        setIndicatorMessage(message)
         setSaveIndicator(true);
-        setTimeout(() => setSaveIndicator(false), 3000);
+        setTimeout(() => {
+            setSaveIndicator(false)
+            setIndicatorMessage(null)
+        }, 3000);
     };
 
     const handleAddTool = () => {
@@ -144,7 +150,7 @@ const ConfigEditor = () => {
 
         setSelectedTool(toolName);
         setSelectedTopLevel(null);
-        showSaveIndicator();
+        showSaveIndicator('New Tool Added');
     };
 
     const handleAddField = (toolName) => {
@@ -172,7 +178,7 @@ const ConfigEditor = () => {
             }
         }));
 
-        showSaveIndicator();
+        showSaveIndicator(`Field ${fieldName} added`);
     };
 
     const handleReset = () => {
@@ -180,7 +186,7 @@ const ConfigEditor = () => {
             setConfig(defaultConfig);
             setSelectedTool(Object.keys(defaultConfig.tools)[0]);
             setSelectedTopLevel(null);
-            showSaveIndicator();
+            showSaveIndicator('Configuration Rest to defaults');
         }
     };
 
@@ -257,24 +263,24 @@ const ConfigEditor = () => {
                         const isExpanded = expandedSections[sectionName] !== false;
 
                         return (
-                            <div key={sectionName} className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm">
+                            <div key={sectionName} className="bg-white dark:bg-primary-900 rounded-xl p-5 shadow-sm">
                                 <button
                                     onClick={() => toggleSection(sectionName)}
                                     className="flex justify-between items-center w-full mb-4"
                                 >
                                     <div className="flex items-center gap-3">
-                                        {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                                        {isExpanded ? <ChevronDown size={20} className='dark:text-white' /> : <ChevronRight className='dark:text-white' size={20} />}
                                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                                             {sectionName}
                                         </h3>
                                     </div>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                                    <span className="text-sm text-gray-500 dark:text-gray-300">
                                         {Object.keys(fields).length} fields
                                     </span>
                                 </button>
 
                                 {isExpanded && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="flex flex-wrap gap-4 md:gap-6">
                                         {Object.entries(fields).map(([field, value]) => (
                                             <FieldGroup
                                                 key={field}
@@ -327,7 +333,7 @@ const ConfigEditor = () => {
                     ...prev,
                     [itemId]: [...prev[itemId], newItem]
                 }));
-                showSaveIndicator();
+                showSaveIndicator('New item added');
             }
         };
 
@@ -335,13 +341,13 @@ const ConfigEditor = () => {
             const newItems = [...items];
             newItems[index] = value;
             setConfig(prev => ({ ...prev, [itemId]: newItems }));
-            showSaveIndicator();
+            showSaveIndicator('Item updated');
         };
 
         const handleRemoveItem = (index) => {
             const newItems = items.filter((_, i) => i !== index);
             setConfig(prev => ({ ...prev, [itemId]: newItems }));
-            showSaveIndicator();
+            showSaveIndicator('Item Remove');
         };
 
         const handleMoveItem = (index, direction) => {
@@ -353,12 +359,12 @@ const ConfigEditor = () => {
             const newIndex = index + direction;
             [newItems[index], newItems[newIndex]] = [newItems[newIndex], newItems[index]];
             setConfig(prev => ({ ...prev, [itemId]: newItems }));
-            showSaveIndicator();
+            showSaveIndicator('Moved item successfully!');
         };
 
         return (
             <div className="fixed z-[99] space-y-6">
-                <div className="flex justify-between items-center pb-1 border-b border-gray-200 dark:border-gray-700 overflow-auto">
+                <div className="flex justify-between items-center pb-1 border-b border-gray-200 dark:border-gray-700 overflow-auto scrollbar-custom">
                     <div className="flex items-center gap-3">
                         <TopLevelIcon itemId={itemId} />
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -370,7 +376,7 @@ const ConfigEditor = () => {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-5 pt-0 shadow-sm max-h-full overflow-y-hidden">
+                <div className="bg-white dark:bg-primary-900 rounded-xl p-2 pt-0 max-h-full overflow-y-hidden">
                     <div className="flex justify-between items-center mb-1">
                         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Items</h3>
                         <button
@@ -387,34 +393,34 @@ const ConfigEditor = () => {
                             <p>No items yet. Add your first item to get started.</p>
                         </div>
                     ) : (
-                        <div className="space-y-2 h-72 z-[-1] overflow-y-auto">
+                        <div className="space-y-2 h-72 z-[-1] overflow-y-auto scrollbar-custom">
                             {items.map((item, index) => (
-                                <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-blend-900 rounded-lg">
                                     <input
                                         type="text"
                                         value={item}
                                         onChange={(e) => handleUpdateItem(index, e.target.value)}
                                         disabled={true}
-                                        className="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-900 dark:text-gray-100"
+                                        className="flex-1 px-3 py-2 bg-white dark:bg-blend-700 border border-gray-300 dark:border-blend-600 rounded focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-900 dark:text-gray-100"
                                     />
                                     <div className="flex gap-1">
                                         <button
                                             onClick={() => handleMoveItem(index, -1)}
                                             disabled={index === 0}
-                                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-30 disabled:cursor-not-allowed"
+                                            className="p-2 text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-30 disabled:cursor-not-allowed"
                                         >
-                                            <ArrowUp size={18} />
+                                            <ArrowUp size={18} className='dark:text-white' />
                                         </button>
                                         <button
                                             onClick={() => handleMoveItem(index, 1)}
                                             disabled={index === items.length - 1}
-                                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-30 disabled:cursor-not-allowed"
+                                            className="p-2 text-gray-500 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-30 disabled:cursor-not-allowed"
                                         >
                                             <ArrowDown size={18} />
                                         </button>
                                         <button
                                             onClick={() => handleRemoveItem(index)}
-                                            className="p-2 text-gray-500 dark:text-gray-400 hover:text-rose-600 dark:hover:text-rose-400"
+                                            className="p-2 text-gray-500 dark:text-gray-300 hover:text-rose-600 dark:hover:text-indigo-500"
                                         >
                                             <Trash2 size={18} />
                                         </button>
@@ -425,9 +431,9 @@ const ConfigEditor = () => {
                     )}
                 </div>
 
-                <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-end pt-1 border-t border-gray-200 dark:border-gray-700">
                     <button
-                        onClick={showSaveIndicator}
+                        onClick={() => showSaveIndicator(null)}
                         className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
                     >
                         <Save size={18} />
@@ -479,7 +485,7 @@ const ConfigEditor = () => {
         };
 
         return (
-            <div className="bg-gray-50 dark:bg-gray-900 text-gray-100 p-6 rounded-xl font-mono text-sm overflow-auto max-h-[500px]">
+            <div className="bg-gray-50 dark:bg-primary-900 text-gray-100 p-6 rounded-xl font-mono text-sm overflow-auto max-h-[500px] scrollbar-custom">
                 <pre>{formatJSON(config)}</pre>
             </div>
         );
@@ -521,26 +527,26 @@ const ConfigEditor = () => {
 
     return (
         <div ref={EditorWrapper} onClick={(e) => (Editor.current.contains(e.currentTarget)) ? CloseEditor() : ''} id="EditorWrapper" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700">
-            <div ref={Editor} className="w-full max-h-[100vh] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 p-1 md:p-1 transition-colors duration-500 ease-in-out">
+            <div ref={Editor} className="w-full max-h-[100vh] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-blend-950 dark:to-blend-950 p-0 transition-colors duration-500 ease-in-out">
                 {/* Header */}
-                <header className="relative bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 px-6 py-2 transition-colors duration-700 ease-in-out mb-2 text-center">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-500 bg-clip-text text-transparent mb-1">
+                <header className="relative bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 px-6 py-2 transition-colors duration-700 ease-in-out mb-0 text-center">
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-emerald-500 bg-clip-text text-transparent mb-1">
                         Configuration Editor
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="hidden text-gray-600 dark:text-gray-400">
                         Edit field names and values with an elegant, user-friendly interface
                     </p>
                     <button className='absolute z-10 top-2 right-4 group' onClick={CloseEditor}>
-                        <PanelLeftClose className='text-purple-700 dark:text-[#ffaaff] group-hover:scale-[105%] group-hover:translate-x-1 transition-transform duration-500 ease-in-out' />
+                        <PanelLeftClose className='text-primary-400 dark:text-accent-100 group-hover:scale-[105%] group-hover:translate-x-1 transition-transform duration-500 ease-in-out' />
                     </button>
                 </header>
                 <div className="max-h-full max-w-full mx-auto scrollbar-custom mb-12">
                     {/* Main Editor */}
-                    <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex flex-col md:flex-row gap-0 gap-y-0">
                         {/* Sidebar */}
-                        <div className="overflow-y-auto max-h-[90vh] lg:w-72 flex-shrink-0 scrollbar-custom">
-                            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-5">
-                                <div className="sticky z-10 top-0 left-0 right-0 w-full bg-white dark:bg-gray-900 p-2 flex items-center gap-3 mb-5">
+                        <div className="overflow-y-auto max-h-[90vh] lg:w-72 flex-shrink-0 scrollbar-auto scroll-smooth">
+                            <div className="bg-white dark:bg-primary-900 rounded-xl shadow-lg p-5">
+                                <div className="sticky z-10 top-0 left-0 right-0 w-full bg-white dark:bg-primary-900 p-2 flex items-center gap-3 mb-5">
                                     <Settings className="text-indigo-500 dark:text-indigo-400" />
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         Tools Configuration
@@ -556,9 +562,9 @@ const ConfigEditor = () => {
                                                 setSelectedTopLevel(item.id);
                                                 setSelectedTool(null);
                                             }}
-                                            className={`flex items-center justify-between w-full p-3 rounded-lg transition-all ${disabledConfig.includes(item.id) ? 'cursor-not-allowed' : ''} ${selectedTopLevel === item.id
-                                                ? 'bg-indigo-500 text-white'
-                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                            className={`group flex items-center justify-between w-full p-3 rounded-lg transition-all ${disabledConfig.includes(item.id) ? 'cursor-not-allowed' : ''} ${selectedTopLevel === item.id
+                                                ? 'bg-indigo-500 dark:bg-indigo-700 text-white'
+                                                : 'bg-gray-100 dark:bg-primary-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-primary-600'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -567,7 +573,7 @@ const ConfigEditor = () => {
                                             </div>
                                             <span className={`text-xs px-2 py-1 rounded ${selectedTopLevel === item.id
                                                 ? 'bg-white/20'
-                                                : 'bg-gray-200 dark:bg-gray-700'
+                                                : 'bg-gray-200 dark:bg-primary-500 dark:group-hover:bg-primary-700'
                                                 }`}>
                                                 {config[item.id].length}
                                             </span>
@@ -575,8 +581,8 @@ const ConfigEditor = () => {
                                     ))}
                                 </div>
 
-                                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                                <div className="border-t border-gray-200 dark:border-blend-700 pt-4">
+                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300/80 mb-3">
                                         TOOLS
                                     </h4>
                                     <div className="space-y-2">
@@ -588,12 +594,12 @@ const ConfigEditor = () => {
                                                     setSelectedTopLevel(null);
                                                 }}
                                                 className={`flex items-center justify-between w-full p-3 rounded-lg transition-all ${selectedTool === toolName
-                                                    ? 'bg-indigo-500 text-white'
-                                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                                    ? 'bg-primary-300 dark:bg-indigo-700 text-white'
+                                                    : 'bg-gray-100 dark:bg-primary-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-primary-600'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <ToolIcon toolName={toolName} />
+                                                    <ToolIcon toolName={toolName}/>
                                                     <span>{toolName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
                                                 </div>
                                                 <PermissionBadge permission={config.tools[toolName].permission} />
@@ -615,9 +621,9 @@ const ConfigEditor = () => {
 
                         {/* Main Content */}
                         <div className="h-full flex-1">
-                            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-balanced-sm overflow-hidden">
+                            <div className="bg-white dark:bg-slate-950 rounded-xl shadow-balanced-sm overflow-hidden">
                                 {/* View Mode Toggle */}
-                                <div className="border-b border-gray-200 dark:border-gray-700">
+                                <div className="border-b border-gray-200 dark:border-primary-600">
                                     <div className="flex">
                                         <button
                                             onClick={() => setViewMode('editor')}
@@ -638,7 +644,7 @@ const ConfigEditor = () => {
                                                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                                 }`}
                                         >
-                                            <div className="flex items-center justify-center gap-2">
+                                            <div className="flex items-center justify-center gap-2 dark:text-gray-200">
                                                 <FileText size={18} />
                                                 JSON View
                                             </div>
@@ -647,7 +653,7 @@ const ConfigEditor = () => {
                                 </div>
 
                                 {/* Content Area */}
-                                <div className="h-[62vh] p-6">
+                                <div className="h-[70vh] p-6 dark:bg-primary-900">
                                     {viewMode === 'json' ? (
                                         renderJSONView()
                                     ) : (
@@ -669,7 +675,7 @@ const ConfigEditor = () => {
                             </div>
 
                             {/* Footer Controls */}
-                            <div className="flex justify-between mt-2">
+                            <div className="flex justify-between mt-1">
                                 <button
                                     onClick={handleReset}
                                     className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -690,7 +696,7 @@ const ConfigEditor = () => {
                 </div>
 
                 {/* Save Indicator */}
-                <SaveIndicator show={saveIndicator} />
+                <SaveIndicator show={saveIndicator} message={indicatorMessage} />
             </div>
         </div>
     );

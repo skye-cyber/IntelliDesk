@@ -345,7 +345,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="overflow-y-auto max-h-[calc(90vh-140px)] scrollbar-custom p-6">
+                <div className="overflow-y-auto scrollbar-smooth max-h-[calc(90vh-140px)] scrollbar-custom p-6">
                     {/* Quick Settings Grid */}
                     <div className="mb-8">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">

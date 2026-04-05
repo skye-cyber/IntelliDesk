@@ -35,7 +35,7 @@ export const UserMessage = ({ message, files = [] }) => {
 
     return (
         <>
-            <section className="block font-handwriting  text-[15px]">
+            <section className="block font-handwriting  text-[16px]">
                 <div className="relative flex items-end gap-x-2 justify-end">
                     <div
                         ref={messageRef}

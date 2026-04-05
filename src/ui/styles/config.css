@@ -141,6 +141,19 @@
     background: transparent;
 }
 
+.scrollbar-auto {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s;
+}
+
+.scrollbar-auto:hover {
+    scrollbar-color: #c1c1c1 transparent;
+}
+.dark .scrollbar-auto:hover {
+    scrollbar-color: #4a4a6a transparent;
+}
+
 .scrollbar-custom{
     scrollbar-width: thin;
     scrollbar-color: #c1c1c1 transparent;

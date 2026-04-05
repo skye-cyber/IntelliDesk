@@ -238,7 +238,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                                 {toolCall.toolName}<span className='ml-0.5 text-xs text-gray-500 dark:text-gray-400 truncate'>({params?.command || params?.path || params?.query || ''})</span>
                             </h4>
                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                {toolCall.toolCallId ? `Call ID: ${toolCall.toolCallId.substring(0, 8)}...` : 'Tool Execution'}
+                                {toolCall.toolCallId ? `Call ID: ${toolCall.toolCallId.substring(0, 20)}${toolCall.toolCallId.length > 20 ? '...' : ''}` : 'Tool Execution'}
                             </p>
                         </div>
                     </div>

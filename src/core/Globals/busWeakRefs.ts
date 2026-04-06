@@ -1,5 +1,5 @@
 import { EventMap, EventSubscription, EventCallback } from "./types";
-import { EventBus } from "./eventBus";
+import { EventBus } from "./eventBus.ts";
 
 export class EventBusWithWeakRefs extends EventBus {
     private weakListeners = new Map<keyof EventMap, Set<WeakRef<EventCallback<any>>>>();

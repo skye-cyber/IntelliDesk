@@ -40,6 +40,12 @@ export type EventMap = {
     'dropzone:open': []
     'dropzone:close': []
     'model:change': [model: string]
+    'model:selector:show': []
+    'model:selector:hide': []
+    'conversation:new': [type: string]
+    'suggestions:show': []
+    'suggestions:hide': []
+    'keychain:error': [message: string]
 };
 
 

@@ -1,6 +1,6 @@
 // Event Bus Middleware/Interceptor
 import { EventMap } from "./types";
-import { EventBus } from "./eventBus";
+import { EventBus } from "./eventBus.ts";
 
 type Middleware = <K extends keyof EventMap>(
     event: K,

@@ -239,6 +239,6 @@ export declare const streamingPortalBridge: StreamingPortalBridge;
 /**
  * Close all portals with specific prefixes
  */
-export declare function closePrefixed(): void;
+export declare function clearMessages(): void;
 export {};
 //# sourceMappingURL=PortalBridge.d.ts.map

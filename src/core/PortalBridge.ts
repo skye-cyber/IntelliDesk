@@ -13,11 +13,26 @@ export interface StreamController {
     id: string;
     update: (newProps: ComponentProps) => void;
     close: () => void;
-    append: (data: ComponentProps) => void;
-    appendComponent: (componentType: string, componentProps: ComponentProps, options: AppendOptions) => void;
+    append: (data: ComponentProps, options: PropsAppendOptions) => void;
+    appendComponent: (componentType: string, componentProps: ComponentProps, options: ComponentAppendOptions) => void;
 }
 
-export interface AppendOptions {
+interface ReplacePropValuesType{
+    pattern: string
+    repl: string
+}
+
+interface ReplacePropType {
+    target_props: string[]
+    repvalues: ReplacePropValuesType[]
+}
+
+// Update component props by appending to existing
+export interface PropsAppendOptions {
+    replace: ReplacePropType
+}
+
+export interface ComponentAppendOptions {
     target?: 'componentChildren' | 'props';
     position?: 'append' | 'prepend' | 'insertAt';
     index?: number;
@@ -37,7 +52,7 @@ export interface PortalEventDetail {
     props?: ComponentProps;
     controller?: StreamController;
     data?: ComponentProps;
-    options?: AppendOptions;
+    options?: ComponentAppendOptions;
     componentProps?: ComponentProps;
     id?: string;
     prefix?: boolean;
@@ -105,7 +120,7 @@ interface StreamDataPortalAppendComponentEvent extends CustomEvent {
         portalId: string;
         componentType: string;
         componentProps: ComponentProps;
-        options: AppendOptions;
+        options: ComponentAppendOptions;
     };
 }
 
@@ -288,9 +303,9 @@ class StreamingPortalBridge {
             id: portalId,
             update: (newProps: ComponentProps) => this.updateStreamingPortal(portalId, newProps),
             close: () => this.closeStreamingPortal(portalId),
-            append: (data: ComponentProps) => this.appendToStreamingPortal(portalId, data),
-            appendComponent: (componentType: string, componentProps: ComponentProps, options: AppendOptions) =>
-            this.appendComponentToStreamingPortal(portalId, componentType, componentProps, options)
+            append: (data: ComponentProps, options) => this.appendToStreamingPortal(portalId, data, options),
+            appendComponent: (componentType: string, componentProps: ComponentProps, options: ComponentAppendOptions) =>
+                this.appendComponentToStreamingPortal(portalId, componentType, componentProps, options)
         };
 
         const event = new CustomEvent('stream-data-portal-create', {
@@ -342,7 +357,7 @@ class StreamingPortalBridge {
         portalId: string,
         componentType: string,
         componentProps: ComponentProps = {},
-        options: AppendOptions = {}
+        options: ComponentAppendOptions = {}
     ): { portalId: string; componentType: string; componentProps: ComponentProps } {
         const event = new CustomEvent('stream-data-portal-append-component', {
             detail: {
@@ -477,7 +492,7 @@ export const streamingPortalBridge = new StreamingPortalBridge();
 /**
  * Close all portals with specific prefixes
  */
-export function closePrefixed(): void {
+export function clearMessages(): void {
     const prefixes = ['user_message', 'ai_message'];
     for (const pid of prefixes) {
         staticPortalBridge.closeComponent(pid, true);

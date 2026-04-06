@@ -1,4 +1,4 @@
-import { globalEventBus } from "./eventBus";
+import { globalEventBus } from "./eventBus.ts";
 import type { EventMap } from "./types";
 
 // Utility to wait for an event (returns Promise)

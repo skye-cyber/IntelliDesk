@@ -117,7 +117,7 @@ export class ToolManager {
     /**
      * Get all available tool schemas for AI function calling
      */
-    getAvailableToolSchemas() {
+    getAvailableToolSchemas(): Array<ToolSchema> {
         return this.availableTools.map(tool => tool.schema);
     }
 

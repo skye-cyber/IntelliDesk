@@ -1,5 +1,5 @@
 import type { EventMap, EventCallback, EventSubscription } from "./types";
-import { waitForEvent } from "./busEventPromise";
+import { waitForEvent } from "./busEventPromise.ts";
 
 export class EventBus {
     private listeners = new Map<keyof EventMap, Set<EventCallback<any>>>();

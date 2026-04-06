@@ -9,7 +9,7 @@ interface ComponentProps {
     onResolve?: (value: any) => void;
 }
 
-interface StreamController {
+export interface StreamController {
     id: string;
     update: (newProps: ComponentProps) => void;
     close: () => void;
@@ -17,14 +17,14 @@ interface StreamController {
     appendComponent: (componentType: string, componentProps: ComponentProps, options: AppendOptions) => void;
 }
 
-interface AppendOptions {
+export interface AppendOptions {
     target?: 'componentChildren' | 'props';
     position?: 'append' | 'prepend' | 'insertAt';
     index?: number;
     mergeStrategy?: 'append' | 'update' | 'replace';
 }
 
-interface StreamingPortalOptions {
+export interface StreamingPortalOptions {
     mergeStrategy?: 'append' | 'update' | 'replace';
     target?: 'props' | 'streamData';
     [key: string]: any;

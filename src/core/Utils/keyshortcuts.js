@@ -39,7 +39,7 @@ document.addEventListener("keydown", event => {
 
     } else if ((event.altKey && (event.key === "A" || event.key === "a"))) {
         event.preventDefault();
-        globalEventBus.emit('scroll:bottom')
+        globalEventBus.emit('scroll:bottom', false)
         console.log('emit')
     } else if (event.ctrlKey && event.key.toLocaleLowerCase() === '=') {
         event.preventDefault();

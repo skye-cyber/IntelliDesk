@@ -21,7 +21,7 @@ import type { AgentType, ToolConfig } from "../../main/utils/ToolAgent";
 import type { ToolError, ToolResult, ToolSchema, ToolCall, ToolStat } from './types';
 
 
-StateManager.set('enable_tools', true)
+// StateManager.set('enable_tools', true)
 
 const instBase = new ToolBase('', '')
 

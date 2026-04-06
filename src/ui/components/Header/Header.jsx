@@ -111,6 +111,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                     onModelChange(model);
                     setIsModelDropdownOpen(false);
                     StateManager.set('currentModel', model);
+                    globalEventBus.emit('model:change', model)
                 }}
                 onClose={() => setIsModelDropdownOpen(false)}
             />

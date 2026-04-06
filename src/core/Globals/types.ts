@@ -34,11 +34,12 @@ export type EventMap = {
     'key:down': [event: KeyboardEvent]
     'key:up': [event: KeyboardEvent]
     'key:press': [event: KeyboardEvent]
-    'scroll:bottom': []
+    'scroll:bottom': [check: boolean]
     'fileupload:preview:open': []
     'fileupload:preview:close': []
     'dropzone:open': []
     'dropzone:close': []
+    'model:change': [model: string]
 };
 
 

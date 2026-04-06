@@ -569,7 +569,7 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             <Tools shouldToggleCanvas={shouldToggleCanvas} onCanvasToggle={onCanvasToggle} onToggleRecording={onToggleRecording} closeTools={closeTools} handleCodeBlock={handleCodeBlock} handleInlineCode={handleInlineCode} detectedLanguage={detectedLanguage} />
 
             {/* Scroll to bottom button */}
-            <ScrollToBottomButton onClick={() => chatutil.scrollToBottom(document.getElementById('chatArea'), false)} />
+            <ScrollToBottomButton />
         </div>
     );
 };
@@ -768,8 +768,15 @@ const Tools = ({
 const ScrollToBottomButton = ({ onClick }) => {
     const scrollRef = useRef(null)
 
+    const onClickScroll = (check = false) => {
+        chatutil.scrollToBottom(document.getElementById('chatArea'), check)
+    }
+
     useEffect(() => {
-        globalEventBus.on('scroll:bottom', () => scrollRef?.current?.click())
+        const scroller = globalEventBus.on('scroll:bottom', (check = false) => {
+            onClickScroll(check)
+            return () => scroller.unsubscribe()
+        })
     })
     return (
         <button
@@ -777,7 +784,7 @@ const ScrollToBottomButton = ({ onClick }) => {
             id="scroll-bottom"
             className="absolute fixed right-[150px] bottom-24 cursor-pointer rounded-full bg-blue-100 border border-blue-400 dark:border-gray-300 dark:bg-[#222] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
             aria-label="scroll to bottom"
-            onClick={onClick}
+            onClick={() => onClick(false)}
         >
             <div className='hidden group-hover:flex gap-2 absolute left-10 text-black dark:text-white tracking-wider font-extralight font-handwriting text-xs'><span>scroll</span></div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="icon-md text-token-text-primary dark:text-white">

@@ -5,15 +5,10 @@ import { chatutil } from '../../../core/managers/Conversation/util';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { AutoCodeDetector } from '../Code/autoCodeDetector';
 import { globalEventBus, sigint } from '../../../core/Globals/eventBus.ts';
-
-let router
-//Import Dynamically
-import('../../../core/managers/router.js').then(({ Router }) => {
-    router = new Router()
-    // Set a namespaced variable for the watcher
-    window.app = window.app || {};
-    window.app.router = router;
-})
+import { modalmanager } from '../../../core/StatusUIManager/Manager.js';
+import '../../../core/managers/Conversation/Mistral/Completion.ts';
+import { clientmanager } from '../../../core/managers/Conversation/Mistral/ClientManager.ts';
+import { multimodalProcessor } from '../../../core/managers/Conversation/Mistral/InputProcessor.ts';
 
 // Common code patterns for detection
 const CODE_PATTERNS = {
@@ -75,7 +70,6 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
             setIncycle(false)
             // StateManager.set('processing', false);
             handleSend(text)
-            console.log("Submit event:", text)
         })
         return () => {
             startCycle.unsubscribe()
@@ -125,8 +119,9 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 // Adjust input field height
                 userInput.style.height = 'auto';
                 setDetectedLanguage('');
-
-                router.requestRouter(formattedMessage, document.getElementById('chatArea'));
+                if (!formattedMessage) return modalmanager.showMessage("No text provided", "error")
+                globalEventBus.emit('useraction:request:execution', formattedMessage)
+                // router.requestRouter(formattedMessage, document.getElementById('chatArea'));
                 adjustHeight(userInput)
             }
         }
@@ -134,50 +129,11 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
 
 
     useEffect(() => {
-        const routerWatcher = namespaceWatcher.waitFor('app.router', (routerInstance, timedOut) => {
-            const userInput = document.getElementById('userInput');
+        const userInput = document.getElementById('userInput');
 
-            //prep user input
-            userInput.focus()
+        //prep user input
+        userInput.focus()
 
-            if (timedOut) {
-                //console.error('Router initialization timeout');
-                return;
-            }
-
-            // Image loaded event handler
-            const handleImageLoaded = async (event) => {
-                try {
-                    //await routerInstance.chooseRoute(event, document.getElementById('chatArea'));
-                } catch (error) {
-                    console.error('Error in chooseRoute:', error);
-                }
-            };
-
-            //document.addEventListener('imageLoaded', handleImageLoaded);
-
-            // Store references for cleanup
-            routerWatcher._handlers = {
-                handleImageLoaded,
-                userInput
-            };
-        }, {
-            timeout: 10000, // 10 second timeout
-            delay: 50, // Check every 50ms
-            throwOnTimeout: false
-        });
-
-        return () => {
-            // Cleanup event listeners
-            if (routerWatcher._handlers) {
-                const { handleEnterKey, handleImageLoaded, userInput } = routerWatcher._handlers;
-                userInput.removeEventListener('keydown', handleEnterKey);
-                //document.removeEventListener('imageLoaded', handleImageLoaded);
-            }
-
-            // Cancel the watcher
-            routerWatcher.cancel();
-        };
     }, [handleSend]);
 
     const adjustHeight = (element) => {

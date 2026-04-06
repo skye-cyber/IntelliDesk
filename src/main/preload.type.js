@@ -1,3 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MessageRole = exports.ConversationType = exports.ModelType = void 0;
+// Type definitions
+var ModelType;
+(function (ModelType) {
+    ModelType["multimodal"] = "multimodal";
+    ModelType["chat"] = "chat";
+})(ModelType || (exports.ModelType = ModelType = {}));
+var ConversationType;
+(function (ConversationType) {
+    ConversationType["temporary"] = "temporary";
+    ConversationType["normal"] = "normal";
+})(ConversationType || (exports.ConversationType = ConversationType = {}));
+var MessageRole;
+(function (MessageRole) {
+    MessageRole["system"] = "system";
+    MessageRole["user"] = "user";
+    MessageRole["assistant"] = "assistant";
+    MessageRole["tool"] = "tool";
+})(MessageRole || (exports.MessageRole = MessageRole = {}));
 //# sourceMappingURL=preload.type.js.map

@@ -4,9 +4,17 @@ import { ExecException } from 'child_process';
 import { AgentType } from './utils/ToolAgent';
 import { SessionManagerType, LockManagerType } from './utils/SessionManager';
 import { FunctionCall } from '@mistralai/mistralai/models/components';
+export declare enum ModelType {
+    multimodal = "multimodal",
+    chat = "chat"
+}
+export declare enum ConversationType {
+    temporary = "temporary",
+    normal = "normal"
+}
 export interface ConversationMetadata {
-    model: string | 'multimodal' | 'chat';
-    type?: string;
+    model: ModelType;
+    type?: ConversationType;
     name?: string;
     id: string;
     sessionId: string | null;
@@ -29,8 +37,14 @@ export type MultimodalMessage = Array<{
     [key: string]: any;
 }>;
 export type ChatContent = string | MultimodalMessage;
+export declare enum MessageRole {
+    system = "system",
+    user = "user",
+    assistant = "assistant",
+    tool = "tool"
+}
 export interface ChatMessage {
-    role: 'system' | 'user' | 'assistant' | 'tool';
+    role: MessageRole;
     content: ChatContent;
     tool_calls?: Array<ToolCall>;
 }
@@ -108,6 +122,7 @@ export interface ApiType {
     setModel: (model: string) => void;
     clean: (data: Conversation) => Conversation | null;
     getmetadata: (file?: string | undefined | null) => ConversationMetadata | undefined;
+    getRoleByIndex: (index: number) => MessageRole | undefined;
     updateName: (name: string, save?: boolean) => string | undefined;
     updateContinueHistory: (item: ChatMessage) => void | false;
     clearAllImages: (history: Conversation) => any[] | false;

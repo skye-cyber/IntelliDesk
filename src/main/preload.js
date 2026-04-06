@@ -15,6 +15,7 @@ const datetime_1 = require("./utils/datetime");
 const ToolAgent_1 = require("./utils/ToolAgent");
 // import { dbManager } from './utils/db/DatabaseManager';
 const electron_2 = require("electron");
+const preload_type_1 = require("./preload.type");
 const SessionManager_1 = require("./utils/SessionManager");
 const shared_1 = require("./utils/shared");
 // Global variables
@@ -38,8 +39,8 @@ const conversation_root = shared_1.STORE_DIR;
 let system_command = system_1.SystemPrompt.StandardPrompt(profile);
 ConversationHistory = {
     metadata: {
-        model: 'multimodal',
-        type: 'normal',
+        model: preload_type_1.ModelType.multimodal,
+        type: preload_type_1.ConversationType.normal,
         name: '',
         id: ConversationId,
         sessionId: null,
@@ -260,11 +261,11 @@ const api = {
             model = model?.toLocaleLowerCase();
             if (!['chat', 'multimodal'].includes(model))
                 return;
-            ConversationHistory.metadata.model = model;
-            if (ConversationHistory.chats[0].role === 'system') {
-                ConversationHistory.chats[0] = (model === "multimodal")
-                    ? { role: "system", content: [{ type: "text", text: system_command }] }
-                    : { role: "system", content: system_command };
+            ConversationHistory.metadata.model = preload_type_1.ModelType[model];
+            if (ConversationHistory.chats[0].role === preload_type_1.MessageRole.system) {
+                ConversationHistory.chats[0] = (model === preload_type_1.ModelType.multimodal)
+                    ? { role: preload_type_1.MessageRole.system, content: [{ type: "text", text: system_command }] }
+                    : { role: preload_type_1.MessageRole.system, content: system_command };
             }
         }
         catch (error) {
@@ -325,6 +326,16 @@ const api = {
         }
         catch (err) {
             console.log(err, file);
+            return undefined;
+        }
+    },
+    getRoleByIndex: (index) => {
+        try {
+            if (index === -1)
+                return ConversationHistory.chats.slice(-1)[0].role;
+            return ConversationHistory.chats[index].role;
+        }
+        catch (err) {
             return undefined;
         }
     },
@@ -417,7 +428,7 @@ const api = {
             ConversationId = api.generateUUID();
         ConversationHistory.chats = conversation;
         ConversationHistory.metadata = {
-            model: model,
+            model: preload_type_1.ModelType[model],
             id: ConversationId,
             created_at: (0, datetime_1.getformatDateTime)(),
             updated_at: (0, datetime_1.getformatDateTime)(),
@@ -430,12 +441,12 @@ const api = {
     },
     startNew: (model, temporary) => {
         if (temporary)
-            ConversationHistory.metadata.type = "temporary";
+            ConversationHistory.metadata.type = preload_type_1.ConversationType.temporary;
         ConversationId = api.generateUUID();
-        ConversationHistory.chats = [{ role: "system", content: system_command }];
+        ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: system_command }];
         ConversationHistory.metadata.id = ConversationId;
         if (model)
-            ConversationHistory.metadata.model = model;
+            ConversationHistory.metadata.model = preload_type_1.ModelType[model];
     },
     saveConversation: async (conversationData, conversationId = ConversationId) => {
         const filePath = `${conversation_root}/${conversationId}.json`;
@@ -473,8 +484,8 @@ const api = {
     },
     setConversation: (data, id) => {
         try {
-            if (data.chats[0]?.role !== 'system')
-                data.chats.unshift({ role: 'system', content: system_command });
+            if (data.chats[0]?.role !== preload_type_1.MessageRole.system)
+                data.chats.unshift({ role: preload_type_1.MessageRole.system, content: system_command });
             ConversationHistory = data;
             ConversationId = id ? id : data.metadata.id;
             return true;
@@ -701,7 +712,7 @@ electron_1.contextBridge.exposeInMainWorld('desk', {
     // dbManager
 });
 document.addEventListener('DOMContentLoaded', function () {
-    ConversationHistory.chats = [{ role: "system", content: system_command }];
+    ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: system_command }];
     ConversationId = api.generateUUID();
     ConversationHistory.metadata.id = ConversationId;
 });

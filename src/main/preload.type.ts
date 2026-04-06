@@ -6,9 +6,20 @@ import { SessionManagerType, LockManagerType } from './utils/SessionManager';
 import { FunctionCall } from '@mistralai/mistralai/models/components';
 
 // Type definitions
+
+export enum ModelType {
+    multimodal = "multimodal",
+    chat = "chat"
+}
+
+export enum ConversationType {
+    temporary = "temporary",
+    normal = "normal"
+}
+
 export interface ConversationMetadata {
-    model: string | 'multimodal' | 'chat';
-    type?: string;
+    model: ModelType;
+    type?: ConversationType;
     name?: string;
     id: string;
     sessionId: string | null
@@ -32,7 +43,7 @@ export type MultimodalMessage = Array<{ type: string; text?: string;[key: string
 
 export type ChatContent = string | MultimodalMessage
 
-export enum MessageRole{
+export enum MessageRole {
     system = 'system',
     user = 'user',
     assistant = 'assistant',
@@ -120,6 +131,7 @@ export interface ApiType {
     setModel: (model: string) => void;
     clean: (data: Conversation) => Conversation | null;
     getmetadata: (file?: string | undefined | null) => ConversationMetadata | undefined;
+    getRoleByIndex: (index: number) => MessageRole | undefined;
     updateName: (name: string, save?: boolean) => string | undefined;
     updateContinueHistory: (item: ChatMessage) => void | false;
     clearAllImages: (history: Conversation) => any[] | false;

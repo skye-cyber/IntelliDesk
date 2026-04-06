@@ -1,5 +1,6 @@
 import React from 'react';
 import { staticPortalBridge } from '../../../core/PortalBridge.ts';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 export class ErrorHandler {
     constructor() {
@@ -7,7 +8,7 @@ export class ErrorHandler {
         this.retryCount = 0;
         this.maxRetries = 10;
         this.retryArgs = null;
-        this.retryCallback = null;
+        this.retryCallback = (text) => globalEventBus.emit('useraction:request:execution', text);
         this.error_portal = null
     }
 
@@ -22,8 +23,8 @@ export class ErrorHandler {
     }) {
 
         // Set text to the input section
-        const input = document.getElementById("userInput")
-        if (input) input.innerHTML = StateManager.get('user-text')
+        // const input = document.getElementById("userInput")
+        // if (input) input.innerHTML = callbackArgs
 
         // Clean up any existing error
         this.hideError();
@@ -31,7 +32,7 @@ export class ErrorHandler {
         // Store retry configuration - CRITICAL FIX
         this.maxRetries = maxRetries;
         this.retryArgs = callbackArgs;
-        this.retryCallback = retryCallback; // Store separately from currentError
+        if(!this.retryCallback && retryCallback) this.retryCallback = retryCallback; // Store separately from currentError
 
         this.currentError = {
             title,
@@ -70,7 +71,7 @@ export class ErrorHandler {
 
         try {
             // Execute the retry callback
-            await retryCallback(this.retryArgs);
+            retryCallback(this.retryArgs);
 
             // If we get here, the retry was successful
             //this.resetRetryCount();

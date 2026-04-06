@@ -203,7 +203,6 @@ class StaticPortalBridge {
         });
 
         document.dispatchEvent(event);
-
         return portalId;
     }
 

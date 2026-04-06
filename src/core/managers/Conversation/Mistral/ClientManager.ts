@@ -95,7 +95,6 @@ export class ClientManager {
         this.keychain = await loadApiKeyChain()
 
         this.client = this.create_client()
-        console.log(this.keychain)
         return true
     }
     async save_chain() {

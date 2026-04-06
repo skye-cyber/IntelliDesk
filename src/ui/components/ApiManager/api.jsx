@@ -105,7 +105,6 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
     // Load keys from keytar via the preload API and mask them
     const loadKeyChain = useCallback(async () => {
         const raw_chain = await window.desk.api2.getKeyChain() || [];
-        console.log(raw_chain)
         if (!raw_chain) return
 
         let chain

@@ -4,6 +4,7 @@ import { clearMessages } from "../../PortalBridge.ts";
 import { modalmanager } from "../../StatusUIManager/Manager";
 import { streamingPortalBridge } from "../../PortalBridge.ts";
 import { StateManager } from "../StatesManager";
+import { debounceRenderKaTeX } from "../../MathBase/mathRenderer.js";
 
 export class ConversationLoader {
     constructor() {
@@ -55,7 +56,6 @@ export class ConversationLoader {
                             this.renderToolContent(message)
                         }
                     }
-                    //window.debounceRenderKaTeX(null, null, true);
                 });
             } else {
 
@@ -85,6 +85,7 @@ export class ConversationLoader {
             conversationData = null
             window.gc = true
             this.chatutil.render_math()
+            // debounceRenderKaTeX(null, null, true);
         } catch (err) {
             console.log(err)
             modalmanager.showMessage('Failed to load conversation', 'error');
@@ -210,6 +211,7 @@ export class ConversationLoader {
         }
 
         message_portal.appendComponent('ResponseWrapper', { actualContent: actualContent, thinkContent: thinkContent });
+        this.chatutil.render_math()
         return message_portal
     }
 }

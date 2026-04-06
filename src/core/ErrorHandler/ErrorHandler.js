@@ -5,10 +5,6 @@ import { Timer } from '../Timer/timer.js';
 import { StateManager } from '../managers/StatesManager.js';
 import { globalEventBus } from '../Globals/eventBus.ts';
 
-let router
-import('../../core/managers/router.js').then(({ Router }) => {
-    router = new Router()
-})
 
 export class RequestErrorHandler {
     constructor(options = {}) {
@@ -144,20 +140,14 @@ export class RequestErrorHandler {
         this.currentError = error;
         this.errorContext = context;
 
-        globalEventBus.emit('executioncycle:end')
-
         // Track interruption time
         const timer = new Timer();
         timer.trackTime("interrupt");
 
-        // Update UI state
-
-        globalEventBus.emit('executioncycle:end')
-
         if (this.shouldShowError(error)) {
             this.displayErrorModal(error, context);
         } else {
-            this.handleSilentRetry(error, context);
+            this.handleSilentRetry();
         }
     }
 
@@ -169,9 +159,10 @@ export class RequestErrorHandler {
     }
 
     isNetworkError(error) {
-        return error?.message === "Failed to fetch" ||
-            error?.message === "network error" ||
-            error?.name === "TypeError";
+        return (error.name === 'ConnectionError') ||
+            (error?.message === "Failed to fetch") ||
+            (error?.message === "network error") ||
+            (error?.name === "TypeError");
     }
 
     isServerError(error) {
@@ -337,7 +328,6 @@ export class RequestErrorHandler {
     executeRetry() {
         // Clone the callbacks to avoid modification during iteration
         const callbacksToExecute = Array.from(this.retryCallbacks);
-
         // Clear callbacks BEFORE execution to prevent infinite loops
         this.retryCallbacks.clear();
 
@@ -361,7 +351,7 @@ export class RequestErrorHandler {
         //console.log('Retry event dispatched');
     }
 
-    handleSilentRetry(error, context) {
+    handleSilentRetry() {
         if (this.retryCount < this.defaultOptions.maxRetries) {
             setTimeout(() => {
                 this.retryCount++;
@@ -480,18 +470,9 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null, 
     // Remove loader
     //document.getElementById('loader-parent')?.parentElement?.remove();
 
-    const unsubscribe = requestErrorHandler.onRetry((error, context) => {
+    const unsubscribe = requestErrorHandler.onRetry((context) => {
         context = StateManager.get('retry-context')
-        //console.log("Retry callback executed with context:", context);
-
-        //if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
-
-        if (context.is_multimodal) {
-            router.routeToMistral(context.userContent, StateManager.get('currentModel'));
-        } else {
-            // Use the extracted lastMessage
-            router.requestRouter(context.lastMessage?.trim());
-        }
+        globalEventBus.emit('useraction:request:execution', (context.userContent))
     });
 
     requestErrorHandler.handleError(error, context);

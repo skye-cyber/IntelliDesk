@@ -6,7 +6,7 @@ import errorHandler from "../../../../ui/components/ErrorHandler/ErrorHandler";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
 import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
 import { staticPortalBridge, StreamController, streamingPortalBridge } from "../../../PortalBridge.ts";
-import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
+import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler.js";
 // import { timer } from "../../../Timer/timer";
 import toolExecutor from "../../../Tools/ToolCallHandler.ts";
 import toolManager from "../../../Tools/ToolManager.ts";
@@ -18,14 +18,11 @@ import { CompletionEvent } from "@mistralai/mistralai/models/components/completi
 import { ToolCall, ToolResults, ToolSchema } from "../../../Tools/types";
 import { Tool } from "@mistralai/mistralai/models/components/tool";
 import { ContentChunk } from "@mistralai/mistralai/models/components/contentchunk";
+import { multimodalProcessor } from "./InputProcessor.js";
+import { MessageRole } from "./types.ts";
 
 let SIGINT = false
-export enum MessageRole {
-    system = 'system',
-    user = 'user',
-    assistant = 'assistant',
-    tool = 'tool'
-}
+
 
 // set event handlers
 globalEventBus.on('sigint', () => SIGINT = true)
@@ -44,16 +41,24 @@ interface ToolCallHistory {
     results: ToolResults
     timestamp: string
 }
-
+/**
+ * **USAGE**\
+ * new CompletionBase().route(callback:optional).complete(text)\
+ *
+ * *or*
+ *
+ * completion.route().complete(text)
+ */
 class CompletionBase {
     private clientmanager: typeof clientmanager
     public modelName: string
     public isMultimodalModel: boolean
     private ErrorCallback: CallableFunction | undefined
     private ToolsEnabled: boolean
-    private messagePortal: StreamController
+    private userMessagePID: string
     private streamingPortal: StreamController
     private availableTools: Array<ToolSchema>
+    // private UserInputHandler: CallableFunction
     // Stream var
     private output: string
     private fullResponse: string
@@ -106,50 +111,47 @@ class CompletionBase {
             pendingToolResults: [],
             conversationContext: new Map()
         }
+        SIGINT = false
+        this.TOOL_CALLS = []
     }
 
-    route(callback: CallableFunction) {
+    route(callback: CallableFunction | undefined = undefined) {
         const multimodal = chatutil.get_multimodal_models()
         if (this.modelName && multimodal.includes(this.modelName)) this.isMultimodalModel = true
         // set error callback
-        this.ErrorCallback = callback ? callback : this.route
+        // Use `useraction:request:execution` as default callback if none is provided
+        this.ErrorCallback = callback ? callback : (text: string) => globalEventBus.emit('useraction:request:execution', (text))
         return this
     }
     complete(input: string) {
         this.processInput(input)
+
+        // start execution cycle -> trigger user ui update
+        globalEventBus.emit('executioncycle:start')
         return this.StartSession()
     }
     processInput(input: string, processor: CallableFunction | undefined = undefined): void {
-        if (processor) {
-            const { user_message_portal } = processor(input);
-            StateManager.set('user_message_portal', user_message_portal);
+        if (this.isMultimodalModel) {
+            const { userMessagePID } = multimodalProcessor.process(input);
+            this.userMessagePID = userMessagePID
         } else {
             // Default user message handling
-            const user_message_portal = staticPortalBridge.showComponentInTarget('UserMessage', 'chatArea', {
+            this.userMessagePID = staticPortalBridge.showComponentInTarget('UserMessage', 'chatArea', {
                 message: input,
                 file_type: null,
                 file_data_url: null,
                 save: true
             }, 'user_message');
 
-            window.desk.api.addHistory({ role: "user", content: input });
-
-            StateManager.set('user_message_portal', user_message_portal);
+            window.desk.api.addHistory({ role: MessageRole.user, content: input });
         }
-        this.messagePortal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
-
-        // This shall be for errors
-        StateManager.set('ai_messages_portal', this.messagePortal)
-
-        // change send button appearance to processing status
-        globalEventBus.emit('executioncycle:start')
 
         // Scroll to bottom
         globalEventBus.emit('scroll:bottom', true)
     }
 
     validateClientManager(ErrorCallback: CallableFunction): void {
-        if (!clientmanager.MistralClient?.chat) {
+        if (!clientmanager.client?.chat) {
             throw {
                 origin: 'Mistral Client Call',
                 message: 'Mistral client is not fully configured',
@@ -168,40 +170,43 @@ class CompletionBase {
         return this.ToolsEnabled
     }
 
-    closeMessaPortal() {
-        this.messagePortal.close()
+    closeMessagePortal() {
+        this.streamingPortal.close()
     }
 
     async StartSession() {
         try {
-            this.closeMessaPortal()
-            this.streamingPortal = streamingPortalBridge.createStreamingPortal(
-                'StreamingAiMessage', 'chatArea', undefined, 'ai_message'
-            )
-            this.messagePortal = this.streamingPortal
-
             // Reset stream variables
             this.reset()
 
+            this.streamingPortal = streamingPortalBridge.createStreamingPortal(
+                'StreamingAiMessage', 'chatArea', undefined, 'ai_message'
+            )
             if (this.ToolsEnabled || this.checkTools()) {
                 await this.ToolStreamSession()
             } else {
                 await this.StreamSession()
             }
+
+            StateManager.set('prevStreamingPortal', this.streamingPortal)
+
             this.reset()
         } catch (error) {
-            this.reset()
-            await BaseErrorHandler(error, this.streamingPortal, this.ErrorCallback || this.StartSession)
+            this.handleError(error)
         }
     }
     async StreamSession(): Promise<void> {
-        // Use regular streaming without tools
-        let stream = await mistralClientSimulator.client.chat.stream({ //clientmanager.MistralClient.chat.stream({
-            model: this.modelName,
-            messages: window.desk.api.getHistory(true),
-            maxTokens: 3000,
-        })
-        await this.stream(stream)
+        try {
+            // Use regular streaming without tools
+            let stream = await this.clientmanager.client.chat.stream({
+                model: this.modelName,
+                messages: window.desk.api.getHistory(true) as any,
+                maxTokens: 3000,
+            })
+            await this.stream(stream)
+        } catch (error) {
+            this.handleError(error)
+        }
     }
     async ToolStreamSession() {
         try {
@@ -270,8 +275,8 @@ class CompletionBase {
             }
             SIGINT = false
         } catch (error) {
-            console.error(`[Tool Session] Error in iteration ${this.TOOLCALL_ITERATIONS}:`, error);
-            this.TOOL_SIGINT = true
+            console.debug(`[Tool Session] Error in iteration ${this.TOOLCALL_ITERATIONS}:`, error);
+            this.handleError(error)
         }
     }
     private streamArray(deltaContent: ContentChunk[]) {
@@ -402,8 +407,6 @@ class CompletionBase {
                 historyItem['tool_calls'] = this.TOOL_CALLS
             }
             window.desk.api.addHistory(historyItem);
-            StateManager.set('ai_message_portal', this.streamingPortal)
-            StateManager.set('prev_ai_message_portal', StateManager.get('ai_message_portal'))
         }
     }
     private processToolContent(toolCalls: Array<ToolCall> | null | undefined): void {
@@ -481,6 +484,16 @@ class CompletionBase {
 
         if (await appIsDev()) errorHandler.resetRetryCount()
     }
+    private async handleError(error: Error): Promise<void> {
+        this.reset()
+        globalEventBus.emit('executioncycle:end')
+        // Mark all files as unUsed if we are in multiomodal chat and last message is not from assistant, meaning files have not been uploaded/used
+        if (this.isMultimodalModel && window.desk.api.getRoleByIndex(-1) !== MessageRole.assistant) {
+            multimodalProcessor.unuseAll()
+            window.desk.api.popHistory("user")
+        }
+        await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal.id, this.ErrorCallback || this.StartSession)
+    }
 }
 
 export const completion = new CompletionBase()
@@ -488,3 +501,7 @@ export const completion = new CompletionBase()
 globalEventBus.on('model:change', ((model: string) => {
     completion.modelName = model
 }))
+
+globalEventBus.on('useraction:request:execution', (text) => {
+    completion.route().complete(text)
+})

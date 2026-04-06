@@ -10,19 +10,22 @@ import { getformatDateTime } from './utils/datetime';
 import { Agent as agent } from './utils/ToolAgent';
 // import { dbManager } from './utils/db/DatabaseManager';
 import { shell } from 'electron';
-import type {
-    ConversationMetadata,
-    ChatMessage,
-    Conversation,
-    PreferenceData,
-    SaveDialogOptions,
+import {
+    type ConversationMetadata,
+    type ChatMessage,
+    type Conversation,
+    type PreferenceData,
+    type SaveDialogOptions,
     // KeyChainOptions,
-    OpenDialogOptions,
-    CommandOptions,
-    CommandResult,
-    ApiType,
-    Api2Type,
-    CmdType,
+    type OpenDialogOptions,
+    type CommandOptions,
+    type CommandResult,
+    type ApiType,
+    type Api2Type,
+    type CmdType,
+    MessageRole,
+    ModelType,
+    ConversationType,
     // ChatContent
 } from './preload.type';
 import { SessionManager as sessionmanager, LockManager as lockmanager } from './utils/SessionManager';
@@ -53,8 +56,8 @@ let system_command: string = SystemPrompt.StandardPrompt(profile);
 
 ConversationHistory = {
     metadata: {
-        model: 'multimodal',
-        type: 'normal',
+        model: ModelType.multimodal,
+        type: ConversationType.normal,
         name: '',
         id: ConversationId,
         sessionId: null,
@@ -247,7 +250,7 @@ const api: ApiType = {
         try {
             if (!role) {
                 ConversationHistory.chats.pop();
-            } else if (ConversationHistory.chats?.slice(-1)[0]?.role === role) {
+            } else if (ConversationHistory.chats?.slice(-1)[0]?.role === role as MessageRole) {
                 ConversationHistory.chats.pop();
             }
             ConversationHistory.metadata.updated_at = getformatDateTime();
@@ -264,12 +267,12 @@ const api: ApiType = {
             model = model?.toLocaleLowerCase();
             if (!['chat', 'multimodal'].includes(model)) return;
 
-            ConversationHistory.metadata.model = model;
+            ConversationHistory.metadata.model = ModelType[model as ModelType];
 
-            if (ConversationHistory.chats[0].role === 'system') {
-                ConversationHistory.chats[0] = (model === "multimodal")
-                    ? { role: "system", content: [{ type: "text", text: system_command }] }
-                    : { role: "system", content: system_command };
+            if (ConversationHistory.chats[0].role === MessageRole.system) {
+                ConversationHistory.chats[0] = (model === ModelType.multimodal)
+                    ? { role: MessageRole.system, content: [{ type: "text", text: system_command }] }
+                    : { role: MessageRole.system, content: system_command };
             }
         } catch (error) {
             console.log(error);
@@ -325,6 +328,14 @@ const api: ApiType = {
             return rdata ? JSON.parse(rdata)?.metadata : undefined;
         } catch (err) {
             console.log(err, file);
+            return undefined
+        }
+    },
+    getRoleByIndex: (index: number): MessageRole | undefined => {
+        try {
+            if(index===-1) return ConversationHistory.chats.slice(-1)[0].role
+            return ConversationHistory.chats[index].role
+        } catch (err) {
             return undefined
         }
     },
@@ -414,7 +425,7 @@ const api: ApiType = {
         if (!ConversationId) ConversationId = api.generateUUID();
         ConversationHistory.chats = conversation;
         ConversationHistory.metadata = {
-            model: model,
+            model: ModelType[model as ModelType],
             id: ConversationId,
             created_at: getformatDateTime(),
             updated_at: getformatDateTime(),
@@ -426,11 +437,11 @@ const api: ApiType = {
         api.saveConversation(ConversationHistory);
     },
     startNew: (model: 'chat' | 'multimodal', temporary: boolean): void => {
-        if (temporary) ConversationHistory.metadata.type = "temporary";
+        if (temporary) ConversationHistory.metadata.type = ConversationType.temporary;
         ConversationId = api.generateUUID();
-        ConversationHistory.chats = [{ role: "system", content: system_command }];
+        ConversationHistory.chats = [{ role: MessageRole.system, content: system_command }];
         ConversationHistory.metadata.id = ConversationId;
-        if (model) ConversationHistory.metadata.model = model
+        if (model) ConversationHistory.metadata.model = ModelType[model]
     },
     saveConversation: async (conversationData: Conversation, conversationId: string = ConversationId): Promise<string> => {
         const filePath = `${conversation_root}/${conversationId}.json`;
@@ -467,7 +478,7 @@ const api: ApiType = {
     },
     setConversation: (data: Conversation, id?: string): boolean => {
         try {
-            if (data.chats[0]?.role !== 'system') data.chats.unshift({ role: 'system', content: system_command });
+            if (data.chats[0]?.role !== MessageRole.system) data.chats.unshift({ role: MessageRole.system, content: system_command });
             ConversationHistory = data;
             ConversationId = id ? id : data.metadata.id;
             return true
@@ -691,7 +702,7 @@ contextBridge.exposeInMainWorld('desk', {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    ConversationHistory.chats = [{ role: "system", content: system_command }];
+    ConversationHistory.chats = [{ role: MessageRole.system, content: system_command }];
     ConversationId = api.generateUUID();
     ConversationHistory.metadata.id = ConversationId;
 });

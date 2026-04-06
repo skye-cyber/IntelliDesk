@@ -1,8 +1,8 @@
 import { waitForElement } from "../../../core/Utils/dom_utils";
-import { Router } from "../../../core/managers/router";
 import { modalmanager } from "../../../core/StatusUIManager/Manager";
 import { staticPortalBridge } from "../../../core/PortalBridge.ts";
 import { StateManager } from "../../../core/managers/StatesManager";
+import { emit } from "../../../core/Globals/eventBus.ts";
 
 // Update show/hide functions with new animations
 export function showDropZoneModal() {
@@ -105,7 +105,8 @@ export function handleFiles(files) {
 
     // switch model to multi-modal
     const model = "mistral-small-latest"
-    new Router().change_model(model)
+    // Dispatch bus event
+    emit('model:change', model)
 
     if (ignored > 0) modalmanager.showMessage(` ${ignored} Unsupported ${(ignored > 1) ? "files were" : "file was"} ignored!`, "warning");
 

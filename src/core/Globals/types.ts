@@ -14,6 +14,7 @@ export type EventMap = {
     'executioncycle:start': []
     'executioncycle:end': []
     'useraction:submit:incycle': [text: string]
+    'useraction:request:execution': [text: string]
     'opencode:in:canvas': [ref: RefAttributes<any>['ref']]
     'copy:feedback': [detail: copyDtetail]
     'clone:feedback': []

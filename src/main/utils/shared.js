@@ -92,6 +92,9 @@ exports.DEFAULT_AGENT_CONFIG = {
                 'dash -i',
                 'screen',
                 'tmux',
+                'unlink',
+                'sudo',
+                'su'
             ],
             denylist_standalone: [
                 'python',

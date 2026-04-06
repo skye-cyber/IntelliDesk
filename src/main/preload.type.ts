@@ -3,6 +3,7 @@ import fs from 'fs';
 import { ExecException } from 'child_process';
 import { AgentType } from './utils/ToolAgent';
 import { SessionManagerType, LockManagerType } from './utils/SessionManager';
+import { FunctionCall } from '@mistralai/mistralai/models/components';
 
 // Type definitions
 export interface ConversationMetadata {
@@ -16,12 +17,32 @@ export interface ConversationMetadata {
     highlight?: string;
 }
 
+export type ToolTypes = {
+    Function: "function",
+}
+
+export interface ToolCall {
+    id?: string | undefined;
+    type?: ToolTypes | undefined;
+    function: FunctionCall;
+    index?: number | undefined;
+}
+
 export type MultimodalMessage = Array<{ type: string; text?: string;[key: string]: any }>
+
 export type ChatContent = string | MultimodalMessage
 
+export enum MessageRole{
+    system = 'system',
+    user = 'user',
+    assistant = 'assistant',
+    tool = 'tool'
+}
+
 export interface ChatMessage {
-    role: 'system' | 'user' | 'assistant';
+    role: MessageRole;
     content: ChatContent;
+    tool_calls?: Array<ToolCall>
 }
 
 export interface Conversation {
@@ -104,6 +125,7 @@ export interface ApiType {
     clearAllImages: (history: Conversation) => any[] | false;
     clearImages: (history: Conversation) => any[] | false;
     CreateNew: (conversation: ChatMessage[], model: string) => void;
+    startNew: (model: 'chat' | 'multimodal', temporary: boolean) => void;
     saveConversation: (conversationData: Conversation, conversationId?: string) => Promise<string>;
     generateUUID: () => string;
     getConversationId: () => string;

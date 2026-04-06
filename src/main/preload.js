@@ -428,6 +428,15 @@ const api = {
         };
         api.saveConversation(ConversationHistory);
     },
+    startNew: (model, temporary) => {
+        if (temporary)
+            ConversationHistory.metadata.type = "temporary";
+        ConversationId = api.generateUUID();
+        ConversationHistory.chats = [{ role: "system", content: system_command }];
+        ConversationHistory.metadata.id = ConversationId;
+        if (model)
+            ConversationHistory.metadata.model = model;
+    },
     saveConversation: async (conversationData, conversationId = ConversationId) => {
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
@@ -694,14 +703,6 @@ electron_1.contextBridge.exposeInMainWorld('desk', {
 document.addEventListener('DOMContentLoaded', function () {
     ConversationHistory.chats = [{ role: "system", content: system_command }];
     ConversationId = api.generateUUID();
-    ConversationHistory.metadata.id = ConversationId;
-});
-document.addEventListener('NewConversation', function (e) {
-    const details = e.detail;
-    if (details?.type?.toLocaleLowerCase() === "temporary")
-        ConversationHistory.metadata.type = "temporary";
-    ConversationId = api.generateUUID();
-    ConversationHistory.chats = [{ role: "system", content: system_command }];
     ConversationHistory.metadata.id = ConversationId;
 });
 document.addEventListener('keydown', (event) => {

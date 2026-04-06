@@ -425,6 +425,13 @@ const api: ApiType = {
         };
         api.saveConversation(ConversationHistory);
     },
+    startNew: (model: 'chat' | 'multimodal', temporary: boolean): void => {
+        if (temporary) ConversationHistory.metadata.type = "temporary";
+        ConversationId = api.generateUUID();
+        ConversationHistory.chats = [{ role: "system", content: system_command }];
+        ConversationHistory.metadata.id = ConversationId;
+        if (model) ConversationHistory.metadata.model = model
+    },
     saveConversation: async (conversationData: Conversation, conversationId: string = ConversationId): Promise<string> => {
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
@@ -686,14 +693,6 @@ contextBridge.exposeInMainWorld('desk', {
 document.addEventListener('DOMContentLoaded', function() {
     ConversationHistory.chats = [{ role: "system", content: system_command }];
     ConversationId = api.generateUUID();
-    ConversationHistory.metadata.id = ConversationId;
-});
-
-document.addEventListener('NewConversation', function(e: CustomEvent<{ type?: string }>) {
-    const details = e.detail;
-    if (details?.type?.toLocaleLowerCase() === "temporary") ConversationHistory.metadata.type = "temporary";
-    ConversationId = api.generateUUID();
-    ConversationHistory.chats = [{ role: "system", content: system_command }];
     ConversationHistory.metadata.id = ConversationId;
 });
 

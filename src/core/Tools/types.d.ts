@@ -16,14 +16,24 @@ export interface ToolCall {
 
 export type toolCalls = Array<ToolCall> | null | undefined;
 
-export interface ToolResult {
+export interface ToolResultResponse {
     success: boolean,
     result: Record<any, any>
     tool: string,
     timestamp: string
 }
 
-export interface ToolError extends ToolResult {
+export interface ToolResultItem {
+    toolCallId: number | string
+    toolName: string
+    result?: any
+    error?: string
+}
+
+export type ToolResults = Array<ToolResultItem>
+
+
+export interface ToolError extends ToolResultResponse {
     error: string,
     params: string,
 }

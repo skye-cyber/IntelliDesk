@@ -5,7 +5,7 @@
 import toolManager from './ToolManager';
 import { BaseErrorHandler } from "../ErrorHandler/BaseHandler";
 import { staticPortalBridge } from '../PortalBridge.ts';
-import type { ToolCall } from './types';
+import type { ToolCall, ToolResults, ToolResultItem } from './types';
 import type { Session } from '../../main/utils/SessionManager.ts';
 import { emit } from '../Globals/eventBus.ts';
 
@@ -16,15 +16,6 @@ interface toolHistoryItem {
     result: Record<any, any>
     timestamp: Date | string
 }
-
-export interface ToolResultItem {
-    toolCallId: number | string
-    toolName: string
-    result?: any
-    error?: string
-}
-
-type ToolResult = Array<ToolResultItem>
 
 export class ToolExecutor {
     private toolManager: typeof toolManager
@@ -39,8 +30,8 @@ export class ToolExecutor {
     /**
      * Process AI tool calls and execute them
      */
-    async processToolCalls(toolCalls: Array<ToolCall>, context = {}) {
-        const results: ToolResult = [];
+    async processToolCalls(toolCalls: Array<ToolCall>, context = {}): Promise<ToolResults> {
+        const results: ToolResults = [];
 
         for (const toolCall of toolCalls) {
             try {
@@ -223,7 +214,7 @@ export class ToolExecutor {
      * Process parallel tool calls
      */
     async processParallelToolCalls(toolCalls: Array<ToolCall>, context: Map<any, any>) {
-        const results: Array<ToolResultItem> = [];
+        const results: ToolResults = [];
         const promises: Array<Promise<ToolResultItem>> = [];
 
         for (const toolCall of toolCalls) {

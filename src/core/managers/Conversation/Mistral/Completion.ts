@@ -15,7 +15,7 @@ import { globalEventBus } from "../../../Globals/eventBus.ts";
 // import { Mistral } from '@mistralai/mistralai';
 import { EventStream } from "@mistralai/mistralai/lib/event-streams";
 import { CompletionEvent } from "@mistralai/mistralai/models/components/completionevent";
-import { ToolCall, ToolSchema } from "../../../Tools/types";
+import { ToolCall, ToolResults, ToolSchema } from "../../../Tools/types";
 import { Tool } from "@mistralai/mistralai/models/components/tool";
 import { ContentChunk } from "@mistralai/mistralai/models/components/contentchunk";
 
@@ -36,6 +36,13 @@ interface ToolSessionState {
     lastToolCall: ToolCall | null,
     pendingToolResults: Array<any>,
     conversationContext: Map<any, any>
+}
+
+interface ToolCallHistory {
+    iterations: number
+    toolCalls: ToolCall[]
+    results: ToolResults
+    timestamp: string
 }
 
 class CompletionBase {
@@ -60,10 +67,10 @@ class CompletionBase {
     // Tool session
     private TOOL_CALLS: Array<ToolCall>
     // Tool stream
-    private TOOLSTREAM_ITERATIONS: number
+    private TOOLCALL_ITERATIONS: number
     private MAX_TOOLITERATIONS: number
     private TOOL_SIGINT: boolean
-    private ToolCallHistory: ToolCall[]
+    private ToolCallHistory: ToolCallHistory[]
     private ToolSessionState: ToolSessionState
 
     constructor(ErrorCallback: CallableFunction | undefined = undefined) {
@@ -89,7 +96,7 @@ class CompletionBase {
         // Routing options
         this.isMultimodalModel = false
         // Tool stream options
-        this.TOOLSTREAM_ITERATIONS = 0
+        this.TOOLCALL_ITERATIONS = 0
         this.TOOL_SIGINT = false
         this.ToolCallHistory = []
         this.ToolSessionState = {
@@ -194,49 +201,78 @@ class CompletionBase {
             messages: window.desk.api.getHistory(true),
             maxTokens: 3000,
         })
-        await this.processStream(stream)
+        await this.stream(stream)
     }
     async ToolStreamSession() {
-        // SIGINT when a tool permission is denied
-        globalEventBus.once('permission:denied', () => this.TOOL_SIGINT = true)
-        let HAS_FINAL_RESPONSE = false
+        try {
+            // SIGINT when a tool permission is denied
+            globalEventBus.once('permission:denied', () => this.TOOL_SIGINT = true)
+            let HAS_FINAL_RESPONSE = false
 
-        while (this.TOOLSTREAM_ITERATIONS < this.MAX_TOOLITERATIONS && !HAS_FINAL_RESPONSE) {
-            this.TOOLSTREAM_ITERATIONS++;
-            this.ToolSessionState.iterationCount = this.TOOLSTREAM_ITERATIONS;
+            while (this.TOOLCALL_ITERATIONS < this.MAX_TOOLITERATIONS && !HAS_FINAL_RESPONSE) {
+                this.TOOLCALL_ITERATIONS++;
+                this.ToolSessionState.iterationCount = this.TOOLCALL_ITERATIONS;
 
-            if (SIGINT || this.TOOL_SIGINT) break
+                if (SIGINT || this.TOOL_SIGINT) break
 
-            const stream = await this.clientmanager.client.chat.stream({
-                model: this.modelName,
-                messages: window.desk.api.getHistory(true) as any, //conversationHistory,
-                maxTokens: 3000,
-                tools: this.availableTools as Array<Tool>,
-                toolChoice: 'any',
-                parallelToolCalls: false,
-            });
+                const stream = await this.clientmanager.client.chat.stream({
+                    model: this.modelName,
+                    messages: window.desk.api.getHistory(true) as any, //conversationHistory,
+                    maxTokens: 3000,
+                    tools: this.availableTools as Array<Tool>,
+                    toolChoice: 'any',
+                    parallelToolCalls: false,
+                });
 
-            this.stream(stream)
-        }
-    }
-    private think(contentChunk) {
-        // Extract text from thinking array
-        if (contentChunk.thinking && Array.isArray(contentChunk.thinking)) {
-            for (const thought of contentChunk.thinking) {
-                if (thought.type === "text" && thought.text) {
-                    this.thinkContent += thought.text;
+                await this.stream(stream)
+
+                // Check if tool_calls were requested and dispatch/execute them
+                if (this.TOOL_CALLS && this.TOOL_CALLS.length > 0) {
+                    console.log(`[Tool Session] Iteration ${this.TOOLCALL_ITERATIONS}: Processing ${this.TOOL_CALLS.length} tool calls`);
+
+                    // Process all tool calls in this iteration
+                    const toolResults = await toolExecutor.processToolCalls(
+                        this.TOOL_CALLS
+                    );
+                    // Store tool call information
+                    this.ToolCallHistory.push({
+                        iterations: this.TOOLCALL_ITERATIONS,
+                        toolCalls: this.TOOL_CALLS,
+                        results: toolResults,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // History was update in UpdateHistory so skip
+
+                    for (const call of toolResults) {
+                        const tool_result = {
+                            role: MessageRole.tool,
+                            content: JSON.stringify(call.result),
+                            name: call.toolName,
+                            tool_call_id: call.toolCallId
+                        }
+                        window.desk.api.addHistory(tool_result);
+                        streamingPortalBridge.appendComponentAsChild(this.streamingPortal.id, 'ToolCallDisplay', {
+                            toolCall: call
+                        })
+                    }
+                    // Update session state
+                    this.ToolSessionState.toolCallsMade += this.TOOL_CALLS.length;
+                    this.ToolSessionState.lastToolCall = this.TOOL_CALLS[this.TOOL_CALLS.length - 1];
+                    this.ToolSessionState.pendingToolResults = toolResults;
+                } else {
+                    // No tool calls, this is the final response
+                    HAS_FINAL_RESPONSE = true;
+                    console.log(`[Tool Session] Final response received in iteration ${this.TOOLCALL_ITERATIONS}`);
+                    SIGINT = true
+                    break
                 }
             }
+            SIGINT = false
+        } catch (error) {
+            console.error(`[Tool Session] Error in iteration ${this.TOOLCALL_ITERATIONS}:`, error);
+            this.TOOL_SIGINT = true
         }
-    }
-    private response(contentChunk) {
-        // If we were thinking, now we've finished thinking
-        if (this.isThinking) {
-            this.hasfinishedThinking = true;
-            this.isThinking = false;
-        }
-
-        this.actualResponse += contentChunk.text;
     }
     private streamArray(deltaContent: ContentChunk[]) {
         // Process each content chunk in the array
@@ -245,12 +281,25 @@ class CompletionBase {
             if (contentChunk.type === "thinking") {
                 // Start or continue thinking
                 this.isThinking = true;
-                this.think(contentChunk)
+
+                // Extract text from thinking array
+                if (contentChunk.thinking && Array.isArray(contentChunk.thinking)) {
+                    for (const thought of contentChunk.thinking) {
+                        if (thought.type === "text" && thought.text) {
+                            this.thinkContent += thought.text;
+                        }
+                    }
+                }
             } else if (contentChunk.type === "text" && contentChunk.text) {
                 // This is actual response text
-                // Start or continue thinking
-                this.isThinking = false;
-                this.response(contentChunk)
+
+                // If we were thinking, now we've finished thinking
+                if (this.isThinking) {
+                    this.hasfinishedThinking = true;
+                    this.isThinking = false;
+                }
+
+                this.actualResponse += contentChunk.text;
 
 
             }
@@ -283,7 +332,7 @@ class CompletionBase {
      * 2. Modify the previous ai response and concatenate this response
      * 3. Store conversation history
      */
-    private continueStream(content: string) {
+    private continueStream() {
         // In first run set <continue> tag as chunk to avoid breaking due to stray chunks that may be part of it. rawDelta cannot be anything except for items in the tag
         if (this.first_run) {
             this.rawDelta = "<continued>"
@@ -320,7 +369,8 @@ class CompletionBase {
                         }
                     ]
                 }
-            });
+            }
+        );
     }
     async updateHistory() {
         if (this.continued) {
@@ -390,7 +440,7 @@ class CompletionBase {
             }
 
             if (this.actualResponse.includes('<continued>') || this.actualResponse.includes('<continued')) {
-                this.continueStream(this.actualResponse)
+                this.continueStream()
             } else {
                 // console.log(thinkContent)
                 this.streamingPortal.update({
@@ -413,7 +463,7 @@ class CompletionBase {
     }
     async completeStream() {
         if (canvasutil.isCanvasOn()) {
-            if (!canvasutil.isCanvasOpen()) chatutil.open_canvas();
+            if (!canvasutil.isCanvasOpen()) globalEventBus.emit('canvas:open');
             // normalize canvas
             canvasutil.NormalizeCanvasCode();
         }

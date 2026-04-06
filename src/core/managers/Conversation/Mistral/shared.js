@@ -39,10 +39,12 @@ export async function loadApiKeyChain() {
         const chain = await window.desk.api2.getKeyChain('mistral');
         const MISTRAL_API_KEY_CHAIN = JSON.parse(chain)
         // Return only the keys that are usable ie not disabled
-        const usable_chain = {keys: MISTRAL_API_KEY_CHAIN.keys.filter(key => key.status != 'disabled')}
+        const usable_chain = { keys: MISTRAL_API_KEY_CHAIN.keys.filter(key => key.status != 'disabled') }
 
         return usable_chain
-    } catch (err) { }
+    } catch (err) {
+        return undefined
+    }
 }
 
 await loadApiKeyChain()

@@ -3,7 +3,7 @@ import { debounceRenderKaTeX } from "../../MathBase/mathRenderer";
 import { chart_interpret } from "../../diagraming/jscharting";
 import { dot_interpreter } from "../../diagraming/vizcharting";
 import { waitForElement } from "../../Utils/dom_utils";
-import { globalEventBus } from "../../Globals/eventBus";
+import { globalEventBus } from "../../Globals/eventBus.ts";
 
 export class ChatUtil {
     constructor() {
@@ -131,7 +131,7 @@ export class ChatUtil {
     }
 
     hide_suggestions() {
-        document.getElementById('suggestions')?.classList?.add('hidden')
+        globalEventBus.emit('suggestions:hide')
     }
     open_canvas() {
         globalEventBus.emit('canvas:open')

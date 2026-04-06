@@ -4,7 +4,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.streamingPortalBridge = exports.staticPortalBridge = void 0;
-exports.closePrefixed = closePrefixed;
+exports.clearMessages = clearMessages;
 class StaticPortalBridge {
     constructor() {
         this.portals = new Map();
@@ -264,7 +264,7 @@ exports.streamingPortalBridge = new StreamingPortalBridge();
 /**
  * Close all portals with specific prefixes
  */
-function closePrefixed() {
+function clearMessages() {
     const prefixes = ['user_message', 'ai_message'];
     for (const pid of prefixes) {
         exports.staticPortalBridge.closeComponent(pid, true);

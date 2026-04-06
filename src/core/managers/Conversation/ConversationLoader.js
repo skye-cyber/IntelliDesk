@@ -1,6 +1,6 @@
 import { waitForElement } from "../../Utils/dom_utils";
 import { chatutil } from "./util";
-import { closePrefixed } from "../../PortalBridge.ts";
+import { clearMessages } from "../../PortalBridge.ts";
 import { modalmanager } from "../../StatusUIManager/Manager";
 import { streamingPortalBridge } from "../../PortalBridge.ts";
 import { StateManager } from "../StatesManager";
@@ -29,7 +29,7 @@ export class ConversationLoader {
             const model = conversationData.chats.model
             if (conversationData.chats) this.chatutil.hide_suggestions()
 
-            closePrefixed()
+            clearMessages()
             const vmodels = this.chatutil.get_multimodal_models()
 
 

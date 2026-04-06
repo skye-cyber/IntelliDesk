@@ -1,4 +1,4 @@
-import { globalEventBus } from "../Globals/eventBus";
+import { globalEventBus } from "../Globals/eventBus.ts";
 import { changeFontSize, resetFontSize } from "./zoom";
 
 document.addEventListener("keydown", event => {

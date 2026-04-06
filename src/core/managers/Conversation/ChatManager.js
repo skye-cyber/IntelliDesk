@@ -1,5 +1,5 @@
 import { conversationloader } from './ConversationLoader.js'
-import { closePrefixed, staticPortalBridge } from '../../PortalBridge.ts';
+import { clearMessages, staticPortalBridge } from '../../PortalBridge.ts';
 import { modalmanager } from '../../StatusUIManager/Manager.js';
 import { globalEventBus } from '../../Globals/eventBus.ts';
 
@@ -347,7 +347,7 @@ export class ChatManager {
     // Function to render a conversation from a file
     // Function to render a conversation from a file
     async renderConversationFromFile(conversationId) {
-        closePrefixed()
+        clearMessages()
 
         // Show loading modal immediately without awaiting
         await this.showLoadingModal('Preparing conversation');

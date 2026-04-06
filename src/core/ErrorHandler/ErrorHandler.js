@@ -3,7 +3,7 @@
 import { Timer } from '../Timer/timer.js';
 // import { waitForNamespace } from '../Utils/namespace_utils.js';
 import { StateManager } from '../managers/StatesManager.js';
-import { globalEventBus } from '../Globals/eventBus.js';
+import { globalEventBus } from '../Globals/eventBus.ts';
 
 let router
 import('../../core/managers/router.js').then(({ Router }) => {

@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { QuickActions } from '../../components/QuickActions/QuickActions';
+import { UsageSuggestions } from '../Usage/Suggestions.js';
 import { MessageList } from './MessageList';
 import { useElectron } from '../../hooks/useElectron';
 import { showDropZoneModal } from '../../components/DropZone/util.js'
-import { ChatUtil } from '../../../core/managers/Conversation/util';
+import { chatutil } from '../../../core/managers/Conversation/util';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '../../components/Input/InputSection';
-
-const chatutil = new ChatUtil()
 
 export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
     const [messages, setMessages] = useState([]);
@@ -104,7 +102,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                         {/*<ToolDemo />*/}
                         {/* Show quick actions when no messages */}
                         {messages.length === 0 && !isLoading && (
-                            <QuickActions />
+                            <UsageSuggestions />
                         )}
 
                         {/* Messages list */}

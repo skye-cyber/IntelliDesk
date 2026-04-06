@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Caret } from '../../../core/Utils/caret.js'
-import { canvasutil, CanvasUtil, CanvasResizeHandler } from '../../../core/managers/Canvas/CanvasUtils.js';
+import { canvasutil } from '../../../core/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '../../components/Themes/useThemeHeadless.jsx';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { Editor } from './editor';
 import { waitForElement } from '../../../core/Utils/dom_utils';
-import { globalEventBus } from '../../../core/Globals/eventBus.js';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 import { ChatDisplay } from '../../../core/managers/Conversation/util.js';
 
 //const chatdisplay = new ChatDisplay()

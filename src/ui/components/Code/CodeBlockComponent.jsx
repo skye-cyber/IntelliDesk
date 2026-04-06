@@ -5,7 +5,7 @@ import { GenerateId } from '../ConversationRenderer/utils';
 import { html_preview } from '../../../core/managers/Canvas/html_render';
 import { exportCodeToFile } from '../../../core/Utils/exportCodeUtils';
 import { useRef, useState } from 'react';
-import { globalEventBus } from '../../../core/Globals/eventBus';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 export const CodeBlockComponent = ({
     highlighted,

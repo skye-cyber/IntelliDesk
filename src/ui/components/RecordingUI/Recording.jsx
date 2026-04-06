@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { RecordingAnimator } from '../../../core/animations/WaveForm.js'
 import errorHandler from '../../components/ErrorHandler/ErrorHandler.jsx';
 import { timer } from '../../../core/Timer/timer';
-import { globalEventBus } from '../../../core/Globals/eventBus.js';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 class Inference {
     constructore(API_KEY) {
@@ -425,7 +425,7 @@ export const Recording = ({ isOpen, onToggle }) => {
 
     const main = useCallback(async (fpath) => {
         try {
-            document.getElementById('suggestions') ? document.getElementById('suggestions').classList.add('hidden') : "";
+            globalEventBus.emit('suggestions:hide')
 
             //start Timerimer
             refs.current.Timer.trackTime("start");

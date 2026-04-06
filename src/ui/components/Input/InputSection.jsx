@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { showDropZoneModal } from '../../components/DropZone/util.js'
 import { namespaceWatcher } from '../../../core/Utils/namespace_utils';
-import { ChatUtil } from '../../../core/managers/Conversation/util';
+import { chatutil } from '../../../core/managers/Conversation/util';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { AutoCodeDetector } from '../Code/autoCodeDetector';
-import { globalEventBus, sigint } from '../../../core/Globals/eventBus.js';
-
-const chatutil = new ChatUtil()
+import { globalEventBus, sigint } from '../../../core/Globals/eventBus.ts';
 
 let router
 //Import Dynamically
@@ -122,15 +120,13 @@ export const InputSection = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }
                 userInput.innerHTML = "";
                 userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
 
-                const suggestionsEl = document.getElementById('suggestions');
-                if (suggestionsEl) suggestionsEl.classList.add('hidden');
+                globalEventBus.emit('suggestions:hide');
 
                 // Adjust input field height
                 userInput.style.height = 'auto';
                 setDetectedLanguage('');
 
                 router.requestRouter(formattedMessage, document.getElementById('chatArea'));
-                chatutil.hide_suggestions()
                 adjustHeight(userInput)
             }
         }

@@ -1,54 +1,42 @@
-import { useState, useCallback, useEffect } from 'react';
-import { ModelList } from './ModelList';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { ModelList } from './Models/ModelList';
 import { StateManager } from '../../../core/managers/StatesManager';
-import { globalEventBus } from '../../../core/Globals/eventBus';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 StateManager.set('currentModel', 'mistral-small-latest')
 
 export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
-    const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-
-    function hideSelectorModal() {
-        const selector = document.getElementById('model-selector')
-
-        selector.classList.add('translate-x-[100vw]', 'opacity-0')
-        selector.classList.remove('translate-x-0', 'opacity-100')
-        setIsModelDropdownOpen(false);
-    }
-
-    function openSelectorModal() {
-        const selector = document.getElementById('model-selector')
-        selector.classList.remove('translate-x-[100vw]', 'opacity-0')
-        selector.classList.add('translate-x-0', 'opacity-100')
-        setIsModelDropdownOpen(true);
-    }
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const openModelSelectorRef = useRef(null)
+    const selectorRef = useRef(null)
 
     useEffect(() => {
         const handleEscape = (e) => {
-            if (e.key === 'Escape' && isModelDropdownOpen || document.getElementById('model-selector')?.classList.contains('translate-x-0')) hideSelectorModal();
+            if (e.key === 'Escape' && isDropdownOpen || document.getElementById('model-selector')?.classList.contains('translate-x-0')) globalEventBus.emit('model:selector:hide');
         };
 
         const handleClick = (e) => {
-            if (!document.getElementById('model-selector')?.contains(e.target) && !document.getElementById('modelButton')?.parentElement.contains(e.target)) {
-                hideSelectorModal()
+            if (!selectorRef.current?.contains(e.target) && !openModelSelectorRef.current?.parentElement.contains(e.target)) {
+                globalEventBus.emit('model:selector:hide')
+                setIsDropdownOpen(false)
             }
         }
 
         document.addEventListener('click', handleClick);
         document.addEventListener('keydown', handleEscape);
-        document.addEventListener('hide-model-selector', hideSelectorModal);
         return () => {
             document.removeEventListener('keydown', handleEscape);
             document.removeEventListener('click', handleClick);
-            document.addEventListener('hide-model-selector', hideSelectorModal);
         }
-    }, [isModelDropdownOpen, hideSelectorModal]);
+    }, [isDropdownOpen]);
 
-    const ModelSelectorToggle = useCallback(() => {
-        if (isModelDropdownOpen || document.getElementById('model-selector')?.classList.contains('translate-x-0')) {
-            hideSelectorModal()
+    const toggleModelSelector = useCallback(() => {
+        if (isDropdownOpen || selectorRef.current?.classList.contains('translate-x-0')) {
+            globalEventBus.emit('model:selector:hide')
+            setIsDropdownOpen(false)
         } else {
-            openSelectorModal()
+            globalEventBus.emit('model:selector:show')
+            setIsDropdownOpen(true)
         }
     })
 
@@ -77,9 +65,10 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                         {/* Model Selector */}
                         <div className="relative">
                             <button
+                                ref={openModelSelectorRef}
                                 id="modelButton"
                                 className="rounded-lg ml-1 p-2 font-semibold bg-gray-200 hover:bg-blue-200 text-sky-900 dark:text-gray-100 rounded-md dark:bg-[#07090c]/0 dark:hover:bg-[#11161e] hover:scale-[0.9] outline-none cursor-pointer transition-all duration-700"
-                                onClick={ModelSelectorToggle}
+                                onClick={toggleModelSelector}
                             >
                                 <div className="flex">
                                     <span id="selectedModelText" data-class="hf" className="text-md max-w-36 truncate">
@@ -106,14 +95,13 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
             </header>
 
             <ModelList
+                selectorRef={selectorRef}
                 selectedModel={selectedModel}
                 onModelSelect={(model) => {
                     onModelChange(model);
-                    setIsModelDropdownOpen(false);
-                    StateManager.set('currentModel', model);
-                    globalEventBus.emit('model:change', model)
+                    setIsDropdownOpen(false);
                 }}
-                onClose={() => setIsModelDropdownOpen(false)}
+                onClose={() => setIsDropdownOpen(false)}
             />
         </section>
     );

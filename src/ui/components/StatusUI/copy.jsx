@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { globalEventBus } from "../../../core/Globals/eventBus";
+import { globalEventBus } from "../../../core/Globals/eventBus.ts";
 export const CopyFeedback = ({ text = {
     head: 'Copied to clipboard',
     body: 'Ready to paste anywhere'

@@ -1,11 +1,9 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { SettingToggle } from '../components/Settings/settings_toggle.jsx';
-import { StateManager } from '../../core/managers/StatesManager.js';
 import { modalmanager } from '../../core/StatusUIManager/Manager.js';
 import { useTheme } from '../components/Themes/useThemeHeadless.jsx';
 import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary.jsx';
-import { globalEventBus } from '../../core/Globals/eventBus.js';
-import { SettingsIcon } from 'lucide-react';
+import { globalEventBus } from '../../core/Globals/eventBus.ts';
 
 export const Settings = ({ isOpen, onToggle }) => {
     // const [preferenceChange, setPreferenceChange] = useState(false);

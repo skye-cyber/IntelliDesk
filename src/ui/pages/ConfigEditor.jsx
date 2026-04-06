@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { FieldGroup } from '../components/Config/ToolEditor/Fields';
 import { PermissionBadge, TopLevelIcon, SaveIndicator, ToolIcon } from '../components/Config/ToolEditor/Helpers';
-import { globalEventBus } from '../../core/Globals/eventBus';
+import { globalEventBus } from '../../core/Globals/eventBus.ts';
 
 const ConfigEditor = () => {
     const [config, setConfig] = useState(window.desk.agent.config || {});

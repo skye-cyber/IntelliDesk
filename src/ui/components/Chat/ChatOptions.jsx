@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { ChatManager } from '../../../core/managers/Conversation/ChatManager';
 import { modalmanager } from '../../../core/StatusUIManager/Manager';
 import { staticPortalBridge } from '../../../core/PortalBridge.ts';

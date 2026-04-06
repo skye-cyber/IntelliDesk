@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { LoadingSpinner } from './LoadingIndicator';
 import indellidesk from '@assets/intellidesk.png';
-import { globalEventBus } from '../../../core/Globals/eventBus';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
-export const MessageList = ({ }) => {
+export const MessageList = ({ conversationsRef }) => {
     const [isLoading, setLoading] = useState(true)
     const [hasStore, setStore] = useState(false)
 
@@ -28,6 +28,7 @@ export const MessageList = ({ }) => {
     })
     return (
         <div
+        ref={conversationsRef}
             id="conversations"
             data-portal-container="conversations"
             className="verbose-hide hidden h-[64vh] overflow-x-hidden overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth">

@@ -14,9 +14,18 @@ interface APIKeysManagerProps {
     onToggle: () => void;
 }
 
+interface KEY {
+    value: string
+    status: string
+}
+
+interface keychain {
+    keys: Array<KEY>
+}
+
 export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
     // State
-    const [mistralKeyChain, setMistralKeyChain] = useState<{ keys: Array<{ value: string; status: string }> }>({ keys: [] });
+    const [mistralKeyChain, setMistralKeyChain] = useState<keychain>({ keys: [] });
     const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
     const [isApiNotSetModalOpen, setIsApiNotSetModalOpen] = useState(false);
     const [isApiQueryModalOpen, setIsApiQueryModalOpen] = useState(false);
@@ -24,7 +33,7 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
 
     // Refs
     const addKeyRef = useRef<HTMLInputElement>(null);
-    const newKeyRef = useRef<HTMLInputElement>(null);
+    // const newKeyRef = useRef<HTMLInputElement>(null);
 
     // Helper: Mask API key
     const maskKey = useCallback((key: string, options = { visibleChars: 4, maskChar: '*', showLastChars: 2 }) => {
@@ -43,7 +52,7 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
         try {
             const raw_chain = await window.desk.api2.getKeyChain() || [];
             if (!raw_chain) return;
-            let chain;
+            let chain: keychain;
             try {
                 chain = JSON.parse(raw_chain);
             } catch (err) {
@@ -68,10 +77,11 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
     }, []);
 
     // Save key chain
-    const saveKeyChain = useCallback(async () => {
-        if (mistralKeyChain?.keys.length > 0) {
+    const saveKeyChain = useCallback(async (chain: keychain) => {
+        const KeyChain = chain ? chain : mistralKeyChain
+        if (KeyChain?.keys.length > 0) {
             try {
-                const result = await window.desk.api2.saveKeyChain(JSON.stringify(mistralKeyChain));
+                const result = await window.desk.api2.saveKeyChain(JSON.stringify(KeyChain));
                 if (result.success) {
                     await loadKeyChain();
                     setIsWarningModalOpen(false);
@@ -86,7 +96,7 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
         } else {
             setIsApiNotSetModalOpen(true);
         }
-    }, []);
+    }, [mistralKeyChain]);
 
     // Reset keys
     const resetKeys = useCallback(async () => {
@@ -103,7 +113,7 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
             console.error('Failed to reset keys:', error);
             modalmanager.showMessage('Failed to reset API keys', 'error');
         }
-    }, []);
+    }, [mistralKeyChain]);
 
     // Delete a key
     const onKeyDelete = useCallback((key: { value: string; status: string }) => {
@@ -113,7 +123,7 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
         }
         const chain = { keys: mistralKeyChain.keys.filter(api => api.value !== key.value) };
         setMistralKeyChain(chain);
-    }, [mistralKeyChain, resetKeys]);
+    }, [mistralKeyChain]);
 
     // Toggle key status (enable/disable)
     const onKeyDisable = useCallback((key: { value: string; status: string }) => {
@@ -137,7 +147,7 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
         }
         const chain = { keys: [...mistralKeyChain.keys, { value: new_key, status: 'enabled' }] };
         setMistralKeyChain(chain);
-        saveKeyChain();
+        saveKeyChain(chain);
     }, [mistralKeyChain]);
 
     // Modal control functions
@@ -151,28 +161,9 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
         setIsApiQueryModalOpen(false);
     }, []);
 
-    const showApiManModal = useCallback(() => {
-        setIsKeyManModalOpen(true);
-    }, []);
 
     const hideApiManModal = useCallback(() => {
         setIsKeyManModalOpen(false);
-    }, []);
-
-    const showWarningModal = useCallback(() => {
-        setIsWarningModalOpen(true);
-    }, []);
-
-    const closeWarningModal = useCallback(() => {
-        setIsWarningModalOpen(false);
-    }, []);
-
-    const showApiNotSetWarning = useCallback(() => {
-        setIsApiNotSetModalOpen(true);
-    }, []);
-
-    const closeApiNotSetWarning = useCallback(() => {
-        setIsApiNotSetModalOpen(false);
     }, []);
 
     const closeWarningQuery = useCallback(() => {
@@ -181,10 +172,6 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
 
     const closeNotSetQuery = useCallback(() => {
         setIsApiNotSetModalOpen(false);
-    }, []);
-
-    const openApiModal = useCallback(() => {
-        setIsApiQueryModalOpen(true);
     }, []);
 
     // Load keys when component mounts or when API query modal opens

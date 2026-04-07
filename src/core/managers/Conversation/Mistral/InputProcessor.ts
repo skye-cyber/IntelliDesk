@@ -102,7 +102,6 @@ class MultimodalProcessor {
         const files: File[] = StateManager.get('uploaded_files') || [];
         let userContent: userContent[] = [];
 
-        console.log(typeof(text))
         // Always include text content
         if (text && text.trim()) {
             userContent.push(

@@ -44,7 +44,7 @@ export type EventMap = {
     'model:change': [model: string]
     'model:selector:show': []
     'model:selector:hide': []
-    'conversation:new': [type: string]
+    'conversation:new': [temporary?: boolean]
     'suggestions:show': []
     'suggestions:hide': []
     'keychain:manager:show': []

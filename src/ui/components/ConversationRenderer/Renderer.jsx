@@ -3,7 +3,7 @@ import { CopyMessage } from './utils';
 import { HTML2Jpg, HTML2Word, HTML2Pdf } from '../../../core/ChatExport/export';
 import { markitdown } from '../Code/CodeHighlighter';
 import { CodeBlockRenderer, SimpleUserCodeRenderer } from '../Code/CodeBlockRenderer';
-import { chatutil } from '../../../core/managers/Conversation/util';
+import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import { GenerateId } from './utils';
 import { mathStandardize } from '../../../core/MathBase/mathRenderer';
 import { normalizeCodeBlocks } from '../../../core/Code/codeNormalize';
@@ -31,7 +31,7 @@ export const UserMessage = ({ message, files = [] }) => {
 
     }, [messageRef.current, expanded])
 
-    chatutil.render_math(`.${selector_class}`, 0)
+    chatutil.renderMath(`.${selector_class}`, 0)
 
     return (
         <>
@@ -140,7 +140,7 @@ export const ResponseWrapper = ({
 
     // const htmlThinkContent = thinkContent ? markitdown(normalizeMathDelimiters(thinkContent)) : null;
 
-    chatutil.render_math(message_id)
+    chatutil.renderMath(message_id)
 
     return (
         <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[14px]'>

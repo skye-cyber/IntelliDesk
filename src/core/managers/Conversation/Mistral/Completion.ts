@@ -15,7 +15,7 @@ import { globalEventBus } from "../../../Globals/eventBus.ts";
 // import { Mistral } from '@mistralai/mistralai';
 import { EventStream } from "@mistralai/mistralai/lib/event-streams";
 import { CompletionEvent } from "@mistralai/mistralai/models/components/completionevent";
-import { ToolCall, ToolResults, ToolSchema } from "../../../Tools/types";
+import { ToolCall, ToolResults, ToolSchema, FunctionCall } from "../../../Tools/types";
 import { Tool } from "@mistralai/mistralai/models/components/tool";
 import { ContentChunk } from "@mistralai/mistralai/models/components/contentchunk";
 import { multimodalProcessor } from "./InputProcessor.js";
@@ -116,8 +116,7 @@ class CompletionBase {
     }
 
     route(callback: CallableFunction | undefined = undefined) {
-        const multimodal = chatutil.get_multimodal_models()
-        if (this.modelName && multimodal.includes(this.modelName)) this.isMultimodalModel = true
+        if (this.modelName && chatutil.isMultimodal(this.modelName)) this.isMultimodalModel = true
         // set error callback
         // Use `useraction:request:execution` as default callback if none is provided
         this.ErrorCallback = callback ? callback : (text: string) => globalEventBus.emit('useraction:request:execution', (text))
@@ -159,7 +158,7 @@ class CompletionBase {
             if (!clientmanager.client || !clientmanager.client?.chat) {
                 message = message ? message : "Mistral init error"
             }
-            if (clientmanager.validateChain()) {
+            if (!clientmanager.validateChain()) {
                 message = message ? message : 'KeyChain Error'
             }
 
@@ -176,6 +175,7 @@ class CompletionBase {
             return true
         } catch (error) {
             this.handleError(error)
+            return false
         }
     }
 
@@ -183,7 +183,7 @@ class CompletionBase {
         // Initialize tools integration
         const availableTools = toolManager.getAvailableToolSchemas();
         this.availableTools = availableTools
-        this.ToolsEnabled = availableTools.length > 0
+        this.ToolsEnabled = availableTools.length > 0 && chatutil.supportsToolCalling(this.modelName)
         return this.ToolsEnabled
     }
 
@@ -231,6 +231,7 @@ class CompletionBase {
             globalEventBus.once('permission:denied', () => this.TOOL_SIGINT = true)
             let HAS_FINAL_RESPONSE = false
 
+            console.log("STREAM START:")
             while (this.TOOLCALL_ITERATIONS < this.MAX_TOOLITERATIONS && !HAS_FINAL_RESPONSE) {
                 this.TOOLCALL_ITERATIONS++;
                 this.ToolSessionState.iterationCount = this.TOOLCALL_ITERATIONS;
@@ -246,7 +247,9 @@ class CompletionBase {
                     parallelToolCalls: false,
                 });
 
+                console.log("Stream now")
                 await this.stream(stream)
+                console.log(this.TOOL_CALLS)
 
                 // Check if tool_calls were requested and dispatch/execute them
                 if (this.TOOL_CALLS && this.TOOL_CALLS.length > 0) {
@@ -266,6 +269,8 @@ class CompletionBase {
 
                     // History was update in UpdateHistory so skip
 
+                    console.log("TOOL RESULTS")
+                    console.log(toolResults)
                     for (const call of toolResults) {
                         const tool_result = {
                             role: MessageRole.tool,
@@ -427,8 +432,52 @@ class CompletionBase {
         }
     }
     private processToolContent(toolCalls: Array<ToolCall> | null | undefined): void {
-        if (!toolCalls) return
-        this.TOOL_CALLS = toolCalls
+        if (!toolCalls) return;
+
+        // Accumulate tool calls instead of replacing them
+        if (!this.TOOL_CALLS) {
+            this.TOOL_CALLS = [];
+        }
+
+        // Merge/update existing tool calls
+        for (const newToolCall of toolCalls) {
+            const existingIndex = this.TOOL_CALLS.findIndex(tc => tc.id === newToolCall.id);
+
+            if (existingIndex !== -1) {
+                // Update existing tool call (accumulate arguments)
+                const existing = this.TOOL_CALLS[existingIndex];
+                if (newToolCall.function?.arguments) {
+                    // Append the new argument chunk to existing arguments
+                    const existingArgs = existing.function?.arguments || '';
+
+                    let args: { [k: string]: any } | string = ''
+                    if (typeof existingArgs === 'string') {
+                        args = existingArgs + (newToolCall.function.arguments || '')
+                    } else {
+                        // existingArgs is an object (already parsed JSON)
+                        // When streaming, arguments come as strings, so this shouldn't happen
+                        // But if it does, keep the existing object
+                        args = existingArgs
+                    }
+
+                    existing.function = {
+                        ...existing.function,
+                        arguments: args
+                    } as FunctionCall
+                }
+                // Update name if provided (usually first chunk)
+                if (newToolCall.function?.name) {
+                    existing.function = {
+                        ...existing.function,
+                        name: newToolCall.function.name
+                    } as FunctionCall;
+                }
+                this.TOOL_CALLS[existingIndex] = existing;
+            } else {
+                // Add new tool call
+                this.TOOL_CALLS.push(newToolCall);
+            }
+        }
     }
     async stream(stream: EventStream<CompletionEvent>) {
         for await (const chunk of stream) {
@@ -476,10 +525,9 @@ class CompletionBase {
             globalEventBus.emit('scroll:bottom', true)
 
             // Render mathjax immediately
-            chatutil.render_math(`${message_id}`, 'all', 2000 as any)
-
-            this.updateHistory()
+            chatutil.renderMath(`${message_id}`, 'all', 2000 as any)
         }
+        this.updateHistory()
     }
     async completeStream() {
         if (canvasutil.isCanvasOn()) {
@@ -494,7 +542,7 @@ class CompletionBase {
         // Reset send button appearance
         globalEventBus.emit('executioncycle:end')
 
-        chatutil.render_math()
+        chatutil.renderMath()
         renderAll_aimessages()
         // }
         setTimeout(() => { leftalinemath() }, 1000)

@@ -138,7 +138,7 @@ export interface ApiType {
     clearImages: (history: Conversation) => any[] | false;
     CreateNew: (conversation: ChatMessage[], model: string) => void;
     startNew: (model: 'chat' | 'multimodal', temporary: boolean) => void;
-    saveConversation: (conversationData: Conversation, conversationId?: string) => Promise<string>;
+    saveConversation: () => Promise<string>;
     generateUUID: () => string;
     getConversationId: () => string;
     setConversationId: (id: string) => void;

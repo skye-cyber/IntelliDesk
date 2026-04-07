@@ -8,10 +8,6 @@ import { StateManager } from '../managers/StatesManager';
 
 
 export class DotInterPreter {
-    constructor() {
-
-    }
-
     fixUnclosedCodeBlocks(text) {
         const codeBlockPattern = /```(dot|json-draw)[ \t]*\r?\n([\s\S]*?)(```)?(?=\n|$)/gi;
         return text.replace(codeBlockPattern, (match, lang, body, closing) => {

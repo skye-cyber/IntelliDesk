@@ -10,7 +10,7 @@ export type FunctionCall = {
 export interface ToolCall {
     id?: string | undefined;
     type?: ToolTypes | undefined;
-    function: FunctionCall;
+    function?: FunctionCall;
     index?: number | undefined;
 }
 

@@ -6,9 +6,7 @@ import { StateManager } from '../../../core/managers/StatesManager';
 import { Editor } from './editor';
 import { waitForElement } from '../../../core/Utils/dom_utils';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
-import { ChatDisplay } from '../../../core/managers/Conversation/util.js';
-
-//const chatdisplay = new ChatDisplay()
+import { ChatDisplay } from '../../../core/managers/Conversation/util';
 
 StateManager.set('isCanvasActive', false)
 

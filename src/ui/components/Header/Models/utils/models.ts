@@ -17,95 +17,134 @@ export type ModelCategoryList = Array<ModelCategoryType>
 
 export const ModelCategory: ModelCategoryList = [
     {
-        title: "Multimodal", type: 'multimodal', models: [
+        title: "Multimodal",
+        type: 'multimodal',
+        models: [
             {
-                value: "mistral-small-latest", name: "mistral-small-latest", description: "Latest   small iteration for vison model.", icon: "mistral", platform: "mitsral"
+                value: "mistral-small-latest",
+                name: "mistral-small-latest",
+                description: "Latest small model with vision and document capabilities. 128k context, supports text and image inputs.",
+                icon: "mistral",
+                platform: "mistral"
             },
             {
-                value: "pixtral-large-2411", name: "pixtral-large-2411", description: "Optimized for high-quality image and text processing, suitable for complex visual understanding tasks.", icon: "mistral", platform: "mitsral"
+                value: "pixtral-large-latest",
+                name: "pixtral-large-latest",
+                description: "Advanced vision-language model for complex visual understanding and reasoning tasks.",
+                icon: "mistral",
+                platform: "mistral"
             },
             {
-                value: "pixtral-12b-2409", name: "pixtral-12b-2409", description: "Designed for advanced image and text integration tasks, enhancing multimodal applications.", icon: "mistral", platform: "mitsral"
+                value: "pixtral-12b-latest",
+                name: "pixtral-12b-latest",
+                description: "Lightweight multimodal model (12B) for efficient image-text processing at the edge.",
+                icon: "mistral",
+                platform: "mistral"
             },
         ]
     },
     {
-        title: "Coding", type: 'coding', models: [
+        title: "Coding",
+        type: 'coding',
+        models: [
             {
-                value: "codestral-latest", name: "codestral-latest", description: "Latest coding-focused model.", icon: "mistral", platform: "mitsral", recommended: true
+                value: "codestral-latest",
+                name: "codestral-latest",
+                description: "State-of-the-art coding model supporting 80+ languages and fill-in-the-middle capabilities.",
+                icon: "mistral",
+                platform: "mistral",
+                recommended: true
             },
             {
-                value: "codestral-2501", name: "codestral-2501", description: "Advanced coding-focused model offering improved performance in programming-related tasks and queries.", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "codestral-2505", name: "codestral-2505", description: "Advanced coding-focused model iteration", icon: "mistral", platform: "mitsral"
+                value: "codestral-mamba-2407",
+                name: "codestral-mamba-2407",
+                description: "Mamba architecture variant for linear-time inference and long-context code generation.",
+                icon: "mistral",
+                platform: "mistral"
             }
         ]
     },
     {
-        title: "Moderation", type: 'muoderation', models: [
+        title: "Moderation",
+        type: 'moderation',
+        models: [
             {
-                value: "mistral-moderation-2411", name: "mistral-moderation-2411", description: "Focused on content moderation, designed to identify and filter inappropriate or harmful content in text data.", icon: "mistral", platform: "mitsral"
+                value: "mistral-moderation-latest",
+                name: "mistral-moderation-latest",
+                description: "Self-reflection based content moderation for classification of harmful text across multiple languages.",
+                icon: "mistral",
+                platform: "mistral"
             }
         ]
     },
     {
-        title: "Text Generation", type: 'general', models: [
+        title: "Text Generation",
+        type: 'general',
+        models: [
             {
-                value: "mistral-large-latest", name: "mistral-large-latest", description: "The latest iteration of the large LLM.", icon: "mistral", platform: "mistral", recommended: true
+                value: "mistral-large-latest",
+                name: "mistral-large-latest",
+                description: "Flagship large language model with 123B parameters, advanced reasoning, and function calling.",
+                icon: "mistral",
+                platform: "mistral",
+                recommended: true
             },
             {
-                value: "mistral-small-2402", name: "mistral-small-2402", description: "Tailored for efficient processing with a focus on smaller datasets and lower resource consumption.", icon: "mistral", platform: "mitsral"
+                value: "mistral-saba-2502",
+                name: "mistral-saba-2502",
+                description: "Specialized model for Arabic and South Asian languages (Hindi, Tamil, etc.) trained on regional data.",
+                icon: "mistral",
+                platform: "mistral"
             },
             {
-                value: "open-mixtral-8x22b", name: "open-mixtral-8x22b", description: "Powerful ensemble model optimized for complex language tasks and high accuracy", icon: "mistral", platform: "mitsral"
+                value: "open-mistral-nemo",
+                name: "open-mistral-nemo",
+                description: "12B Apache 2.0 licensed model optimized for edge deployment and fine-tuning.",
+                icon: "mistral",
+                platform: "mistral"
             },
             {
-                value: "open-mixtral-8x7b", name: "open-mixtral-8x7b", description: "For enhanced performance in diverse NLP applications.", icon: "mistral", platform: "mitsral"
+                value: "ministral-8b-2410",
+                name: "ministral-8b-2410",
+                description: "8B parameter edge model with high performance per watt for on-device inference.",
+                icon: "mistral",
+                platform: "mistral"
             },
             {
-                value: "open-mistral-7b", name: "open-mistral-7b", description: "General-purpose natural language understanding and generation tasks", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "mistral-large-2407", name: "mistral-large-2407", description: "Enhanced version of the large model", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "mistral-large-2402", name: "mistral-large-2402", description: "Optimized for high-performance tasks, offering advanced capabilities in understanding and generating human-like text", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "mistral-medium", name: "mistral-medium", description: "Medium-sized model balancing performance and resource efficiency.", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "mistral-small-2501", name: "mistral-small-2501", description: "Refined small model designed for rapid inference and deployment in resource-constrained environments while maintaining robust language capabilities.", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "mistral-small-2409", name: "mistral-small-2409", description: "Improves upon its predecessor with enhanced training techniques for better performance in lightweight applications.", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "ministral-8b-2410", name: "ministral-8b-2410", description: "Provides enhanced capabilities and efficient resource usage", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "open-mistral-nemo", name: "open-mistral-nemo", description: "Tailored for conversational AI applications, focusing on generating human-like dialogue and understanding context.", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "mistral-saba-2502", name: "mistral-saba-2502", description: "Specialized for specific language tasks, leveraging advanced techniques for improved contextual understanding and response generation.", icon: "mistral", platform: "mitsral"
-            },
-            {
-                value: "mistral-large-2411", name: "mistral-large-2411", description: "Designed to deliver state-of-the-art performance", icon: "mistral", platform: "mitsral"
+                value: "ministral-3b-2410",
+                name: "ministral-3b-2410",
+                description: "Ultra-lightweight 3B model for resource-constrained environments and low-latency applications.",
+                icon: "mistral",
+                platform: "mistral"
             }
         ]
     },
     {
-        title: "Embending", type: 'embending', models: [
+        title: "Embedding",
+        type: 'embedding',
+        models: [
             {
-                value: "mistral-embed", name: "mistral-embed", description: "Designed for embedding generation, facilitating the transformation of text into vector representations for downstream machine learning tasks.", icon: "mistral", platform: "mitsral", recommended: true
+                value: "mistral-embed",
+                name: "mistral-embed",
+                description: "1024-dimensional text embeddings for semantic search, clustering, and RAG applications.",
+                icon: "mistral",
+                platform: "mistral",
+                recommended: true
             },
         ]
     },
     {
-        title: "OCR", type: 'ocr', models: [
-            { value: "mistral-ocr-latest", icon: 'default', name: "mistral-ocr-latest", description: "OCR model from mistral", platform: "mistral", recommended: true }
+        title: "OCR",
+        type: 'ocr',
+        models: [
+            {
+                value: "mistral-ocr-latest",
+                name: "mistral-ocr-latest",
+                description: "Advanced OCR model for structured document understanding and text extraction from images/PDFs.",
+                icon: "mistral",
+                platform: "mistral",
+                recommended: true
+            }
         ]
     }
-
 ];

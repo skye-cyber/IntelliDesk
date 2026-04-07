@@ -1,10 +1,9 @@
 import { waitForElement } from "../../Utils/dom_utils";
-import { chatutil } from "./util";
+import { chatutil } from "./util.ts";
 import { clearMessages } from "../../PortalBridge.ts";
 import { modalmanager } from "../../StatusUIManager/Manager";
 import { streamingPortalBridge } from "../../PortalBridge.ts";
 import { StateManager } from "../StatesManager";
-import { debounceRenderKaTeX } from "../../MathBase/mathRenderer.js";
 
 export class ConversationLoader {
     constructor() {
@@ -28,14 +27,12 @@ export class ConversationLoader {
     async renderConversation(conversationData) {
         try {
             const model = conversationData.chats.model
-            if (conversationData.chats) this.chatutil.hide_suggestions()
+            if (conversationData.chats) this.chatutil.hideSuggestions()
 
             clearMessages()
-            const vmodels = this.chatutil.get_multimodal_models()
-
 
             if (model === 'multimodal') {
-                if (!vmodels.includes(StateManager.get('currentModel'))) this.change_model('mistral-small-latest')
+                if (!chatutil.isMultimodal(StateManager.get('currentModel'))) this.change_model('mistral-small-latest')
 
                 conversationData.chats.forEach(async message => {
 
@@ -60,7 +57,7 @@ export class ConversationLoader {
             } else {
 
                 conversationData.chats.forEach(async message => {
-                    vmodels.includes(StateManager.get('currentModel')) && StateManager.get('currentModel') !== 'mistral-small-latest' ? this.change_model() : ''
+                    chatutil.isMultimodal(StateManager.get('currentModel')) && StateManager.get('currentModel') !== 'mistral-small-latest' ? this.change_model() : ''
                     let content
                     if (typeof message?.content === 'string') {
                         content = message.content?.trim();
@@ -84,7 +81,7 @@ export class ConversationLoader {
             // force gc
             conversationData = null
             window.gc = true
-            this.chatutil.render_math()
+            this.chatutil.renderMath()
             // debounceRenderKaTeX(null, null, true);
         } catch (err) {
             console.log(err)
@@ -167,13 +164,14 @@ export class ConversationLoader {
     }
 
     async renderToolContent(message) {
-        if (!this.portal) return //portal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
+        if (!this.portal) this.portal = streamingPortalBridge.createStreamingPortal('AiMessage', 'chatArea', undefined, 'ai_message')
 
         const toolCall = {
             result: JSON.parse(message.content),
             toolName: message.name,
             toolCallId: message.tool_call_id
         }
+        console.log(toolCall)
 
         // streamingPortalBridge.appendComponentAsChild(this.portal.id, 'ToolCallDisplay', {toolCall: toolCall})
 
@@ -211,7 +209,7 @@ export class ConversationLoader {
         }
 
         message_portal.appendComponent('ResponseWrapper', { actualContent: actualContent, thinkContent: thinkContent });
-        this.chatutil.render_math()
+        this.chatutil.renderMath()
         return message_portal
     }
 }

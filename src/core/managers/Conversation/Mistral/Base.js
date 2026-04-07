@@ -262,7 +262,7 @@ export async function MistralBase({
                 chatutil.scrollToBottom(chatArea, true, 1000);
 
                 // Render mathjax immediately
-                chatutil.render_math(`${message_id}`, 2000)
+                chatutil.renderMath(`${message_id}`, 2000)
             }
 
             if (canvasutil.isCanvasOn()) {
@@ -314,9 +314,9 @@ export async function MistralBase({
 
         // render diagrams from this response
         // if (StateManager.get('current_message_id')) {
-        //     chatutil.render_math(`${StateManager.get('current_message_id')}`)
+        //     chatutil.renderMath(`${StateManager.get('current_message_id')}`)
         // } else {
-        chatutil.render_math()
+        chatutil.renderMath()
         renderAll_aimessages()
         // }
         setTimeout(() => { leftalinemath() }, 1000)

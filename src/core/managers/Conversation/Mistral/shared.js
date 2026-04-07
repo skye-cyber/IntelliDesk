@@ -1,5 +1,5 @@
 import { CanvasUtil } from '../../Canvas/CanvasUtils';
-import { ChatUtil, ChatDisplay } from '../util';
+import { ChatUtil, ChatDisplay } from '../util.ts';
 import { StateManager } from '../../StatesManager';
 
 export const chatdisplay = new ChatDisplay()

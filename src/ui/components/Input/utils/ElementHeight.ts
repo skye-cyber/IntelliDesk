@@ -1,7 +1,10 @@
 export const adjustElementHeight = (element: HTMLBaseElement) => {
     if (!element) return;
 
-    // Save current selection and cursor position
+    // Save current scroll position of the ELEMENT, not the window
+    const currentElementScrollTop = element.scrollTop;
+
+    // Save cursor position
     const selection: Selection | null = window.getSelection();
     let range: Range | null = null;
     let startContainer: Node | null = null;
@@ -15,8 +18,6 @@ export const adjustElementHeight = (element: HTMLBaseElement) => {
         }
     }
 
-    const currentScrollTop = window.pageYOffset;
-
     // Calculate and apply new height
     element.style.height = 'auto';
     const contentHeight = element.scrollHeight;
@@ -25,9 +26,11 @@ export const adjustElementHeight = (element: HTMLBaseElement) => {
     element.style.height = newHeight + 'px';
     element.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
 
-    // Restore scroll position
-    window.scrollTo(0, currentScrollTop);
-    RestoreCursorPosition(selection, range, startContainer, element, startOffset)
+    // ✅ Restore the ELEMENT's scroll position, not the window
+    element.scrollTop = currentElementScrollTop;
+
+    // Restore cursor position
+    RestoreCursorPosition(selection, range, startContainer, element, startOffset);
 };
 
 export const RestoreCursorPosition = (

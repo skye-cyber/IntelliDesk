@@ -136,14 +136,15 @@ const api = {
             return false;
         }
     },
-    RenameConversation: async (id, name, base_dir = conversation_root) => {
+    RenameConversation: async (name, base_dir = conversation_root) => {
         try {
-            const fpath = path_1.default.join(base_dir, `${id}.json`);
+            const fpath = path_1.default.join(base_dir, `${ConversationHistory.metadata.id}.json`);
             let data = await api.read(fpath);
             if (!data)
                 return ConversationHistory;
             data.metadata.name = name;
-            api.saveConversation(data, id);
+            ConversationHistory = data;
+            api.saveConversation();
             return true;
         }
         catch (err) {
@@ -227,7 +228,7 @@ const api = {
                 return ConversationHistory;
             }
             ConversationHistory.metadata.updated_at = (0, datetime_1.getformatDateTime)();
-            api.saveConversation(ConversationHistory);
+            api.saveConversation();
             return ConversationHistory;
         }
         catch (err) {
@@ -345,7 +346,7 @@ const api = {
                 return ConversationHistory.metadata.name;
             ConversationHistory.metadata.name = name;
             if (save)
-                api.saveConversation(ConversationHistory);
+                api.saveConversation();
             return ConversationHistory.metadata.name;
         }
         catch (err) {
@@ -437,7 +438,7 @@ const api = {
             name: ConversationHistory.metadata.name,
             highlight: ConversationHistory.metadata.highlight
         };
-        api.saveConversation(ConversationHistory);
+        api.saveConversation();
     },
     startNew: (model, temporary) => {
         if (temporary)
@@ -448,17 +449,22 @@ const api = {
         if (model)
             ConversationHistory.metadata.model = preload_type_1.ModelType[model];
     },
-    saveConversation: async (conversationData, conversationId = ConversationId) => {
+    saveConversation: async () => {
+        const conversationId = ConversationHistory.metadata.id;
+        if (!conversationId) {
+            console.log("No conversationid:", ConversationHistory);
+            return '';
+        }
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
             if (ConversationHistory.metadata.type === "temporary") {
-                // console.log("In temporary chat Not saving");
+                console.log("In temporary chat Not saving");
                 return filePath;
             }
-            console.debug(conversationData);
+            console.log(ConversationHistory.chats);
             // Actually save the conversation data to file
-            //await api.write(filePath, conversationData);
-            // console.log(`Conversation saved: ${conversationId}`);
+            await api.write(filePath, ConversationHistory);
+            console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         }
         catch (err) {

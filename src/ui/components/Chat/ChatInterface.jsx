@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { UsageSuggestions } from '../Usage/Suggestions.js';
 import { MessageList } from './MessageList';
 import { useElectron } from '../../hooks/useElectron';
-import { showDropZoneModal } from '../../components/DropZone/util.js'
-import { chatutil } from '../../../core/managers/Conversation/util';
+import { showDropZoneModal } from '../../components/DropZone/util'
+import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '../Input/InputSection.tsx';
 

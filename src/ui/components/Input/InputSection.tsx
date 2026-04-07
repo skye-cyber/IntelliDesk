@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { chatutil } from '../../../core/managers/Conversation/util';
+import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { CodeDetector } from '../Code/CodeDetector';
 import { globalEventBus, sigint } from '../../../core/Globals/eventBus.ts';
@@ -208,57 +208,98 @@ export const InputSection = ({ onToggleRecording }) => {
             <section
                 id="userInputContainer"
                 data-portal-container="userInputContainer"
-                className={`relative w-full sm:w-[70vw] xl:w-auto xl:min-w-[34vw] xl:max-w-[48vw] space-x-4 transition-all duration-500 flex items-center justify-center rounded-full border border-indigo-300 px-2 sm:px-[3%] group ${inputFocus ? 'border-1.5' : ''} focus:border-2 bg-gray-50 dark:bg-blend-900`}>
-
-                {/* Custom input field */}
-                <div
-                    id="userInput"
-                    ref={textareaRef}
-                    contentEditable="true"
-                    onInput={(e) => adjustElementHeight(e.target as HTMLBaseElement)}
-                    role="textbox"
-                    aria-label="Message input"
-                    autoFocus={true}
-                    data-placeholder="Type your message..."
-                    onKeyDown={(e) => handleKeyDown((e as any) as KeyboardEvent)}
-                    onPaste={(e) => handlePaste(e as any)}
-                    onFocus={() => setInputFocused(true)}
-                    className="h-auto max-h-[12vh] sm:max-h-[22vh] w-full my-1 ml-4 overflow-y-auto scrollbar-custom scroll-smooth py-2 px-1 md:px-[2%] rounded-2xl sm:rounded-3xl outline-none ring-none focus:outline-none bg-gray-50 dark:bg-blend-900 dark:text-white active:outline-none resize-none text-normal placeholder-sm flex items-center placeholder-gray-50 transition-colors duration-500"
-                ></div>
-
-                <div className='absolute -left-4 z-10'>
-                    <button onClick={() => globalEventBus.emit('userinput:menu:toggle')} title="open tools" className='text-gray-600 dark:text-gray-200 cursor-pointer focus:outline-none active:ring-none'>
-                        <svg className='bg-gray-100 dark:bg-[#0a0a1f]/0 rounded-full h-5 w-5 md:h-6 md:w-6 p-0 fill-gray-800 dark:fill-gray-200 hover:scale-[1.2] transition duration-500 ease-in-out focus:outline-none' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z" /></svg>
-                    </button>
-                </div>
-
-                <div className='absolute right-0 z-10'>
-                    {/* Send Button - Always prominent */}
+                className={`relative w-full sm:w-[50vw] xl:w-auto xl:min-w-[34vw] xl:max-w-[48vw] transition-all duration-500 rounded-2xl border ${inputFocus
+                        ? 'border-indigo-400 ring-2 ring-indigo-300/50 shadow-lg'
+                        : 'border-indigo-300 dark:border-indigo-700'
+                    } bg-gray-50 dark:bg-gray-900`}
+            >
+                {/* Input Area */}
+                <div className="flex items-end gap-2 p-2">
+                    {/* Tools Menu Button */}
                     <button
-                        id="sendBtn"
-                        ref={sendButtonRef}
-                        onClick={onSendClick}
-                        className="flex relative items-center justify-center h-10 w-10 rounded-full transition-all ease-in-out duration-300 z-50 bg-white border border-gray-200 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 overflow-hidden shadow-lg hover:scale-110 hover:shadow-xl" aria-label="Send message" title="Send message">
-                        <div id="normalSend" className={`${incycle ? 'hidden' : 'flex'} items-center justify-center h-full w-full`}>
-                            <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <linearGradient id="planeGradient2" x1="0" y1="0" x2="1" y2="1">
-                                        <stop offset="0%" stopColor="#ff8a65" />
-                                        <stop offset="100%" stopColor="#ff7043" />
-                                    </linearGradient>
-                                </defs>
-                                <path fill="url(#planeGradient2)" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                            </svg>
-                        </div>
-                        <div id="spinningSquares" className={`${incycle ? 'absolute' : 'hidden'} inset-0 flex items-center justify-center`}>
-                            <span className="ripple-single-1"></span>
-                            <span className="ripple-single-2"></span>
-                            <span className="ripple-single-3"></span>
-                        </div>
+                        onClick={() => globalEventBus.emit('userinput:menu:toggle')}
+                        title="Open tools menu"
+                        className="flex-shrink-0 text-gray-600 dark:text-gray-200 cursor-pointer hover:scale-110 transition-transform duration-300 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800"
+                    >
+                        <svg className="h-5 w-5 md:h-6 md:w-6 fill-gray-800 dark:fill-gray-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                            <path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z" />
+                        </svg>
                     </button>
+
+                    {/* Input Field */}
+                    <div
+                        id="userInput"
+                        ref={textareaRef}
+                        contentEditable="true"
+                        role="textbox"
+                        aria-label="Message input"
+                        autoFocus={true}
+                        onKeyDown={(e) => handleKeyDown(e as any as KeyboardEvent)}
+                        onPaste={(e) => handlePaste(e as any)}
+                        onFocus={() => setInputFocused(true)}
+                        onBlur={() => setInputFocused(false)}
+                        onInput={(e) => {
+                            const target = e.target as HTMLBaseElement;
+                            adjustElementHeight(target);
+
+                            // Fix: Reset scroll position to prevent content clipping
+                            target.scrollTop = 0;
+                        }}
+                        data-placeholder="Message IntelliDesk..."
+                        className="flex-1 h-auto max-h-[22vh] overflow-y-auto outline-none bg-transparent dark:text-white rounded-2xl py-3 px-2 scrollbar-custom scroll-smooth text-base leading-relaxed"
+                        style={{
+                            whiteSpace: 'pre-wrap',
+                            wordWrap: 'break-word',
+                            lineHeight: '1.5'
+                        }}
+                    ></div>
+
+                    {/* Action Buttons */}
+                    <div className="flex-shrink-0 flex items-center gap-1">
+                        {/* DeepThink Button */}
+                        <button
+                            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-all duration-200 group"
+                            title="DeepThink Mode"
+                        >
+                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                        </button>
+
+                        {/* Search Button */}
+                        <button
+                            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-all duration-200 group"
+                            title="Search Web"
+                        >
+                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+
+                        {/* Send Button */}
+                        <button
+                            id="sendBtn"
+                            ref={sendButtonRef}
+                            onClick={onSendClick}
+                            className="flex items-center justify-center h-9 w-9 rounded-full transition-all duration-300 bg-gradient-to-br from-[#00246c] dark:from-[#a800fc] to-[#008dd3] dark:to-indigo-900 shadow-md hover:scale-110 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            aria-label="Send message"
+                            title="Send message"
+                        >
+                            {incycle ? (
+                                <div className="flex items-center justify-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse delay-150"></span>
+                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse delay-300"></span>
+                                </div>
+                            ) : (
+                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#ff8a65" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </section>
-
             <MenuTools onToggleRecording={onToggleRecording} />
 
             {/* Scroll to bottom button */}

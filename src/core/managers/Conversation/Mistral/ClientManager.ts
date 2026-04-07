@@ -36,11 +36,12 @@ export class ClientManager {
             const chain = await loadApiKeyChain()
             if (!this.keychain && chain && chain?.keys.length > 0) {
                 this.keychain = chain
-            }else{
+            } else {
                 return globalEventBus.emit('keychain:error', 'Not usable keys found')
             }
         }
-        if (!this.keychain?.keys || this.keychain?.keys.length! > 0) return
+
+        if (!this.keychain?.keys || this.keychain?.keys.length === 0) return
 
         this.keychainLength = this.keychain?.keys?.length || 0
         this.CurrentKeyIndex = 0
@@ -55,15 +56,14 @@ export class ClientManager {
         else if (!this.keychain.keys) {
             message = 'Empty keychain'
         }
-        else if (this.keychain.keys.length! > 0) {
-            message = 'All keys in the keychain have been tried. No valid/working key found!'
+        else if (this.keychain.keys.length === 0) {
+            message = 'No valid/working key found!'
         }
         if (message) {
             globalEventBus.emit('keychain:error', message)
             return false
-        } else {
-            return true
         }
+        return true
     }
     /**
      * Moves to the next key in the key chain

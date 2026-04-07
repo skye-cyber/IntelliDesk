@@ -1,4 +1,3 @@
-import { chatutil } from '../../../../core/managers/Conversation/util';
 import { MistralIcon, CodeIcon } from './icons';
 import { Model } from './utils/models';
 import { StateManager } from '../../../../core/managers/StatesManager.js';
@@ -13,16 +12,7 @@ export const ModelItem = (
         onSelect(model.value)
         StateManager.set('currentModel', model.value);
         emit('model:change', model.value)
-
-        const seletced_model = chatutil.get_multimodal_models().includes(model.value)
-            ? 'multimodal'
-            : 'chat'
-
-        const current_model = window.desk.api.getModel()
-
-        if (seletced_model !== current_model) {
-            emit('conversation:new', seletced_model)
-        }
+        emit('conversation:new')
         emit('model:selector:hide')
     }
     return (

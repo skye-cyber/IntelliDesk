@@ -150,14 +150,15 @@ const api: ApiType = {
             return false;
         }
     },
-    RenameConversation: async (id: string, name: string, base_dir: string = conversation_root): Promise<Conversation | boolean> => {
+    RenameConversation: async (name: string, base_dir: string = conversation_root): Promise<Conversation | boolean> => {
         try {
-            const fpath = path.join(base_dir, `${id}.json`);
+            const fpath = path.join(base_dir, `${ConversationHistory.metadata.id}.json`);
             let data = await api.read(fpath);
             if (!data) return ConversationHistory;
 
             data.metadata.name = name;
-            api.saveConversation(data, id);
+            ConversationHistory = data
+            api.saveConversation();
             return true;
         } catch (err) {
             console.log(err);
@@ -236,7 +237,7 @@ const api: ApiType = {
             }
 
             ConversationHistory.metadata.updated_at = getformatDateTime();
-            api.saveConversation(ConversationHistory);
+            api.saveConversation();
             return ConversationHistory;
         } catch (err) {
             return ConversationHistory;
@@ -333,7 +334,7 @@ const api: ApiType = {
     },
     getRoleByIndex: (index: number): MessageRole | undefined => {
         try {
-            if(index===-1) return ConversationHistory.chats.slice(-1)[0].role
+            if (index === -1) return ConversationHistory.chats.slice(-1)[0].role
             return ConversationHistory.chats[index].role
         } catch (err) {
             return undefined
@@ -343,7 +344,7 @@ const api: ApiType = {
         try {
             if (!name?.trim()) return ConversationHistory.metadata.name;
             ConversationHistory.metadata.name = name;
-            if (save) api.saveConversation(ConversationHistory);
+            if (save) api.saveConversation();
             return ConversationHistory.metadata.name;
         } catch (err) {
             return ConversationHistory.metadata.name;
@@ -434,7 +435,7 @@ const api: ApiType = {
             name: ConversationHistory.metadata.name,
             highlight: ConversationHistory.metadata.highlight
         };
-        api.saveConversation(ConversationHistory);
+        api.saveConversation();
     },
     startNew: (model: 'chat' | 'multimodal', temporary: boolean): void => {
         if (temporary) ConversationHistory.metadata.type = ConversationType.temporary;
@@ -443,17 +444,22 @@ const api: ApiType = {
         ConversationHistory.metadata.id = ConversationId;
         if (model) ConversationHistory.metadata.model = ModelType[model]
     },
-    saveConversation: async (conversationData: Conversation, conversationId: string = ConversationId): Promise<string> => {
+    saveConversation: async (): Promise<string> => {
+        const conversationId = ConversationHistory.metadata.id
+        if (!conversationId) {
+            console.log("No conversationid:", ConversationHistory)
+            return ''
+        }
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
             if (ConversationHistory.metadata.type === "temporary") {
-                // console.log("In temporary chat Not saving");
+                console.log("In temporary chat Not saving");
                 return filePath;
             }
-            console.debug(conversationData)
+            console.log(ConversationHistory.chats)
             // Actually save the conversation data to file
-            //await api.write(filePath, conversationData);
-            // console.log(`Conversation saved: ${conversationId}`);
+            await api.write(filePath, ConversationHistory);
+            console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         } catch (err) {
             console.error('Error saving conversation:', err);
@@ -534,7 +540,7 @@ const api: ApiType = {
             parsedData.chats.forEach((res: any) => {
                 if (res.role === "user") {
                     if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role !== "assistant") {
-                        console.log("Pair: !index", parsedData.chats.indexOf(res) + 1);
+                        // console.log("Pair: !index", parsedData.chats.indexOf(res) + 1);
                         parsedData.chats.slice(parsedData.chats.indexOf(res), parsedData.chats.indexOf(res) + 1).values();
                     } else if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role === "assistant") {
                         console.log("Pair: OK", parsedData.chats.indexOf(res));

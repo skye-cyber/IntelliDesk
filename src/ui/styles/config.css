@@ -182,14 +182,13 @@
 /* Simulate a placeholder on the contenteditable div */
 #userInput:empty:before {
 content: attr(data-placeholder);
-color: #9CA3AF;
+color: #ccd5e5;
 }
 /* Always ensure an extra empty row at the bottom */
 #userInput::after {
-content: "\A"; /* Inserts a newline */
+content: "\n"; /* Inserts a newline */
 display: block;
 visibility: hidden;
-height: 2.4em; /* Adjust this value to match the height of an empty row */
 }
 
 

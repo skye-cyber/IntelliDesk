@@ -4,7 +4,7 @@ import { ApiNotSetWarning } from './Modals/warn';
 import { SuggestApiKeyConfig } from './Modals/suggestion';
 import { modalmanager } from '../../../core/StatusUIManager/Manager';
 
-StateManager.set('api_key_ok', false)
+StateManager.set('keychainValid', false)
 
 export const APIKeysManager = ({ isOpen, onToggle }) => {
 
@@ -121,7 +121,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
         }
 
         if (chain && chain.keys.length > 0) {
-            StateManager.set('api_key_ok', true)
+            StateManager.set('keychainValid', true)
             setMistralKeyChain({ keys: chain.keys })
         } else {
             showWarningModal();
@@ -154,7 +154,7 @@ export const APIKeysManager = ({ isOpen, onToggle }) => {
 
         if (result) {
             modalmanager.showMessage('API Keys reset successfully.', 'success');
-            StateManager.set('api_key_ok', false)
+            StateManager.set('keychainValid', false)
             openApiModal()
         }
     })

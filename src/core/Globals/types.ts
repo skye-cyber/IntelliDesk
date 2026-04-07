@@ -19,6 +19,7 @@ export type EventMap = {
     'copy:feedback': [detail: copyDtetail]
     'clone:feedback': []
     'canvas:open': []
+    'canvas:toggle': []
     'canvas:content:update': [content: string]
     'agent:editor:open': []
     'agent:editor:close': []
@@ -47,6 +48,14 @@ export type EventMap = {
     'suggestions:show': []
     'suggestions:hide': []
     'keychain:error': [message: string]
+    'apikey:missing': []
+    'apikey:missing:warning:show': []
+    'apikey:missing:warning:hide': []
+    'apikey:set:request:show': []
+    'apikey:set:request:hide': []
+    'userinput:menu:open': []
+    'userinput:menu:close': []
+    'userinput:menu:toggle': []
 };
 
 

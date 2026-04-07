@@ -5,7 +5,7 @@ import { useElectron } from '../../hooks/useElectron';
 import { showDropZoneModal } from '../../components/DropZone/util.js'
 import { chatutil } from '../../../core/managers/Conversation/util';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
-import { InputSection } from '../../components/Input/InputSection';
+import { InputSection } from '../Input/InputSection.tsx';
 
 export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
     const [messages, setMessages] = useState([]);

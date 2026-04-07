@@ -56,7 +56,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
         modal.classList.remove('hidden')
         setTimeout(() => {
             content.classList.add('scale-100', 'opacity-100');
-            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.remove('scale-0', 'opacity-0');
         }, 500)
     }
 
@@ -65,7 +65,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
         const content = dropzoneContent.current
 
         content.classList.remove('scale-100', 'opacity-100');
-        content.classList.add('scale-95', 'opacity-0');
+        content.classList.add('scale-0', 'opacity-0');
 
         setTimeout(() => modal.classList.add('hidden'), 500);
     }
@@ -93,9 +93,6 @@ export const DropZone = ({ isOpen, onToggle }) => {
         userInput.value = ''; // clear input
 
         if (inputText) {
-            //Reset the input field content
-            //MistraMultimodal({ text: inputText })
-            //             StateManager.get('onSend')(inputText)
             globalEventBus.emit('useraction:submit:incycle', inputText)
             CloseDropZone()
         }
@@ -131,11 +128,11 @@ export const DropZone = ({ isOpen, onToggle }) => {
                 ref={dropzoneContainer}
                 onClick={shouldClose}
                 id="dropzoneContainer"
-                className="fixed inset-0 bg-black/60 backdrop-brightness-50 flex items-center justify-center z-[51] p-2 transition-all duration-300 hidden">
+                className="fixed inset-0 bg-gray-950/50 backdrop-brightness-[1] flex items-center justify-center z-[51] p-1 transition-all duration-300 hidden">
                 <div
                     ref={dropzoneContent}
                     id="dropzoneContent"
-                    className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-3xl h-[95vh] backdrop-blur-lg transform transition-all duration-500 scale-95 opacity-0">
+                    className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-xl h-full transform transition-all backdrop-brightness-[1] duration-500 scale-0 opacity-0 select-none">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
                         <div className="flex items-center justify-between">
@@ -168,7 +165,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
                     </div>
 
                     {/* Dropzone Area */}
-                    <div className="p-2 h-[calc(86vh-200px)]">
+                    <div className="p-2 h-[80%]">
                         <div
                             ref={dropZoneRef}
                             id="dropZone"
@@ -211,13 +208,13 @@ export const DropZone = ({ isOpen, onToggle }) => {
                                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                     <button
                                         onClick={() => document.getElementById('fileInput').click()}
-                                        className="px-6 py-3 bg-white dark:bg-gray-800 border-2 border-blue-500 text-blue-600 dark:text-blue-400 rounded-xl font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
+                                        className="px-6 py-3 bg-white dark:bg-gray-800 border-2 border-blue-500 text-blue-600 dark:text-blue-400 rounded-xl font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm focus:outline-none"
                                     >
                                         Select Files
                                     </button>
                                     <button
                                         onClick={openPreview}
-                                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2"
+                                        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center space-x-2 focus:outline-none"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -231,7 +228,7 @@ export const DropZone = ({ isOpen, onToggle }) => {
                     </div>
 
                     {/* Prompt Input Section */}
-                    <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-b-2xl">
+                    <div className="hidden border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-b-2xl">
                         <div className="flex items-center space-x-3">
                             <div className="flex-1">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

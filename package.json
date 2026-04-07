@@ -14,7 +14,6 @@
     "dev:electron": "electron .",
     "dev:types": "tsc --noEmit --watch",
     "dev:styles": "tailwindcss -i ./src/ui/styles/config.css -o ./src/ui/styles/global.css --watch",
-    "dev:core": "tsc -p tsconfig.core.json --watch",
     "dev:main": "tsc -p tsconfig.main.json --watch",
     "build": "npm run clean && npm run type-check && npm run build:all",
     "build:all": "npm-run-all build:main build:preload build:core build:react",

@@ -90,7 +90,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
         currentRefs.previewView = document.getElementById('preview-view');
         currentRefs.lineNumbers = document.getElementById('line-numbers');
         currentRefs.codeBlockContainer = document.getElementById('code-block-container');
-        currentRefs.ToggleCanvasBt = document.getElementById('ToggleCanvasBt');
         currentRefs.plusIcon = document.getElementById('plusIcon');
         currentRefs.closeIcon = document.getElementById('closeIcon');
         currentRefs.lineCounter = document.getElementById('line-counter');
@@ -343,24 +342,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
         };
     }, []);
 
-    const InputSectionWfitAdjust = useCallback((task = 'add') => {
-        //if (!isCanvasOpen) return;
-        const { userInput, userInputwrapper } = refs.current
-        if (!userInput) return;
-
-        if (task === "add") {
-            userInput.classList.remove('w-full');
-            userInput.classList.add('w-[40vw]', 'placeholder-sm');
-            userInputwrapper.classList.remove('w-full')
-            userInputwrapper.classList.add('w-[40vw]')
-        } else {
-            userInput.classList.remove('w-[40vw]');
-            userInput.classList.add('w-full');
-            userInputwrapper.classList.remove('w-[40vw]')
-            userInputwrapper.classList.add('w-full')
-        }
-    }, [])
-
 
     const openCanvas = useCallback(() => {
         let canvas = canvasRef.current
@@ -368,7 +349,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
         canvas?.classList.remove('hidden');
         setTimeout(() => {
             canvas?.classList.remove('translate-x-[100vw]');
-            InputSectionWfitAdjust('add')
+            //InputSectionWfitAdjust('add')
         }, 400)
         waitForElement('#main-container-center', (container) => {
             if (StateManager.get("sidebar-open")) {
@@ -391,7 +372,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
         setTimeout(() => {
             canvas?.classList.add('hidden');
-            InputSectionWfitAdjust('remove')
+            //InputSectionWfitAdjust('remove')
         }, 800)
 
         waitForElement('#main-container-center', (container) => {
@@ -447,6 +428,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
         const opencode = globalEventBus.on('opencode:in:canvas', (ref) => openInCanvas(ref.innerHTML))
         const openCanvas = globalEventBus.on('canvas:open', onToggle)
+        const toggleCanvas = globalEventBus.on('canvas:toggle', onToggle)
         const canvasContentUpdate = globalEventBus.on('canvas:content:update', (content) => {
             if (!content) return
 
@@ -463,6 +445,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
             openCanvas.unsubscribe()
             canvasContentUpdate.unsubscribe()
             opencode.unsubscribe()
+            toggleCanvas.unsubscribe()
         }
     })
 

@@ -15,7 +15,7 @@ import { DiagramUi } from './components/DiagramUI/diagram.jsx'
 import { Settings } from './pages/Settings.jsx';
 import { StatusUI } from './components/StatusUI/StatusUI.jsx';
 import '../core/StatusUIManager/Manager.js'
-import { APIKeysManager } from './components/ApiManager/api';
+import { APIKeysManager } from './components/ApiManager/manager.tsx';
 import { DropZone } from './components/DropZone/dropzone.jsx'
 import { NotificationFlyer, Notifcation } from './components/Notifications/Notification.jsx'
 import '../core/MathBase/MathNormalize.js';

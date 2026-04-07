@@ -47,6 +47,7 @@ export type EventMap = {
     'conversation:new': [type: string]
     'suggestions:show': []
     'suggestions:hide': []
+    'keychain:manager:show': []
     'keychain:error': [message: string]
     'apikey:missing': []
     'apikey:missing:warning:show': []

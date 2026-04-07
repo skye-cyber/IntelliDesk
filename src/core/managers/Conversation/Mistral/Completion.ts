@@ -124,6 +124,7 @@ class CompletionBase {
         return this
     }
     complete(input: string) {
+        if (!this.validateClientManager()) return
         this.processInput(input)
 
         // start execution cycle -> trigger user ui update
@@ -150,15 +151,31 @@ class CompletionBase {
         globalEventBus.emit('scroll:bottom', true)
     }
 
-    validateClientManager(ErrorCallback: CallableFunction): void {
-        if (!clientmanager.client?.chat) {
-            throw {
-                origin: 'Mistral Client Call',
-                message: 'Mistral client is not fully configured',
-                type: 'Initialization',
-                errorType: 'RuntimeError',
-                stack: `${ErrorCallback || ErrorCallback}\n at MistralClient.client.chat.stream`
+    validateClientManager(): boolean {
+        try {
+            let message: string = ''
+            globalEventBus.once('keychain:error', (error: string) => message = error)
+
+            if (!clientmanager.client || !clientmanager.client?.chat) {
+                message = message ? message : "Mistral init error"
             }
+            if (clientmanager.validateChain()) {
+                message = message ? message : 'KeyChain Error'
+            }
+
+            if (message) {
+                throw {
+                    origin: "Completion endpoint",
+                    reason: message,
+                    message: `Mistral client is not fully configured: ${message}`,
+                    type: 'Initialization Error',
+                    errorType: 'RuntimeError',
+                    stack: `${this.ErrorCallback}\n at MistralClient.client.chat.stream`
+                }
+            }
+            return true
+        } catch (error) {
+            this.handleError(error)
         }
     }
 
@@ -492,7 +509,7 @@ class CompletionBase {
             multimodalProcessor.unuseAll()
             window.desk.api.popHistory("user")
         }
-        await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal.id, this.ErrorCallback || this.StartSession)
+        await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal?.id, this.ErrorCallback || this.StartSession)
     }
 }
 

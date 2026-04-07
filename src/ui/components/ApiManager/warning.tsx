@@ -1,7 +1,16 @@
-export const ApiNotSetWarning = ({ close, open }) => {
+
+interface WarningProps {
+    onOpen: () => void;
+    onClose: () => void;
+    isOpen: boolean;
+}
+
+export const ApiNotSetWarning = ({ onOpen, onClose, isOpen }: WarningProps) => {
+    if (!isOpen) return null
+
     return (
-        <div id="warningModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden" >
-            <div id="warningModalContent" className="bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 scale-95 opacity-0 backdrop-blur-lg">
+        <div id="warningModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500" >
+            <div id="warningModalContent" className="bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-lg">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 dark:from-orange-900/20 dark:to-red-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
                     <div className="flex items-center justify-center space-x-3">
@@ -65,13 +74,13 @@ export const ApiNotSetWarning = ({ close, open }) => {
                 <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6 rounded-b-2xl">
                     <div className="flex space-x-3">
                         <button
-                            onClick={close}
+                            onClick={onClose}
                             className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
                         >
                             Close
                         </button>
                         <button
-                            onClick={open}
+                            onClick={onOpen}
                             className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,5 +92,5 @@ export const ApiNotSetWarning = ({ close, open }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};

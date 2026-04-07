@@ -1,7 +1,14 @@
-export const SuggestApiKeyConfig = ({ open, close }) => {
+interface RequestApiKeyProps {
+    onClose: () => void;
+    onConfigure: () => void
+    isOpen: boolean;
+}
+
+export const RequestApiKeyConfig = ({ isOpen, onClose, onConfigure }: RequestApiKeyProps) => {
+    if (isOpen) return null;
     return (
-        <div id="ApiNotSetModal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500 hidden">
-            <div id="ApiNotSetContent" className="bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 scale-95 opacity-0 backdrop-blur-lg">
+        <div id="APIRequest" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-500">
+            <div id="ApiRequestContent" className="bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-lg">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 dark:from-yellow-900/20 dark:to-amber-900/20 border-b border-gray-200/50 dark:border-gray-700/50 p-6 rounded-t-2xl">
                     <div className="flex items-center justify-between">
@@ -23,7 +30,7 @@ export const SuggestApiKeyConfig = ({ open, close }) => {
 
                         {/* Close Button */}
                         <button
-                            onClick={close}
+                            onClick={onClose}
                             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
                         >
                             <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +48,7 @@ export const SuggestApiKeyConfig = ({ open, close }) => {
                         </p>
 
                         {/* API Provider Options */}
-                        <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="flex justify-center gap-3 mb-4">
                             <div className="hidden bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 border-2 border-pink-200 dark:border-pink-800 rounded-xl p-4 text-center group hover:border-pink-300 dark:hover:border-pink-700 transition-all duration-200">
                                 <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
                                     <span className="text-white font-bold text-sm">HF</span>
@@ -55,7 +62,7 @@ export const SuggestApiKeyConfig = ({ open, close }) => {
                                     <span className="text-white font-bold text-sm">M</span>
                                 </div>
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Mistral AI</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Chat & Completion</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Chat & Completion & Agent & OCR</p>
                             </div>
                         </div>
 
@@ -69,13 +76,13 @@ export const SuggestApiKeyConfig = ({ open, close }) => {
                 <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6 rounded-b-2xl">
                     <div className="flex space-x-3">
                         <button
-                            onClick={close}
+                            onClick={onClose}
                             className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-all duration-200 hover:scale-105 active:scale-95"
                         >
                             Maybe Later
                         </button>
                         <button
-                            onClick={open}
+                            onClick={onConfigure}
                             className="flex-1 px-4 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

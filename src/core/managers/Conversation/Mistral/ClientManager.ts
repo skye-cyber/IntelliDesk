@@ -34,11 +34,13 @@ export class ClientManager {
     async init() {
         if (!this.keychain) {
             const chain = await loadApiKeyChain()
-            if (!this.keychain) {
+            if (!this.keychain && chain && chain?.keys.length > 0) {
                 this.keychain = chain
+            }else{
+                return globalEventBus.emit('keychain:error', 'Not usable keys found')
             }
         }
-        if (!this.keychain?.keys) return
+        if (!this.keychain?.keys || this.keychain?.keys.length! > 0) return
 
         this.keychainLength = this.keychain?.keys?.length || 0
         this.CurrentKeyIndex = 0

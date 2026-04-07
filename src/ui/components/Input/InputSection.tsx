@@ -89,7 +89,6 @@ export const InputSection = ({ onToggleRecording }) => {
         const formattedMessage = cleanInput(CodeDetector.autoFormatCodeBlocks(userInputValue))
 
         if (!formattedMessage.trim()) return
-        console.log(userInput.style.height)
 
         userInput.innerHTML = "";
         // userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';

@@ -248,21 +248,6 @@ export const Settings = ({ isOpen, onToggle }) => {
         return saved
     })
 
-    const showApiManModal = useCallback(() => {
-        const modal = document.getElementById('apiKeyManPage')
-        const content = document.getElementById('apiManContent');
-
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            content.classList.remove('translate-y-full', 'opacity-0');
-            content.classList.add('translate-y-0', 'opacity-100');
-        }, 10);
-    })
-
-    const handleApiManagement = useCallback(() => {
-        showApiManModal()
-    })
-
     const handleResetSettings = useCallback(async () => {
         const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete preferences?");
         if (!confirmed) return;
@@ -491,7 +476,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">API Configuration</h3>
                                 <button
-                                    onClick={handleApiManagement}
+                                    onClick={() => globalEventBus.emit('keychain:manager:show')}
                                     className="w-full px-4 py-3 bg-gradient-to-r from-accent-500 to-blue-600 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
                                 >
                                     <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

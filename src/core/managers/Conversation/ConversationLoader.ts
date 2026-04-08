@@ -1,7 +1,8 @@
 import { waitForElement } from "../../Utils/dom_utils";
 import { chatutil } from "./util.ts";
-import { clearMessages } from "../../PortalBridge.ts";
 import { modalmanager } from "../../StatusUIManager/Manager";
+import { clearMessages } from "../../PortalBridge.ts";
+import { modelManager } from "./ModelManager.ts";
 import { streamingPortalBridge } from "../../PortalBridge.ts";
 import { StateManager } from "../StatesManager";
 
@@ -12,16 +13,6 @@ export class ConversationLoader {
         this.chatArea
         waitForElement('#chatArea', (el) => this.chatArea = el)
         this.portal = null
-    }
-
-    change_model(value = 'mistral-large-latest') {
-        try {
-            waitForElement('#model-selector', (context: Map<any, any>) => {
-                waitForElement(`[data-value^="${value}"]`, (el: any) => el.click(), { context: context })
-            })
-        } catch (err) {
-            console.log(err)
-        }
     }
 
     /**
@@ -82,13 +73,13 @@ export class ConversationLoader {
             if (item.type === 'image_url') {
                 return {
                     type: 'image_url',
-                    url: item.image_url?.url || item.imageUrl?.url
+                    url: item.imageUrl?.url || item.image_url?.url
                 };
             } else if (item.type === 'document_url') {
                 return {
                     type: 'document_url',
-                    url: item.document_url?.documentUrl || item.documentUrl?.documentUrl,
-                    name: item.document_url?.documentName || item.documentUrl?.documentName
+                    url: item.documentUrl || item.document_url || item.document_url.documentUrl,
+                    name: item.documentName || ''
                 };
             }
             return item;
@@ -101,21 +92,21 @@ export class ConversationLoader {
     async renderConversation(conversationData) {
         try {
             const model = conversationData.metadata?.model || 'chat';
-            const isMultimodal = model.toLowerCase() === 'multimodal' ||
-                chatutil.isMultimodal(StateManager.get('currentModel'));
+            // ['vision', 'multimodal', 'reasoning', 'ocr']
+            const isMultimodal = model.toLowerCase() !== 'chat'
 
-            //if (conversationData.chats) {
-            chatutil.hideSuggestions();
-            //}
+            if (conversationData.chats?.length > 0) {
+                chatutil.hideSuggestions();
+            }
 
             clearMessages();
             this.portal = null;
 
             // Ensure correct model is selected
-            if (isMultimodal && !chatutil.isMultimodal(StateManager.get('currentModel'))) {
-                this.change_model('magistral-small-latest');
-            } else if (!isMultimodal && chatutil.isMultimodal(StateManager.get('currentModel'))) {
-                this.change_model('mistral-large-latest');
+            if (!modelManager.usesArrayStructure(StateManager.get('currentModel'))) {
+                modelManager.changeModel('pixtral-large-latest');
+            } else if (modelManager.usesArrayStructure(StateManager.get('currentModel'))) {
+                modelManager.changeModel('mistral-large-latest');
             }
 
             // Process all messages

@@ -20,6 +20,8 @@ import { Tool } from "@mistralai/mistralai/models/components/tool";
 import { ContentChunk } from "@mistralai/mistralai/models/components/contentchunk";
 import { fileInputProcessor } from "./InputProcessor.js";
 import { MessageRole } from "./types.ts";
+import { modelManager } from "../ModelManager.ts";
+import { EventSubscription } from "../../../Globals/types.ts";
 
 let SIGINT = false
 
@@ -43,16 +45,12 @@ interface ToolCallHistory {
 }
 /**
  * **USAGE**\
- * new CompletionBase().route(callback:optional).complete(text)\
- *
- * *or*
- *
  * completion.route().complete(text)
  */
 class CompletionBase {
     private clientmanager: typeof clientmanager
     public modelName: string
-    public isMultimodalModel: boolean
+    public modelUsesArrayContent: boolean
     private ErrorCallback: CallableFunction | undefined
     private ToolsEnabled: boolean
     private userMessagePID: string
@@ -77,6 +75,12 @@ class CompletionBase {
     private TOOL_SIGINT: boolean
     private ToolCallHistory: ToolCallHistory[]
     private ToolSessionState: ToolSessionState
+    // Model
+    private DEFAULT_ARRAYED_MODEL: string
+    private DEFAULT_TEXT_MODEL: string
+    private DEFAULT_REASONING_MODEL: string
+    private REASONING_ON: boolean
+    private REASONING_CHANGE_LISTENER: EventSubscription
 
     constructor(ErrorCallback: CallableFunction | undefined = undefined) {
         this.modelName = StateManager.get('currentModel')
@@ -84,6 +88,10 @@ class CompletionBase {
         this.ToolsEnabled = false
         this.MAX_TOOLITERATIONS = 30
         this.clientmanager = clientmanager
+        this.DEFAULT_ARRAYED_MODEL = 'pixtral-large-latest'
+        this.DEFAULT_TEXT_MODEL = 'mistral-large-latest'
+        this.DEFAULT_REASONING_MODEL = 'magistral-small-latest'
+        this.REASONING_ON = false
         this.reset()
     }
 
@@ -111,7 +119,7 @@ class CompletionBase {
         this.first_run = true;
         this.continued = false
         // Routing options
-        this.isMultimodalModel = false
+        this.modelUsesArrayContent = false
         // Tool stream options
         this.TOOLCALL_ITERATIONS = 0
         this.TOOL_SIGINT = false
@@ -128,11 +136,38 @@ class CompletionBase {
     }
 
     route(callback: CallableFunction | undefined = undefined) {
-        if (this.modelName && chatutil.isMultimodal(this.modelName) || chatutil.isVision(this.modelName)) this.isMultimodalModel = true
-        // set error callback
-        // Use `useraction:request:execution` as default callback if none is provided
+        if (this.modelName && modelManager.usesArrayStructure(this.modelName)) this.modelUsesArrayContent = true
+        /* set error callback
+         * Use `useraction:request:execution` as default callback if none is provided
+        */
         this.ErrorCallback = callback ? callback : (text: string) => globalEventBus.emit('useraction:request:execution', (text))
+        // If there are files uploaded let use model that supports them say mistral-ocr-latest or mistral-large-2512
+        if (StateManager.get('uploaded_files')?.length > 0) {
+            this.modelUsesArrayContent = true
+            // modelManager.changeModel(this.DEFAULT_ARRAYED_MODEL)
+            this.modelName = this.DEFAULT_ARRAYED_MODEL
+            // TODO: just use the model, do not change in ui
+            // TODO: lock model selection in ui for auto selection
+            // Can unlock manual selector by enabling experimentl features
+        }
+        if (this.REASONING_ON) {
+            this.modelName = this.DEFAULT_REASONING_MODEL
+        }
         return this
+    }
+    /**
+     * Update state eg Reasoning state when change is detected
+     */
+    listeners() {
+        this.REASONING_CHANGE_LISTENER = globalEventBus.on('reasoning:change', (isOn) => this.REASONING_ON = !isOn)
+    }
+    /**
+     * Unsubsrcibe from state listeners
+     */
+    usubscribe() {
+        if (this.REASONING_CHANGE_LISTENER) {
+            this.REASONING_CHANGE_LISTENER.unsubscribe()
+        }
     }
     complete(input: string) {
         this.route()
@@ -143,8 +178,8 @@ class CompletionBase {
         globalEventBus.emit('executioncycle:start')
         return this.StartSession()
     }
-    processInput(input: string, processor: CallableFunction | undefined = undefined): void {
-        if (this.isMultimodalModel) {
+    processInput(input: string): void {
+        if (this.modelUsesArrayContent) {
             const { userMessagePID } = fileInputProcessor.process(input);
             this.userMessagePID = userMessagePID
         } else {
@@ -196,7 +231,7 @@ class CompletionBase {
         // Initialize tools integration
         const availableTools = toolManager.getAvailableToolSchemas();
         this.availableTools = availableTools
-        this.ToolsEnabled = availableTools.length > 0 && chatutil.supportsToolCalling(this.modelName)
+        this.ToolsEnabled = availableTools.length > 0 && modelManager.supportsToolCalling(this.modelName)
         return this.ToolsEnabled
     }
 
@@ -220,8 +255,8 @@ class CompletionBase {
 
             StateManager.set('prevStreamingPortal', this.streamingPortal)
 
-            this.reset()
-            globalEventBus.emit('executioncycle:end')
+            // Perform final processing logic
+            this.completeStream()
         } catch (error) {
             this.handleError(error)
         }
@@ -264,7 +299,6 @@ class CompletionBase {
 
                 await this.stream(stream)
 
-                console.log(this.TOOL_CALLS)
                 // Check if tool_calls were requested and dispatch/execute them
                 if (this.TOOL_CALLS && this.TOOL_CALLS.length > 0) {
                     console.log(`[Tool Session] Iteration ${this.TOOLCALL_ITERATIONS}: Processing ${this.TOOL_CALLS.length} tool calls`);
@@ -320,11 +354,108 @@ class CompletionBase {
             this.handleError(error)
         }
     }
+    private processToolContent(toolCalls: Array<ToolCall> | null | undefined): void {
+        if (!toolCalls) return;
+
+        // Accumulate tool calls instead of replacing them
+        if (!this.TOOL_CALLS) {
+            this.TOOL_CALLS = [];
+        }
+
+        // Merge/update existing tool calls
+        for (const newToolCall of toolCalls) {
+            const existingIndex = this.TOOL_CALLS.findIndex(tc => tc.id === newToolCall.id);
+
+            if (existingIndex !== -1) {
+                // Update existing tool call (accumulate arguments)
+                const existing = this.TOOL_CALLS[existingIndex];
+                if (newToolCall.function?.arguments) {
+                    // Append the new argument chunk to existing arguments
+                    const existingArgs = existing.function?.arguments || '';
+
+                    let args: { [k: string]: any } | string = ''
+                    if (typeof existingArgs === 'string') {
+                        args = existingArgs + (newToolCall.function.arguments || '')
+                    } else {
+                        // existingArgs is an object (already parsed JSON)
+                        // When streaming, arguments come as strings, so this shouldn't happen
+                        // But if it does, keep the existing object
+                        args = existingArgs
+                    }
+
+                    existing.function = {
+                        ...existing.function,
+                        arguments: args
+                    } as FunctionCall
+                }
+                // Update name if provided (usually first chunk)
+                if (newToolCall.function?.name) {
+                    existing.function = {
+                        ...existing.function,
+                        name: newToolCall.function.name
+                    } as FunctionCall;
+                }
+                this.TOOL_CALLS[existingIndex] = existing;
+            } else {
+                // Add new tool call
+                this.TOOL_CALLS.push(newToolCall);
+            }
+        }
+    }
+    async stream(stream: EventStream<CompletionEvent>) {
+        for await (const chunk of stream) {
+            if (SIGINT) {
+                SIGINT = false
+                return
+            }
+
+            const choice = chunk?.data?.choices?.[0];
+
+            if (this.ToolsEnabled) this.processToolContent(choice?.delta?.toolCalls as any)
+
+            if (!choice?.delta?.content) continue;
+
+            const deltaContent = choice.delta.content;
+
+            // Store raw content
+            let rawDelta = deltaContent;
+            this.output += rawDelta;
+            this.fullResponse += rawDelta;
+
+            // Process based on content type
+            if (Array.isArray(deltaContent)) {
+                this.streamArray(deltaContent)
+            }
+            else if (typeof deltaContent === 'string') {
+                this.isThinking = false
+                this.streamText(deltaContent)
+            }
+
+            if (this.actualResponse.includes('<continued>') || this.actualResponse.includes('<continued')) {
+                this.continueStream()
+            } else {
+                // console.log(thinkContent)
+                this.streamingPortal.update({
+                    actualContent: this.actualResponse,
+                    isThinking: this.isThinking,
+                    thinkContent: this.thinkContent,
+                });
+            }
+
+            let message_id = StateManager.get("current_message_id")
+
+            // Scroll to bottom
+            globalEventBus.emit('scroll:bottom', true)
+
+            // Render mathjax immediately
+            chatutil.renderMath(`${message_id}`, 'all', 2000 as any)
+        }
+        this.updateHistory()
+    }
     private streamArray(deltaContent: ContentChunk[]) {
         // console.log(deltaContent)
         // Process each content chunk in the array
         for (const contentChunk of deltaContent) {
-            console.log('Processing chunk:', contentChunk.type, contentChunk);
             if (contentChunk.type === "thinking") {
                 // Start or continue thinking
                 this.isThinking = true;
@@ -430,6 +561,26 @@ class CompletionBase {
             }
         );
     }
+    async completeStream() {
+        if (canvasutil.isCanvasOn()) {
+            if (!canvasutil.isCanvasOpen()) globalEventBus.emit('canvas:open');
+            // normalize canvas
+            canvasutil.NormalizeCanvasCode();
+        }
+
+        // Correctly render math using katex if any
+        chatutil.renderMath()
+        renderAll_aimessages()
+        setTimeout(() => { leftalinemath() }, 1000)
+
+        // Reset send button appearance
+        globalEventBus.emit('executioncycle:end')
+
+        // Rest for the next round
+        this.reset()
+
+        if (await appIsDev()) errorHandler.resetRetryCount()
+    }
     async updateHistory() {
         if (this.continued) {
             StateManager.set('user_message_portal', null);
@@ -519,133 +670,12 @@ class CompletionBase {
             window.desk.api.addHistory(historyItem);
         }
     }
-    private processToolContent(toolCalls: Array<ToolCall> | null | undefined): void {
-        if (!toolCalls) return;
-
-        // Accumulate tool calls instead of replacing them
-        if (!this.TOOL_CALLS) {
-            this.TOOL_CALLS = [];
-        }
-
-        // Merge/update existing tool calls
-        for (const newToolCall of toolCalls) {
-            const existingIndex = this.TOOL_CALLS.findIndex(tc => tc.id === newToolCall.id);
-
-            if (existingIndex !== -1) {
-                // Update existing tool call (accumulate arguments)
-                const existing = this.TOOL_CALLS[existingIndex];
-                if (newToolCall.function?.arguments) {
-                    // Append the new argument chunk to existing arguments
-                    const existingArgs = existing.function?.arguments || '';
-
-                    let args: { [k: string]: any } | string = ''
-                    if (typeof existingArgs === 'string') {
-                        args = existingArgs + (newToolCall.function.arguments || '')
-                    } else {
-                        // existingArgs is an object (already parsed JSON)
-                        // When streaming, arguments come as strings, so this shouldn't happen
-                        // But if it does, keep the existing object
-                        args = existingArgs
-                    }
-
-                    existing.function = {
-                        ...existing.function,
-                        arguments: args
-                    } as FunctionCall
-                }
-                // Update name if provided (usually first chunk)
-                if (newToolCall.function?.name) {
-                    existing.function = {
-                        ...existing.function,
-                        name: newToolCall.function.name
-                    } as FunctionCall;
-                }
-                this.TOOL_CALLS[existingIndex] = existing;
-            } else {
-                // Add new tool call
-                this.TOOL_CALLS.push(newToolCall);
-            }
-        }
-    }
-    async stream(stream: EventStream<CompletionEvent>) {
-        for await (const chunk of stream) {
-            if (SIGINT) {
-                SIGINT = false
-                console.log("SIGINT ...")
-                return
-            }
-
-            const choice = chunk?.data?.choices?.[0];
-
-            if (this.ToolsEnabled) this.processToolContent(choice?.delta?.toolCalls as any)
-
-            if (!choice?.delta?.content) continue;
-
-            const deltaContent = choice.delta.content;
-
-            // Store raw content
-            let rawDelta = deltaContent;
-            this.output += rawDelta;
-            this.fullResponse += rawDelta;
-
-            // Process based on content type
-            if (Array.isArray(deltaContent)) {
-                this.streamArray(deltaContent)
-                console.log(deltaContent)
-            }
-            else if (typeof deltaContent === 'string') {
-                this.isThinking = false
-                this.streamText(deltaContent)
-                console.log("text:", deltaContent)
-            }
-
-            if (this.actualResponse.includes('<continued>') || this.actualResponse.includes('<continued')) {
-                this.continueStream()
-            } else {
-                // console.log(thinkContent)
-                this.streamingPortal.update({
-                    actualContent: this.actualResponse,
-                    isThinking: this.isThinking,
-                    thinkContent: this.thinkContent,
-                });
-            }
-
-            let message_id = StateManager.get("current_message_id")
-
-            // Scroll to bottom
-            globalEventBus.emit('scroll:bottom', true)
-
-            // Render mathjax immediately
-            chatutil.renderMath(`${message_id}`, 'all', 2000 as any)
-        }
-        this.updateHistory()
-    }
-    async completeStream() {
-        if (canvasutil.isCanvasOn()) {
-            if (!canvasutil.isCanvasOpen()) globalEventBus.emit('canvas:open');
-            // normalize canvas
-            canvasutil.NormalizeCanvasCode();
-        }
-
-
-        globalEventBus.emit('executioncycle:end')
-
-        // Reset send button appearance
-        globalEventBus.emit('executioncycle:end')
-
-        chatutil.renderMath()
-        renderAll_aimessages()
-        // }
-        setTimeout(() => { leftalinemath() }, 1000)
-
-        if (await appIsDev()) errorHandler.resetRetryCount()
-    }
     private async handleError(error: Error): Promise<void> {
         this.reset()
         globalEventBus.emit('executioncycle:end')
         // Mark all files as unUsed if we are in multiomodal chat and last message is not from assistant, meaning files have not been uploaded/used
         if (window.desk.api.getRoleByIndex(-1) !== MessageRole.assistant) {
-            if (this.isMultimodalModel) fileInputProcessor.unuseAll()
+            if (this.modelUsesArrayContent) fileInputProcessor.unuseAll()
             window.desk.api.popHistory("user")
         }
         await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal?.id, this.ErrorCallback || this.StartSession)

@@ -43,6 +43,7 @@ export type EventMap = {
     'dropzone:open': []
     'dropzone:close': []
     'model:change': [model: string]
+    'model:change:request': [model: string]
     'model:selector:show': []
     'model:selector:hide': []
     'conversation:new': [temporary?: boolean]
@@ -64,6 +65,9 @@ export type EventMap = {
     'file:remove-request': [id: string]
     'files:clear-request': []
     'files:submitted': [files: File[]]
+    'reasoning:on': []
+    'reasoning:off': []
+    'reasoning:change': [on: boolean]
 };
 
 

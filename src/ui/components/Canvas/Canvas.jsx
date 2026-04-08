@@ -6,7 +6,6 @@ import { StateManager } from '../../../core/managers/StatesManager';
 import { Editor } from './editor';
 import { waitForElement } from '../../../core/Utils/dom_utils';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
-import { ChatDisplay } from '../../../core/managers/Conversation/util';
 
 StateManager.set('isCanvasActive', false)
 
@@ -419,7 +418,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
             setTimeout(() => {
                 if (!codeViewRef.current || !codeViewRef.current?.innerHTML) return
                 codeViewRef.current.innerHTML = code
-                ChatDisplay.chats_size_adjust()
                 canvasUpdate()
             }, 1000)
         }
@@ -434,7 +432,6 @@ export const Canvas = ({ isOpen, onToggle }) => {
                 if (!codeViewRef.current || !codeViewRef.current?.innerHTML) return
 
                 codeViewRef.current.innerHTML = content
-                ChatDisplay.chats_size_adjust()
                 canvasUpdate()
             }, 1000)
         })

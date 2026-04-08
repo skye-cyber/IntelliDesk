@@ -64,8 +64,8 @@ export const MenuTools = ({ onToggleRecording }) => {
             <div
                 ref={toolWrapperRef}
                 className={`absolute -left-12 bottom-24 z-50 w-64 transition-all duration-300 transform origin-bottom-left ${isOpen
-                        ? 'opacity-100 scale-100 pointer-events-auto'
-                        : 'opacity-0 scale-95 pointer-events-none'
+                    ? 'opacity-100 scale-100 pointer-events-auto'
+                    : 'opacity-0 scale-95 pointer-events-none'
                     }`}
             >
                 <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
@@ -185,17 +185,23 @@ const ToolMenuItem = ({ onClick, icon, title, description, gradient = "from-gray
 // Enhanced Canvas Menu Component
 const CanvasMenu = () => {
     const canvasCheckBoxRef = useRef<HTMLInputElement>(null)
+    const switchRef = useRef<HTMLDivElement>(null)
     const [canvasOn, setCanvasOn] = useState(false)
 
     const toggleCanvas = useCallback(() => {
-        globalEventBus.emit('canvas:toggle')
-        setCanvasOn(prev => !prev)
+        //         globalEventBus.emit('canvas:toggle')
+        // setCanvasOn(prev => !prev)
     }, [])
 
     return (
         <div className="relative">
             <button
-                onClick={toggleCanvas}
+                onClick={(e) => {
+                    console.log(e.target)
+                    if (!switchRef.current?.contains(e.target as Node)) {
+                        globalEventBus.emit('canvas:toggle')
+                    }
+                }}
                 className={`w-full group relative overflow-hidden rounded-xl transition-all duration-300 ${canvasOn ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
                     }`}
             >
@@ -229,17 +235,15 @@ const CanvasMenu = () => {
                     </div>
 
                     {/* Toggle Switch */}
-                    <div className="relative">
-                        <input
+                    <div ref={switchRef} onClick={(e) => {
+                        if (e.currentTarget.contains(e.target as Node)) {
+                            setCanvasOn(!canvasOn)
+                        }
+                    }} className="relative">                        <input
                             ref={canvasCheckBoxRef}
                             type="checkbox"
-                            checked={canvasOn}
-                            onChange={(e) => {
-                                setCanvasOn(e.target.checked)
-                                if (!e.target.checked) {
-                                    globalEventBus.emit('canvas:toggle')
-                                }
-                            }}
+                            defaultChecked={canvasOn}
+                            onChange={(e) => setCanvasOn(e.target.checked)}
                             className="sr-only"
                             id="canvas-toggle"
                         />

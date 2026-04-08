@@ -1,4 +1,6 @@
-import { appIsDev, chatutil, canvasutil } from "./shared"; // provides shared objects and imports for mistral models
+import { appIsDev } from "./shared"; // provides shared objects and imports for mistral models
+import { canvasutil } from "../../Canvas/CanvasUtils.js";
+import { chatutil } from "../util.ts";
 import { clientmanager } from "./ClientManager.ts";
 import { StateManager } from '../../StatesManager';
 // import { waitForElement } from '../../../Utils/dom_utils';

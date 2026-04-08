@@ -1,5 +1,4 @@
 import { Mistral } from '@mistralai/mistralai';
-import { loadApiKeyChain } from "./shared"
 import { globalEventBus } from '../../../Globals/eventBus';
 
 interface KEY {
@@ -11,6 +10,18 @@ type keys = Array<KEY>
 
 interface KeyChainType {
     keys: keys
+}
+
+export async function loadApiKeyChain() {
+    try {
+        const chain = await window.desk.api2.getKeyChain('mistral');
+        const MISTRAL_API_KEY_CHAIN = JSON.parse(chain)
+        // Return only the keys that are usable ie not disabled
+        const usable_chain = { keys: MISTRAL_API_KEY_CHAIN.keys.filter(key => key.status != 'disabled') }
+        return usable_chain
+    } catch (err) {
+        return undefined
+    }
 }
 
 /**

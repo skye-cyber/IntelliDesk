@@ -82,7 +82,7 @@ const client = new Mistral({
 // });
 
 const chatResponse = await client.chat.complete({
-    model: "mistral-small-latest",
+    model: "mistral-large-latest",
     messages: [
         {
             role: "user",

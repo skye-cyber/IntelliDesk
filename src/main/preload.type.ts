@@ -9,7 +9,10 @@ import { FunctionCall } from '@mistralai/mistralai/models/components';
 
 export enum ModelType {
     multimodal = "multimodal",
-    chat = "chat"
+    chat = "chat",
+    vision = 'vision',
+    reasoning = 'reasoning',
+    ocr = 'ocr'
 }
 
 export enum ConversationType {
@@ -52,8 +55,8 @@ export enum MessageRole {
 
 export interface ChatMessage {
     role: MessageRole;
-    content: ChatContent;
-    tool_calls?: Array<ToolCall>
+    content?: ChatContent;
+    toolCalls?: Array<ToolCall>
 }
 
 export interface Conversation {
@@ -136,8 +139,7 @@ export interface ApiType {
     updateContinueHistory: (item: ChatMessage) => void | false;
     clearAllImages: (history: Conversation) => any[] | false;
     clearImages: (history: Conversation) => any[] | false;
-    CreateNew: (conversation: ChatMessage[], model: string) => void;
-    startNew: (model: 'chat' | 'multimodal', temporary: boolean) => void;
+    startNew: (model: ModelType, temporary: boolean) => string;
     saveConversation: () => Promise<string>;
     generateUUID: () => string;
     getConversationId: () => string;

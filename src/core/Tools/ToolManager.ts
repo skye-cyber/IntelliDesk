@@ -3,7 +3,6 @@
  * Handles tool registration, execution, and integration with AI
  */
 import { ToolBase } from './ToolBase';
-import { StateManager } from '../managers/StatesManager';
 import { BashTool } from './tools/BashTool';
 import { GrepTool } from './tools/GrepTool';
 // import { GetWeatherTool } from './tools/GetWeatherTool'
@@ -18,7 +17,7 @@ import { DatabaseQueryTool } from './tools/DatabaseQueryTool';
 import { NameConversationTool } from './tools/NameConversationTool';
 //import { SendMessageTool } from './tools/SendMessageTool';
 import type { AgentType, ToolConfig } from "../../main/utils/ToolAgent";
-import type { ToolError, ToolResult, ToolSchema, ToolCall, ToolStat } from './types';
+import type { ToolError, ToolResultItem, ToolSchema, ToolCall, ToolStat, FunctionCall } from './types';
 
 
 // StateManager.set('enable_tools', true)
@@ -57,7 +56,7 @@ export class ToolManager {
         this.registerTool('search_web', new SearchWebTool() as any);
         //this.registerTool('get_weather', new GetWeatherTool());
         this.registerTool('calculate', new CalculateTool() as any);
-        this.registerTool('file_operations', new FileSystemTool() as any);
+        this.registerTool('filesystem', new FileSystemTool() as any);
         this.registerTool('database_query', new DatabaseQueryTool() as any);
         this.registerTool('name_conversation', new NameConversationTool() as any);
         //this.registerTool('send_message', new SendMessageTool());
@@ -161,11 +160,11 @@ export class ToolManager {
      * Execute multiple tools in sequence
      */
     async executeToolSequence(sequence: Array<ToolCall>, sharedContext = {}) {
-        const results: Array<ToolResult | ToolError> = [];
+        const results: Array<ToolResultItem | ToolError> = [];
 
         for (const toolCall of sequence) {     //{ tool: toolName, params }
-            const toolName = toolCall.function.name
-            const params = toolCall.function.arguments
+            const toolName = (toolCall.function as FunctionCall).name
+            const params = (toolCall.function as FunctionCall).arguments
             try {
                 const result = await this.executeTool(toolName, params as any, sharedContext);
                 results.push(result);

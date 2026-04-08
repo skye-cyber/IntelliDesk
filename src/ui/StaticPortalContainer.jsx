@@ -3,8 +3,8 @@ import { Diagram } from './components/DiagramUI/diagram';
 import ReactDOM from 'react-dom';
 import { UserMessage, AiMessage } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
-import { FileItem } from './components/DropZone/dropzone';
-import { UploadedFileIndicator } from './components/DropZone/uploads';
+// import { FileItem } from './components/DropZone/dropzone';
+// import { UploadedFileIndicator } from './components/DropZone/uploads';
 import { LoadingAnimation } from './components/StatusUI/loader';
 import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
 import { ConfirmationDialog } from './components/StatusUI/confirmDialog';
@@ -18,8 +18,8 @@ const componentRegistry = {
     AiMessage,
     LoadingAnimation,
     ConversationItem,
-    FileItem,
-    UploadedFileIndicator,
+//     FileItem,
+//     UploadedFileIndicator,
     ErrorModal,
     Toast,
     ConfirmationDialog,

@@ -158,7 +158,6 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 ? 'multimodal'
                 : 'chat'
             clearMessages()
-            console.log(temporary)
             window.desk.api.startNew(model, temporary)
             // window.desk.api.setModel(model) we already parsed model to startNew
         })

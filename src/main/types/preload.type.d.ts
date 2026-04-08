@@ -45,8 +45,8 @@ export declare enum MessageRole {
 }
 export interface ChatMessage {
     role: MessageRole;
-    content: ChatContent;
-    tool_calls?: Array<ToolCall>;
+    content?: ChatContent;
+    toolCalls?: Array<ToolCall>;
 }
 export interface Conversation {
     metadata: ConversationMetadata;

@@ -209,7 +209,7 @@ const api = {
             }
             if (!ConversationHistory.metadata.highlight) {
                 if (ConversationHistory.metadata.model === "multimodal") {
-                    if (item?.content.length > 0) {
+                    if (item && item?.content && item.content.length > 0) {
                         if (typeof item?.content[0] == 'object' && item?.content[0].text && typeof (item?.content[0].text) === "string") {
                             const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replace(/`/, '');
                             ConversationHistory.metadata.highlight = highlight;
@@ -461,10 +461,10 @@ const api = {
                 console.log("In temporary chat Not saving");
                 return filePath;
             }
-            console.log(ConversationHistory.chats);
+            // console.log(ConversationHistory.chats)
             // Actually save the conversation data to file
             await api.write(filePath, ConversationHistory);
-            console.log(`Conversation saved: ${conversationId}`);
+            // console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         }
         catch (err) {
@@ -549,7 +549,7 @@ const api = {
             parsedData.chats.forEach((res) => {
                 if (res.role === "user") {
                     if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role !== "assistant") {
-                        console.log("Pair: !index", parsedData.chats.indexOf(res) + 1);
+                        // console.log("Pair: !index", parsedData.chats.indexOf(res) + 1);
                         parsedData.chats.slice(parsedData.chats.indexOf(res), parsedData.chats.indexOf(res) + 1).values();
                     }
                     else if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role === "assistant") {

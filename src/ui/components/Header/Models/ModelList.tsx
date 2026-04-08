@@ -6,7 +6,7 @@ import { globalEventBus } from '../../../../core/Globals/eventBus.ts';
 export const ModelList = (
     {
         selectorRef,
-        selectedModel = 'mistral-small-latest',
+        selectedModel = 'mistral-large-latest',
         onModelSelect,
         onClose
 

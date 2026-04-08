@@ -5,7 +5,7 @@
 import toolManager from './ToolManager';
 import { BaseErrorHandler } from "../ErrorHandler/BaseHandler";
 import { staticPortalBridge } from '../PortalBridge.ts';
-import type { ToolCall, ToolResults, ToolResultItem } from './types';
+import type { ToolCall, ToolResults, ToolResultItem, FunctionCall } from './types';
 import type { Session } from '../../main/utils/SessionManager.ts';
 import { emit } from '../Globals/eventBus.ts';
 
@@ -41,8 +41,8 @@ export class ToolExecutor {
                     throw new Error(`Maximum tool calls (${this.maxToolCalls}) exceeded`);
                 }
 
-                const toolName = toolCall.function.name;
-                const params = toolCall.function.arguments as string;  // gete params/arguments
+                const toolName = (toolCall.function as FunctionCall).name;
+                const params = (toolCall.function as FunctionCall).arguments as string;  // get params/arguments
                 const metadata = window.desk.api.getmetadata()
                 let sessionId = metadata ? metadata.sessionId : null
 
@@ -129,7 +129,7 @@ export class ToolExecutor {
                 await BaseErrorHandler(error, null, 'ToolIntegration');
                 results.push({
                     toolCallId: toolCall.id || new Date().toISOString(),
-                    toolName: toolCall.function.name,
+                    toolName: (toolCall.function as FunctionCall).name,
                     error: error
                 });
             }
@@ -229,7 +229,7 @@ export class ToolExecutor {
             } else {
                 results.push({
                     toolCallId: toolCalls[index].id || new Date().toISOString(),
-                    toolName: toolCalls[index].function.name,
+                    toolName: (toolCalls[index].function as FunctionCall).name,
                     error: result.reason.message
                 });
             }
@@ -239,10 +239,10 @@ export class ToolExecutor {
     }
 
     async processSingleToolCall(toolCall: ToolCall, context: Map<any, any>) {
-        const toolName = toolCall.function.name;
-        const params = toolCall.function.arguments;
+        const toolName = (toolCall.function as FunctionCall).name;
+        const params = (toolCall.function as FunctionCall).arguments;
 
-        const toolResult = await this.toolManager.executeTool(toolName, params, {
+        const toolResult = await this.toolManager.executeTool(toolName, params as string, {
             ...context,
             toolCallId: toolCall.id || new Date().toISOString()
         });

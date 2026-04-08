@@ -8,7 +8,7 @@ import '../../../core/managers/Conversation/Mistral/Completion.ts';
 import { adjustElementHeight } from './utils/ElementHeight.ts';
 import { cleanInput } from './utils/cleanInput.ts';
 import { MenuTools } from './MenuTools.tsx';
-
+// import { InputFileDisplay } from '../DropZone/InputFileDisplay.tsx';
 
 
 export const InputSection = ({ onToggleRecording }) => {
@@ -209,8 +209,8 @@ export const InputSection = ({ onToggleRecording }) => {
                 id="userInputContainer"
                 data-portal-container="userInputContainer"
                 className={`relative w-full sm:w-[50vw] xl:w-auto xl:min-w-[34vw] xl:max-w-[48vw] transition-all duration-500 rounded-2xl border ${inputFocus
-                        ? 'border-indigo-400 ring-2 ring-indigo-300/50 shadow-lg'
-                        : 'border-indigo-300 dark:border-indigo-700'
+                    ? 'border-indigo-400 ring-2 ring-indigo-300/50 shadow-lg'
+                    : 'border-indigo-300 dark:border-indigo-700'
                     } bg-gray-50 dark:bg-gray-900`}
             >
                 {/* Input Area */}
@@ -328,7 +328,10 @@ const ScrollToBottomButton = ({ }) => {
             id="scroll-bottom"
             className="absolute fixed right-[150px] bottom-24 cursor-pointer rounded-full bg-blue-100 border border-blue-400 dark:border-gray-300 dark:bg-[#222] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
             aria-label="scroll to bottom"
-            onClick={() => globalEventBus.emit('scroll:bottom', false)}
+            onClick={() => {
+                chatutil.updateScrollButtonVisibility()
+                globalEventBus.emit('scroll:bottom', false)
+            }}
         >
             <div className='hidden group-hover:flex gap-2 absolute left-10 text-black dark:text-white tracking-wider font-extralight font-handwriting text-xs'><span>scroll</span></div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="icon-md text-token-text-primary dark:text-white">

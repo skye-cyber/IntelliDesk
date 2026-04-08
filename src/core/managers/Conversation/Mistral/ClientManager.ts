@@ -78,7 +78,8 @@ export class ClientManager {
         if (this.CurrentKeyIndex > this.keychainLength) {
             this.CurrentKeyIndex = 0
         }
-        this.key = this.keychain?.keys[this.CurrentKeyIndex].value as string
+        console.log(this.CurrentKeyIndex, this.keychain?.keys[this.CurrentKeyIndex])
+        this.key = this.keychain?.keys[this.CurrentKeyIndex]?.value as string
 
         let keys: keys = []
 

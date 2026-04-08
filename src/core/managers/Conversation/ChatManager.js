@@ -1,4 +1,4 @@
-import { conversationloader } from './ConversationLoader.js'
+import { conversationloader } from './ConversationLoader.ts'
 import { clearMessages, staticPortalBridge } from '../../PortalBridge.ts';
 import { modalmanager } from '../../StatusUIManager/Manager.js';
 import { globalEventBus } from '../../Globals/eventBus.ts';

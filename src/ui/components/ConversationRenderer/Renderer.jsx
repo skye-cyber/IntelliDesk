@@ -45,7 +45,7 @@ export const UserMessage = ({ message, files = [] }) => {
                         <SimpleUserCodeRenderer htmlContent={userContent} />
                     </div>
                     {expandable && (
-                        <div onClick={() => setEpanded(!expanded)} className={`absolute bottom-[0.5px] right-0 h-36 bg-gradient-to-t from-gray-100/80 dark:from-[#14143e] to-transparent pointer-events-click ${expanded ? '' : 'cursor-row-resize'} max-w-full md:max-w-[80%] rounded-bl-lg`} style={{width: dimensions[0]}} />
+                        <div onClick={() => setEpanded(!expanded)} className={`absolute bottom-[0.5px] right-0 h-36 bg-gradient-to-t from-gray-100/80 dark:from-[#14143e] to-transparent pointer-events-click ${expanded ? '' : 'cursor-row-resize'} max-w-full md:max-w-[80%] rounded-bl-lg`} style={{ width: dimensions[0] }} />
                     )}
                 </div>
 
@@ -65,7 +65,7 @@ export const AiMessage = ({ children, ...props }) => {
 
     return (
         <ErrorBoundary>
-            <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
+            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap'>
                 <section
                     id="ai_response"
                     onMouseEnter={() => setOptionsOpen(true)}
@@ -93,6 +93,7 @@ export const StreamingAiMessage = ({
 }) => {
     const exportMenu = useRef(null)
     const messageRef = useRef(null)
+    const [optionsOpen, setOptionsOpen] = useState(false)
 
     const onExportMenuToggle = useCallback(() => {
         exportMenu.current.classList.toggle('hidden');
@@ -101,8 +102,12 @@ export const StreamingAiMessage = ({
 
     return (
         <ErrorBoundary>
-            <div id="ai_response_container" className='flex justify-start mb-12 overflow-wrap'>
-                <section id="ai_response" className="relative w-fit max-w-full mb-[2vh] py-2 px-4">
+            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap'>
+                <section
+                    id="ai_response"
+                    onMouseEnter={() => setOptionsOpen(true)}
+                    onMouseLeave={() => setOptionsOpen(false)}
+                    className="relative w-fit max-w-full mb-[2vh] py-2 px-4">
                     {/* Streaming response wrapper */}
                     <div ref={messageRef} className=''>
                         <ResponseWrapper actualContent={actualContent} thinkContent={thinkContent} isThinking={isThinking} />
@@ -110,7 +115,7 @@ export const StreamingAiMessage = ({
 
                     {/*Other componets*/}
                     <div className='mt-10'>
-                        <AiMessageOptions onMenuToggle={onExportMenuToggle} messageref={messageRef} />
+                        <AiMessageOptions onMenuToggle={onExportMenuToggle} isOpen={optionsOpen} setOpen={setOptionsOpen} messageref={messageRef} />
                         <ExportMenu menuref={exportMenu} messageref={messageRef} />
                     </div>
                 </section>
@@ -262,7 +267,7 @@ export const AiMessageOptions = ({ messageref, isOpen, setOpen }) => {
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
         >
-            <section className={`${isOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700 motion-safe:transition-opacity options absolute bottom-0 flex mt-1 space-x-2 cursor-pointer`}>
+            <section className={`${isOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700 motion-safe:transition-opacity options absolute bottom-0 flex mt-0 space-x-2 cursor-pointer`}>
                 {/*EXPORT OPTION*/}
                 <div className="group relative max-w-fit transition-all duration-300 hover:z-50">
                     <div

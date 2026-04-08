@@ -10,7 +10,7 @@ import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler.js";
 // import { timer } from "../../../Timer/timer";
 import toolExecutor from "../../../Tools/ToolCallHandler.ts";
 import toolManager from "../../../Tools/ToolManager.ts";
-import mistralClientSimulator from "../../../tests/MistralClientSimulator";
+// import mistralClientSimulator from "../../../tests/MistralClientSimulator";
 import { globalEventBus } from "../../../Globals/eventBus.ts";
 // import { Mistral } from '@mistralai/mistralai';
 import { EventStream } from "@mistralai/mistralai/lib/event-streams";
@@ -18,7 +18,7 @@ import { CompletionEvent } from "@mistralai/mistralai/models/components/completi
 import { ToolCall, ToolResults, ToolSchema, FunctionCall } from "../../../Tools/types";
 import { Tool } from "@mistralai/mistralai/models/components/tool";
 import { ContentChunk } from "@mistralai/mistralai/models/components/contentchunk";
-import { multimodalProcessor } from "./InputProcessor.js";
+import { fileInputProcessor } from "./InputProcessor.js";
 import { MessageRole } from "./types.ts";
 
 let SIGINT = false
@@ -87,6 +87,18 @@ class CompletionBase {
         this.reset()
     }
 
+    simpleReset() {
+        this.rawDelta = ''
+        this.output = '';
+        this.fullResponse = ''
+        this.thinkContent = ''
+        this.actualResponse = ''
+        this.isThinking = false
+        this.hasfinishedThinking = false
+        this.first_run = true;
+        this.continued = false
+        this.TOOL_CALLS = []
+    }
     reset() {
         // Stream options
         this.rawDelta = ''
@@ -116,13 +128,14 @@ class CompletionBase {
     }
 
     route(callback: CallableFunction | undefined = undefined) {
-        if (this.modelName && chatutil.isMultimodal(this.modelName)) this.isMultimodalModel = true
+        if (this.modelName && chatutil.isMultimodal(this.modelName) || chatutil.isVision(this.modelName)) this.isMultimodalModel = true
         // set error callback
         // Use `useraction:request:execution` as default callback if none is provided
         this.ErrorCallback = callback ? callback : (text: string) => globalEventBus.emit('useraction:request:execution', (text))
         return this
     }
     complete(input: string) {
+        this.route()
         if (!this.validateClientManager()) return
         this.processInput(input)
 
@@ -132,7 +145,7 @@ class CompletionBase {
     }
     processInput(input: string, processor: CallableFunction | undefined = undefined): void {
         if (this.isMultimodalModel) {
-            const { userMessagePID } = multimodalProcessor.process(input);
+            const { userMessagePID } = fileInputProcessor.process(input);
             this.userMessagePID = userMessagePID
         } else {
             // Default user message handling
@@ -208,6 +221,7 @@ class CompletionBase {
             StateManager.set('prevStreamingPortal', this.streamingPortal)
 
             this.reset()
+            globalEventBus.emit('executioncycle:end')
         } catch (error) {
             this.handleError(error)
         }
@@ -231,26 +245,26 @@ class CompletionBase {
             globalEventBus.once('permission:denied', () => this.TOOL_SIGINT = true)
             let HAS_FINAL_RESPONSE = false
 
-            console.log("STREAM START:")
             while (this.TOOLCALL_ITERATIONS < this.MAX_TOOLITERATIONS && !HAS_FINAL_RESPONSE) {
                 this.TOOLCALL_ITERATIONS++;
                 this.ToolSessionState.iterationCount = this.TOOLCALL_ITERATIONS;
 
                 if (SIGINT || this.TOOL_SIGINT) break
 
+                // To avoid dirty reads
+                this.simpleReset()
                 const stream = await this.clientmanager.client.chat.stream({
                     model: this.modelName,
                     messages: window.desk.api.getHistory(true) as any, //conversationHistory,
                     maxTokens: 3000,
                     tools: this.availableTools as Array<Tool>,
-                    toolChoice: 'any',
+                    toolChoice: 'auto',
                     parallelToolCalls: false,
                 });
 
-                console.log("Stream now")
                 await this.stream(stream)
-                console.log(this.TOOL_CALLS)
 
+                console.log(this.TOOL_CALLS)
                 // Check if tool_calls were requested and dispatch/execute them
                 if (this.TOOL_CALLS && this.TOOL_CALLS.length > 0) {
                     console.log(`[Tool Session] Iteration ${this.TOOLCALL_ITERATIONS}: Processing ${this.TOOL_CALLS.length} tool calls`);
@@ -269,14 +283,16 @@ class CompletionBase {
 
                     // History was update in UpdateHistory so skip
 
-                    console.log("TOOL RESULTS")
-                    console.log(toolResults)
                     for (const call of toolResults) {
+                        if (!call.toolCallId) {
+                            console.error('Tool result missing toolCallId:', call);
+                            // continue; // Skip this tool result
+                        }
                         const tool_result = {
                             role: MessageRole.tool,
-                            content: JSON.stringify(call.result),
+                            content: JSON.stringify(call.result || call.error),
                             name: call.toolName,
-                            tool_call_id: call.toolCallId
+                            toolCallId: call.toolCallId
                         }
                         window.desk.api.addHistory(tool_result);
                         streamingPortalBridge.appendComponentAsChild(this.streamingPortal.id, 'ToolCallDisplay', {
@@ -287,6 +303,9 @@ class CompletionBase {
                     this.ToolSessionState.toolCallsMade += this.TOOL_CALLS.length;
                     this.ToolSessionState.lastToolCall = this.TOOL_CALLS[this.TOOL_CALLS.length - 1];
                     this.ToolSessionState.pendingToolResults = toolResults;
+
+                    // Clear TOOL_CALLS for next iteration
+                    this.TOOL_CALLS = [];
                 } else {
                     // No tool calls, this is the final response
                     HAS_FINAL_RESPONSE = true;
@@ -295,16 +314,17 @@ class CompletionBase {
                     break
                 }
             }
-            SIGINT = false
+            return true
         } catch (error) {
             console.debug(`[Tool Session] Error in iteration ${this.TOOLCALL_ITERATIONS}:`, error);
             this.handleError(error)
         }
     }
     private streamArray(deltaContent: ContentChunk[]) {
+        // console.log(deltaContent)
         // Process each content chunk in the array
         for (const contentChunk of deltaContent) {
-
+            console.log('Processing chunk:', contentChunk.type, contentChunk);
             if (contentChunk.type === "thinking") {
                 // Start or continue thinking
                 this.isThinking = true;
@@ -319,21 +339,31 @@ class CompletionBase {
                 }
             } else if (contentChunk.type === "text" && contentChunk.text) {
                 // This is actual response text
+                // Only process text chunks that have actual string content
+                if (contentChunk.text && typeof contentChunk.text === 'string') {
+                    // If we were thinking, now we've finished thinking
+                    if (this.isThinking) {
+                        this.hasfinishedThinking = true;
+                        this.isThinking = false;
+                    }
 
-                // If we were thinking, now we've finished thinking
-                if (this.isThinking) {
-                    this.hasfinishedThinking = true;
-                    this.isThinking = false;
+                    this.actualResponse += contentChunk.text;
                 }
 
-                this.actualResponse += contentChunk.text;
+            } else if (contentChunk.type === "image_url" || contentChunk.type === "document_url") {
+                // Handle other chunk types if needed
+                // These shouldn't appear in thinking models but handle just in case
 
-
+            } else {
+                // Unknown chunk type - log for debugging
+                console.warn('Unknown content chunk type:', contentChunk.type, contentChunk);
             }
             // TODO: Handle other chunk types here
         }
     }
     private streamText(deltaContent: string) {
+        // String content - safe to append
+        this.output += deltaContent;
         // Fallback to tag-based parsing for string content
         if (this.output.includes("<think>") && !this.isThinking && !this.hasfinishedThinking) {
             this.isThinking = true;
@@ -350,6 +380,7 @@ class CompletionBase {
             this.thinkContent += deltaContent;
         } else {
             this.actualResponse += deltaContent;
+            this.fullResponse += deltaContent;
         }
     }
     /**
@@ -401,33 +432,90 @@ class CompletionBase {
     }
     async updateHistory() {
         if (this.continued) {
-            // Reset store user message state
-            StateManager.set('user_message_portal', null)
+            StateManager.set('user_message_portal', null);
 
-            const historyItem = {
-                role: MessageRole.assistant,
-                content: [{
+            const historyItem: any = {
+                role: MessageRole.assistant
+            };
+
+            // Build content array for multimodal/thinking models
+            const content: any[] = [];
+
+            // Add thinking content if present (as thinking type or text with think tag)
+            if (this.thinkContent && this.thinkContent.trim()) {
+                content.push({
+                    type: "thinking",
+                    thinking: this.thinkContent
+                });
+            }
+
+            // Add actual response if present
+            if (this.actualResponse && this.actualResponse.trim()) {
+                content.push({
                     type: "text",
-                    text: this.fullResponse
-                        .replace("<continued>", "")
-                        .replace("</continued>", "")
-                }]
+                    text: this.actualResponse
+                        .replace(/<continued>/g, "")
+                        .replace(/<\/continued>/g, "")
+                });
             }
-            if (this.TOOL_CALLS) {
-                historyItem['tool_calls'] = this.TOOL_CALLS
-            }
-            window.desk.api.updateContinueHistory(historyItem)
-        } else {
-            let content = window.desk.api.getmetadata()?.model === 'multimodal' ?
-                [
-                    { type: 'text', text: this.fullResponse }
-                ] :
-                this.fullResponse
 
-            const historyItem = { role: MessageRole.assistant, content: content }
-            if (this.TOOL_CALLS) {
-                historyItem['tool_calls'] = this.TOOL_CALLS
+            // Only add content array if we have items
+            if (content.length > 0) {
+                historyItem.content = content;
             }
+
+            // Add tool calls if present (use camelCase for SDK)
+            if (this.TOOL_CALLS && this.TOOL_CALLS.length > 0) {
+                historyItem.toolCalls = this.TOOL_CALLS;
+            }
+
+            // Validate before adding
+            if (!historyItem.content && !historyItem.toolCalls) {
+                console.error('Assistant message must have either content or toolCalls');
+                return;
+            }
+
+            window.desk.api.updateContinueHistory(historyItem);
+
+        } else {
+            const historyItem: any = {
+                role: MessageRole.assistant
+            };
+
+            // Build content array for modern thinking format
+            const content: any[] = [];
+
+            // Add thinking content if present
+            if (this.thinkContent && this.thinkContent.trim()) {
+                content.push({
+                    type: "thinking",
+                    thinking: this.thinkContent
+                });
+            }
+
+            // Add actual response if present
+            if (this.actualResponse && this.actualResponse.trim()) {
+                const textContent = this.actualResponse.trim();
+                content.push({
+                    type: "text",
+                    text: textContent
+                });
+            }
+
+            if (content.length > 0) {
+                historyItem.content = content;
+            }
+
+            // Add tool calls if present
+            if (this.TOOL_CALLS && this.TOOL_CALLS.length > 0) {
+                historyItem.toolCalls = this.TOOL_CALLS;
+            }
+
+            if (!historyItem.content && !historyItem.toolCalls) {
+                console.error('Assistant message must have either content or toolCalls');
+                return;
+            }
+
             window.desk.api.addHistory(historyItem);
         }
     }
@@ -503,9 +591,12 @@ class CompletionBase {
             // Process based on content type
             if (Array.isArray(deltaContent)) {
                 this.streamArray(deltaContent)
+                console.log(deltaContent)
             }
             else if (typeof deltaContent === 'string') {
+                this.isThinking = false
                 this.streamText(deltaContent)
+                console.log("text:", deltaContent)
             }
 
             if (this.actualResponse.includes('<continued>') || this.actualResponse.includes('<continued')) {
@@ -553,8 +644,8 @@ class CompletionBase {
         this.reset()
         globalEventBus.emit('executioncycle:end')
         // Mark all files as unUsed if we are in multiomodal chat and last message is not from assistant, meaning files have not been uploaded/used
-        if (this.isMultimodalModel && window.desk.api.getRoleByIndex(-1) !== MessageRole.assistant) {
-            multimodalProcessor.unuseAll()
+        if (window.desk.api.getRoleByIndex(-1) !== MessageRole.assistant) {
+            if (this.isMultimodalModel) fileInputProcessor.unuseAll()
             window.desk.api.popHistory("user")
         }
         await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal?.id, this.ErrorCallback || this.StartSession)
@@ -568,5 +659,5 @@ globalEventBus.on('model:change', ((model: string) => {
 }))
 
 globalEventBus.on('useraction:request:execution', (text) => {
-    completion.route().complete(text)
+    completion.complete(text)
 })

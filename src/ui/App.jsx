@@ -16,7 +16,7 @@ import { Settings } from './pages/Settings.jsx';
 import { StatusUI } from './components/StatusUI/StatusUI.jsx';
 import '../core/StatusUIManager/Manager.js'
 import { APIKeysManager } from './components/ApiManager/manager.tsx';
-import { DropZone } from './components/DropZone/dropzone.jsx'
+import { DropZone } from './components/DropZone/DropZone.tsx'
 import { NotificationFlyer, Notifcation } from './components/Notifications/Notification.jsx'
 import '../core/MathBase/MathNormalize.js';
 import '../core/MathBase/mathRenderer.js';
@@ -38,7 +38,7 @@ const App = () => {
     //const { electron } = useElectron();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('mistral-small-latest');
+    const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
     const [isRecordingOn, setIsRecordingOn] = useState(false);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);

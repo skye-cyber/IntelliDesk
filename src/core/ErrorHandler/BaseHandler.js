@@ -16,8 +16,8 @@ export async function BaseErrorHandler(error, userMessagePID, assistantMessagePI
     streamingPortalBridge.closeStreamingPortal(assistantMessagePID)
     staticPortalBridge.closeComponent(userMessagePID)
 
-    // Rotate keys if error is key error ie rate limit
-    if (error.statusCode && error.statusCode === 401) {
+    // Rotate keys if error is key error ie rate limit 429->ratelimit
+    if (error.statusCode && [401, 429].includes(error.statusCode)) {
         const rotationSuccess = await clientmanager.rotate_keychain()
 
         if (typeof rotationSuccess) return callback(user_text)

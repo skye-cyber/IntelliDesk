@@ -13,16 +13,12 @@ class SystemPrompt {
 
         # Conversation Naming Protocol
         - After 2-3 exchanges, analyze the conversation theme and assign a concise name
-        - Format: \`<name>Name goes here</name>\` as the first element in your response.
+        - *Note* use tool call for rename if vailable
         - Names should be 2-5 words, descriptive yet brief
         - Before suggesting a name, check if conversation already has these indicators:
-        * Previous name tags in history
         * User references to existing topics
         * Established context from earlier messages
         - Only suggest names for genuinely new conversation threads
-        - Generally do not name if exhanges are 4+.
-        - If uncertain, suggest name.
-        - Seperate name with rest for the response with newline.
 
         # Response Continuation
         - Use \`<continued>\` tags ONLY when user explicitly requests continuation

@@ -120,6 +120,27 @@ export const ModelCategory: ModelCategoryList = [
         ]
     },
     {
+        title: "Reasoning",
+        type: "reasoning",
+        models: [
+            {
+                name: "magistral-small-latest",
+                value: "magistral-small-latest",
+                description: "Advanced Reasoning model",
+                icon: "mistral",
+                platform: "mistral",
+                recommended: true
+            },
+            {
+                name: "magistral-medium-latest",
+                value: "magistral-medium-latest",
+                description: "Advanced Reasoning model",
+                icon: "mistral",
+                platform: "mistral",
+            }
+        ]
+    },
+    {
         title: "Embedding",
         type: 'embedding',
         models: [
@@ -134,13 +155,27 @@ export const ModelCategory: ModelCategoryList = [
         ]
     },
     {
+        title: "Vision",
+        type: 'vision',
+        models: [
+            {
+                value: "mistral-large-2512",
+                name: "mistral-large-2512",
+                description: "Advanced OCR model image handling",
+                icon: "mistral",
+                platform: "mistral",
+                recommended: true
+            }
+        ]
+    },
+    {
         title: "OCR",
         type: 'ocr',
         models: [
             {
                 value: "mistral-ocr-latest",
                 name: "mistral-ocr-latest",
-                description: "Advanced OCR model for structured document understanding and text extraction from images/PDFs.",
+                description: "Advanced ocr model for structured document understanding and text extraction from images/PDFs.",
                 icon: "mistral",
                 platform: "mistral",
                 recommended: true

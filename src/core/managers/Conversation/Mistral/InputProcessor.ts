@@ -17,7 +17,7 @@ type DocumentURLType = 'document_url'
 
 type DocumentUrl = {
     documentUrl: string;
-    documentName?: string | null | undefined; // The filename of the document
+    documentName?: string | null | undefined;
     type?: DocumentURLType | undefined;
 }
 
@@ -29,7 +29,8 @@ enum ContentType {
 
 enum FileType {
     image = 'image',
-    document = 'document'
+    document = 'document',
+    text = 'text'
 }
 
 interface FileMetadata {
@@ -40,15 +41,17 @@ interface FileMetadata {
     webkitRelativePath: string
 }
 
-interface File {
+export interface File {
+    id?: string
     name: string
     used: boolean
     size: number
     type: FileType
     url: string | any
-    is_image?: boolean
-    is_document?: boolean
+    isImage?: boolean
+    isDocument?: boolean
     file?: FileMetadata
+    preview?: string
 }
 interface rejectedFile {
     name: string
@@ -65,7 +68,7 @@ interface userContent {
 interface FileGroup {
     image?: File[]
     document?: File[]
-    pdf?: File[]
+    text?: File[]
 }
 
 interface processResult {
@@ -77,7 +80,90 @@ interface validationResponse {
     rejectedFiles: rejectedFile[]
 }
 
-class MultimodalProcessor {
+// MIME type mappings by category
+export const FileMimeMap = {
+    image: [
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "image/webp",
+        "image/gif",
+        "image/avif",
+        "image/tiff"
+    ],
+    document: [
+        "application/pdf",
+        "text/plain",
+        "text/markdown",
+        "text/html",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    ],
+    text: [
+        "text/plain",
+        "text/markdown",
+        "text/x-markdown",
+        "text/html",
+        "text/xml",
+        "application/json",
+        "text/json",
+        "text/yaml",
+        "text/x-yaml",
+        "text/csv",
+        "text/css",
+        "text/javascript",
+        "application/javascript",
+        "text/typescript",
+        "application/x-typescript",
+        "text/x-python",
+        "text/x-java",
+        "text/x-c",
+        "text/x-c++",
+        "text/x-go",
+        "text/x-rust",
+        "text/x-ruby",
+        "text/x-php",
+        "text/x-swift",
+        "text/x-kotlin",
+        "text/x-scala",
+        "text/x-r",
+        "text/x-shellscript",
+        "application/x-sh",
+        "text/x-sql",
+        "text/x-dockerfile",
+        "text/x-makefile",
+        "text/x-cmake",
+        "text/x-asm",
+        "text/x-latex",
+        "text/x-bibtex"
+    ]
+}
+
+// Flat array of all supported MIME types for quick lookup
+const SUPPORTED_FILE_MIMETYPES = [
+    ...FileMimeMap.image,
+    ...FileMimeMap.document,
+    ...FileMimeMap.text
+]
+
+// Get category from MIME type
+function getMimeCategory(mimeType: string): FileType | null {
+    if (FileMimeMap.image.includes(mimeType)) return FileType.image;
+    if (FileMimeMap.document.includes(mimeType)) return FileType.document;
+    if (FileMimeMap.text.includes(mimeType)) return FileType.text;
+    return null;
+}
+
+// Check if MIME type is supported
+function isSupportedMimeType(mimeType: string): boolean {
+    return SUPPORTED_FILE_MIMETYPES.includes(mimeType);
+}
+
+class FileInputProcessor {
     public config: ConfigType
 
     constructor() {
@@ -161,19 +247,31 @@ class MultimodalProcessor {
                 rejectionReasons.push(`File exceeds ${maxSizeMB}MB limit`);
             }
 
-            // Check file type validity
-            if (!file.type && file.file?.type || !['image', 'document', 'pdf', 'text'].includes(file.type)) {
-                rejectionReasons.push('Invalid file type');
+            // Get actual MIME type from file metadata
+            const mimeType = file.file?.type || file.type as unknown as string;
+
+            // Check if MIME type is supported using the new helper
+            if (!mimeType || !isSupportedMimeType(mimeType)) {
+                rejectionReasons.push('Invalid or unsupported file type');
             }
 
+            // Determine category for mixed type checking
+            const category = mimeType ? getMimeCategory(mimeType) : null;
+
             // Check for mixed types if not allowed
-            if (!this.config.allowMixedTypes && seenTypes.size > 0 && !seenTypes.has(file.type)) {
+            if (!this.config.allowMixedTypes && category && seenTypes.size > 0 && !seenTypes.has(category)) {
                 rejectionReasons.push('Mixing different file types not allowed');
             }
 
             if (rejectionReasons.length === 0) {
+                // Update file type to normalized category
+                if (category) {
+                    file.type = category;
+                }
                 validFiles.push(file);
-                seenTypes.add(file.type || file.file?.type);
+                if (category) {
+                    seenTypes.add(category);
+                }
             } else {
                 rejectedFiles.push({
                     name: file.name,
@@ -195,39 +293,33 @@ class MultimodalProcessor {
         if (filesByType.image && filesByType.image.length > 0) {
             const imageContent = filesByType.image.map((file: File) => ({
                 type: ContentType.image_url,
-                image_url: file.url
+                imageUrl: {
+                    url: file.url,
+                    details: `Name: ${file.name}`
+                }
             }));
             content.push(...imageContent);
         }
 
-        // Handle documents
+        // Handle documents (includes PDFs and office docs)
         if (filesByType.document && filesByType.document.length > 0) {
             const documentContent = filesByType.document.map((file: File) => ({
                 type: ContentType.document_url,
-                documentUrl: file.url
-                // { // Fixed: should be document_url not documentUrl
-                //     url: file.url,
-                //     name: file.name,
-                //     size: file.size
-                // }
+                documentUrl: file.url,
+                documentName: file.name
 
             }));
             content.push(...documentContent);
         }
 
-        // Handle PDFs separately if needed
-        if (filesByType.pdf && filesByType.pdf.length > 0) {
-            const pdfContent = filesByType.pdf.map((file: File) => ({
+        // Handle text files
+        if (filesByType.text && filesByType.text.length > 0) {
+            const textContent = filesByType.text.map((file: File) => ({
                 type: ContentType.document_url,
-                documentUrl: file.url
-                // {
-                //     url: file.url,
-                //     name: file.name,
-                //     size: file.size,
-                //     mime_type: 'application/pdf'
-                // }
+                documentUrl: file.url,
+                documentName: file.name
             }));
-            content.push(...pdfContent);
+            content.push(...textContent);
         }
 
         return content;
@@ -238,17 +330,15 @@ class MultimodalProcessor {
      */
     groupFilesByType(files: File[]): FileGroup {
         return files.reduce((groups, file) => {
-            let filetype = file.type // Default to document if type missing
+            const category = file.type as FileType;
 
-            filetype = (filetype === FileType.image || file.is_image) ? FileType.image : FileType.document
-
-            if (!groups[filetype]) {
-                groups[filetype] = [];
+            if (!groups[category]) {
+                groups[category] = [];
             }
-            groups[filetype].push(file);
+            groups[category].push(file);
 
             return groups;
-        }, {}) as FileGroup;
+        }, {} as FileGroup);
     }
 
     simpleprocessor(text: string) {
@@ -266,12 +356,16 @@ class MultimodalProcessor {
         }
 
         // Add file content with basic validation
-        const validFiles = files.slice(0, 5).filter((file: File) =>
-            file.url && (file.type || file.file?.type) && (file.file?.size || file.size) <= 20 * 1024 * 1024
-        );
+        const validFiles = files.slice(0, 5).filter((file: File) => {
+            const mimeType = file.file?.type || file.type as unknown as string;
+            return file.url && mimeType && isSupportedMimeType(mimeType) && (file.file?.size || file.size) <= 20 * 1024 * 1024;
+        });
 
         for (const file of validFiles) {
-            if (file.type === "image") {
+            const mimeType = file.file?.type || file.type as unknown as string;
+            const category = getMimeCategory(mimeType);
+
+            if (category === FileType.image) {
                 userContent.push({
                     type: ContentType.image_url,
                     imageUrl: {
@@ -279,6 +373,7 @@ class MultimodalProcessor {
                     }
                 });
             } else {
+                // Document or text files both use document_url
                 userContent.push({
                     type: ContentType.document_url,
                     documentUrl: {
@@ -314,5 +409,4 @@ class MultimodalProcessor {
     }
 }
 
-export const multimodalProcessor = new MultimodalProcessor()
-
+export const fileInputProcessor = new FileInputProcessor()

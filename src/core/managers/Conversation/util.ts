@@ -5,7 +5,7 @@ import { dot_interpreter } from "../../diagraming/vizcharting";
 import { globalEventBus } from "../../Globals/eventBus";
 
 // Model type definitions
-export type ModelCategory = 'multimodal' | 'coding' | 'moderation' | 'text-generation' | 'embedding' | 'ocr' | 'unknown';
+export type ModelCategory = 'multimodal' | 'coding' | 'moderation' | 'text-generation' | 'embedding' | 'ocr' | 'unknown' | 'reasoning' | 'vision';
 
 export interface ModelInfo {
     id: string;
@@ -132,6 +132,31 @@ const MODEL_REGISTRY: Record<string, ModelInfo> = {
         supportsVision: true,
         description: "Advanced OCR for structured document understanding",
         isLatest: true
+    },
+    // Reasoning
+    "magistral-small-latest": {
+        id: "magistral-small-latest",
+        category: "reasoning",
+        supportsToolCalling: true,
+        supportsVision: true,
+        description: "Advanced Reasoning model",
+        isLatest: true
+    },
+    "magistral-medium-latest": {
+        id: "magistral-medium-latest",
+        category: "reasoning",
+        supportsToolCalling: true,
+        supportsVision: true,
+        description: "Advanced Reasoning model",
+        isLatest: true
+    },
+    "mistral-large-2512": {
+        id: "mistral-large-2512",
+        category: "vision",
+        supportsToolCalling: false,
+        supportsVision: true,
+        description: "Handles image related tasks",
+        isLatest: true
     }
 };
 
@@ -143,7 +168,9 @@ const CATEGORY_MODELS: Record<ModelCategory, string[]> = {
     'text-generation': [],
     embedding: [],
     ocr: [],
-    unknown: []
+    unknown: [],
+    reasoning: [],
+    vision: []
 };
 
 // Populate category lists
@@ -166,8 +193,8 @@ export class ChatUtil {
      */
     scrollToBottom(
         element: HTMLElement | null = document.getElementById('chatArea'),
-                   check: boolean = false,
-                   timeout: number = 500
+        check: boolean = false,
+        timeout: number = 500
     ): void {
         this.updateScrollButtonVisibility();
 
@@ -279,9 +306,12 @@ export class ChatUtil {
      */
     isMultimodal(modelId: string): boolean {
         return this.getModelCategory(modelId) === 'multimodal' ||
-        MODEL_REGISTRY[modelId]?.supportsVision === true;
+            MODEL_REGISTRY[modelId]?.supportsVision === true;
     }
-
+    isVision(modelId: string): boolean {
+        return ['vision', 'ocr'].includes(this.getModelCategory(modelId)) ||
+            MODEL_REGISTRY[modelId]?.supportsVision === true;
+    }
     /**
      * Check if a model is specialized for coding
      */
@@ -330,7 +360,21 @@ export class ChatUtil {
     supportsVision(modelId: string): boolean {
         return MODEL_REGISTRY[modelId]?.supportsVision ?? false;
     }
-
+    /**
+     * Check if a model has reasoning capability
+     */
+    isReasoningModel(modelId: string): boolean {
+        return MODEL_REGISTRY[modelId]?.category === 'reasoning';
+    }
+    /**
+     * Check if Model use array for content
+     */
+    usesArrayStructure(modelId: string): boolean {
+        return (this.isMultimodal(modelId) ||
+            this.isVision(modelId) ||
+            this.isReasoningModel(modelId) ||
+            this.isOCRModel(modelId))
+    }
     /**
      * Get the category of a model
      */
@@ -371,10 +415,17 @@ export class ChatUtil {
      */
     getToolCallingModels(): string[] {
         return Object.values(MODEL_REGISTRY)
-        .filter(m => m.supportsToolCalling)
-        .map(m => m.id);
+            .filter(m => m.supportsToolCalling)
+            .map(m => m.id);
     }
-
+    /**
+     * Get models that support reasoning
+     */
+    getReasoningModels(): string[] {
+        return Object.values(MODEL_REGISTRY)
+            .filter(m => m.supportsToolCalling)
+            .map(m => m.id);
+    }
     /**
      * Get Codestral endpoints
      */

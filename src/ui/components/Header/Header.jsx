@@ -3,7 +3,7 @@ import { ModelList } from './Models/ModelList';
 import { StateManager } from '../../../core/managers/StatesManager';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
-StateManager.set('currentModel', 'mistral-small-latest')
+StateManager.set('currentModel', 'mistral-large-latest')
 
 export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);

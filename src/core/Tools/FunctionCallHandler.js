@@ -53,9 +53,9 @@ export class FunctionCallHandler {
             const assistantMessage = response.choices[0].message;
 
             // Step 2: Check for tool calls
-            if (assistantMessage.tool_calls?.length > 0) {
+            if (assistantMessage.toolCalls?.length > 0) {
                 // Execute tool calls
-                const toolResults = await this.executeToolCalls(assistantMessage.tool_calls);
+                const toolResults = await this.executeToolCalls(assistantMessage.toolCalls);
 
                 // Add tool results to conversation history
                 toolResults.forEach(result => {

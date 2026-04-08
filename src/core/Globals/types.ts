@@ -1,4 +1,5 @@
 import { RefAttributes } from "react";
+import { File } from "../managers/Conversation/Mistral/InputProcessor";
 
 interface copyDtetail {
     head: string
@@ -57,6 +58,12 @@ export type EventMap = {
     'userinput:menu:open': []
     'userinput:menu:close': []
     'userinput:menu:toggle': []
+    'files:uploaded': [files: File[]]
+    'file:removed': [id: string]
+    'files:cleared': []
+    'file:remove-request': [id: string]
+    'files:clear-request': []
+    'files:submitted': [files: File[]]
 };
 
 

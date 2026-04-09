@@ -4,7 +4,6 @@ import path from 'path';
 import os from 'os';
 import { exec, ExecException } from 'child_process';
 import { Buffer } from 'buffer';
-import { SystemPrompt } from './utils/system';
 import { fsOperations as fsops } from "./utils/filesystem";
 import { getformatDateTime } from './utils/datetime';
 import { Agent as agent } from './utils/ToolAgent';
@@ -14,7 +13,7 @@ import {
     type ConversationMetadata,
     type ChatMessage,
     type Conversation,
-    type PreferenceData,
+    type UserSettingsData,
     type SaveDialogOptions,
     // KeyChainOptions,
     type OpenDialogOptions,
@@ -30,6 +29,7 @@ import {
 } from './preload.type';
 import { SessionManager as sessionmanager, LockManager as lockmanager } from './utils/SessionManager';
 import { USER_PREFERENCE_CONFIG_FILE, STORE_DIR, DEFAULT_DOWNLOAD_PATH, CACHE_DIR } from './utils/shared';
+import { PromptConfig, SystemPrompt } from './utils/PromptManager/Manager';
 
 // Global variables
 let ConversationId: string = "";
@@ -44,15 +44,26 @@ contextBridge.exposeInMainWorld('global', window);
 try {
     ;
     if (fs.statfsSync(USER_PREFERENCE_CONFIG_FILE)) {
-        const rprofile = fs.readFileSync(USER_PREFERENCE_CONFIG_FILE, 'utf-8');
-        profile = rprofile ? JSON.parse(rprofile)?.data?.preference : '';
+        const settings = fs.readFileSync(USER_PREFERENCE_CONFIG_FILE, 'utf-8');
+        profile = (settings ? (JSON.parse(settings) as UserSettingsData).profile : '') as string;
     }
 } catch (err) {
     if (!profile) profile = '';
 }
 
 const conversation_root: string = STORE_DIR
-let system_command: string = SystemPrompt.StandardPrompt(profile);
+let config: PromptConfig|undefined = {
+    verbosity: "normal",
+    userProfile: profile,
+    capabilities: {
+        multimodal: false,
+        reasoning: false,
+        tools: true,
+        ocr: false
+    }
+};
+let DEFAULT_SYSTEM_PROMPT: string = SystemPrompt.generate(config);
+config = undefined
 
 ConversationHistory = {
     metadata: {
@@ -204,6 +215,30 @@ const api: ApiType = {
             return false
         }
     },
+    updateSystemPrompt: async (isMultimodal: boolean = false, isReasoning: boolean = false, hasToolCalls: boolean = false, hasOCR: boolean = false): Promise<boolean> => {
+        const userPreferences = await api.getUserSettings()
+        const config: PromptConfig = {
+            verbosity: "normal",
+            userProfile: userPreferences ? userPreferences.profile : "",
+            capabilities: {
+                multimodal: isMultimodal,
+                reasoning: isReasoning,
+                tools: hasToolCalls,
+                ocr: hasOCR
+            }
+        };
+        const prompt = SystemPrompt.generate(config)
+        if (ConversationHistory.chats.length > 1) {
+            if (api.getRoleByIndex(0) !== MessageRole.system) return false
+            if (Array.isArray(ConversationHistory.chats[0].content)) {
+                ConversationHistory.chats[0].content[0].text = prompt
+            }else{
+                ConversationHistory.chats[0].content = prompt
+            }
+        }
+        console.log("Prompt", prompt)
+        return true
+    },
     addHistory: (item: ChatMessage): Conversation => {
         try {
             if (typeof item !== "object") {
@@ -277,8 +312,8 @@ const api: ApiType = {
             if (ConversationHistory.chats[0].role === MessageRole.system) {
                 // all other model types except chat use array
                 ConversationHistory.chats[0] = (model !== ModelType.chat)
-                    ? { role: MessageRole.system, content: [{ type: "text", text: system_command }] }
-                    : { role: MessageRole.system, content: system_command };
+                    ? { role: MessageRole.system, content: [{ type: "text", text: DEFAULT_SYSTEM_PROMPT }] }
+                    : { role: MessageRole.system, content: DEFAULT_SYSTEM_PROMPT };
             }
         } catch (error) {
             console.log(error);
@@ -441,9 +476,9 @@ const api: ApiType = {
         };
         if (model) ConversationHistory.metadata.model = ModelType[model]
         if (model !== ModelType.chat) {
-            ConversationHistory.chats = [{ role: MessageRole.system, content: [{ type: "text", text: system_command }] }];
+            ConversationHistory.chats = [{ role: MessageRole.system, content: [{ type: "text", text: DEFAULT_SYSTEM_PROMPT }] }];
         } else {
-            ConversationHistory.chats = [{ role: MessageRole.system, content: system_command }];
+            ConversationHistory.chats = [{ role: MessageRole.system, content: DEFAULT_SYSTEM_PROMPT }];
         }
         // if (!temporary) api.saveConversation(); save shoul be done after conversation has some history to avoid blank files
         return ConversationId
@@ -505,7 +540,7 @@ const api: ApiType = {
     },
     setConversation: (data: Conversation, id?: string): boolean => {
         try {
-            if (data.chats[0]?.role !== MessageRole.system) data.chats.unshift({ role: MessageRole.system, content: system_command });
+            if (data.chats[0]?.role !== MessageRole.system) data.chats.unshift({ role: MessageRole.system, content: DEFAULT_SYSTEM_PROMPT });
             ConversationHistory = data;
             ConversationId = id ? id : data.metadata.id;
             return true
@@ -577,18 +612,15 @@ const api: ApiType = {
     getDateTime: (): string => {
         return getformatDateTime(true);
     },
-    savePreference: async (data: any): Promise<boolean> => {
+    saveUserSettings: async (data: any): Promise<boolean> => {
         try {
-            const skeleton = {
-                data: data
-            };
-            fs.writeFileSync(USER_PREFERENCE_CONFIG_FILE, JSON.stringify(skeleton));
+            fs.writeFileSync(USER_PREFERENCE_CONFIG_FILE, JSON.stringify(data));
             return true;
         } catch (err) {
             return false;
         }
     },
-    deletePreference: async (): Promise<boolean> => {
+    deleteUserSettings: async (): Promise<boolean> => {
         try {
             fs.rmSync(USER_PREFERENCE_CONFIG_FILE);
             return true;
@@ -597,7 +629,7 @@ const api: ApiType = {
             return false;
         }
     },
-    getPreferences: async (): Promise<PreferenceData | undefined> => {
+    getUserSettings: async (): Promise<UserSettingsData | undefined> => {
         try {
             if (fs.statfsSync(USER_PREFERENCE_CONFIG_FILE)) {
                 const prefData = fs.readFileSync(USER_PREFERENCE_CONFIG_FILE, 'utf-8');
@@ -728,7 +760,7 @@ contextBridge.exposeInMainWorld('desk', {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    ConversationHistory.chats = [{ role: MessageRole.system, content: system_command }];
+    ConversationHistory.chats = [{ role: MessageRole.system, content: DEFAULT_SYSTEM_PROMPT }];
     ConversationId = api.generateUUID();
     ConversationHistory.metadata.id = ConversationId;
 });

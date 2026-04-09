@@ -8,6 +8,14 @@ interface ToolExecution {
     result: any
     timestamp: string
 }
+export interface PreferenceData {
+    profile?: string;
+    autoscroll?: boolean
+    animations?: boolean
+    language?: string
+    experimentalFeatures?: boolean
+    modelVerbosity?: "normal" | "medium" | "high"
+}
 
 // Define your state shape
 interface AppState {
@@ -26,6 +34,7 @@ interface AppState {
     closeDiagramView: () => void
     userInputText: string
     sidebarOpen: string
+    userSettings: PreferenceData
 }
 
 type Listener<T> = (value: T | undefined, oldValue?: T) => void;

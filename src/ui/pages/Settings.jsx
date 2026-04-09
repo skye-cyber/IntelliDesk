@@ -1,37 +1,75 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
+import {
+    FiSettings,
+    FiMoon,
+    //     FiSun,
+    FiChevronsDown,
+    FiUser,
+    FiEdit2,
+    FiTrash2,
+    FiGlobe,
+    FiKey,
+    //     FiCpu,
+    FiX,
+    FiCheck,
+    FiSave,
+    FiRotateCcw,
+    FiZap,
+    FiTool,
+    FiBarChart2
+} from 'react-icons/fi';
+import { FaFlask } from 'react-icons/fa';
 import { SettingToggle } from '../components/Settings/settings_toggle.jsx';
 import { modalmanager } from '../../core/StatusUIManager/Manager.js';
 import { useTheme } from '../components/Themes/useThemeHeadless.jsx';
 import ErrorBoundary from '../components/ErrorBoundary/ErrorBoundary.jsx';
 import { globalEventBus } from '../../core/Globals/eventBus.ts';
+import { StateManager } from '../../core/managers/StatesManager.ts';
 
 export const Settings = ({ isOpen, onToggle }) => {
-    // const [preferenceChange, setPreferenceChange] = useState(false);
-    const [currentPreference, setCurrentPreference] = useState('');
-    const settingContainer = useRef(null)
+    const [profile, setProfile] = useState('');
+    const settingContainer = useRef(null);
     const { setTheme } = useTheme();
+
+    // Refs replacing getElementById
+    const themeSwitchRef = useRef(null);
+    const autoScrollRef = useRef(null);
+    const experimentalFeaturesRef = useRef(null);
+    const languagePrefRef = useRef(null);
+    const profileInputRef = useRef(null);
+    const profileInputSectionRef = useRef(null);
+    const profileContentRef = useRef(null);
+    const profileSectionRef = useRef(null);
+    const moonIconRef = useRef(null);
+    const sunIconRef = useRef(null);
 
     const [settings, setSettings] = useState({
         autoscroll: true,
         theme: 'light',
-        animations: true,
-        preference: '',
+        experimentalFeatures: false,
+        profile: '',
         language: 'en',
-        fluxmodel: false
+        modelVerbosity: 'normal'
     });
 
     // Load settings on component mount
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const savedSettings = await window.desk.api.getPreferences();
-                //console.log('Loaded settings:', savedSettings?.data);
-                if (savedSettings?.data) {
-                    setSettings(prev => ({ ...prev, ...savedSettings.data }));
-                    setCurrentPreference(savedSettings.data.preference || '');
+                const savedSettings = await window.desk.api.geUserSettings();
+                if (savedSettings) {
+                    // Migrate old settings if they exist
+                    const migratedSettings = {
+                        ...savedSettings,
+                        experimentalFeatures: savedSettings.experimentalFeatures ?? false,
+                        modelVerbosity: savedSettings.modelVerbosity || 'normal'
+                    };
+                    setSettings(prev => ({ ...prev, ...migratedSettings }));
+                    setProfile(migratedSettings.profile || '');
                 }
-                setTheme(savedSettings.data.theme)
-                updateCanvasTheme()
+                setTheme(savedSettings.theme);
+                updateCanvasTheme();
+                StateManager.set('userSettings', savedSettings)
             } catch (error) {
                 modalmanager.showMessage(`Failed to load settings: ${error}`, 'error');
             }
@@ -40,15 +78,12 @@ export const Settings = ({ isOpen, onToggle }) => {
     }, []);
 
     function updateCanvasTheme() {
-        const moon = document.getElementById('icon-moon')
-        const sun = document.getElementById('icon-sun')
-
         if (settings.theme === 'dark') {
-            sun?.classList.add('hidden')
-            moon?.classList.remove('hidden')
+            sunIconRef.current?.classList.add('hidden');
+            moonIconRef.current?.classList.remove('hidden');
         } else {
-            moon?.classList.add('hidden')
-            sun?.classList.remove('hidden')
+            moonIconRef.current?.classList.add('hidden');
+            sunIconRef.current?.classList.remove('hidden');
         }
     }
 
@@ -58,239 +93,222 @@ export const Settings = ({ isOpen, onToggle }) => {
     }, [settings]);
 
     const updateDOMWithSettings = useCallback(() => {
-        //console.log("Updating DOM with settings:", settings);
-
-        // Update theme
-        const themeSwitch = document.getElementById('themeSwitch');
-        if (themeSwitch) {
-            themeSwitch.checked = settings.theme === 'dark';
+        if (themeSwitchRef.current) {
+            themeSwitchRef.current.checked = settings.theme === 'dark';
         }
-
-        // Update other checkboxes
-        const autoScroll = document.getElementById('autoScroll');
-        if (autoScroll) autoScroll.checked = settings.autoscroll;
-
-        const animations = document.getElementById('animations');
-        if (animations) animations.checked = settings.animations;
-
-        const fluxModel = document.getElementById('fluxModel');
-        if (fluxModel) fluxModel.checked = settings.fluxmodel;
-
-        // Update language
-        const languagePref = document.getElementById('languagePref');
-        if (languagePref) languagePref.value = settings.language;
+        if (autoScrollRef.current) {
+            autoScrollRef.current.checked = settings.autoscroll;
+        }
+        if (experimentalFeaturesRef.current) {
+            experimentalFeaturesRef.current.checked = settings.experimentalFeatures;
+        }
+        if (languagePrefRef.current) {
+            languagePrefRef.current.value = settings.language;
+        }
     }, [settings]);
 
     const OpenSettings = useCallback(() => {
-        settingContainer.current.classList.remove('hidden')
-
+        settingContainer.current?.classList.remove('hidden');
         setTimeout(() => {
-            settingContainer.current.classList.remove('translate-x-full')
-            settingContainer.current.classList.add('translate-x-0')
-
-        }, 10)
-    }, [])
+            settingContainer.current?.classList.remove('translate-x-full');
+            settingContainer.current?.classList.add('translate-x-0');
+        }, 10);
+    }, []);
 
     const CloseSettings = useCallback(() => {
-        settingContainer.current.classList.remove('translate-x-0');
-        settingContainer.current.classList.add('translate-x-full');
+        settingContainer.current?.classList.remove('translate-x-0');
+        settingContainer.current?.classList.add('translate-x-full');
         setTimeout(() => {
-            settingContainer.current.classList.add('hidden');
+            settingContainer.current?.classList.add('hidden');
         }, 800);
     }, []);
 
     const shouldClose = useCallback((e) => {
         e.stopPropagation();
-        const settingsM = document.getElementById('settingsModal');
-        if (settingsM.contains(e.target)) CloseSettings();
+        if (settingContainer.current?.contains(e.target)) {
+            CloseSettings();
+        }
     }, [CloseSettings]);
 
     const handleSettingChange = useCallback((key, value) => {
-        //console.log(`Setting ${key} changed to:`, value);
-        if (key === "theme") setTheme(value)
+        if (key === "theme") setTheme(value);
 
         setSettings(prev => {
             const newSettings = { ...prev, [key]: value };
-
-            // Save immediately when settings change
-            window.desk.api.savePreference(newSettings).catch(error => {
+            window.desk.api.saveUserSettings(newSettings).catch(error => {
                 console.error('Failed to save settings:', error);
             });
-
             return newSettings;
         });
     }, []);
 
-    const handlePreferenceInput = useCallback((e) => {
-        // setPreferenceChange(true);
-        const prefInput = e.target;
-        prefInput.style.height = 'auto';
-        prefInput.style.height = Math.min(prefInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
+    const handleProfileInput = useCallback((e) => {
+        const profileInput = e.target;
+        profileInput.style.height = 'auto';
+        profileInput.style.height = Math.min(profileInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
     }, []);
 
-    const handlePreferenceSubmit = useCallback(async () => {
-        const prefInput = document.getElementById('pref-input');
-        const prefInputSection = document.getElementById('prefInputSection')
-        const prefContent = document.getElementById('pref-content');
-        const prefContentSection = document.getElementById('prefContentSection')
+    const saveSettingsAPI = useCallback(async (settingsToSave = settings) => {
+        console.log('Saving settings:', settingsToSave);
+        const saved = await window.desk.api.saveUserSettings(settingsToSave);
+        return saved;
+    }, [settings]);
 
-        const content = prefInput.value.trim();
-        prefContent.innerText = content
+    const handleProfileSubmit = useCallback(async () => {
+        const profileInput = profileInputRef.current;
+        const profileInputSection = profileInputSectionRef.current;
+        const profileContent = profileContentRef.current;
+        const profileSection = profileSectionRef.current;
 
-        prefInputSection.classList.add('hidden'); //Show input section
-        prefContentSection.classList.remove('hidden'); //Hide preference display block
+        const content = profileInput?.value.trim();
 
         if (!content) return;
 
-        setCurrentPreference(content);
-
-        const newSettings = { ...settings, preference: content };
+        // Update state first
+        setProfile(content);
+        const newSettings = { ...settings, profile: content };
         setSettings(newSettings);
 
+        // Update UI immediately for responsiveness
+        if (profileContent) profileContent.innerText = content;
+        profileInputSection?.classList.add('hidden');
+        profileSection?.classList.remove('hidden');
+
         try {
-            await window.desk.api.savePreference(newSettings);
+            await saveSettingsAPI(newSettings); // Pass explicit settings
             modalmanager.showMessage('Your preferences have been saved successfully!');
         } catch (error) {
             modalmanager.showMessage('Failed to save preferences', 'error');
         }
-    }, [settings]);
+    }, [settings, saveSettingsAPI]);
 
+    const handleEditProfile = useCallback(() => {
+        const profileInputSection = profileInputSectionRef.current;
+        const profileInput = profileInputRef.current;
+        const profileSection = profileSectionRef.current;
 
-    const handleEditPreference = useCallback(() => {
-        const prefInputSection = document.getElementById('prefInputSection')
-        const prefInput = document.getElementById('pref-input');
-        const prefContent = document.getElementById('pref-content');
-        const prefContentSection = document.getElementById('prefContentSection')
+        profileInputSection?.classList.remove('hidden');
 
-        prefInputSection.classList.remove('hidden'); //Show input section
+        if (profileInput) {
+            profileInput.value = profile || profileContentRef.current?.innerText || '';
+            profileInput.focus();
+        }
 
-        prefInput.value = currentPreference ? currentPreference : prefContent.innerText;
-        prefInput.focus() //Focus text area for editing
+        profileSection?.classList.add('hidden');
 
-        prefContentSection.classList.add('hidden'); //Hide preference display block
-        prefInput.style.height = Math.min(prefInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
+        if (profileInput) {
+            profileInput.style.height = Math.min(profileInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
+        }
+    }, [profile]);
 
-        //setPreferenceChange(true);
+    const handleDeleteProfile = useCallback(async () => {
+        const profileInputSection = profileInputSectionRef.current;
+        const profileInput = profileInputRef.current;
+        const profileContent = profileContentRef.current;
+        const profileSection = profileSectionRef.current;
 
-    }, [currentPreference])
-
-    const handleDeletePreference = useCallback(async () => {
-        const prefInputSection = document.getElementById('prefInputSection')
-        const prefInput = document.getElementById('pref-input');
-        const prefContent = document.getElementById('pref-content');
-        const prefContentSection = document.getElementById('prefContentSection')
-
-        const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete preferences?")
-
+        const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete profile?");
         if (!confirmed) return;
 
         try {
-            setCurrentPreference('');
-            const newSettings = { ...settings, preference: '' };
+            const newSettings = { ...settings, profile: '' };
+            setProfile('');
             setSettings(newSettings);
 
-            if (await window.desk.api.savePreference()) {
-                prefContent.textContent = '';
-                prefContentSection.classList.add('hidden'); //Hide preference display block
-                prefInputSection.classList.remove('hidden'); //Show input section
-                prefInput.value = "";
+            await saveSettingsAPI(newSettings); // Pass explicit settings
 
-                modalmanager.showMessage('Your preferences have been deleted successfully!');
-            } else {
-                modalmanager.showMessage('Failed to delete preferences', 'error');
+            if (profileContent) profileContent.textContent = '';
+            profileSection?.classList.add('hidden');
+            profileInputSection?.classList.remove('hidden');
+            if (profileInput) profileInput.value = "";
+
+            modalmanager.showMessage('Your profile has been deleted successfully!');
+        } catch (error) {
+            modalmanager.showMessage(`Failed to delete profile: ${error.message}`, 'error');
+        }
+    }, [settings, saveSettingsAPI]);
+
+    const handleSaveSettings = useCallback(async () => {
+        const profileInput = profileInputRef.current;
+        const profileInputSection = profileInputSectionRef.current;
+        const profileContent = profileContentRef.current;
+        const profileSection = profileSectionRef.current;
+
+        const inputText = profileInput?.value.trim();
+
+        // Construct complete settings object including current profile input
+        const settingsToSave = {
+            ...settings,
+            profile: inputText || settings.profile // Use input if present, else keep existing
+        };
+
+        // Update local state
+        if (inputText) {
+            setProfile(inputText);
+        }
+        setSettings(settingsToSave);
+
+        try {
+            const saved = await saveSettingsAPI(settingsToSave); // Pass explicit settings
+
+            if (saved) {
+                modalmanager.showMessage("Settings updated successfully", 'success');
+
+                // If there was pending profile text, update UI to show it
+                if (inputText && profileContent) {
+                    profileContent.innerText = inputText;
+                    profileInputSection?.classList.add('hidden');
+                    profileSection?.classList.remove('hidden');
+                    if (profileInput) profileInput.value = "";
+                }
             }
         } catch (error) {
-            modalmanager.showMessage(`Failed to delete preferences: ${error.message}`, 'error');
+            modalmanager.showMessage("Failed to save settings", 'error');
         }
-    }, [settings])
-
-    const handleSaveSettings = useCallback(() => {
-        const prefInputSection = document.getElementById('prefInputSection')
-        const prefInput = document.getElementById('pref-input');
-        const prefContent = document.getElementById('pref-content');
-        const prefContentSection = document.getElementById('prefContentSection')
-
-        const inputText = prefInput.value.trim();
-        prefInput.value = "";
-
-        // Dispatch Save event
-        const saved = saveSettingsAPI()
-        if (inputText) {
-            prefInputSection.classList.add('hidden'); //hide input section
-            prefContent.innerText = inputText; //Update preference content
-            prefContentSection.classList.remove('hidden');
-        }
-        if (saved) {
-            modalmanager.showMessage("Settings updated successfully", 'success')
-        }
-    })
-
-    const saveSettingsAPI = (async () => {
-        const theme = document.getElementById('themeSwitch')
-        const autoScroll = document.getElementById('autoScroll')
-        const animations = document.getElementById('animations')
-        const language = document.getElementById('languagePref')
-        const fluxModel = document.getElementById('fluxModel')
-        const prefInput = document.getElementById('pref-input');
-        const prefContent = document.getElementById('pref-content');
-
-        const inputText = prefInput.value.trim();
-        const data = {
-            theme: theme.ckecked ? 'dark' : 'light',
-            autoscroll: autoScroll.checked,
-            animations: animations.checked,
-            preference: inputText ? inputText : prefContent.textContent.trim(),
-            language: language.value || 'en',
-            fluxmodel: fluxModel.checked
-        }
-        //console.log(settings, data)
-        const saved = await window.desk.api.savePreference(settings)
-        return saved
-    })
+    }, [settings, saveSettingsAPI]);
 
     const handleResetSettings = useCallback(async () => {
-        const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete preferences?");
+        const confirmed = await modalmanager.confirm("This action cannot be undone", "Reset all preferences?");
         if (!confirmed) return;
 
         try {
-            setCurrentPreference('');
+            setProfile('');
             const newSettings = {
                 autoscroll: true,
                 theme: 'light',
-                animations: true,
-                preference: '',
+                experimentalFeatures: false,
+                profile: '',
                 language: 'en',
-                fluxmodel: false,
+                modelVerbosity: 'normal'
             };
 
             setSettings(newSettings);
-
             await window.desk.api.savePreference(newSettings);
-            modalmanager.showMessage('Your preferences have been deleted successfully!');
+            modalmanager.showMessage('Settings reset to defaults successfully!');
         } catch (error) {
-            modalmanager.showMessage('Failed to delete preferences', 'error');
+            modalmanager.showMessage('Failed to reset settings', 'error');
         }
-    }, [settings])
+    }, []);
 
     useEffect(() => {
-        const openSettings = globalEventBus.on('setting:open', OpenSettings)
-        const closeSettings = globalEventBus.on('setting:close', CloseSettings)
+        const openSettings = globalEventBus.on('setting:open', OpenSettings);
+        const closeSettings = globalEventBus.on('setting:close', CloseSettings);
         const settingsToggle = globalEventBus.on('setting:toggle', () => {
-            settingContainer.current.classList.contains('hidden') ? OpenSettings() : CloseSettings()
-        })
+            settingContainer.current?.classList.contains('hidden') ? OpenSettings() : CloseSettings();
+        });
         return () => {
-            openSettings.unsubscribe()
-            closeSettings.unsubscribe()
-            settingsToggle.unsubscribe()
-        }
-    }, [])
+            openSettings.unsubscribe();
+            closeSettings.unsubscribe();
+            settingsToggle.unsubscribe();
+        };
+    }, [OpenSettings, CloseSettings]);
 
     return (
-        <div ref={settingContainer}
+        <div
+            ref={settingContainer}
             onClick={shouldClose}
-            id="settingsModal"
-            className="fixed inset-0 z-[51] flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700 ease-in-out">
-            {/* Modal Content */}
+            className="fixed inset-0 z-[51] flex items-center justify-center bg-black/60 backdrop-brightness-50 hidden translate-x-full transition-colors duration-700 ease-in-out"
+        >
             <div
                 className="relative bg-white/95 dark:bg-gray-900/95 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-2xl p-0 w-full mx-4 md:mx-auto max-w-2xl max-h-[98vh] overflow-hidden backdrop-blur-lg"
                 onClick={(e) => e.stopPropagation()}
@@ -300,10 +318,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                             <div className="p-2 bg-blue-500/10 rounded-xl">
-                                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
+                                <FiSettings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 dark:from-white dark:to-blue-400 bg-clip-text text-transparent">
@@ -315,14 +330,11 @@ export const Settings = ({ isOpen, onToggle }) => {
                             </div>
                         </div>
 
-                        {/* Close Button */}
                         <button
                             onClick={CloseSettings}
-                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl group"
+                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl group transition-colors"
                         >
-                            <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <FiX className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300" />
                         </button>
                     </div>
                 </div>
@@ -332,9 +344,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                     {/* Quick Settings Grid */}
                     <div className="mb-8">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                            <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
+                            <FiZap className="w-5 h-5 mr-2 text-blue-500" />
                             Quick Settings
                         </h3>
 
@@ -342,9 +352,10 @@ export const Settings = ({ isOpen, onToggle }) => {
                             {/* Theme Toggle */}
                             <SettingToggle
                                 id="themeSwitch"
+                                ref={themeSwitchRef}
                                 label="Dark Theme"
                                 description="Switch between light and dark mode"
-                                icon="🌓"
+                                icon={<FiMoon className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />}
                                 checked={settings.theme === 'dark'}
                                 onChange={(checked) => handleSettingChange('theme', checked ? 'dark' : 'light')}
                             />
@@ -352,71 +363,88 @@ export const Settings = ({ isOpen, onToggle }) => {
                             {/* Auto Scroll */}
                             <SettingToggle
                                 id="autoScroll"
+                                ref={autoScrollRef}
                                 label="Auto Scroll"
                                 description="Automatically scroll to new content"
-                                icon="📜"
+                                icon={<FiChevronsDown className="w-5 h-5 text-blue-500 dark:text-blue-400" />}
                                 checked={settings.autoscroll}
                                 onChange={(checked) => handleSettingChange('autoscroll', checked)}
                             />
 
-                            {/* Use FLUX Model */}
+                            {/* Experimental Features */}
                             <SettingToggle
-                                id="fluxModel"
-                                label="FLUX Model"
-                                description="Use FLUX for image generation"
-                                icon="🖼️"
-                                checked={settings.fluxmodel}
-                                onChange={(checked) => handleSettingChange('fluxmodel', checked)}
+                                id="experimentalFeatures"
+                                ref={experimentalFeaturesRef}
+                                label="Experimental Features"
+                                description="Enable beta functionality and previews"
+                                icon={<FaFlask className="w-5 h-5 text-purple-500 dark:text-purple-400" />}
+                                checked={settings.experimentalFeatures}
+                                onChange={(checked) => handleSettingChange('experimentalFeatures', checked)}
                             />
 
-                            {/* Animations */}
-                            <SettingToggle
-                                id="animations"
-                                label="Animations"
-                                description="Enable interface animations"
-                                icon="✨"
-                                checked={settings.animations}
-                                onChange={(checked) => handleSettingChange('animations', checked)}
-                            />
+                            {/* Model Verbosity */}
+                            <div className="relative flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex items-center space-x-3">
+                                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                                        <FiBarChart2 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                            Model Verbosity
+                                        </h4>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                            Response detail level
+                                        </p>
+                                    </div>
+                                </div>
+                                <select
+                                    value={settings.modelVerbosity}
+                                    onChange={(e) => handleSettingChange('modelVerbosity', e.target.value)}
+                                    className="ml-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                >
+                                    <option value="normal">Normal</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
                     {/* User Preferences Section */}
                     <div className="mb-8">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                            <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+                            <FiUser className="w-5 h-5 mr-2 text-emerald-500 dark:text-emerald-400" />
                             Your Preferences
                         </h3>
 
                         <div className="space-y-4">
                             {/* Preference Input */}
-                            <div id="prefInputSection" className={`${currentPreference ? 'hidden' : ''} bg-gray-50/50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50`}>
+                            <div
+                                ref={profileInputSectionRef}
+                                className={`${profile ? 'hidden' : ''} bg-gray-50/50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50`}
+                            >
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                                    Tell me about your preferences...
+                                    Your profile
                                 </label>
                                 <div className="relative">
                                     <textarea
+                                        ref={profileInputRef}
                                         id="pref-input"
-                                        className="w-full px-4 py-3 bg-white dark:bg-primary-800 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-none focus:ring-blue-500 focus:outline focus:outline-blue-500 focus:border-transparent transition scrollbar-custom"
+                                        className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition scrollbar-custom placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                         placeholder="How would you like me to assist you? Share your preferences, communication style, or specific needs..."
                                         rows="3"
-                                        onChange={handlePreferenceInput}
+                                        onChange={(e) => handleSettingChange('profile', e.target.value)}
                                     />
                                     <div className="flex justify-between items-center mt-3">
                                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                                            This helps me personalize your experience
+                                            Any specification, instructions or tweaks that help tailor to your experience
                                         </span>
                                         <button
-                                            id="pref-submit"
-                                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            onClick={handlePreferenceSubmit}
+                                            onClick={(e) => handleProfileSubmit(e.target.value)}
+                                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-lg font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow-md"
                                         >
-                                            <span>Save Preferences</span>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
+                                            <span>Save</span>
+                                            <FiCheck className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>
@@ -424,29 +452,31 @@ export const Settings = ({ isOpen, onToggle }) => {
 
                             {/* Current Preference Display */}
                             <ErrorBoundary>
-                                <div id="prefContentSection" className={`${!currentPreference ? 'hidden' : ''} bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50`}>
+                                <div
+                                    ref={profileSectionRef}
+                                    id="ProfileSection"
+                                    className={`${!profile ? 'hidden' : ''} bg-emerald-50/50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-200/50 dark:border-emerald-700/50`}
+                                >
                                     <div className="flex justify-between items-start mb-2">
-                                        <h4 className="font-medium text-blue-900 dark:text-blue-100">Current Preference</h4>
+                                        <h4 className="font-medium text-emerald-900 dark:text-emerald-100">Current Preference</h4>
                                         <div className="flex space-x-2">
                                             <button
-                                                onClick={handleEditPreference}
-                                                className="p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                                                onClick={handleEditProfile}
+                                                className="p-1.5 text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-800/50 rounded transition-colors"
                                             >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
+                                                <FiEdit2 className="w-4 h-4" />
                                             </button>
                                             <button
-                                                onClick={handleDeletePreference}
-                                                className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                                                onClick={handleDeleteProfile}
+                                                className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 hover:bg-red-100 dark:hover:bg-red-800/50 rounded transition-colors"
                                             >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.981-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
+                                                <FiTrash2 className="w-4 h-4" />
                                             </button>
                                         </div>
                                     </div>
-                                    <p id="pref-content" className="text-blue-800 dark:text-blue-200 text-sm">{currentPreference}</p>
+                                    <p ref={profileContentRef} id="pref-content" className="text-emerald-800 dark:text-emerald-200 text-sm">
+                                        {profile}
+                                    </p>
                                 </div>
                             </ErrorBoundary>
                         </div>
@@ -457,12 +487,15 @@ export const Settings = ({ isOpen, onToggle }) => {
                         {/* Language Selection */}
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                                <svg className="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                                </svg>
+                                <FiGlobe className="w-5 h-5 mr-2 text-cyan-500 dark:text-cyan-400" />
                                 Language & Region
                             </h3>
-                            <select id="languagePref" className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-none focus:outline-none focus:border-2 focus:border-primary-100/80 dark:border-accent-500" onChange={(e) => handleSettingChange('language', e.target.value)}>
+                            <select
+                                ref={languagePrefRef}
+                                id="languagePref"
+                                className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-colors cursor-pointer"
+                                onChange={(e) => handleSettingChange('language', e.target.value)}
+                            >
                                 <option value="en">🌐 English</option>
                                 <option value="fr">🇫🇷 French</option>
                                 <option value="es">🇪🇸 Spanish</option>
@@ -472,71 +505,70 @@ export const Settings = ({ isOpen, onToggle }) => {
                         </div>
 
                         {/* API Management */}
-                        <section className='block space-y-2 sm:space-y-0 sm:flex justify-between'>
-                            <div>
+                        <section className='block space-y-2 sm:space-y-0 sm:flex justify-between gap-4'>
+                            <div className="flex-1">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">API Configuration</h3>
                                 <button
                                     onClick={() => globalEventBus.emit('keychain:manager:show')}
-                                    className="w-full px-4 py-3 bg-gradient-to-r from-accent-500 to-blue-600 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
+                                    className="w-full px-4 py-3 bg-gradient-to-r from-accent-500 to-blue-600 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-[-2px] dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
                                 >
-                                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                    </svg>
+                                    <FiKey className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     <span>Manage API Key Chain</span>
                                 </button>
                             </div>
 
-                            {/* Tool/Agent mode Config */}
-                            <div>
+                            <div className="flex-1">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Tool Configuration</h3>
                                 <button
                                     onClick={() => {
-                                        CloseSettings()
-                                        globalEventBus.emit('agent:editor:open')
+                                        CloseSettings();
+                                        globalEventBus.emit('agent:editor:open');
                                     }}
-                                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-accent-500 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-2 dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
+                                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-accent-500 hover:from-blue-600/80 hover:to-blue-400/70 dark:hover:opacity-70 hover:translate-y-[-2px] dark:from-primary-200/80 dark:to-accent-500 text-white rounded-lg font-medium flex items-center justify-center space-x-2 group transition-all duration-500"
                                 >
-                                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                    </svg>
+                                    <FiTool className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     <span>Manage Tool Config</span>
                                 </button>
                             </div>
                         </section>
                     </div>
-                </div>
+                </div >
 
                 {/* Footer */}
-                <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6">
+                < div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 p-6" >
                     <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
                         <button
                             onClick={handleResetSettings}
-                            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors font-medium"
+                            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors font-medium flex items-center space-x-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg"
                         >
-                            Reset to Defaults
+                            <FiRotateCcw className="w-4 h-4" />
+                            <span>Reset to Defaults</span>
                         </button>
                         <div className="flex space-x-3">
                             <button
                                 onClick={CloseSettings}
-                                className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"
+                                className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 font-medium transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 id="saveSettings"
                                 onClick={handleSaveSettings}
-                                className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-2"
+                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-medium flex items-center space-x-2 transition-colors shadow-sm hover:shadow-md"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
+                                <FiSave className="w-4 h-4" />
                                 <span>Save Changes</span>
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+
+            {/* Hidden refs for canvas theme icons */}
+            < div className="hidden" >
+                <div ref={moonIconRef} id="icon-moon" className="hidden" />
+                <div ref={sunIconRef} id="icon-sun" className="hidden" />
+            </div >
+        </div >
     );
 };
-

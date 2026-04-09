@@ -42,9 +42,9 @@ export interface ToolCall {
     index?: number | undefined;
 }
 
-export type MultimodalMessage = Array<{ type: string; text?: string;[key: string]: any }>
+export type ArrayedMessage = Array<{ type: string; text?: string;[key: string]: any }>
 
-export type ChatContent = string | MultimodalMessage
+export type ChatContent = string | ArrayedMessage
 
 export enum MessageRole {
     system = 'system',
@@ -64,10 +64,13 @@ export interface Conversation {
     chats: ChatMessage[];
 }
 
-export interface PreferenceData {
-    data: {
-        preference?: string;
-    };
+export interface UserSettingsData {
+    profile?: string;
+    autoscroll?: boolean
+    animations?: boolean
+    language?: string
+    experimentalFeatures?: boolean
+    modelVerbosity?: "normal" | "medium" | "high"
 }
 
 export interface KeyChainOptions {
@@ -142,6 +145,7 @@ export interface ApiType {
     startNew: (model: ModelType, temporary: boolean) => string;
     saveConversation: () => Promise<string>;
     upgradeToArrayModel: (data: Conversation | null | undefined, save: boolean) => Conversation;
+    updateSystemPrompt: (isMultimodal: boolean, isReasoning: boolean, hasToolCalls: boolean, hasOCR: boolean) => Promise<boolean>
     generateUUID: () => string;
     getConversationId: () => string;
     setConversationId: (id: string) => void;
@@ -153,9 +157,9 @@ export interface ApiType {
     saveAndOpenImage: (downloadsPath: string, dataUrl: string) => void;
     cleanFile: (file: string) => Promise<boolean | undefined>;
     getDateTime: () => string;
-    savePreference: (data: any) => Promise<boolean>;
-    deletePreference: (data?: any) => Promise<boolean>;
-    getPreferences: () => Promise<PreferenceData | undefined>;
+    saveUserSettings: (data: any) => Promise<boolean>;
+    deleteUserSettings: (data?: any) => Promise<boolean>;
+    getUserSettings: () => Promise<UserSettingsData | undefined>;
     saveRecording: (blob: Blob) => Promise<string | undefined>;
     readFileData: (filePath: string) => Promise<Buffer | false>;
     saveImageBuffer: (canvas: HTMLCanvasElement, path: string, url?: string | null) => Promise<boolean | string>;

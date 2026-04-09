@@ -246,7 +246,6 @@ class CompletionBase {
 
     async StartSession() {
         try {
-            throw "custorm Error"
             // Reset stream variables
             this.reset()
 

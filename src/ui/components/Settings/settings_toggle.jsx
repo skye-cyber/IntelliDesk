@@ -1,4 +1,6 @@
-export const SettingToggle = ({ id, label, description, icon, checked, onChange }) => {
+import { forwardRef } from "react";
+
+export const SettingToggle = forwardRef(({ _ref, id, label, description, icon, checked, onChange }, ref) => {
 
     const handleChange = (e) => {
         const newValue = e.target.checked; // Extract the boolean value
@@ -11,7 +13,7 @@ export const SettingToggle = ({ id, label, description, icon, checked, onChange 
     };
 
     return (
-        <div className="flex items-center justify-between p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/50 dark:hover:border-gray-600/50">
+        <div ref={_ref} className="flex items-center justify-between p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/50 dark:hover:border-gray-600/50">
             <div className="flex items-center space-x-3">
                 <span className="text-2xl">{icon}</span>
                 <div>
@@ -35,4 +37,4 @@ export const SettingToggle = ({ id, label, description, icon, checked, onChange 
             </label>
         </div>
     );
-}
+})

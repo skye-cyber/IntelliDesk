@@ -4,7 +4,7 @@
  * Provides a unified interface for conversation naming
  */
 
-import { nameConversationTool } from './tools/NameConversationTool';
+import nameConversationTool from "../../../Tools/tools/NameConversationTool";
 
 /**
  * Conversation Naming Utility

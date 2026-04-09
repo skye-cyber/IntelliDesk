@@ -252,6 +252,7 @@ class CompletionBase {
 
     async StartSession() {
         try {
+            throw "custorm Error"
             // Reset stream variables
             this.reset()
 
@@ -706,10 +707,12 @@ class CompletionBase {
         if (window.desk.api.getRoleByIndex(-1) !== MessageRole.assistant) {
             if (this.modelUsesArrayContent) fileInputProcessor.unuseAll()
             window.desk.api.popHistory("user")
+            if ((window.desk.api.getHistory() as any).chats.length > 1) {
+                window.desk.api.saveConversation()
+            }else{
+                window.desk.api.deleteChat()
+            }
         }
-        console.log(window.desk.api.getHistory().chats.length)
-        window.desk.api.popHistory("user")
-        console.log(window.desk.api.getHistory().chats.length)
         await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal?.id, this.ErrorCallback || this.StartSession)
     }
 }

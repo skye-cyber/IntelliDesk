@@ -117,7 +117,7 @@ export interface ApiType {
     readStore: () => Promise<string[]>;
     validateStore: () => Promise<boolean>;
     loadConversation: (id: string) => Promise<Conversation | undefined>;
-    deleteChat: (id: string, base_dir?: string) => boolean | undefined;
+    deleteChat: (id: string | undefined, base_dir?: string) => boolean | undefined;
     addHistory: (item: ChatMessage) => Conversation;
     getHistory: (filter?: boolean) => Conversation | ChatMessage[];
     popHistory: (role?: string | null) => Conversation;

@@ -150,9 +150,10 @@ const api: ApiType = {
             return false;
         }
     },
-    RenameConversation: async (name: string, base_dir: string = conversation_root): Promise<Conversation | boolean> => {
+    RenameConversation: async (id:string, name: string, base_dir: string = conversation_root): Promise<Conversation | boolean> => {
+        console.log(name, id)
         try {
-            const fpath = path.join(base_dir, `${ConversationHistory.metadata.id}.json`);
+            const fpath = path.join(base_dir, `${id}.json`);
             let data = await api.read(fpath);
             if (!data) return ConversationHistory;
 
@@ -184,8 +185,9 @@ const api: ApiType = {
         api.setConversation(data)
         return ConversationHistory
     },
-    deleteChat: (id: string, base_dir: string = conversation_root): boolean | undefined => {
+    deleteChat: (id: string | undefined, base_dir: string = conversation_root): boolean | undefined => {
         try {
+            if (!id) id = ConversationHistory.metadata.id
             const file = path.join(base_dir, `${id}.json`);
             if (fs.statSync(file)) {
                 // Delete session and lock first
@@ -251,9 +253,10 @@ const api: ApiType = {
         try {
             if (!role) {
                 ConversationHistory.chats.pop();
-            } else if (ConversationHistory.chats?.slice(-1)[0]?.role === role) {
+            } else if (MessageRole[ConversationHistory.chats?.slice(-1)[0]?.role] === role as MessageRole) {
+                console.log("B4pop:", ConversationHistory.chats.length)
                 ConversationHistory.chats.pop();
-                console.log("Pop:", role)
+                console.log("Pop:", ConversationHistory.chats.length)
             }
             ConversationHistory.metadata.updated_at = getformatDateTime();
             return ConversationHistory;
@@ -459,7 +462,9 @@ const api: ApiType = {
             }
             // console.log(ConversationHistory.chats)
             // Actually save the conversation data to file
-            await api.write(filePath, ConversationHistory);
+            if (ConversationHistory.chats.length > 1) {
+                await api.write(filePath, ConversationHistory);
+            }
             // console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         } catch (err) {

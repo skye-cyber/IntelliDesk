@@ -136,9 +136,10 @@ const api = {
             return false;
         }
     },
-    RenameConversation: async (name, base_dir = conversation_root) => {
+    RenameConversation: async (id, name, base_dir = conversation_root) => {
+        console.log(name, id);
         try {
-            const fpath = path_1.default.join(base_dir, `${ConversationHistory.metadata.id}.json`);
+            const fpath = path_1.default.join(base_dir, `${id}.json`);
             let data = await api.read(fpath);
             if (!data)
                 return ConversationHistory;
@@ -177,6 +178,8 @@ const api = {
     },
     deleteChat: (id, base_dir = conversation_root) => {
         try {
+            if (!id)
+                id = ConversationHistory.metadata.id;
             const file = path_1.default.join(base_dir, `${id}.json`);
             if (fs_1.default.statSync(file)) {
                 // Delete session and lock first
@@ -244,9 +247,10 @@ const api = {
             if (!role) {
                 ConversationHistory.chats.pop();
             }
-            else if (ConversationHistory.chats?.slice(-1)[0]?.role === role) {
+            else if (preload_type_1.MessageRole[ConversationHistory.chats?.slice(-1)[0]?.role] === role) {
+                console.log("B4pop:", ConversationHistory.chats.length);
                 ConversationHistory.chats.pop();
-                console.log("Pop:", role);
+                console.log("Pop:", ConversationHistory.chats.length);
             }
             ConversationHistory.metadata.updated_at = (0, datetime_1.getformatDateTime)();
             return ConversationHistory;
@@ -463,7 +467,9 @@ const api = {
             }
             // console.log(ConversationHistory.chats)
             // Actually save the conversation data to file
-            await api.write(filePath, ConversationHistory);
+            if (ConversationHistory.chats.length > 1) {
+                await api.write(filePath, ConversationHistory);
+            }
             // console.log(`Conversation saved: ${conversationId}`);
             return filePath;
         }

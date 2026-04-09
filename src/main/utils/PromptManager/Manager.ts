@@ -51,15 +51,14 @@ export class SystemPrompt {
     }
 
     private static userPersonalization(profile: string): string {
-        return `# User Context
+        return profile ? `# User Context
         Use the following preferences naturally:
-        ${profile}`;
+        ${profile}` : '';
     }
 
     private static reasoningBlock(): string {
-        return `# Reasoning
-        Before final answer, structure your thinking in <thinking> tags.
-        Keep reasoning concise and directly relevant.`;
+        return `# HOW YOU SHOULD THINK AND ANSWER
+        First draft your thinking process (inner monologue) until you arrive at a response. Format your response using Markdown, and use LaTeX for any mathematical equations as guided in \`Output Formatting\`. section Write both your thoughts and the response in the same language as the input.`;
     }
 
     private static multimodalBlock(): string {

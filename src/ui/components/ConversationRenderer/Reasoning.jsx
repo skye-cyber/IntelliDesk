@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { CodeBlockRenderer } from '../Code/CodeBlockRenderer';
+import ToolCallDisplay from '../Tools/ToolCallDisplay';
 
 export const TerminalThinkingSection = ({ htmlThinkContent, isThinking }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -74,7 +75,7 @@ export const TerminalThinkingSection = ({ htmlThinkContent, isThinking }) => {
     );
 };
 
-export const GlassThinkingSection = ({ htmlThinkContent, isThinking }) => {
+export const GlassThinkingSection = ({ htmlThinkContent, isThinking, thinkToolCalls = [] }) => {
     const [isOpen, setIsOpen] = useState(false);
     const contentRef = useRef(null);
 
@@ -133,12 +134,11 @@ export const GlassThinkingSection = ({ htmlThinkContent, isThinking }) => {
                 {/* Smooth expand/collapse with spring animation */}
                 <div
                     ref={contentRef}
-                    className="transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden"
-                    style={{ maxHeight: isOpen ? contentRef.current?.scrollHeight : 0 }}
-                >
+                    className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden overflow-y-auto scrollbar-custom ${isOpen ? 'h-fit' : 'h-0'}`}>
                     <div className="p-4 pt-2 border-t border-blue-100 dark:border-[#393955]">
                         <div className="prose prose-sm dark:prose-invert max-w-none text-gray-500 dark:text-gray-300">
                             <CodeBlockRenderer htmlContent={htmlThinkContent} />
+                            {thinkToolCalls.map((toolCall, index) => <ToolCallDisplay key={index} toolCall={toolCall} />)}
                         </div>
                     </div>
                 </div>

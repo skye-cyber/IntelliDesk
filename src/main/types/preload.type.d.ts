@@ -6,7 +6,10 @@ import { SessionManagerType, LockManagerType } from './utils/SessionManager';
 import { FunctionCall } from '@mistralai/mistralai/models/components';
 export declare enum ModelType {
     multimodal = "multimodal",
-    chat = "chat"
+    chat = "chat",
+    vision = "vision",
+    reasoning = "reasoning",
+    ocr = "ocr"
 }
 export declare enum ConversationType {
     temporary = "temporary",
@@ -127,8 +130,7 @@ export interface ApiType {
     updateContinueHistory: (item: ChatMessage) => void | false;
     clearAllImages: (history: Conversation) => any[] | false;
     clearImages: (history: Conversation) => any[] | false;
-    CreateNew: (conversation: ChatMessage[], model: string) => void;
-    startNew: (model: 'chat' | 'multimodal', temporary: boolean) => void;
+    startNew: (model: ModelType, temporary: boolean) => string;
     saveConversation: () => Promise<string>;
     generateUUID: () => string;
     getConversationId: () => string;

@@ -120,7 +120,11 @@ export class RequestErrorHandler {
         const closeModal = () => this.hideModal();
 
         [closeBtn, cancelBtn, overlay].forEach(element => {
-            element?.addEventListener('click', closeModal);
+            element?.addEventListener('click', () => {
+                window.desk.api.popHistory("user")
+                closeModal()
+                this.retryCount = 0
+            });
         });
 
         retryBtn?.addEventListener('click', () => this.retryRequest());
@@ -297,6 +301,7 @@ export class RequestErrorHandler {
     }
 
     hideModal() {
+        window.desk.api.popHistory("user")
         const modal = document.getElementById('errorModal');
         modal.classList.remove('error-modal-visible');
 
@@ -326,6 +331,7 @@ export class RequestErrorHandler {
     }
 
     executeRetry() {
+        window.desk.api.popHistory("user")
         // Clone the callbacks to avoid modification during iteration
         const callbacksToExecute = Array.from(this.retryCallbacks);
         // Clear callbacks BEFORE execution to prevent infinite loops
@@ -369,6 +375,7 @@ export class RequestErrorHandler {
                 finalRetryCount: this.retryCount
             }
         });
+        window.desk.api.popHistory("user")
         document.dispatchEvent(event);
     }
 

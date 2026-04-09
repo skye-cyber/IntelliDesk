@@ -8,7 +8,6 @@ import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDetails = false }) => {
     const [showFullContent, setShowFullContent] = useState(false);
     const [expanded, setExpanded] = useState(isExpanded)
-
     if (!toolCall) {
         return null;
     }
@@ -62,7 +61,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
         };
 
         // Try to match tool name
-        const normalizedName = toolName.toLowerCase();
+        const normalizedName = toolName?.toLowerCase();
         for (const [key, icon] of Object.entries(icons)) {
             if (normalizedName.includes(key)) {
                 return icon;
@@ -86,7 +85,6 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
             'send': 'from-pink-500 to-rose-600',
             'todo': 'from-amber-500 to-yellow-600'
         };
-
         const normalizedName = toolName.toLowerCase();
         for (const [key, color] of Object.entries(colors)) {
             if (normalizedName.includes(key)) {
@@ -97,17 +95,25 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
         return 'from-gray-500 to-gray-700'; // Default color
     };
 
-    const toolIcon = getToolIcon(toolCall.toolName);
-    const toolColor = getToolColor(toolCall.toolName);
-    const hasError = !!toolCall.error || !!toolCall.result.error;
+    if (typeof toolCall.results === 'string') {
+        try {
+            const result = JSON.parse(toolCall.results)
+            toolCall.results = result
+        } catch (err) {
+            //
+        }
+    }
+
+    const toolIcon = getToolIcon(toolCall.toolName || toolCall.name);
+    const toolColor = getToolColor(toolCall.toolName || toolCall.name);
+    const hasError = !!toolCall?.error || !!toolCall.result?.error || false;
     const hasResult = !!toolCall.result;
 
     let params
     try {
-        params = !toolCall?.result.success ? JSON.parse(toolCall?.result?.params) : toolCall?.result
+        params = !toolCall?.result.success ? JSON.parse(toolCall?.result?.params) : toolCall?.result || toolCall.arguments
     } catch (err) { }
 
-    //console.log(toolCall)
     function get_action_comment() {
         const tool = toolCall.toolName
         let comment
@@ -271,7 +277,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                 {(isExpanded || expanded || showDetails) && (
                     <div className="px-3 pb-3">
                         {/* Parameters */}
-                        {toolCall.result.params && (
+                        {toolCall?.result?.params || toolCall.arguments && (
                             <div className="mb-3">
                                 <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 flex items-center">
                                     <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -282,7 +288,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
                                 </h5>
                                 <div className="bg-gray-50/80 dark:bg-blue-900/20 rounded border border-gray-200/50 dark:border-blue-700/30 p-2">
                                     <pre className="text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-20 font-mono whitespace-pre-wrap overflow-yauto scrollbar-custom">
-                                        {formatParams(toolCall.result.params?.slice(0, 500))}
+                                        {formatParams((toolCall.result?.params || toolCall.arguments)?.slice(0, 500))}
                                     </pre>
                                 </div>
                             </div>

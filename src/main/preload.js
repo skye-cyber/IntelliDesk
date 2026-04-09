@@ -208,7 +208,7 @@ const api = {
                 ConversationHistory.metadata.sessionId = SessionManager_1.SessionManager.create(ConversationId).sessionId;
             }
             if (!ConversationHistory.metadata.highlight) {
-                if (ConversationHistory.metadata.model === "multimodal") {
+                if (ConversationHistory.metadata.model !== preload_type_1.ModelType.chat) {
                     if (item && item?.content && item.content.length > 0) {
                         if (typeof item?.content[0] == 'object' && item?.content[0].text && typeof (item?.content[0].text) === "string") {
                             const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replace(/`/, '');
@@ -246,6 +246,7 @@ const api = {
             }
             else if (ConversationHistory.chats?.slice(-1)[0]?.role === role) {
                 ConversationHistory.chats.pop();
+                console.log("Pop:", role);
             }
             ConversationHistory.metadata.updated_at = (0, datetime_1.getformatDateTime)();
             return ConversationHistory;
@@ -264,7 +265,8 @@ const api = {
                 return;
             ConversationHistory.metadata.model = preload_type_1.ModelType[model];
             if (ConversationHistory.chats[0].role === preload_type_1.MessageRole.system) {
-                ConversationHistory.chats[0] = (model === preload_type_1.ModelType.multimodal)
+                // all other model types except chat use array
+                ConversationHistory.chats[0] = (model !== preload_type_1.ModelType.chat)
                     ? { role: preload_type_1.MessageRole.system, content: [{ type: "text", text: system_command }] }
                     : { role: preload_type_1.MessageRole.system, content: system_command };
             }
@@ -424,40 +426,38 @@ const api = {
             return false;
         }
     },
-    CreateNew: (conversation, model) => {
-        if (!ConversationId)
-            ConversationId = api.generateUUID();
-        ConversationHistory.chats = conversation;
+    startNew: (model, temporary) => {
+        ConversationId = api.generateUUID();
         ConversationHistory.metadata = {
             model: preload_type_1.ModelType[model],
             id: ConversationId,
             created_at: (0, datetime_1.getformatDateTime)(),
             updated_at: (0, datetime_1.getformatDateTime)(),
             sessionId: null,
-            type: ConversationHistory.metadata.type,
+            type: temporary ? preload_type_1.ConversationType.temporary : preload_type_1.ConversationType.temporary,
             name: ConversationHistory.metadata.name,
             highlight: ConversationHistory.metadata.highlight
         };
-        api.saveConversation();
-    },
-    startNew: (model, temporary) => {
-        if (temporary)
-            ConversationHistory.metadata.type = preload_type_1.ConversationType.temporary;
-        ConversationId = api.generateUUID();
-        ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: system_command }];
-        ConversationHistory.metadata.id = ConversationId;
         if (model)
             ConversationHistory.metadata.model = preload_type_1.ModelType[model];
+        if (model !== preload_type_1.ModelType.chat) {
+            ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: [{ type: "text", text: system_command }] }];
+        }
+        else {
+            ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: system_command }];
+        }
+        // if (!temporary) api.saveConversation(); save shoul be done after conversation has some history to avoid blank files
+        return ConversationId;
     },
     saveConversation: async () => {
-        const conversationId = ConversationHistory.metadata.id;
+        let conversationId = ConversationHistory.metadata.id;
         if (!conversationId) {
-            console.log("No conversationid:", ConversationHistory);
-            return '';
+            console.log("No conversationid create new:", ConversationHistory);
+            conversationId = api.generateUUID();
         }
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
-            if (ConversationHistory.metadata.type === "temporary") {
+            if (ConversationHistory.metadata.type === preload_type_1.ConversationType.temporary) {
                 console.log("In temporary chat Not saving");
                 return filePath;
             }
@@ -635,7 +635,6 @@ const api = {
                         const arrayBuffer = await blob.arrayBuffer();
                         const buffer = buffer_1.Buffer.from(arrayBuffer);
                         const response = await electron_1.ipcRenderer.invoke('save-dg-As-PNG', buffer, path);
-                        console.log(response);
                         resolve(response === true);
                     }
                     catch (err) {

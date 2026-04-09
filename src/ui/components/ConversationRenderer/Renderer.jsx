@@ -11,6 +11,7 @@ import { StateManager } from '../../../core/managers/StatesManager';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import { GlassThinkingSection } from './Reasoning';
 import { FileContainer } from './Files';
+import ToolCallDisplay from '../Tools/ToolCallDisplay.jsx';
 
 
 export const UserMessage = ({ message, files = [] }) => {
@@ -129,6 +130,7 @@ export const ResponseWrapper = ({
     isThinking = false,
     thinkContent = null,
     message_id = GenerateId('ai-msg'),
+    thinkToolCalls = []
 }) => {
 
     let processedHtmlContent
@@ -151,7 +153,7 @@ export const ResponseWrapper = ({
         <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[14px]'>
             <div id="ai_response_think" className="w-full bg-none rounded-lg rounded-bl-none transition-colors duration-700">
                 {thinkContent &&
-                    <GlassThinkingSection htmlThinkContent={thinkContent} isThinking={isThinking} />
+                    <GlassThinkingSection htmlThinkContent={thinkContent} isThinking={isThinking} thinkToolCalls={thinkToolCalls} />
                 }
 
             </div>

@@ -27,7 +27,10 @@ import { EventSubscription } from "../../../Globals/types.ts";
 
 let SIGINT = false
 
-
+/*TODO:
+ * Try reasoning_content as reasoning field intead of thinking
+ * Try adding devstral-small-latest to models
+*/
 // set event handlers
 globalEventBus.on('sigint', () => SIGINT = true)
 
@@ -45,6 +48,11 @@ interface ToolCallHistory {
     results: ToolResults
     timestamp: string
 }
+interface ReferenceType {
+    referenceIds: Array<number>;
+    type?: "reference" | undefined;
+}
+
 /**
  * **USAGE**\
  * completion.route().complete(text)
@@ -63,6 +71,7 @@ class CompletionBase {
     private output: string
     private fullResponse: string
     private thinkContent: string
+    private thinkContentRefs: ReferenceType
     private actualResponse: string
     private isThinking: boolean
     private hasfinishedThinking: boolean
@@ -455,7 +464,6 @@ class CompletionBase {
         this.updateHistory()
     }
     private streamArray(deltaContent: ContentChunk[]) {
-        // console.log(deltaContent)
         // Process each content chunk in the array
         for (const contentChunk of deltaContent) {
             if (contentChunk.type === "thinking") {
@@ -467,6 +475,12 @@ class CompletionBase {
                     for (const thought of contentChunk.thinking) {
                         if (thought.type === "text" && thought.text) {
                             this.thinkContent += thought.text;
+                            // Handle referenceChunks
+                        } else if (thought.type === "reference" && thought.referenceIds) {
+                            this.thinkContentRefs.referenceIds = [
+                                ...this.thinkContentRefs.referenceIds,
+                                ...thought.referenceIds
+                            ]
                         }
                     }
                 }
@@ -584,6 +598,7 @@ class CompletionBase {
         if (await appIsDev()) errorHandler.resetRetryCount()
     }
     async updateHistory() {
+        console.log(this.thinkContentRefs)
         if (this.continued) {
             StateManager.set('user_message_portal', null);
 
@@ -592,13 +607,20 @@ class CompletionBase {
             };
 
             // Build content array for multimodal/thinking models
-            const content: any[] = [];
+            const content: string | Array<ContentChunk> | null | undefined = [];
 
+            // TODO: Handle referenceChunks here if present
             // Add thinking content if present (as thinking type or text with think tag)
             if (this.thinkContent && this.thinkContent.trim()) {
                 content.push({
                     type: "thinking",
-                    thinking: this.thinkContent
+                    thinking: [
+                        {
+                            type: 'text',
+                            text: this.thinkContent
+                        },
+                        //...this.thinkContentRefs
+                    ]
                 });
             }
 
@@ -642,7 +664,12 @@ class CompletionBase {
             if (this.thinkContent && this.thinkContent.trim()) {
                 content.push({
                     type: "thinking",
-                    thinking: this.thinkContent
+                    thinking: [
+                        {
+                            type: 'text',
+                            text: this.thinkContent
+                        }
+                    ]
                 });
             }
 
@@ -680,6 +707,9 @@ class CompletionBase {
             if (this.modelUsesArrayContent) fileInputProcessor.unuseAll()
             window.desk.api.popHistory("user")
         }
+        console.log(window.desk.api.getHistory().chats.length)
+        window.desk.api.popHistory("user")
+        console.log(window.desk.api.getHistory().chats.length)
         await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal?.id, this.ErrorCallback || this.StartSession)
     }
 }

@@ -6,6 +6,9 @@ var ModelType;
 (function (ModelType) {
     ModelType["multimodal"] = "multimodal";
     ModelType["chat"] = "chat";
+    ModelType["vision"] = "vision";
+    ModelType["reasoning"] = "reasoning";
+    ModelType["ocr"] = "ocr";
 })(ModelType || (exports.ModelType = ModelType = {}));
 var ConversationType;
 (function (ConversationType) {

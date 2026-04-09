@@ -197,7 +197,6 @@ const CanvasMenu = () => {
         <div className="relative">
             <button
                 onClick={(e) => {
-                    console.log(e.target)
                     if (!switchRef.current?.contains(e.target as Node)) {
                         globalEventBus.emit('canvas:toggle')
                     }

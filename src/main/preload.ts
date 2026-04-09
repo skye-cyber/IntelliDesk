@@ -251,8 +251,9 @@ const api: ApiType = {
         try {
             if (!role) {
                 ConversationHistory.chats.pop();
-            } else if (ConversationHistory.chats?.slice(-1)[0]?.role === role as MessageRole) {
+            } else if (ConversationHistory.chats?.slice(-1)[0]?.role === role) {
                 ConversationHistory.chats.pop();
+                console.log("Pop:", role)
             }
             ConversationHistory.metadata.updated_at = getformatDateTime();
             return ConversationHistory;

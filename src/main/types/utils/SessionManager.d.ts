@@ -1,4 +1,3 @@
-import * as path from 'path';
 export interface ToolConfigEnabled {
     permission: 'always' | 'ask';
     allowlist?: string[];
@@ -14,12 +13,33 @@ export interface ToolConfigDisabled {
 export interface Session {
     lock_id: string | null;
     session_id: string;
-    session_chat_id: string | typeof path;
+    session_chat_id: string;
     enabled_tools: Record<string, ToolConfigEnabled>;
     disabled_tools: Record<string, ToolConfigDisabled>;
     autoapprove_action: 'allow' | 'deny';
     created_at: string;
     updated_at: string;
+    username?: string;
+    auto_compact_threshold?: number;
+    stats?: {
+        steps: number;
+        session_prompt_tokens: number;
+        session_completion_tokens: number;
+        tool_calls_agreed: number;
+        tool_calls_rejected: number;
+        tool_calls_failed: number;
+        tool_calls_succeeded: number;
+        context_tokens: number;
+        last_turn_prompt_tokens: number;
+        last_turn_completion_tokens: number;
+        last_turn_duration: number;
+        tokens_per_second: number;
+        input_price_per_million: number;
+        output_price_per_million: number;
+        session_total_llm_tokens: number;
+        last_turn_total_tokens: number;
+        session_cost: number;
+    };
 }
 export interface SessionLock {
     session_id: string;

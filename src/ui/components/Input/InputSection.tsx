@@ -286,7 +286,7 @@ export const InputSection = ({ onToggleRecording }) => {
                             title="Send message"
                         >
                             {incycle ? (
-                                <div className="flex items-center justify-center gap-1">
+                                <div className="animation-heartpulse-slow flex items-center justify-center gap-1">
                                     <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
                                     <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse delay-150"></span>
                                     <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse delay-300"></span>

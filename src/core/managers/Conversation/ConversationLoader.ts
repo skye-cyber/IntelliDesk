@@ -45,8 +45,11 @@ export class ConversationLoader {
 
                 if (item.type === 'text' && item.text) {
                     text += item.text;
-                } else if (item.type === 'thinking' && item.thinking) {
-                    thinking = (thinking || '') + item.thinking;
+                } else if (item.type === 'thinking' && item.thinking.length > 0) {
+                    // item is an array of types text/reference and referenceIds
+                    const think = item.thinking.filter((c) => c.type === 'text')[0].text
+                    thinking = (thinking || '') + think || item.text;
+                    // Handle references here
                 } else if (item.type === 'image_url' || item.type === 'document_url') {
                     // Skip file attachments - handled separately
                     continue;
@@ -189,6 +192,13 @@ export class ConversationLoader {
         let actualContent = parsed.text;
         let thinkContent = parsed.thinking || '';
 
+        interface ToolCall {
+            toolCallId: string
+            toolName: string
+            arguments: string
+        }
+        let thinkToolCalls: ToolCall[] = []
+
         // Handle legacy <think> tags if present in text (double check)
         if (actualContent.includes('<think>')) {
             const legacyParsed = this.parseContent(actualContent);
@@ -200,13 +210,18 @@ export class ConversationLoader {
         if (toolCalls && toolCalls.length > 0) {
             // Render tool calls
             for (const toolCall of toolCalls) {
-                message_portal.appendComponent('ToolCallDisplay', {
-                    toolCall: {
-                        id: toolCall.id,
-                        name: toolCall.function?.name,
-                        arguments: toolCall.function?.arguments
-                    }
-                });
+                const call = {
+                    toolCallId: toolCall.id,
+                    toolName: toolCall.function?.name,
+                    arguments: toolCall.function?.arguments
+                }
+                // Append toolCall to think section if no content
+                if (!actualContent && thinkContent) {
+                    thinkToolCalls.push(call)
+                } else {
+                    // Prefer not show these tool calls since success/error shall display them
+                    //message_portal.appendComponent('ToolCallDisplay', { toolCall: call });
+                }
             }
         }
 
@@ -214,7 +229,8 @@ export class ConversationLoader {
         if (actualContent || thinkContent) {
             message_portal.appendComponent('ResponseWrapper', {
                 actualContent: actualContent,
-                thinkContent: thinkContent
+                thinkContent: thinkContent,
+                thinkToolCalls: thinkToolCalls
             });
         }
 

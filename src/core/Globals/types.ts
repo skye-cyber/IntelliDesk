@@ -65,9 +65,9 @@ export type EventMap = {
     'file:remove-request': [id: string]
     'files:clear-request': []
     'files:submitted': [files: File[]]
-    'reasoning:on': []
-    'reasoning:off': []
-    'reasoning:change': [on: boolean]
+    'thinkmode:enable': []
+    'thinkmode:disable': []
+    'thinkmode:change': [on: boolean]
 };
 
 

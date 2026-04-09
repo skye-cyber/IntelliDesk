@@ -2,7 +2,7 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import { globalEventBus } from '../../../core/Globals/eventBus';
 import { FiX, FiUpload, FiCheck, FiFile, FiImage, FiMusic, FiVideo, FiArchive } from 'react-icons/fi';
 import { File as UploadFile } from '../../../core/managers/Conversation/Mistral/InputProcessor';
-import { StateManager } from '../../../core/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface FileItem {

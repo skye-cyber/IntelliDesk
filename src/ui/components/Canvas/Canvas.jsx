@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Caret } from '../../../core/Utils/caret.js'
 import { canvasutil } from '../../../core/managers/Canvas/CanvasUtils.js';
 import { useTheme } from '../../components/Themes/useThemeHeadless.jsx';
-import { StateManager } from '../../../core/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { Editor } from './editor';
 import { waitForElement } from '../../../core/Utils/dom_utils';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
@@ -349,7 +349,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
             //InputSectionWfitAdjust('add')
         }, 400)
         waitForElement('#main-container-center', (container) => {
-            if (StateManager.get("sidebar-open")) {
+            if (StateManager.get("sidebarOpen")) {
                 container.classList.remove('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
             } else {
                 container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')
@@ -374,7 +374,7 @@ export const Canvas = ({ isOpen, onToggle }) => {
 
         waitForElement('#main-container-center', (container) => {
 
-            if (StateManager.get("sidebar-open")) {
+            if (StateManager.get("sidebarOpen")) {
                 container.classList.add('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
             } else {
                 container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')

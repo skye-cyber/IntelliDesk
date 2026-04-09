@@ -4,7 +4,7 @@ import { Graphviz } from "@hpcc-js/wasm-graphviz";
 import { waitForElement } from '../Utils/dom_utils';
 import { modalmanager } from '../StatusUIManager/Manager';
 import { staticPortalBridge } from '../PortalBridge.ts';
-import { StateManager } from '../managers/StatesManager';
+import { StateManager } from '../managers/StatesManager.ts';
 
 
 export class DotInterPreter {

@@ -133,7 +133,7 @@ export const ConversationItem = ({ metadata, datestr, portal_id }) => {
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                            <h3 id="chat-name" className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                            <h3 id="chat-name" className="text-sm font-semibold text-gray-900 dark:text-white truncate my-0">
                                 {metadata?.name || metadata?.id}
                             </h3>
                             <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{chatmanager.formatRelativeTime(metadata?.created_at)}</span>

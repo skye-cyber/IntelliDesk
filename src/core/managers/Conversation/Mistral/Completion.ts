@@ -2,7 +2,7 @@ import { appIsDev } from "./shared"; // provides shared objects and imports for 
 import { canvasutil } from "../../Canvas/CanvasUtils.js";
 import { chatutil } from "../util.ts";
 import { clientmanager } from "./ClientManager.ts";
-import { StateManager } from '../../StatesManager';
+import { StateManager } from '../../StatesManager.ts';
 // import { waitForElement } from '../../../Utils/dom_utils';
 import errorHandler from "../../../../ui/components/ErrorHandler/ErrorHandler";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
@@ -90,11 +90,11 @@ class CompletionBase {
     private DEFAULT_ARRAYED_MODEL: string
     private DEFAULT_TEXT_MODEL: string
     private DEFAULT_REASONING_MODEL: string
-    private REASONING_ON: boolean
+    public REASONING_ON: boolean
     private REASONING_CHANGE_LISTENER: EventSubscription
 
     constructor(ErrorCallback: CallableFunction | undefined = undefined) {
-        this.modelName = StateManager.get('currentModel')
+        this.modelName = StateManager.get('currentModel') as string
         this.ErrorCallback = ErrorCallback
         this.ToolsEnabled = false
         this.MAX_TOOLITERATIONS = 30
@@ -117,6 +117,7 @@ class CompletionBase {
         this.first_run = true;
         this.continued = false
         this.TOOL_CALLS = []
+        if (this.thinkContentRefs) this.thinkContentRefs.referenceIds = []
     }
     reset() {
         // Stream options
@@ -144,6 +145,7 @@ class CompletionBase {
         }
         SIGINT = false
         this.TOOL_CALLS = []
+        if (this.thinkContentRefs) this.thinkContentRefs.referenceIds = []
     }
 
     route(callback: CallableFunction | undefined = undefined) {
@@ -153,7 +155,9 @@ class CompletionBase {
         */
         this.ErrorCallback = callback ? callback : (text: string) => globalEventBus.emit('useraction:request:execution', (text))
         // If there are files uploaded let use model that supports them say mistral-ocr-latest or mistral-large-2512
-        if (StateManager.get('uploaded_files')?.length > 0) {
+        let files = StateManager.get('uploaded_files')
+        if (files && files?.length > 0) {
+            files = undefined
             this.modelUsesArrayContent = true
             // modelManager.changeModel(this.DEFAULT_ARRAYED_MODEL)
             this.modelName = this.DEFAULT_ARRAYED_MODEL
@@ -163,22 +167,12 @@ class CompletionBase {
         }
         if (this.REASONING_ON) {
             this.modelName = this.DEFAULT_REASONING_MODEL
+            const chats = window.desk.api.getHistory() as any
+            if (chats.length > 1 && !Array.isArray(chats.slice(1))) {
+                window.desk.api.upgradeToArrayModel(null, false)
+            }
         }
         return this
-    }
-    /**
-     * Update state eg Reasoning state when change is detected
-     */
-    listeners() {
-        this.REASONING_CHANGE_LISTENER = globalEventBus.on('reasoning:change', (isOn) => this.REASONING_ON = !isOn)
-    }
-    /**
-     * Unsubsrcibe from state listeners
-     */
-    usubscribe() {
-        if (this.REASONING_CHANGE_LISTENER) {
-            this.REASONING_CHANGE_LISTENER.unsubscribe()
-        }
     }
     complete(input: string) {
         this.route()
@@ -709,8 +703,8 @@ class CompletionBase {
             window.desk.api.popHistory("user")
             if ((window.desk.api.getHistory() as any).chats.length > 1) {
                 window.desk.api.saveConversation()
-            }else{
-                window.desk.api.deleteChat()
+            } else {
+                window.desk.api.deleteChat(window.desk.api.getmetadata()?.id)
             }
         }
         await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal?.id, this.ErrorCallback || this.StartSession)
@@ -725,4 +719,7 @@ globalEventBus.on('model:change', ((model: string) => {
 
 globalEventBus.on('useraction:request:execution', (text) => {
     completion.complete(text)
+})
+globalEventBus.on('thinkmode:change', (isOn) => {
+    completion.REASONING_ON = isOn
 })

@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
-import { StateManager } from '../../../core/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { modalmanager } from '../../../core/StatusUIManager/Manager';
 import { ApiNotSetWarning } from './warning';
 import { RequestApiKeyConfig } from './Request';

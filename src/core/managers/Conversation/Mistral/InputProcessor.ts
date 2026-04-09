@@ -1,5 +1,5 @@
 import { staticPortalBridge } from "../../../PortalBridge.ts";
-import { StateManager } from "../../StatesManager";
+import { StateManager } from "../../StatesManager.ts";
 import { MessageRole } from "./types.ts";
 
 interface ConfigType {
@@ -44,7 +44,7 @@ interface FileMetadata {
 export interface File {
     id?: string
     name: string
-    used: boolean
+    used?: boolean
     size: number
     type: FileType
     url: string | any

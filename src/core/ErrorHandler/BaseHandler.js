@@ -1,7 +1,7 @@
 /// <reference path="../../main/preload.type.ts" />
 import { handleDevErrors } from "./ErrorHandler"
 import errorHandler from "../../ui/components/ErrorHandler/ErrorHandler"
-import { StateManager } from "../managers/StatesManager"
+import { StateManager } from "../managers/StatesManager.ts"
 import { appIsDev } from "../managers/Conversation/Mistral/shared"
 import { staticPortalBridge, streamingPortalBridge } from "../PortalBridge.ts"
 import { clientmanager } from "../managers/Conversation/Mistral/ClientManager.ts"

@@ -4,14 +4,14 @@ import { modalmanager } from "../../StatusUIManager/Manager";
 import { clearMessages } from "../../PortalBridge.ts";
 import { modelManager } from "./ModelManager.ts";
 import { streamingPortalBridge } from "../../PortalBridge.ts";
-import { StateManager } from "../StatesManager";
+import { StateManager } from "../StatesManager.ts";
 
 export class ConversationLoader {
     private chatArea: any
     private portal: any
     constructor() {
         this.chatArea
-        waitForElement('#chatArea', (el) => this.chatArea = el)
+        waitForElement('#chatArea', (el: Element) => this.chatArea = el)
         this.portal = null
     }
 

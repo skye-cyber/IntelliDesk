@@ -3,8 +3,8 @@
  * Provides common functionality for tool execution, validation, and error handling
  */
 import { ToolConfig, AgentType } from "../../main/utils/ToolAgent";
-import { StateManager } from "../managers/StatesManager";
-import { ToolError, ToolResult, ToolSchema } from "./types";
+import { StateManager } from "../managers/StatesManager.ts";
+import { ToolError, ToolResultResponse, ToolSchema } from "./types";
 
 
 export class ToolBase {
@@ -98,7 +98,7 @@ export class ToolBase {
     /**
      * Format the result for AI consumption
      */
-    formatResult(result: Record<any, any>): ToolResult {
+    formatResult(result: Record<any, any>): ToolResultResponse {
         return {
             success: true,
             tool: this.name,

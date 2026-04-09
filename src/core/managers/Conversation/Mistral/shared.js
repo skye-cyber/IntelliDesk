@@ -1,4 +1,4 @@
-import { StateManager } from '../../StatesManager';
+import { StateManager } from '../../StatesManager.ts';
 
 StateManager.set('uploaded_files', [])
 

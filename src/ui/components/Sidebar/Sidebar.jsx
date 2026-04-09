@@ -7,13 +7,13 @@ import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { clearMessages } from '../../../core/PortalBridge.ts';
 import { ChatUtil } from '../../../core/managers/Conversation/util';
 import { MessageList } from '../Chat/MessageList';
-import { StateManager } from '../../../core/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { PanelLeftClose } from 'lucide-react';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 const chatutil = new ChatUtil()
 
-StateManager.set("sidebar-open", false)
+StateManager.set("sidebarOpen", false)
 
 const Manager = new ChatManager();
 
@@ -46,7 +46,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 }
             });
         });
-        StateManager.set("sidebar-open", true)
+        StateManager.set("sidebarOpen", true)
     }, [onToggle]);
 
     const shrinkPanel = useCallback(() => {
@@ -62,7 +62,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 }
             });
         });
-        StateManager.set("sidebar-open", false)
+        StateManager.set("sidebarOpen", false)
     }, []);
 
     const togglePanel = useCallback(() => {

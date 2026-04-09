@@ -1,10 +1,10 @@
-import { StateManager } from "../../../core/managers/StatesManager";
+import { StateManager } from "../../../core/managers/StatesManager.ts";
 import { globalEventBus } from "../../../core/Globals/eventBus";
 import { File as UploadedFile } from "../../../core/managers/Conversation/Mistral/InputProcessor";
 
 export const fileUploadUtils = {
     getUploadedFiles(): UploadedFile[] {
-        return StateManager.get('uploaded_files') || [];
+        return StateManager.get('uploaded_files') as any || [];
     },
 
     clearAllFiles(): void {

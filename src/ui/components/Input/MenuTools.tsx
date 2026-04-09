@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { StateManager } from "../../../core/managers/StatesManager"
+import { StateManager } from "../../../core/managers/StatesManager.ts"
 import { globalEventBus } from "../../../core/Globals/eventBus"
 
 export const MenuTools = ({ onToggleRecording }) => {
@@ -50,7 +50,7 @@ export const MenuTools = ({ onToggleRecording }) => {
             {/* Trigger Button */}
             <button
                 onClick={toggleToolMenu}
-                className="absolute -left-12 bottom-12 z-50 p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
+                className="absolute -left-12 bottom-12 z-50 p-2 rounded-xl bg-indigo-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
                 aria-label="Tools menu"
                 title="Tools"
             >

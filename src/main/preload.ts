@@ -150,7 +150,7 @@ const api: ApiType = {
             return false;
         }
     },
-    RenameConversation: async (id:string, name: string, base_dir: string = conversation_root): Promise<Conversation | boolean> => {
+    RenameConversation: async (id: string, name: string, base_dir: string = conversation_root): Promise<Conversation | boolean> => {
         console.log(name, id)
         try {
             const fpath = path.join(base_dir, `${id}.json`);
@@ -471,6 +471,21 @@ const api: ApiType = {
             console.error('Error saving conversation:', err);
             return filePath;
         }
+    },
+    upgradeToArrayModel: (data: Conversation | null | undefined = null, save: boolean = true): Conversation => {
+        let histroy = data ? data : ConversationHistory
+        histroy.chats.filter((chat) => {
+            if (!Array.isArray(chat.content)) {
+                chat.content = [{ type: 'text', text: chat.content }]
+            }
+        })
+        if (!data) {
+            ConversationHistory = histroy
+        }
+        if (save) {
+            api.saveConversation()
+        }
+        return histroy
     },
     generateUUID: (): string => {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {

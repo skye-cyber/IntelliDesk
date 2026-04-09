@@ -2,7 +2,7 @@
  * Todo Tool - Manage a simple task list with persistence
  */
 import { ToolBase } from '../ToolBase';
-import { StateManager } from '../../../StatesManager';
+import { StateManager } from '../../../StatesManager.ts';
 
 
 export class TodoTool extends ToolBase {

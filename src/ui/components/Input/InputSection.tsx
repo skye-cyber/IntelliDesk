@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { chatutil } from '../../../core/managers/Conversation/util.ts';
-import { StateManager } from '../../../core/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { CodeDetector } from '../Code/CodeDetector';
 import { globalEventBus, sigint } from '../../../core/Globals/eventBus.ts';
 import { modalmanager } from '../../../core/StatusUIManager/Manager.js';
@@ -18,6 +18,7 @@ export const InputSection = ({ onToggleRecording }) => {
     const [incycle, setIncycle] = useState(false)
     const sendButtonRef = useRef(null);
     const [inputFocus, setInputFocused] = useState(false)
+    const [thinkON, setThinkON] = useState(false)
 
     useEffect(() => {
         // Signal handlers
@@ -199,6 +200,8 @@ export const InputSection = ({ onToggleRecording }) => {
 
     useEffect(() => {
         chatutil.scrollToBottom(document.getElementById('chatArea'), false);
+        const thinkToggle = globalEventBus.on('thinkmode:change', (on) => setThinkON(on))
+        return () => thinkToggle.unsubscribe()
     }, []);
 
     return (
@@ -258,10 +261,15 @@ export const InputSection = ({ onToggleRecording }) => {
                     <div className="flex-shrink-0 flex items-center gap-1">
                         {/* DeepThink Button */}
                         <button
-                            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-all duration-200 group"
+                            className={`${thinkON ? 'bg-primary-100/30 dark:bg-primary-100/40 hover:bg-primary-300/40 dark:bg-primary-100/80' : 'hover:bg-gray-200 dark:hover:bg-accent-700/80'} p-2 rounded-full transition-all duration-200 group`}
+                            onClick={() => {
+                                globalEventBus.emit('thinkmode:change', (!thinkON))
+                                StateManager.set('thinkmode', !thinkON)
+                                setThinkON(!thinkON)
+                            }}
                             title="DeepThink Mode"
                         >
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className={`w-5 h-5 ${thinkON ? 'text-primary-200 dark:text-accent-50' : 'text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                             </svg>
                         </button>

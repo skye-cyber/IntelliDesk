@@ -132,6 +132,7 @@ export interface ApiType {
     clearImages: (history: Conversation) => any[] | false;
     startNew: (model: ModelType, temporary: boolean) => string;
     saveConversation: () => Promise<string>;
+    upgradeToArrayModel: (data: Conversation | null | undefined, save: boolean) => Conversation;
     generateUUID: () => string;
     getConversationId: () => string;
     setConversationId: (id: string) => void;

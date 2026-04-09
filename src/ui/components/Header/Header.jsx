@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { ModelList } from './Models/ModelList';
-import { StateManager } from '../../../core/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 StateManager.set('currentModel', 'mistral-large-latest')

@@ -1,6 +1,6 @@
 import { MistralIcon, CodeIcon } from './icons';
 import { Model } from './utils/models';
-import { StateManager } from '../../../../core/managers/StatesManager.js';
+import { StateManager } from '../../../../core/managers/StatesManager.ts';
 import { globalEventBus } from '../../../../core/Globals/eventBus.ts';
 import { useEffect } from 'react';
 export const ModelItem = (

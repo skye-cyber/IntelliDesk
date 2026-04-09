@@ -478,6 +478,21 @@ const api = {
             return filePath;
         }
     },
+    upgradeToArrayModel: (data = null, save = true) => {
+        let histroy = data ? data : ConversationHistory;
+        histroy.chats.filter((chat) => {
+            if (!Array.isArray(chat.content)) {
+                chat.content = [{ type: 'text', text: chat.content }];
+            }
+        });
+        if (!data) {
+            ConversationHistory = histroy;
+        }
+        if (save) {
+            api.saveConversation();
+        }
+        return histroy;
+    },
     generateUUID: () => {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
             return crypto.randomUUID();

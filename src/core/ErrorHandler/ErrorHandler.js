@@ -1,8 +1,7 @@
 /// <reference path="../../main/preload.type.ts" />
 
 import { Timer } from '../Timer/timer.js';
-// import { waitForNamespace } from '../Utils/namespace_utils.js';
-import { StateManager } from '../managers/StatesManager.js';
+import { StateManager } from '../managers/StatesManager.ts';
 import { globalEventBus } from '../Globals/eventBus.ts';
 
 
@@ -121,7 +120,6 @@ export class RequestErrorHandler {
 
         [closeBtn, cancelBtn, overlay].forEach(element => {
             element?.addEventListener('click', () => {
-                window.desk.api.popHistory("user")
                 closeModal()
                 this.retryCount = 0
             });
@@ -301,7 +299,6 @@ export class RequestErrorHandler {
     }
 
     hideModal() {
-        window.desk.api.popHistory("user")
         const modal = document.getElementById('errorModal');
         modal.classList.remove('error-modal-visible');
 
@@ -331,7 +328,6 @@ export class RequestErrorHandler {
     }
 
     executeRetry() {
-        window.desk.api.popHistory("user")
         // Clone the callbacks to avoid modification during iteration
         const callbacksToExecute = Array.from(this.retryCallbacks);
         // Clear callbacks BEFORE execution to prevent infinite loops
@@ -375,7 +371,6 @@ export class RequestErrorHandler {
                 finalRetryCount: this.retryCount
             }
         });
-        window.desk.api.popHistory("user")
         document.dispatchEvent(event);
     }
 
@@ -472,13 +467,13 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null, 
         timestamp: Date.now()
     };
 
-    StateManager.set('retry-context', context)
+    StateManager.set('retryContext', context)
 
     // Remove loader
     //document.getElementById('loader-parent')?.parentElement?.remove();
 
     const unsubscribe = requestErrorHandler.onRetry((context) => {
-        context = StateManager.get('retry-context')
+        context = StateManager.get('retryContext')
         globalEventBus.emit('useraction:request:execution', (context.userContent))
     });
 

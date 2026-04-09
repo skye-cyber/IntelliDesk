@@ -5,7 +5,7 @@
 import toolManager from './ToolManager';
 import toolsIntegration from './ToolIntegration';
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler";
-import { StateManager } from '../managers/StatesManager';
+import { StateManager } from '../managers/StatesManager.ts';
 
 export class FunctionCallHandler {
     constructor(client) {

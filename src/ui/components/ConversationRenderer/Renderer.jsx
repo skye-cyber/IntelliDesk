@@ -7,11 +7,10 @@ import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import { GenerateId } from './utils';
 import { mathStandardize } from '../../../core/MathBase/mathRenderer';
 import { normalizeCodeBlocks } from '../../../core/Code/codeNormalize';
-import { StateManager } from '../../../core/managers/StatesManager';
+import { StateManager } from '../../../core/managers/StatesManager.ts';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import { GlassThinkingSection } from './Reasoning';
 import { FileContainer } from './Files';
-import ToolCallDisplay from '../Tools/ToolCallDisplay.jsx';
 
 
 export const UserMessage = ({ message, files = [] }) => {
@@ -150,7 +149,7 @@ export const ResponseWrapper = ({
     chatutil.renderMath(message_id)
 
     return (
-        <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[14px]'>
+        <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[15px]'>
             <div id="ai_response_think" className="w-full bg-none rounded-lg rounded-bl-none transition-colors duration-700">
                 {thinkContent &&
                     <GlassThinkingSection htmlThinkContent={thinkContent} isThinking={isThinking} thinkToolCalls={thinkToolCalls} />
@@ -253,103 +252,242 @@ export const ExportMenu = ({ menuref, messageref }) => {
 }
 
 export const AiMessageOptions = ({ messageref, isOpen, setOpen }) => {
-    const exportMenu = useRef(null)
+    const [copied, setCopied] = useState(false);
+    const [pinned, setPinned] = useState(false);
+    const [showExportMenu, setShowExportMenu] = useState(false);
+    const [showShareMenu, setShowShareMenu] = useState(false);
+    const exportMenuRef = useRef(null);
+    const shareMenuRef = useRef(null);
 
-    const clone_markdown_content = useCallback((selector, html = true) => {
-        CopyMessage(selector, html)
-    });
+    const handleCopy = useCallback(() => {
+        CopyMessage(messageref.current);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }, [messageref]);
 
-    const onMenuToggle = useCallback(() => {
-        exportMenu.current.classList.toggle('hidden');
+    const handlePin = useCallback(() => {
+        setPinned(!pinned);
+        globalEventBus.emit('message:pinned', { ref: messageref, pinned: !pinned });
+    }, [pinned, messageref]);
 
-    })
+    const handleCloneMarkdown = useCallback(() => {
+        CopyMessage(messageref.current, true);
+        setShowExportMenu(false);
+    }, [messageref]);
+
+    const handleExportHTML = useCallback(() => {
+        const content = messageref.current?.innerHTML || '';
+        const blob = new Blob([content], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `message-${Date.now()}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setShowExportMenu(false);
+    }, [messageref]);
+
+    const handleExportTXT = useCallback(() => {
+        const content = messageref.current?.textContent || '';
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `message-${Date.now()}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setShowExportMenu(false);
+    }, [messageref]);
+
+    const handleShare = useCallback(async () => {
+        const content = messageref.current?.textContent || '';
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Shared Message',
+                    text: content,
+                });
+            } catch (error) {
+                console.log('Share cancelled or failed:', error);
+            }
+        } else {
+            // Fallback to clipboard
+            await navigator.clipboard.writeText(content);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+        setShowShareMenu(false);
+    }, [messageref]);
+
+    // Close menus when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+                setShowExportMenu(false);
+            }
+            if (shareMenuRef.current && !shareMenuRef.current.contains(event.target)) {
+                setShowShareMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const IconButton = ({ onClick, icon, label, active = false, hasDropdown = false }) => (
+        <button
+            onClick={onClick}
+            className={`p-2 rounded-xl transition-all duration-200 ${active
+                    ? 'bg-primary-50/70 dark:bg-primary-700 text-primary-600 dark:text-primary-300'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-primary-800/50'
+                } ${hasDropdown ? 'relative' : ''}`}
+            title={label}
+        >
+            {icon}
+        </button>
+    );
 
     return (
         <div
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
+            className="absolute bottom-2 left-0"
         >
-            <section className={`${isOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700 motion-safe:transition-opacity options absolute bottom-0 flex mt-0 space-x-2 cursor-pointer`}>
-                {/*EXPORT OPTION*/}
-                <div className="group relative max-w-fit transition-all duration-300 hover:z-50">
-                    <div
-                        role="button"
-                        aria-expanded="false"
-                        onClick={onMenuToggle}
-                        aria-label="Export"
-                        className="relative overflow-hidden bg-white/80 backdrop-blur-md transition-all duration-700 hover:bg-white hover:shadow-lg hover:shadow-blue-500/10 dark:bg-[#5500ff]/80 dark:hover:bg-[#00aa00]/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/50 rounded-full"
-                        style={{
-                            border: '2px solid rgba(255,85,0,0)',
-                            backgroundClip: 'padding-box, border-box',
-                            backgroundOrigin: "border-box",
-                            backgroundImage: 'linear-gradient(to bottom right, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.8)), linear-gradient(135deg, rgba(255,0,255,170) 0%, rgba(0,0,255,85) 50%, rgba(0,255,255,170) 100%)'
-                        }}
+            <div className={`flex items-center gap-0.5 bg-white dark:bg-primary-800/95 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-primary-700/50 dark:shadow-lg p-1 transition-all duration-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+                {/* Copy Button */}
+                <IconButton
+                    onClick={handleCopy}
+                    active={copied}
+                    label="Copy"
+                    icon={
+                        copied ? (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                        )
+                    }
+                />
+
+                {/* Pin Button */}
+                <IconButton
+                    onClick={handlePin}
+                    active={pinned}
+                    label={pinned ? "Unpin message" : "Pin message"}
+                    icon={
+                        <svg className={`w-4 h-4 ${pinned ? 'fill-current stroke-current' : 'fill-white dark:fill-primary-700'}`} stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                    }
+                />
+
+                {/* Share Button with Dropdown */}
+                <div className="relative" ref={shareMenuRef}>
+                    <button
+                        onClick={() => setShowShareMenu(!showShareMenu)}
+                        className="p-2 rounded-xl transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-primary-800/50"
+                        title="Share"
                     >
-                        <div className="flex items-center space-x-0.5 px-1 py-0.5">
-                            <div className="relative h-6 w-6">
-                                <svg className="absolute inset-0 h-full w-full fill-current text-blue-600 transition-all duration-700 group-hover:rotate-90 group-hover:scale-110 group-hover:text-blue-500 dark:text-[#00aaff] dark:group-hover:text-sky-800"
-                                    viewBox="0 0 24 24"
-                                    style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))" }}>
-                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" className="origin-center transition-transform duration-300" />
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                    </button>
+
+                    {/* Share Dropdown Menu */}
+                    {showShareMenu && (
+                        <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-primary-800 rounded-xl shadow-lg border border-gray-200 dark:border-primary-700 overflow-hidden z-10">
+                            <button
+                                onClick={handleShare}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-primary-700 transition-colors flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                                 </svg>
-                            </div>
-                            <span className="bg-gradient-to-r from-blue-700 to-[#550000] bg-clip-text text-sm font-semibold text-transparent transition-all duration-500 group-hover:from-blue-600 group-hover:to-blue-400 dark:from-blue-600 dark:to-[#00007f] dark:group-hover:from-sky-700 dark:group-hover:to-[#984fff]">
-                                Export
-                            </span>
+                                Share via Browser
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    const content = messageref.current?.textContent || '';
+                                    await navigator.clipboard.writeText(content);
+                                    setCopied(true);
+                                    setTimeout(() => setCopied(false), 2000);
+                                    setShowShareMenu(false);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-primary-700 transition-colors flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                </svg>
+                                Copy to Clipboard
+                            </button>
                         </div>
-
-                        {/* Gradient border overlay */}
-                        <div className="absolute inset-0 -z-10 rounded-[12px] bg-gradient-to-br from-blue-400/20 via-purple-400/10 to-blue-400/20 opacity-60 dark:from-blue-400/15 dark:via-purple-400/10 dark:to-blue-400/15"></div>
-                    </div>
-
-                    {/* Hover enhancement effect */}
-                    <div className="absolute -inset-2 -z-10 rounded-xl bg-blue-500/10 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-blue-400/15"></div>
+                    )}
                 </div>
 
-                {/* COPY OPTION */}
-                <div
-                    className="rounded-lg p-1 cursor-pointer"
-                    aria-label="Copy"
-                    title="Copy"
-                    id="copy-all"
-                    onClick={() => CopyMessage(messageref.current)}
-                >
-                    <svg className="w-5 md:w-6 h-5 md:h-6 transition-transform duration-200 ease-in-out hover:scale-110 cursor-pointer" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style={{ stopColor: "#FF4081", stopOpacity: 100 }} />
-                                <stop offset="100%" style={{ stopColor: "#4a1dff", stopOpacity: 1 }} />
-                            </linearGradient>
-                        </defs>
-                        <g clipPath="url(#clip0)">
-                            <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
-                                fill="url(#gradient1)"
-                            />
-                        </g>
-                    </svg>
+                {/* Export Button with Dropdown */}
+                <div className="relative" ref={exportMenuRef}>
+                    <button
+                        onClick={() => setShowExportMenu(!showExportMenu)}
+                        className="p-2 rounded-xl transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-primary-800/50"
+                        title="Export"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </button>
+
+                    {/* Export Dropdown Menu */}
+                    {showExportMenu && (
+                        <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-primary-800 rounded-xl shadow-lg border border-gray-200 dark:border-primary-700 overflow-hidden z-10">
+                            <button
+                                onClick={handleCloneMarkdown}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-primary-700 transition-colors flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                Copy as Markdown
+                            </button>
+                            <button
+                                onClick={handleExportHTML}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-primary-700 transition-colors flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Export as HTML
+                            </button>
+                            <button
+                                onClick={handleExportTXT}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-primary-700 transition-colors flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download as TXT
+                            </button>
+                        </div>
+                    )}
                 </div>
 
-                {/*CLONE OPTION*/}
-                <button
-                    className="rounded-lg p-1 text-gray-700 cursor-pointer"
-                    aria-label="Clone"
-                    title="Clone HTML"
-                    id="clone_content"
-                    onClick={() => clone_markdown_content(messageref.current)}
-                >
-                    <svg className="w-5 md:w-6 h-5 md:h-6 fill-gray-700 dark:fill-gray-200 transition-transform duration-200 ease-in-out hover:scale-110 cursor-pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                        <path d="M296.5 69.2C311.4 62.3 328.6 62.3 343.5 69.2L562.1 170.2C570.6 174.1 576 182.6 576 192C576 201.4 570.6 209.9 562.1 213.8L343.5 314.8C328.6 321.7 311.4 321.7 296.5 314.8L77.9 213.8C69.4 209.8 64 201.3 64 192C64 182.7 69.4 174.1 77.9 170.2L296.5 69.2zM112.1 282.4L276.4 358.3C304.1 371.1 336 371.1 363.7 358.3L528 282.4L562.1 298.2C570.6 302.1 576 310.6 576 320C576 329.4 570.6 337.9 562.1 341.8L343.5 442.8C328.6 449.7 311.4 449.7 296.5 442.8L77.9 341.8C69.4 337.8 64 329.3 64 320C64 310.7 69.4 302.1 77.9 298.2L112 282.4zM77.9 426.2L112 410.4L276.3 486.3C304 499.1 335.9 499.1 363.6 486.3L527.9 410.4L562 426.2C570.5 430.1 575.9 438.6 575.9 448C575.9 457.4 570.5 465.9 562 469.8L343.4 570.8C328.5 577.7 311.3 577.7 296.4 570.8L77.9 469.8C69.4 465.8 64 457.3 64 448C64 438.7 69.4 430.1 77.9 426.2z" />
-                    </svg>
-                </button>
-
-                <ExportMenu menuref={exportMenu} messageref={messageref} />
-            </section>
+                {/* Regenerate Button */}
+                <IconButton
+                    onClick={() => {
+                        globalEventBus.emit('message:regenerate', { ref: messageref });
+                    }}
+                    label="Regenerate"
+                    icon={
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    }
+                />
+            </div>
         </div>
-    )
-}
+    );
+};
 
 export const UserMessageOptions = ({ messageref, isOpen, setOpen }) => {
     const clone_markdown_content = useCallback((selector, html = true) => {

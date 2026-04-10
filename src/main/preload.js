@@ -206,7 +206,7 @@ const api = {
             }
         }
         catch (err) {
-            console.log(err);
+            //console.log(err);
             return false;
         }
     },

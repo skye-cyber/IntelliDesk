@@ -74,7 +74,7 @@ export const Sidebar = ({ isOpen, onToggle, isCanvasOn }) => {
         document.addEventListener('keydown', handleEscape);
         const panelExpand = globalEventBus.on('panel:chats:expand', () => setPanelOpen(true))
         const panelShrink = globalEventBus.on('panel:chats:shrink', () => setPanelOpen(false))
-        const panelToggle = globalEventBus.on('panel:chats:expand', () => setPanelOpen(!panelOpen))
+        const panelToggle = globalEventBus.on('panel:chats:toggle', () => setPanelOpen(!panelOpen))
         const newSession = globalEventBus.on('conversation:new', (temporary = false) => {
             const currentModel = StateManager.get('currentModel')
             const model = modelManager.usesArrayStructure(currentModel)
@@ -104,10 +104,7 @@ export const Sidebar = ({ isOpen, onToggle, isCanvasOn }) => {
         if (searchON) searchInput.current?.focus()
     }, [searchON])
 
-    const PanelClasses = {
-        panelOnly: '', // Only panel is open
-        PanelPlusCanvasOn: '' // both panel and canvas are on
-    }
+
     useEffect(() => {
         if (panelOpen && isCanvasOn) {
             setPanelClass('fixed z-[41] left-0 top-0 w-[250px] bg-opacity-100')

@@ -36,12 +36,14 @@ import { store } from './store/index.js';
 import { globalEventBus } from '../core/Globals/eventBus.ts';
 
 const App = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
     const [isRecordingOn, setIsRecordingOn] = useState(false);
     const [leftPanelOpen, setLeftPanelOpen] = useState(false)
 
+    const toggleSidebar = () => setLeftPanelOpen(!leftPanelOpen);
+    const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
+    const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
     useEffect(() => {
         const panelChangeListener = globalEventBus.on('panel:chats:change', (state) => setLeftPanelOpen(state))
         return () => {
@@ -49,9 +51,6 @@ const App = () => {
         };
     }, [leftPanelOpen, isCanvasOpen]);
 
-    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-    const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
-    const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
     return (
         <ErrorBoundary>
             <Provider store={store}>
@@ -63,7 +62,7 @@ const App = () => {
                         className="flex overflow-hidden max-w-full">
                         <div className={`flex flex-shrink max-w-full ${isCanvasOpen ? 'w-[55vw]' : 'w-full'} transition-transform duration-500`}>
                             <ErrorBoundary>
-                                <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} isCanvasOn={isCanvasOpen} />
+                                <Sidebar isOpen={leftPanelOpen} onToggle={toggleSidebar} isCanvasOn={isCanvasOpen} />
                             </ErrorBoundary>
                             <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
                                 <ErrorBoundary>

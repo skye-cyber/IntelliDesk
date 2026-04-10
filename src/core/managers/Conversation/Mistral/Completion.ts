@@ -99,7 +99,7 @@ class CompletionBase {
         this.ToolsEnabled = false
         this.MAX_TOOLITERATIONS = 30
         this.clientmanager = clientmanager
-        this.DEFAULT_ARRAYED_MODEL = 'pixtral-large-latest'
+        this.DEFAULT_ARRAYED_MODEL = 'mistral-small-latest'
         this.DEFAULT_TEXT_MODEL = 'mistral-large-latest'
         this.DEFAULT_REASONING_MODEL = 'magistral-small-latest'
         this.REASONING_ON = false
@@ -250,7 +250,7 @@ class CompletionBase {
             this.reset()
 
             this.streamingPortal = streamingPortalBridge.createStreamingPortal(
-                'StreamingAiMessage', 'chatArea', undefined, 'ai_message'
+                'AiMessage', 'chatArea', undefined, 'ai_message'
             )
             if (this.ToolsEnabled || this.checkTools()) {
                 await this.ToolStreamSession()

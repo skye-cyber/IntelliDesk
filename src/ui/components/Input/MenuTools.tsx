@@ -50,7 +50,7 @@ export const MenuTools = ({ onToggleRecording }) => {
             {/* Trigger Button */}
             <button
                 onClick={toggleToolMenu}
-                className="absolute left-5 bottom-12 z-50 p-2 rounded-xl bg-indigo-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
+                className="absolute -left-4 bottom-12 z-50 p-2 rounded-xl bg-indigo-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
                 aria-label="Tools menu"
                 title="Tools"
             >

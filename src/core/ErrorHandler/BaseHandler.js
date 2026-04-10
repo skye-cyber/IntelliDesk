@@ -19,7 +19,7 @@ export async function BaseErrorHandler(error, userMessagePID, assistantMessagePI
     // Rotate keys if error is key error ie rate limit 429->ratelimit
     if (error.statusCode && [401, 429].includes(error.statusCode)) {
         const rotationSuccess = await clientmanager.rotate_keychain()
-
+        window.desk.api.popHistory("user")
         if (typeof rotationSuccess) return callback(user_text)
 
         error = {

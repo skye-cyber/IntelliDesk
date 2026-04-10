@@ -15,7 +15,7 @@ const streamingComponentRegistry = {
     AiMessage,
     LoadingAnimation,
     ConversationItem,
-//     FileItem,
+    //     FileItem,
     ToolResponse,
     ToolErrorHandler,
     ToolCallDisplay,
@@ -213,7 +213,6 @@ export const StreamingPortalContainer = () => {
 
             if (prefix) {
                 const portalsToRemove = [];
-
                 portalDataRef.current.forEach((value, key) => {
                     if (key.startsWith(portalId)) {
                         portalsToRemove.push(key);
@@ -233,11 +232,12 @@ export const StreamingPortalContainer = () => {
                 });
 
             } else {
-                portalDataRef.current?.delete(portalId?.id);
+                const pid = typeof portalId === 'string' ? portalId : portalId?.id;
+                portalDataRef.current?.delete(pid);
                 setStreamingPortals(prev => {
                     const newMap = new Map(prev);
-                    newMap?.delete(portalId);
-                    return newMap;
+                    newMap?.delete(pid); // FIX: was `portalId` (object), now `pid` (string)
+                return newMap;
                 });
             }
         };
@@ -253,57 +253,40 @@ export const StreamingPortalContainer = () => {
             }
 
             const portalData = portalDataRef.current.get(pid);
-            const {
-                mergeStrategy = 'append',
-                target = 'componentChildren',
-                position = 'append' // 'append', 'prepend', 'insertAt'
-            } = options;
+            const { target = 'componentChildren', position = 'append' } = options;
 
-            //console.log("🔄 Appending component:", { pid, componentType, target, position });
-
-            // Handle different append strategies
             switch (target) {
                 case 'componentChildren':
-                    // Append component as a child of the main component
                     if (!portalData.componentChildren) {
                         portalData.componentChildren = [];
                     }
 
                     const newChild = {
                         componentType,
-                        componentProps,
-                        id: `${pid}-child-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                        timestamp: Date.now()
+              componentProps,
+              id: `${pid}-child-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              timestamp: Date.now()
                     };
 
                     if (position === 'prepend') {
                         portalData.componentChildren.unshift(newChild);
-                    } else if (position === 'insertAt' && options.index !== undefined) {
-                        portalData.componentChildren.splice(options.index, 0, newChild);
                     } else {
                         portalData.componentChildren.push(newChild);
                     }
                     break;
 
                 case 'props':
-                    // Append component as a prop (e.g., children prop)
-                    if (!portalData.props.children) {
-                        portalData.props.children = [];
+                    // FIX: Store as metadata instead of React element to avoid stale closures
+                    if (!portalData.propsChildren) {
+                        portalData.propsChildren = [];
                     }
 
-                    const Component = streamingComponentRegistry[componentType];
-                    if (Component) {
-                        const childElement = React.createElement(Component, {
-                            key: `${pid}-prop-child-${Date.now()}`,
-                            ...componentProps
-                        });
-
-                        if (Array.isArray(portalData.props.children)) {
-                            portalData.props.children = [...portalData.props.children, childElement];
-                        } else {
-                            portalData.props.children = [portalData.props.children, childElement];
-                        }
-                    }
+                    portalData.propsChildren.push({
+                        componentType,
+                        componentProps,
+                        id: `${pid}-prop-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                                  timestamp: Date.now()
+                    });
                     break;
 
                 default:
@@ -311,21 +294,20 @@ export const StreamingPortalContainer = () => {
                     return;
             }
 
-            // Force React update
+            // Force update
             setStreamingPortals(prev => {
                 const newMap = new Map(prev);
                 if (newMap.has(pid)) {
                     const portal = newMap.get(pid);
                     newMap.set(pid, {
                         ...portal,
-                        version: portal.version + 1,
-                        lastUpdate: Date.now()
+                        version: (portal.version || 0) + 1,
+                               lastUpdate: Date.now()
                     });
                 }
                 return newMap;
             });
         };
-
         // Register event listeners
         document.addEventListener('stream-data-portal-create', handleStreamCreate);
         document.addEventListener('stream-data-portal-update', handleStreamUpdate);
@@ -353,10 +335,10 @@ export const StreamingPortalContainer = () => {
         const portalData = portalDataRef.current.get(portal.id);
         if (!portalData) return null;
 
-        // Get component children
         const componentChildren = portalData.componentChildren || [];
+        const controller = portalData.controller; // Get controller reference
 
-        // Render child components
+        // Render child components WITH controller callbacks
         const renderedChildren = componentChildren.map((child) => {
             const ChildComponent = streamingComponentRegistry[child.componentType];
             if (!ChildComponent) {
@@ -366,29 +348,50 @@ export const StreamingPortalContainer = () => {
 
             return React.createElement(ChildComponent, {
                 key: child.id,
-                ...child.componentProps
+                ...child.componentProps,
+                // FIX: Inject streaming capabilities so children can communicate
+                onUpdate: (newProps) => controller?.update?.(newProps),
+                onAppend: (data, options) => controller?.append?.(data, options),
+                portalId: portal.id,
+                // Optional: pass controller directly if children need full access
+                controller: controller
             });
         });
 
-        // Combine props children with component children
+        // Handle props.children that might be React elements from 'props' target
+        // FIX: Ensure they also get fresh callbacks if they were stored as metadata
+        const propsChildren = (portalData.propsChildren || []).map((child) => {
+            const ChildComponent = streamingComponentRegistry[child.componentType];
+            if (!ChildComponent) return null;
+
+            return React.createElement(ChildComponent, {
+                key: child.id,
+                ...child.componentProps,
+                onUpdate: (newProps) => controller?.update?.(newProps),
+                onAppend: (data, options) => controller?.append?.(data, options),
+                portalId: portal.id
+            });
+        });
+
+        // Combine all children
         const allChildren = [
-            ...(portalData.props.children ?
-                (Array.isArray(portalData.props.children) ? portalData.props.children : [portalData.props.children])
-                : []),
+            ...(portalData.props.children || []),
+            ...propsChildren,
             ...renderedChildren
         ];
 
-        // Create the main component with all children
+        // Create the main component with controller
         return React.createElement(Component, {
             key: portal.id,
             ...portalData.props,
             children: allChildren.length > 0 ? allChildren : portalData.props.children,
             streamData: portalData.data,
-            onUpdate: (newProps) => portalData.controller.update(newProps),
-            onAppend: (data) => portalData.controller.append(data),
+            onUpdate: (newProps) => controller?.update?.(newProps),
+            onAppend: (data, options) => controller?.append?.(data, options),
+            controller: controller, // Expose to parent component too
+            portalId: portal.id
         });
     };
-
     // Group portals by container
     const portalsByContainer = Array.from(streamingPortals.values()).reduce((acc, portal) => {
         if (!acc[portal.containerId]) {

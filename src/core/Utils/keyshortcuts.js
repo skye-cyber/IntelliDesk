@@ -27,7 +27,7 @@ document.addEventListener("keydown", event => {
 
     } else if ((event.ctrlKey && (event.key === "P" || event.key === "p"))) {
         event.preventDefault();
-        document.getElementById("togglePane")?.click();
+        globalEventBus.emit('panel:chats:toggle')
 
     } else if ((event.ctrlKey && (event.key === "N" || event.key === "n"))) {
         event.preventDefault();

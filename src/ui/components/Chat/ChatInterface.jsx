@@ -32,7 +32,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                 id='chat-container'
                 data-portal-container='chatContainer'
                 className='flex justify-center h-full w-full transition-transform ease-in-out pb-20'>
-                <div id="chatArea-wrapper" className={`h-full ${isCanvasOpen ? '' : 'w-[100%]'}`}>
+                <div id="chatArea-wrapper" className={`h-full ${isCanvasOpen ? '' : 'w-full md:w-[95%] sd:w-[72%] lg:w-[60%]'}`}>
                     <section
                         id="chatArea"
                         data-portal-container='chatArea'
@@ -40,7 +40,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                         onScroll={chatutil.updateScrollButtonVisibility}
                         onInput={chatutil.updateScrollButtonVisibility}
                         onDragOver={() => globalEventBus.emit('dropzone:open')}
-                        className="flex justify-center w-full h-full relative  p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out border-1 border-blend-50 dark:border-blend-700 max-auto"
+                        className={`w-full h-full relative  p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out border-1 border-blend-50 dark:border-blend-700 max-auto`}
                     >
                         <UsageSuggestions />
                     </section>

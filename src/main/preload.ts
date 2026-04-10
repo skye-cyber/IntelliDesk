@@ -211,7 +211,7 @@ const api: ApiType = {
                 return false;
             }
         } catch (err) {
-            console.log(err);
+            //console.log(err);
             return false
         }
     },

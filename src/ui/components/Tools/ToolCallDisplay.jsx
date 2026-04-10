@@ -5,9 +5,10 @@ import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
  * ToolCallDisplay Component
  * Displays individual tool calls with collapsible details for tool responses and errors
  */
-export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDetails = false }) => {
+export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle = null, showDetails = false }) => {
     const [showFullContent, setShowFullContent] = useState(false);
     const [expanded, setExpanded] = useState(isExpanded)
+    console.log("Tool call:", toolCall)
     if (!toolCall) {
         return null;
     }
@@ -229,7 +230,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle, showDe
 
         return result ? formatResult(result) : ''
     }
-    //     console.log(toolCall)
+    console.log(toolCall)
     return (
         <ErrorBoundary>
             <div className={`tool-call-item border border-blue-200/30 dark:border-blue-700/30 rounded-lg overflow-hidden transition-all duration-200 ${hasError ? 'bg-red-50/50 dark:bg-red-900/20' : 'bg-white/50 dark:bg-blue-900/10'}`}>

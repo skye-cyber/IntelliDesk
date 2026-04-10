@@ -51,23 +51,6 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
             <header className="space-b-1 mt-0 z-[10] min-h-2 transform transition-transform transition-all duration-500">
                 <div className="flex justify-between">
                     <section className="flex justify-start">
-                        {/* Toggle Button */}
-                        <section className="flex xs:hidden flex items-center relative mr-14">
-                            <button
-                                id="togglePane"
-                                title="View Chats"
-                                className="absolute z-5 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-700"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    globalEventBus.emit('panel:chats:expand')
-                                }}
-                            >
-                                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
-                                </svg>
-                            </button>
-                        </section>
-
                         {/* Model Selector */}
                         <div className={`${experemintalFeturesOn ? '' : 'hidden pointer-events-none'} relative transition-opacity duration-500`}>
                             <button

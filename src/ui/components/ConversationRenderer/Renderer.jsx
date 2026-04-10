@@ -35,17 +35,17 @@ export const UserMessage = ({ message, files = [] }) => {
 
     return (
         <>
-            <section className="block font-handwriting  text-[16px] w-full max-auto lg:max-w-2xl">
-                <div className="relative flex items-end gap-x-2 justify-end">
+            <section className="block font-handwriting  text-[16px] w-full">
+                <div className="relative w-full flex gap-x-2 justify-end">
                     <div
                         ref={messageRef}
                         onMouseEnter={() => setOptionsOpen(true)}
                         onMouseLeave={() => setOptionsOpen(false)}
-                        className={`${selector_class} relative bg-blue-100/70 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none h-fit ${expanded ? 'max-h-fit' : 'max-h-64'} overflow-y-auto scrollbar-code p-2 md:p-3 shadow-none w-fit max-w-full md:max-w-[80%]`}>
+                        className={`${selector_class} relative bg-blue-100/70 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none h-fit ${expanded ? 'max-h-fit' : 'max-h-64'} overflow-y-auto scrollbar-code p-2 md:p-3 shadow-none w-fit max-w-full sm:max-w-[60%] xl:max-w-[60%]`}>
                         <SimpleUserCodeRenderer htmlContent={userContent} />
                     </div>
                     {expandable && (
-                        <div onClick={() => setEpanded(!expanded)} className={`absolute bottom-[0.5px] right-0 h-36 bg-gradient-to-t from-gray-100/80 dark:from-[#14143e] to-transparent pointer-events-click ${expanded ? '' : 'cursor-row-resize'} max-w-full md:max-w-[80%] rounded-bl-lg`} style={{ width: dimensions[0] }} />
+                        <div onClick={() => setEpanded(!expanded)} className={`absolute bottom-[0.5px] right-0 h-36 bg-gradient-to-t from-gray-100/80 dark:from-[#14143e] to-transparent pointer-events-click ${expanded ? '' : 'cursor-row-resize'} max-w-full sm:max-w-[60%] xl:max-w-[60%] rounded-bl-lg`} style={{ width: dimensions[0] }} />
                     )}
                 </div>
 
@@ -58,23 +58,30 @@ export const UserMessage = ({ message, files = [] }) => {
     )
 }
 
-
-export const AiMessage = ({ children, ...props }) => {
+export const AiMessage = ({
+    actualContent,
+    isThinking = false,
+    thinkContent = null,
+    children,
+    ...props }) => {
     const [optionsOpen, setOptionsOpen] = useState(false)
     const messageRef = useRef(null)
-
+    console.log(actualContent)
     return (
         <ErrorBoundary>
-            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap w-full max-auto lg:max-w-2xl'>
+            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap w-full'>
                 <section
                     id="ai_response"
                     onMouseEnter={() => setOptionsOpen(true)}
                     onMouseLeave={() => setOptionsOpen(false)}
-                    className="relative mb-[2vh] py-2 px-4">
+                    className="w-full lg:max-w-2xl xl:max-w-3xl relative mb-[2vh] py-2 px-4">
                     {/* This is where child components will appear eg too- responses */}
                     {children &&
                         <div ref={messageRef} className="child-components">{children}</div>
                     }
+                    {actualContent || thinkContent && (
+                        <StreamingAiMessage actualContent={actualContent} isThinking={isThinking} thinkContent={thinkContent} />
+                    )}
                     {/*Other componets*/}
                     <div className='mt-10'>
                         <AiMessageOptions messageref={messageRef} isOpen={optionsOpen} setOpen={setOptionsOpen} />
@@ -99,12 +106,12 @@ export const StreamingAiMessage = ({
     })
     return (
         <ErrorBoundary>
-            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap w-full max-auto lg:max-w-2xl'>
+            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap w-full max-auto'>
                 <section
                     id="ai_response"
                     onMouseEnter={() => setOptionsOpen(true)}
                     onMouseLeave={() => setOptionsOpen(false)}
-                    className="relative mb-[2vh] py-2 px-4">
+                    className="w-full lg:max-w-2xl xl:max-w-3xl relative mb-[2vh] py-2 px-4">
                     {/* Streaming response wrapper */}
                     <div ref={messageRef} className=''>
                         <ResponseWrapper actualContent={actualContent} thinkContent={thinkContent} isThinking={isThinking} />
@@ -146,7 +153,7 @@ export const ResponseWrapper = ({
     chatutil.renderMath(message_id)
 
     return (
-        <div id={message_id} className='justifty-start font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl text-[15px]'>
+        <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[15px]'>
             <div id="ai_response_think" className="w-full bg-none rounded-lg rounded-bl-none transition-colors duration-700">
                 {thinkContent &&
                     <GlassThinkingSection htmlThinkContent={thinkContent} isThinking={isThinking} thinkToolCalls={thinkToolCalls} />
@@ -334,8 +341,8 @@ export const AiMessageOptions = ({ messageref, isOpen, setOpen }) => {
         <button
             onClick={onClick}
             className={`p-2 rounded-xl transition-all duration-200 ${active
-                    ? 'bg-primary-50/70 dark:bg-primary-700 text-primary-600 dark:text-primary-300'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-primary-800/50'
+                ? 'bg-primary-50/70 dark:bg-primary-700 text-primary-600 dark:text-primary-300'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-primary-800/50'
                 } ${hasDropdown ? 'relative' : ''}`}
             title={label}
         >
@@ -492,7 +499,7 @@ export const UserMessageOptions = ({ messageref, isOpen, setOpen }) => {
     });
 
     return (
-        <div className='mb-4 w-full p-0' onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+        <div className='w-full' onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
             <div className={`${isOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700 motion-safe:transition-opacity text-secondary-500 dark:text-gray-100 flex items-center justify-end space-x-1`}>
                 <button
                     onClick={() => CopyMessage(messageref.current)}

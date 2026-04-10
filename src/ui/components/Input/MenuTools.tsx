@@ -50,7 +50,7 @@ export const MenuTools = ({ onToggleRecording }) => {
             {/* Trigger Button */}
             <button
                 onClick={toggleToolMenu}
-                className="absolute -left-12 bottom-12 z-50 p-2 rounded-xl bg-indigo-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
+                className="absolute left-5 bottom-12 z-50 p-2 rounded-xl bg-indigo-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
                 aria-label="Tools menu"
                 title="Tools"
             >
@@ -220,7 +220,7 @@ const CanvasMenu = () => {
                     {/* Text Content */}
                     <div className="flex-1 text-left">
                         <div className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                            AI Canvas
+                            Canvas
                             {canvasOn && (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] font-medium">
                                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />

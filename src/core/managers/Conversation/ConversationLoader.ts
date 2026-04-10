@@ -92,7 +92,7 @@ export class ConversationLoader {
     /**
      * Render the conversation in the web interface
      */
-    async renderConversation(conversationData) {
+    async renderConversation(conversationData: any) {
         try {
             const model = conversationData.metadata?.model || 'chat';
             // ['vision', 'multimodal', 'reasoning', 'ocr']
@@ -106,9 +106,9 @@ export class ConversationLoader {
             this.portal = null;
 
             // Ensure correct model is selected
-            if (!modelManager.usesArrayStructure(StateManager.get('currentModel'))) {
+            if (!modelManager.usesArrayStructure(StateManager.get('currentModel') as string)) {
                 modelManager.changeModel('pixtral-large-latest');
-            } else if (modelManager.usesArrayStructure(StateManager.get('currentModel'))) {
+            } else if (modelManager.usesArrayStructure(StateManager.get('currentModel') as string)) {
                 modelManager.changeModel('mistral-large-latest');
             }
 

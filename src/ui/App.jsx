@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MainLayout } from './components/Layout/MainLayout';
 import './styles/global.css';
 import { Header } from './components/Header/Header';
@@ -33,13 +33,21 @@ import ConfigEditor from './pages/ConfigEditor.jsx';
 import { CopyFeedback } from './components/StatusUI/copy.jsx';
 import { Provider } from 'react-redux';
 import { store } from './store/index.js';
+import { globalEventBus } from '../core/Globals/eventBus.ts';
 
 const App = () => {
-    //const { electron } = useElectron();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
     const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
     const [isRecordingOn, setIsRecordingOn] = useState(false);
+    const [leftPanelOpen, setLeftPanelOpen] = useState(false)
+
+    useEffect(() => {
+        const panelChangeListener = globalEventBus.on('panel:chats:change', (state) => setLeftPanelOpen(state))
+        return () => {
+            panelChangeListener.unsubscribe()
+        };
+    }, [leftPanelOpen, isCanvasOpen]);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
@@ -48,11 +56,14 @@ const App = () => {
         <ErrorBoundary>
             <Provider store={store}>
                 <MainLayout>
-                    <div data-portal-container="mainContainer" id="main-container" className='flex flex-1 overflow-hidden max-w-full'>
-                        <span className='data-portal-root fixed z-[99]'></span>
-                        <div className='flex flex-shrink'>
+                    <span className='data-portal-root fixed z-[99]'></span>
+                    <div
+                        data-portal-container="mainContainer"
+                        id="main-container"
+                        className="flex overflow-hidden max-w-full">
+                        <div className={`flex flex-shrink max-w-full ${isCanvasOpen ? 'w-[55vw]' : 'w-full'} transition-transform duration-500`}>
                             <ErrorBoundary>
-                                <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+                                <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} isCanvasOn={isCanvasOpen} />
                             </ErrorBoundary>
                             <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
                                 <ErrorBoundary>
@@ -69,29 +80,19 @@ const App = () => {
                         </div>
                         <ErrorBoundary>
                             <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
-
-                            <ConfigEditor />
-                            {/* Copy Feedback Modal*/}
-                            <CopyFeedback />
-                            {/* Loading Modal */}
-                            {/*<Loader />*/}
                         </ErrorBoundary>
                     </div>
                     <ErrorBoundary>
+                        <ConfigEditor />
+                        {/* Copy Feedback Modal*/}
+                        <CopyFeedback />
                         <DiagramUi isOpen={true} onToggle={null} />
-
                         <Settings isOpen={true} onToggle={null} />
-
                         <StatusUI isOpen={true} onToggle={null} />
-
                         <APIKeysManager isOpen={true} onToggle={null} />
-
                         <DropZone isOpen={true} onToggle={null} />
-
                         <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
-
                         <NotificationFlyer isOpen={true} onToggle={null} />
-
                         <Notifcation isOpen={true} onToggle={null} />
                     </ErrorBoundary>
                 </MainLayout>

@@ -3,7 +3,7 @@ import { LoadingSpinner } from './LoadingIndicator';
 import indellidesk from '@assets/intellidesk.png';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
-export const MessageList = ({ conversationsRef }) => {
+export const MessageList = ({ conversationsRef, searchON, panelOpen }) => {
     const [isLoading, setLoading] = useState(true)
     const [hasStore, setStore] = useState(false)
 
@@ -28,10 +28,10 @@ export const MessageList = ({ conversationsRef }) => {
     })
     return (
         <div
-        ref={conversationsRef}
+            ref={conversationsRef}
             id="conversations"
             data-portal-container="conversations"
-            className="verbose-hide hidden h-[64vh] overflow-x-hidden overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth">
+            className={`${panelOpen ? '' : 'opacity-0 w-0'} ${searchON ? '[h-60vh]': 'h-[64vh]'} overflow-x-hidden overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth`}>
             {/* Empty State */}
             <div id="chatsempty" className={`${hasStore
                 ? 'hidden' : 'flex-col'} items-center justify-center py-12 px-4 text-center`}>
@@ -42,7 +42,7 @@ export const MessageList = ({ conversationsRef }) => {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
                     Start a new conversation to get started
                 </p>
-                <button onClick={() => document.getElementById('new-chat')?.click()} className="px-4 py-2 bg-blend-500 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg font-medium text-sm whitespace-pre transition-all duration-300 transform hover:scale-105">
+                <button onClick={() => globalEventBus.emit('conversation:new', false)} className="px-4 py-2 bg-blend-500 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg font-medium text-sm whitespace-pre transition-all duration-300 transform hover:scale-105">
                     New Conversation
                 </button>
             </div>

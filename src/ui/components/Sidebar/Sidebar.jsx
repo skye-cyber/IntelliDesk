@@ -1,28 +1,30 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { ChatManager } from '../../../core/managers/Conversation/ChatManager';
 import indellidesk from '@assets/intellidesk.png';
-import { waitForElement } from '../../../core/Utils/dom_utils';
 import { ChatOptions } from '../../components/Chat/ChatOptions.jsx';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { clearMessages } from '../../../core/PortalBridge.ts';
-import { ChatUtil } from '../../../core/managers/Conversation/util';
 import { MessageList } from '../Chat/MessageList';
 import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { PanelLeftClose } from 'lucide-react';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
+import { modelManager } from '../../../core/managers/Conversation/ModelManager.ts';
 
-const chatutil = new ChatUtil()
 
 StateManager.set("sidebarOpen", false)
 
 const Manager = new ChatManager();
 
-export const Sidebar = ({ isOpen, onToggle }) => {
+export const Sidebar = ({ isOpen, onToggle, isCanvasOn }) => {
     const refs = useRef({
         isOpen: null,
         conversations: []
     });
     const conversationsRef = useRef(null)
+    const [panelOpen, setPanelOpen] = useState(false)
+    const searchInput = useRef(null)
+    const [searchON, setSearchOn] = useState(false)
+    const [panelClass, setPanelClass] = useState('')
 
     useEffect(() => {
         setTimeout(() => {
@@ -31,76 +33,10 @@ export const Sidebar = ({ isOpen, onToggle }) => {
 
     }, [isOpen]);
 
-    const expandPanel = useCallback(() => {
-        onToggle();
-        waitForElement('#conversationPane', (panel) => {
-            panel.querySelectorAll('.verbose-hide').forEach(el => el.classList.remove('hidden'));
-            panel.classList.remove('w-[40px]', 'md:w-[5vw]', 'lg:w-[4vw]')
-            panel.classList.add('fixed', 'z-[41]', 'left-0', 'top-0', 'w-[250px]', 'md:relative', 'md:top-auto', 'md:left-auto', 'md:w-[25vw]', 'lg:w-[20vw]', 'md:block')
-
-            waitForElement('#main-container-center', (container) => {
-                if (container.classList.contains('md:w-[96vw]')) {
-                    //container.classList.replace('w-[96vw]', 'w-[75vw]');
-                    container.classList.remove('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]')
-                    container.classList.add('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]');
-                }
-            });
-        });
-        StateManager.set("sidebarOpen", true)
-    }, [onToggle]);
-
-    const shrinkPanel = useCallback(() => {
-        waitForElement('#conversationPane', (panel) => {
-            panel.querySelectorAll('.verbose-hide').forEach(el => el.classList.add('hidden'));
-            panel.classList.remove('fixed', 'z-[41]', 'left-0', 'top-0', 'w-[300px]', 'lg:relative', 'lg:top-auto', 'md:left-auto', 'md:w-[25vw]', 'lg:w-[20vw]', 'md:block')
-            panel.classList.add('w-[40px]', 'md:w-[5vw]', 'lg:w-[4vw]')
-
-            waitForElement('#main-container-center', (container) => {
-                if (container.classList.contains('w-[100vw]')) {
-                    container.classList.remove('w-[100vw]', 'md:w-[calc(100vw-25vw)]', 'lg:w-[calc(100vw-20vw)]')
-                    container.classList.add('w-[calc(100vw-40px)]', 'md:w-[96vw]', 'lg:w-[94vw]');
-                }
-            });
-        });
-        StateManager.set("sidebarOpen", false)
-    }, []);
 
     const togglePanel = useCallback(() => {
-        if (document.querySelector('.verbose-hide')?.classList?.contains('hidden')) {
-            expandPanel()
-        } else {
-            shrinkPanel()
-        }
+        setPanelOpen(!panelOpen)
     })
-
-    const showConversationOptions = useCallback(() => {
-        const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
-        const chatOptions = document.getElementById('chatOptions');
-        chatOptionsOverlay.classList.remove('hidden');
-        chatOptions.classList.remove('animate-exit');
-        chatOptions.classList.add('animate-enter');
-    }, []);
-
-    const shouldClosePanel = useCallback((e) => {
-        if (conversationsRef.current?.contains(e.target)) {
-            document.getElementById('chat-container')?.classList.replace('mx-2', 'mx-36');
-        }
-    }, []);
-
-    const showSearchInput = useCallback(() => {
-        document.getElementById('search-container')?.classList.remove('hidden');
-        document.getElementById('searchInput')?.focus();
-        document.getElementById('search-chats')?.classList.add('hidden');
-        document.getElementById('recent-chats')?.classList.add('hidden');
-        conversationsRef.current?.classList.replace('h-[64vh]', 'h-[60vh]')
-    }, []);
-
-    const hideSearchInput = useCallback(() => {
-        document.getElementById('search-container')?.classList.add('hidden');
-        document.getElementById('search-chats')?.classList.remove('hidden');
-        document.getElementById('recent-chats')?.classList.remove('hidden');
-        conversationsRef.current?.classList.replace('h-[60vh]', 'h-[64vh]')
-    }, []);
 
     const searchChats = useCallback((e) => {
         const value = e.target.value.trim().toLowerCase();
@@ -119,47 +55,33 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             const name = chat.dataset?.name?.toLowerCase() || "";
             const id = chat.dataset?.id?.toLowerCase() || "";
             const highlight = chat.dataset?.highlight?.toLowerCase() || "";
-            //const match = parts.some(part => name.includes(part) || id.includes(part) || highlight.includes(part));
             const fmatch = name.includes(value) || id.includes(value) || highlight.includes(value);
             chat.classList.toggle('hidden', !fmatch);
         });
     }, []);
 
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            if (!document.getElementById('chatOptions-overlay')?.classList.contains('hidden')) return
+            if (searchInput.current?.classList.contains('hidden')) {
+                setPanelOpen(false);
+            }
+            setSearchOn(false);
+        }
+    };
+
     useEffect(() => {
-        const handleEscape = (e) => {
-            if (e.key === 'Escape') {
-                if (!document.getElementById('chatOptions-overlay')?.classList.contains('hidden')) return
-                if (document.getElementById('searchInput')?.classList.contains('hidden')) {
-                    shrinkPanel();
-                }
-                hideSearchInput();
-            }
-        };
-
-        const handleClick = (e) => {
-            e.stopPropagation()
-            if (!document.getElementById('chatOptions-overlay')?.classList.contains('hidden')) return Manager.hideConversationOptions()
-
-            if (!document.getElementById('conversationPane')?.contains(e.target) && !document.getElementById('modelButton')?.contains(e.taget) && !e.target?.role != 'menuitem') {
-                shrinkPanel();
-            }
-        };
-
-
-
-
         document.addEventListener('keydown', handleEscape);
-        const panelExpand = globalEventBus.on('panel:chats:expand', expandPanel)
-        const panelShrink = globalEventBus.on('panel:chats:shrink', shrinkPanel)
-        const panelToggle = globalEventBus.on('panel:chats:expand', togglePanel)
+        const panelExpand = globalEventBus.on('panel:chats:expand', () => setPanelOpen(true))
+        const panelShrink = globalEventBus.on('panel:chats:shrink', () => setPanelOpen(false))
+        const panelToggle = globalEventBus.on('panel:chats:expand', () => setPanelOpen(!panelOpen))
         const newSession = globalEventBus.on('conversation:new', (temporary = false) => {
             const currentModel = StateManager.get('currentModel')
-            const model = chatutil.isMultimodal(currentModel)
+            const model = modelManager.usesArrayStructure(currentModel)
                 ? 'multimodal'
                 : 'chat'
             clearMessages()
             window.desk.api.startNew(model, temporary)
-            // window.desk.api.setModel(model) we already parsed model to startNew
         })
 
         return () => {
@@ -167,17 +89,39 @@ export const Sidebar = ({ isOpen, onToggle }) => {
             panelExpand.unsubscribe()
             panelShrink.unsubscribe()
             panelToggle.unsubscribe()
-            // keydown.unsubscribe()
             document.removeEventListener('keydown', handleEscape);
         };
-    }, [isOpen, shrinkPanel, expandPanel, hideSearchInput]);
+    }, [isOpen, panelOpen, searchON]);
 
+    useEffect(() => {
+        if (panelOpen) {
+            globalEventBus.emit('panel:chats:change', (panelOpen))
+        }
+        StateManager.set("sidebarOpen", panelOpen)
+    }, [panelOpen])
+
+    useEffect(() => {
+        if (searchON) searchInput.current?.focus()
+    }, [searchON])
+
+    const PanelClasses = {
+        panelOnly: '', // Only panel is open
+        PanelPlusCanvasOn: '' // both panel and canvas are on
+    }
+    useEffect(() => {
+        if (panelOpen && isCanvasOn) {
+            setPanelClass('fixed z-[41] left-0 top-0 w-[250px] bg-opacity-100')
+        } else if (panelOpen) {
+            setPanelClass('fixed z-[41] left-0 top-0 w-[250px] md:relative md:top-auto md:left-auto md:w-[25vw] lg:w-[20vw] md:block bg-opacity-100')
+        } else {
+            setPanelClass(`w-[40px] ${isCanvasOn ? 'md:w-[5vw]' : 'lg:[4vw]'}`)
+        }
+    }, [isCanvasOn, panelOpen])
 
     return (
         <div
             id="conversationPane"
-            onClick={shouldClosePanel}
-            className="h-screen w-[40px] md:w-[5vw] lg:w-[4vw] border-x border-l-0 border-gray-200 dark:border-accent-700 bg-gradient-to-b from-slate-50 to-blue-50/30 dark:from-blend-900 dark:to-blend-900 transition-all duration-700 ease-in-out overflow-hidden"
+            className={`h-screen ${panelClass} border-x border-l-0 border-gray-200 dark:border-accent-700 bg-gradient-to-b from-slate-50 to-gray-50 dark:from-blend-900 dark:to-blend-900 transition-all duration-700 ease-in-out overflow-hidden`}
         >
             {/* Header Section */}
             <section className="sticky top-0 z-[50] bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 p-1">
@@ -185,19 +129,17 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                     <div className="flex items-center justify-center space-x-2">
                         <div title='Close' className="relative size-6 xl:size-8 bg-blue-500/0 rounded-lg flex items-center justify-center dark:shadow-lg cursor-pointer group transition-all duration-300">
                             <img src={indellidesk} className="size-6 xl:size-8 text-gray-400 dark:text-gray-500 group-hover:hidden"></img>
-
                             <PanelLeftClose onClick={togglePanel} className='text-gray-600 dark:text-gray-200' />
                         </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="verbose-hide hidden flex items-center space-x-2">
+                    <div className={`${panelOpen ? '' : 'opacity-0'}  flex items-center space-x-2`}>
                         {/* Search Button */}
                         <button
-                            onClick={showSearchInput}
-                            id="search-chats"
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 group"
-                            title="Search conversations"
+                            onClick={() => setSearchOn(true)}
+                            className={`${searchON ? 'hidden' : ''} p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 group"
+                            title="Search conversations`}
                             aria-label="Search conversations"
                         >
                             <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,15 +149,16 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                     </div>
                 </div>
                 {/* Search Bar (Hidden by default) */}
-                <div id="search-container" className="hidden mt-3">
+                <div className={`${searchON ? '' : 'hidden'} mt-3`}>
                     <div className="relative">
                         <input
+                            ref={searchInput}
                             id='searchInput'
                             type="text"
                             autoFocus
                             onInput={searchChats}
                             placeholder="Search conversations..."
-                            className="verbose-hide hidden text-primary-950 dark:text-white w-full pl-10 pr-4 py-2 bg-gray-200 dark:bg-gray-900 border border-secondary-400 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-secondary-50/0 dark:focus:ring-blue-500 dark:focus:border-transparent text-sm transition-all duration-200"
+                            className={`${panelOpen ? '' : 'opacity-0'} text-primary-950 dark:text-white w-full pl-10 pr-4 py-2 bg-gray-200 dark:bg-gray-900 border border-secondary-400 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-secondary-50/0 dark:focus:ring-blue-500 dark:focus:border-transparent text-sm transition-all duration-200`}
                         />
                         <svg className="absolute left-3 top-2.5 w-4 h-4 text-accent-400 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -224,7 +167,6 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                 </div>
             </section>
 
-
             <section data-action="options" className='ml-1 mt-0 space-y-0.5 text-gray-800 dark:text-white'>
                 <div onClick={() => globalEventBus.emit('conversation:new', false)} id="new-chat" className="flex items-center rounded-lg flex min-w-0 items-center gap-1.5 cursor-pointer hover:bg-gray-200 p-1.5 dark:hover:bg-blend-600">
                     <div className="flex items-center justify-center group-disabled:opacity-50 group-data-disabled:opacity-50 icon">
@@ -232,10 +174,10 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                             <path d="M2.6687 11.333V8.66699C2.6687 7.74455 2.66841 7.01205 2.71655 6.42285C2.76533 5.82612 2.86699 5.31731 3.10425 4.85156L3.25854 4.57617C3.64272 3.94975 4.19392 3.43995 4.85229 3.10449L5.02905 3.02149C5.44666 2.84233 5.90133 2.75849 6.42358 2.71582C7.01272 2.66769 7.74445 2.66797 8.66675 2.66797H9.16675C9.53393 2.66797 9.83165 2.96586 9.83179 3.33301C9.83179 3.70028 9.53402 3.99805 9.16675 3.99805H8.66675C7.7226 3.99805 7.05438 3.99834 6.53198 4.04102C6.14611 4.07254 5.87277 4.12568 5.65601 4.20313L5.45581 4.28906C5.01645 4.51293 4.64872 4.85345 4.39233 5.27149L4.28979 5.45508C4.16388 5.7022 4.08381 6.01663 4.04175 6.53125C3.99906 7.05373 3.99878 7.7226 3.99878 8.66699V11.333C3.99878 12.2774 3.99906 12.9463 4.04175 13.4688C4.08381 13.9833 4.16389 14.2978 4.28979 14.5449L4.39233 14.7285C4.64871 15.1465 5.01648 15.4871 5.45581 15.7109L5.65601 15.7969C5.87276 15.8743 6.14614 15.9265 6.53198 15.958C7.05439 16.0007 7.72256 16.002 8.66675 16.002H11.3337C12.2779 16.002 12.9461 16.0007 13.4685 15.958C13.9829 15.916 14.2976 15.8367 14.5447 15.7109L14.7292 15.6074C15.147 15.3511 15.4879 14.9841 15.7117 14.5449L15.7976 14.3447C15.8751 14.128 15.9272 13.8546 15.9587 13.4688C16.0014 12.9463 16.0017 12.2774 16.0017 11.333V10.833C16.0018 10.466 16.2997 10.1681 16.6667 10.168C17.0339 10.168 17.3316 10.4659 17.3318 10.833V11.333C17.3318 12.2555 17.3331 12.9879 17.2849 13.5771C17.2422 14.0993 17.1584 14.5541 16.9792 14.9717L16.8962 15.1484C16.5609 15.8066 16.0507 16.3571 15.4246 16.7412L15.1492 16.8955C14.6833 17.1329 14.1739 17.2354 13.5769 17.2842C12.9878 17.3323 12.256 17.332 11.3337 17.332H8.66675C7.74446 17.332 7.01271 17.3323 6.42358 17.2842C5.90135 17.2415 5.44665 17.1577 5.02905 16.9785L4.85229 16.8955C4.19396 16.5601 3.64271 16.0502 3.25854 15.4238L3.10425 15.1484C2.86697 14.6827 2.76534 14.1739 2.71655 13.5771C2.66841 12.9879 2.6687 12.2555 2.6687 11.333ZM13.4646 3.11328C14.4201 2.334 15.8288 2.38969 16.7195 3.28027L16.8865 3.46485C17.6141 4.35685 17.6143 5.64423 16.8865 6.53613L16.7195 6.7207L11.6726 11.7686C11.1373 12.3039 10.4624 12.6746 9.72827 12.8408L9.41089 12.8994L7.59351 13.1582C7.38637 13.1877 7.17701 13.1187 7.02905 12.9707C6.88112 12.8227 6.81199 12.6134 6.84155 12.4063L7.10132 10.5898L7.15991 10.2715C7.3262 9.53749 7.69692 8.86241 8.23218 8.32715L13.2791 3.28027L13.4646 3.11328ZM15.7791 4.2207C15.3753 3.81702 14.7366 3.79124 14.3035 4.14453L14.2195 4.2207L9.17261 9.26856C8.81541 9.62578 8.56774 10.0756 8.45679 10.5654L8.41772 10.7773L8.28296 11.7158L9.22241 11.582L9.43433 11.543C9.92426 11.432 10.3749 11.1844 10.7322 10.8271L15.7791 5.78027L15.8552 5.69629C16.185 5.29194 16.1852 4.708 15.8552 4.30371L15.7791 4.2207Z"></path>
                         </svg>
                     </div>
-                    <div className="verbose-hide hidden truncate">New chat</div>
+                    <div className={`${panelOpen ? '' : 'opacity-0'} truncate`}>New chat</div>
                 </div>
                 <div onClick={() => globalEventBus.emit('conversation:new', true)
-                } className='flex items-center rounded-lg flex min-w-0 items-center cursor-pointer hover:bg-gray-200 px-1.5 dark:hover:bg-blend-600'>
+                } className='flex items-center rounded-lg flex min-w-4 items-center cursor-pointer hover:bg-gray-200 px-1.5 dark:hover:bg-blend-600'>
                     <div className="flex justify-start items-center text-primary no-draggable hover:bg-token-surface-hover keyboard-focused:bg-token-surface-hover touch:h-10 touch:w-10 h-9 w-9  rounded-lg focus:outline-none disabled:opacity-50 rounded-full" aria-label="Turn on temporary chat">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" data-rtl-flip="" className="icon">
                             <path d="M4.52148 15.1664C4.61337 14.8108 4.39951 14.4478 4.04395 14.3559C3.73281 14.2756 3.41605 14.4295 3.28027 14.7074L3.2334 14.8334C3.13026 15.2324 3.0046 15.6297 2.86133 16.0287L2.71289 16.4281C2.63179 16.6393 2.66312 16.8775 2.79688 17.06C2.93067 17.2424 3.14825 17.3443 3.37402 17.3305L3.7793 17.3002C4.62726 17.2265 5.44049 17.0856 6.23438 16.8764C6.84665 17.1788 7.50422 17.4101 8.19434 17.558C8.55329 17.6348 8.9064 17.4062 8.9834 17.0473C9.06036 16.6882 8.83177 16.3342 8.47266 16.2572C7.81451 16.1162 7.19288 15.8862 6.62305 15.5815C6.50913 15.5206 6.38084 15.4946 6.25391 15.5053L6.12793 15.5277C5.53715 15.6955 4.93256 15.819 4.30566 15.9027C4.33677 15.8053 4.36932 15.7081 4.39844 15.6098L4.52148 15.1664Z"></path>
@@ -246,28 +188,28 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                             <path d="M15.5713 4.33536C14.5314 3.41405 13.2387 2.74892 11.8057 2.44181C11.4468 2.3651 11.0937 2.59374 11.0166 2.95255C10.9396 3.31166 11.1682 3.66563 11.5273 3.74259C12.7361 4.00163 13.8209 4.56095 14.6895 5.33048L14.8604 5.4877L14.9668 5.56973C15.2291 5.73327 15.5785 5.69604 15.7998 5.46329C16.0211 5.23026 16.0403 4.87903 15.8633 4.6254L15.7754 4.52286L15.5713 4.33536Z"></path>
                         </svg>
                     </div>
-                    <div className="verbose-hide hidden truncate">Temporary chat</div>
+                    <div className={`${panelOpen ? '' : 'opacity-0'} truncate`}>Temporary chat</div>
                 </div>
 
-                <div className='flex items-center rounded-lg flex min-w-0 gap-1.5 items-center cursor-pointer hover:bg-gray-200 p-1.5 dark:hover:bg-blend-600'>
+                <div className='flex items-center rounded-lg flex min-w-4 gap-1.5 items-center cursor-pointer hover:bg-gray-200 p-1.5 dark:hover:bg-blend-600'>
                     <svg className="text-blend-700 w-5 h-5 group-hover:text-primary-700 dark:text-gray-100 dark:group-hover:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <div className="verbose-hide hidden truncate">Search in chats</div>
+                    <div className={`${panelOpen ? '' : 'opacity-0'} truncate`}>Search in chats</div>
                 </div>
             </section >
 
-            <div className='verbose-hide hidden'>
+            <div className={`${panelOpen ? '' : 'opacity-0'}`}>
                 <h2 className="text-sm mt-2 ml-3 underline font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
                     Chats
                 </h2>
             </div>
             {/* Conversations List */}
-            <MessageList conversationsRef={conversationsRef} />
+            <MessageList conversationsRef={conversationsRef} searchON={searchON} panelOpen={panelOpen} />
             {/* Footer */}
             <div className="absolute bottom-0 left-0 right-0 py-2 px-4 bg-gradient-to-t from-white/80 to-transparent dark:from-gray-900/80 backdrop-blur-md border-t border-gray-200/50 dark:border-gray-700/50">
                 <div className="flex items-center justify-between text-xs">
-                    <span className="verbose-hide hidden text-gray-500 dark:text-gray-400">
+                    <span className={`${panelOpen ? '' : 'hidden'} text-gray-500 dark:text-gray-400`}>
                         Powered by IntelliDesk
                     </span>
                     <button
@@ -280,8 +222,8 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </button>
-                    <button onClick={() => document.getElementById('togglePane')?.click()} className='verbose-hide hidden h-6 w-6 hover:rotate-180 transition-all duration-700 cursor-w-resize focus:outline-none focus:ring-none'>
-                        <svg xmlns="http://www.w3.org/2000/svg" className='fill-accent-100' viewBox="0 0 640 640"><path d="M471.1 297.4C483.6 309.9 483.6 330.2 471.1 342.7L279.1 534.7C266.6 547.2 246.3 547.2 233.8 534.7C221.3 522.2 221.3 501.9 233.8 489.4L403.2 320L233.9 150.6C221.4 138.1 221.4 117.8 233.9 105.3C246.4 92.8 266.7 92.8 279.2 105.3L471.2 297.3z" /></svg>
+                    <button onClick={togglePanel} className={`${panelOpen ? 'rotate-180' : 'opacity-0'} h-6 w-6 transition-opacity duration-700 cursor-w-resize focus:outline-none focus:ring-none`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className='fill-gray-500 dark:fill-gray-400' viewBox="0 0 640 640"><path d="M471.1 297.4C483.6 309.9 483.6 330.2 471.1 342.7L279.1 534.7C266.6 547.2 246.3 547.2 233.8 534.7C221.3 522.2 221.3 501.9 233.8 489.4L403.2 320L233.9 150.6C221.4 138.1 221.4 117.8 233.9 105.3C246.4 92.8 266.7 92.8 279.2 105.3L471.2 297.3z" /></svg>
                     </button>
                 </div>
             </div>

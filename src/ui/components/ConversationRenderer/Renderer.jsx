@@ -35,7 +35,7 @@ export const UserMessage = ({ message, files = [] }) => {
 
     return (
         <>
-            <section className="block font-handwriting  text-[16px]">
+            <section className="block font-handwriting  text-[16px] w-full max-auto lg:max-w-2xl">
                 <div className="relative flex items-end gap-x-2 justify-end">
                     <div
                         ref={messageRef}
@@ -65,17 +65,16 @@ export const AiMessage = ({ children, ...props }) => {
 
     return (
         <ErrorBoundary>
-            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap'>
+            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap w-full max-auto lg:max-w-2xl'>
                 <section
                     id="ai_response"
                     onMouseEnter={() => setOptionsOpen(true)}
                     onMouseLeave={() => setOptionsOpen(false)}
-                    className="relative w-full max-w-full mb-[2vh] py-2 px-4">
+                    className="relative mb-[2vh] py-2 px-4">
                     {/* This is where child components will appear eg too- responses */}
                     {children &&
                         <div ref={messageRef} className="child-components">{children}</div>
                     }
-
                     {/*Other componets*/}
                     <div className='mt-10'>
                         <AiMessageOptions messageref={messageRef} isOpen={optionsOpen} setOpen={setOptionsOpen} />
@@ -97,17 +96,15 @@ export const StreamingAiMessage = ({
 
     const onExportMenuToggle = useCallback(() => {
         exportMenu.current.classList.toggle('hidden');
-
     })
-
     return (
         <ErrorBoundary>
-            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap'>
+            <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap w-full max-auto lg:max-w-2xl'>
                 <section
                     id="ai_response"
                     onMouseEnter={() => setOptionsOpen(true)}
                     onMouseLeave={() => setOptionsOpen(false)}
-                    className="relative w-fit max-w-full mb-[2vh] py-2 px-4">
+                    className="relative mb-[2vh] py-2 px-4">
                     {/* Streaming response wrapper */}
                     <div ref={messageRef} className=''>
                         <ResponseWrapper actualContent={actualContent} thinkContent={thinkContent} isThinking={isThinking} />
@@ -149,7 +146,7 @@ export const ResponseWrapper = ({
     chatutil.renderMath(message_id)
 
     return (
-        <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[15px]'>
+        <div id={message_id} className='justifty-start font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl text-[15px]'>
             <div id="ai_response_think" className="w-full bg-none rounded-lg rounded-bl-none transition-colors duration-700">
                 {thinkContent &&
                     <GlassThinkingSection htmlThinkContent={thinkContent} isThinking={isThinking} thinkToolCalls={thinkToolCalls} />

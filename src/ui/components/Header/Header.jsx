@@ -9,6 +9,12 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const openModelSelectorRef = useRef(null)
     const selectorRef = useRef(null)
+    const [experemintalFeturesOn, setExperemintalFeturesOn] = useState(false)
+
+    useEffect(() => {
+        StateManager.subscribe('userSettings', (settings) => setExperemintalFeturesOn(settings.experimentalFeatures)
+        )
+    }, [StateManager])
 
     useEffect(() => {
         const handleEscape = (e) => {
@@ -41,7 +47,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
     })
 
     return (
-        <section id="header" className='w-full'>
+        <section id="header" className="w-full">
             <header className="space-b-1 my-1 mt-0 z-[10] transform transition-transform transition-all duration-500">
                 <div className="flex justify-between">
                     <section className="flex justify-start">
@@ -63,7 +69,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                         </section>
 
                         {/* Model Selector */}
-                        <div className="relative">
+                        <div className={`${experemintalFeturesOn ? 'opacity-100' : 'opacity-0'} relative transition-opacity duration-500`}>
                             <button
                                 ref={openModelSelectorRef}
                                 id="modelButton"

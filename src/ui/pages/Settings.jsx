@@ -2,14 +2,12 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import {
     FiSettings,
     FiMoon,
-    //     FiSun,
     FiChevronsDown,
     FiUser,
     FiEdit2,
     FiTrash2,
     FiGlobe,
     FiKey,
-    //     FiCpu,
     FiX,
     FiCheck,
     FiSave,
@@ -56,7 +54,7 @@ export const Settings = ({ isOpen, onToggle }) => {
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const savedSettings = await window.desk.api.geUserSettings();
+                const savedSettings = await window.desk.api.getUserSettings();
                 if (savedSettings) {
                     // Migrate old settings if they exist
                     const migratedSettings = {
@@ -142,14 +140,8 @@ export const Settings = ({ isOpen, onToggle }) => {
         });
     }, []);
 
-    const handleProfileInput = useCallback((e) => {
-        const profileInput = e.target;
-        profileInput.style.height = 'auto';
-        profileInput.style.height = Math.min(profileInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
-    }, []);
 
     const saveSettingsAPI = useCallback(async (settingsToSave = settings) => {
-        console.log('Saving settings:', settingsToSave);
         const saved = await window.desk.api.saveUserSettings(settingsToSave);
         return saved;
     }, [settings]);
@@ -261,6 +253,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                     profileSection?.classList.remove('hidden');
                     if (profileInput) profileInput.value = "";
                 }
+                StateManager.set('userSettings', settingsToSave)
             }
         } catch (error) {
             modalmanager.showMessage("Failed to save settings", 'error');

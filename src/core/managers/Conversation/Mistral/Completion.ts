@@ -592,7 +592,6 @@ class CompletionBase {
         if (await appIsDev()) errorHandler.resetRetryCount()
     }
     async updateHistory() {
-        console.log(this.thinkContentRefs)
         if (this.continued) {
             StateManager.set('user_message_portal', null);
 

@@ -37,10 +37,11 @@ export class Caret {
         }
 
         this.rect = rects[0];
+        // console.log(this.rect)
         this.containerRect = this.codeView.getBoundingClientRect();
         this.codeViewRect = this.codeView.getBoundingClientRect();
 
-        this.handIndicator.style.left = `${this.rect.left - this.containerRect.left + this.offsetX - this.currentScroll}px`;
+        this.handIndicator.style.right =  `${this.rect.left - this.containerRect.left + this.offsetX - this.currentScroll}px`;
         this.handIndicator.style.top = `${this.rect.top - this.codeViewRect.top + this.offsetY - this.codeScrollWrapper.scrollTop}px`;
         this.handIndicator.style.opacity = '1';
 

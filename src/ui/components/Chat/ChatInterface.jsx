@@ -1,49 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { UsageSuggestions } from '../Usage/Suggestions.js';
-import { MessageList } from './MessageList';
-import { useElectron } from '../../hooks/useElectron';
 import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '../Input/InputSection.tsx';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
-    const [messages, setMessages] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
     const chatAreaRef = useRef(null);
-    const { onChatResponse, onError } = useElectron();
+    const [panelOpen, setPanelOpen] = useState(false)
 
     useEffect(() => {
-        // Listen for new messages from Electron
-        const handleChatResponse = (response) => {
-            setMessages(prev => [...prev, {
-                id: Date.now(),
-                text: response,
-                sender: 'ai',
-                timestamp: new Date()
-            }]);
-            setIsLoading(false);
-        };
-
-        const handleError = () => {
-            // Handle error display
-            setIsLoading(false);
-        };
-
-        // Subscribe to Electron events
-        const unsubscribeResponse = onChatResponse(handleChatResponse);
-        const unsubscribeError = onError(handleError);
-
+        const panelChangeListener = globalEventBus.on('panel:chats:change', (state) => setPanelOpen(state))
         return () => {
-            unsubscribeResponse();
-            unsubscribeError();
+            panelChangeListener.unsubscribe()
         };
-    }, [onChatResponse, onError]);
+    }, [panelOpen]);
 
 
     useEffect(() => {
-        const chatArea = document.getElementById('chatArea')
-
         // Attach scroll event listener to chatArea
         window.addEventListener("resize", chatutil.updateScrollButtonVisibility);
 
@@ -57,8 +31,8 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
             <section
                 id='chat-container'
                 data-portal-container='chatContainer'
-                className='flex justify-center h-full w-full transition-transform ease-in-out'>
-                <div id="chatArea-wrapper" className='h-full w-[100%] md:w-[80%] lg:w-[70%] xl:w-[60%]'>
+                className='flex justify-center h-full w-full transition-transform ease-in-out pb-20'>
+                <div id="chatArea-wrapper" className={`h-full ${isCanvasOpen ? '' : 'w-[100%]'}`}>
                     <section
                         id="chatArea"
                         data-portal-container='chatArea'
@@ -66,17 +40,9 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                         onScroll={chatutil.updateScrollButtonVisibility}
                         onInput={chatutil.updateScrollButtonVisibility}
                         onDragOver={() => globalEventBus.emit('dropzone:open')}
-                        className="relative h-full p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out w-full border-1 border-blend-50 dark:border-blend-700"
+                        className="flex justify-center w-full h-full relative  p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out border-1 border-blend-50 dark:border-blend-700 max-auto"
                     >
-                        {/*<ToolDemo />*/}
-                        {/* Show quick actions when no messages */}
-                        {messages.length === 0 && !isLoading && (
-                            <UsageSuggestions />
-                        )}
-
-                        {/* Messages list */}
-                        <MessageList messages={messages} isLoading={isLoading} />
-
+                        <UsageSuggestions />
                     </section>
                     <ErrorBoundary>
                         <InputSection

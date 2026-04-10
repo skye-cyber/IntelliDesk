@@ -21,6 +21,7 @@ export type EventMap = {
     'clone:feedback': []
     'canvas:open': []
     'canvas:toggle': []
+    'canvas:change': [on: boolean]
     'canvas:content:update': [content: string]
     'agent:editor:open': []
     'agent:editor:close': []
@@ -32,6 +33,7 @@ export type EventMap = {
     'panel:chats:expand': []
     'panel:chats:shrink': []
     'panel:chats:toggle': []
+    'panel:chats:change': [open: boolean]
     'panel:loader:show': []
     'panel:loader:hide': []
     'key:down': [event: KeyboardEvent]
@@ -68,6 +70,7 @@ export type EventMap = {
     'thinkmode:enable': []
     'thinkmode:disable': []
     'thinkmode:change': [on: boolean]
+    'settings:change': []
 };
 
 

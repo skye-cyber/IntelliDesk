@@ -48,7 +48,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
 
     return (
         <section id="header" className="w-full">
-            <header className="space-b-1 my-1 mt-0 z-[10] transform transition-transform transition-all duration-500">
+            <header className="space-b-1 mt-0 z-[10] min-h-2 transform transition-transform transition-all duration-500">
                 <div className="flex justify-between">
                     <section className="flex justify-start">
                         {/* Toggle Button */}
@@ -69,11 +69,11 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                         </section>
 
                         {/* Model Selector */}
-                        <div className={`${experemintalFeturesOn ? 'opacity-100' : 'opacity-0'} relative transition-opacity duration-500`}>
+                        <div className={`${experemintalFeturesOn ? '' : 'hidden pointer-events-none'} relative transition-opacity duration-500`}>
                             <button
                                 ref={openModelSelectorRef}
                                 id="modelButton"
-                                className="rounded-lg ml-1 p-2 font-semibold bg-gray-200 hover:bg-blue-200 text-sky-900 dark:text-gray-100 rounded-md dark:bg-[#07090c]/0 dark:hover:bg-[#11161e] hover:scale-[0.9] outline-none cursor-pointer transition-all duration-700"
+                                className="rounded-lg ml-1 p-1 font-semibold bg-gray-200/0 hover:bg-blue-200/0 text-sky-900 dark:text-gray-100 rounded-md dark:bg-[#07090c]/0 dark:hover:bg-[#11161e] hover:scale-[0.9] outline-none cursor-pointer transition-all duration-700"
                                 onClick={toggleModelSelector}
                             >
                                 <div className="flex">

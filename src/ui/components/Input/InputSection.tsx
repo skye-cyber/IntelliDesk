@@ -8,7 +8,6 @@ import '../../../core/managers/Conversation/Mistral/Completion.ts';
 import { adjustElementHeight } from './utils/ElementHeight.ts';
 import { cleanInput } from './utils/cleanInput.ts';
 import { MenuTools } from './MenuTools.tsx';
-// import { InputFileDisplay } from '../DropZone/InputFileDisplay.tsx';
 
 
 export const InputSection = ({ onToggleRecording }) => {
@@ -334,7 +333,7 @@ const ScrollToBottomButton = ({ }) => {
         <button
             ref={scrollRef}
             id="scroll-bottom"
-            className="absolute fixed right-[150px] bottom-24 cursor-pointer rounded-full bg-blue-100 border border-blue-400 dark:border-gray-300 dark:bg-[#222] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
+            className="absolute fixed right-1/3 bottom-24 cursor-pointer rounded-full bg-gray-200 border border-gray-400 dark:border-primary-500 dark:bg-[#14003d] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
             aria-label="scroll to bottom"
             onClick={() => {
                 chatutil.updateScrollButtonVisibility()

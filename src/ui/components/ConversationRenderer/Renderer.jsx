@@ -62,11 +62,9 @@ export const AiMessage = ({
     actualContent,
     isThinking = false,
     thinkContent = null,
-    children,
-    ...props }) => {
+    children}) => {
     const [optionsOpen, setOptionsOpen] = useState(false)
     const messageRef = useRef(null)
-    console.log(actualContent)
     return (
         <ErrorBoundary>
             <div id="ai_response_container" className='flex justify-start mb-2 overflow-wrap w-full'>
@@ -79,8 +77,8 @@ export const AiMessage = ({
                     {children &&
                         <div ref={messageRef} className="child-components">{children}</div>
                     }
-                    {actualContent || thinkContent && (
-                        <StreamingAiMessage actualContent={actualContent} isThinking={isThinking} thinkContent={thinkContent} />
+                    {(actualContent || thinkContent) && (
+                        <ResponseWrapper actualContent={actualContent} isThinking={isThinking} thinkContent={thinkContent} />
                     )}
                     {/*Other componets*/}
                     <div className='mt-10'>

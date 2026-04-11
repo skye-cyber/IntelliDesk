@@ -95,6 +95,19 @@ export class SearchWebTool extends ToolBase {
         return results as any[];
     }
 
+    private async performSearchWithRetry(query: string, maxResults: number, retries = 2): Promise<any[]> {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                return await this.performSearch(query, maxResults);
+            } catch (error) {
+                if (attempt === retries) throw error;
+                console.warn(`Search attempt ${attempt} failed, retrying...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+        }
+        throw new Error('All search attempts failed');
+    }
+
     private async performSearch(query: string, maxResults: number): Promise<any[]> {
         const searchResults: any[] = [];
 
@@ -132,7 +145,22 @@ export class SearchWebTool extends ToolBase {
         this.lastRequestTime = Date.now();
     }
 
+    private filterResults(results: any[]): any[] {
+        return results.filter(result => {
+            // Filter out results without URLs or with obviously fake URLs
+            if (!result.url || result.url === '#' || result.url.startsWith('javascript:')) {
+                return false;
+            }
+            // Filter out very short snippets (likely low quality)
+            if (result.snippet.length < 20) {
+                return false;
+            }
+            return true;
+        });
+    }
+
     formatResult(result: Record<any, any>): any {
+        console.log("SEARCH RESULT:", result)
         return {
             success: true,
             query: result.query,

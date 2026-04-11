@@ -53,11 +53,11 @@ export class ToolManager {
         //this.registerTool('todo', new TodoTool());
         this.registerTool('write_file', new WriteFileTool() as any);
         this.registerTool('read_file', new ReadFileTool() as any);
-        this.registerTool('search_web', new SearchWebTool() as any);
+        // this.registerTool('search_web', new SearchWebTool() as any);
         //this.registerTool('get_weather', new GetWeatherTool());
         this.registerTool('calculate', new CalculateTool() as any);
         this.registerTool('filesystem', new FileSystemTool() as any);
-        this.registerTool('database_query', new DatabaseQueryTool() as any);
+        // this.registerTool('database_query', new DatabaseQueryTool() as any);
         this.registerTool('name_conversation', new NameConversationTool() as any);
         //this.registerTool('send_message', new SendMessageTool());
 
@@ -167,7 +167,7 @@ export class ToolManager {
             const params = (toolCall.function as FunctionCall).arguments
             try {
                 const result = await this.executeTool(toolName, params as any, sharedContext);
-                results.push(result);
+                results.push(result as any);
 
                 // Update shared context with result
                 sharedContext[`${toolName}_result`] = result;

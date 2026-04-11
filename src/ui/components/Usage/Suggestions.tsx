@@ -1,6 +1,6 @@
 import { JSX, useCallback, useEffect, useRef, useState } from 'react';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
     SupriseIcon,
     AnalyzeImagesIcon,
@@ -110,7 +110,7 @@ export const UsageSuggestions = () => {
             </div>
 
             {/* Subtle footer */}
-            <div className="text-center mt-10">
+            <div className="text-center mt-6">
                 <p className="text-xs text-gray-400 dark:text-gray-500">
                     or type anything you'd like help with
                 </p>

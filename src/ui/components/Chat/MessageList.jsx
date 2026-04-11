@@ -31,7 +31,7 @@ export const MessageList = ({ conversationsRef, searchON, panelOpen }) => {
             ref={conversationsRef}
             id="conversations"
             data-portal-container="conversations"
-            className={`${panelOpen ? '' : 'opacity-0 w-0'} ${searchON ? '[h-60vh]': 'h-[64vh]'} overflow-x-hidden overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth`}>
+            className={`${panelOpen ? '' : 'opacity-0 w-0'} ${searchON ? '[h-60vh]': 'h-[64vh]'} overflow-x-hidden overflow-y-auto py-2 px-3 space-y-1 transform transition-all duration-700 ease-in-out scrollbar-custom scroll-smooth focus:outline-none`}>
             {/* Empty State */}
             <div id="chatsempty" className={`${hasStore
                 ? 'hidden' : 'flex-col'} items-center justify-center py-12 px-4 text-center`}>

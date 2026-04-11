@@ -292,7 +292,7 @@ class CompletionBase {
                 const stream = await this.clientmanager.client.chat.stream({
                     model: this.modelName,
                     messages: window.desk.api.getHistory(true) as any, //conversationHistory,
-                    maxTokens: 3000,
+                    maxTokens: 4000,
                     tools: this.availableTools as Array<Tool>,
                     toolChoice: 'auto',
                     parallelToolCalls: false,

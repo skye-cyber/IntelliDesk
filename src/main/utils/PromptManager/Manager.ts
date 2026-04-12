@@ -119,9 +119,6 @@ export class SystemPrompt {
         - \`less\`, \`more\`, \`vim\`, \`nano\` → Use \`read_file\` with offset/limit for navigation
         - \`echo \"content\" > file\` → Use \`write_file(path=\"file\", content=\"content\")\`
         - \`echo \"content\" >> file\` → Read first, then \`write_file\` with overwrite=true
-        *Note*
-        - Prefer the dendicated read_file and write_file to filesystem
-        - Filsystem tool provides extended functionalities beyond read and write
 
         **Search Operations - DO NOT USE:**
         - \`grep -r \"pattern\" .\` → Use \`grep(pattern="pattern", path=".")\`
@@ -149,7 +146,9 @@ export class SystemPrompt {
         - Provide EXACT parameter values from user input; do not invent.
         - If a required parameter is missing, ask the user for it.
         - Prefer dedicated tools over generic shell commands for file/search/edit operations.
-        - For multi‑step tasks, break down and execute sequentially.`;
+        - For multi‑step tasks, break down and execute sequentially.
+        - Prefer the dendicated read_file and write_file to filesystem
+        - Filsystem tool provides extended functionalities beyond read and write`;
     }
 
     private static outputFormatting(): string {

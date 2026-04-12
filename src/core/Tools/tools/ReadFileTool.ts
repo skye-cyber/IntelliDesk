@@ -1,11 +1,11 @@
+/// <reference path="../../../main/preload.type.ts" />
 /**
  * Read File Tool - Read UTF-8 files with safety constraints and line range support
  */
 import { ToolBase } from '../ToolBase';
+
 const path = window.desk.path
-
 const fs = window.desk.fs
-
 
 export class ReadFileTool extends ToolBase {
     constructor() {
@@ -49,7 +49,8 @@ export class ReadFileTool extends ToolBase {
         };
     }
 
-    async _execute({ path: filePath, offset = 0, limit = null }, context) {
+    async _execute(params: any, context: any) {
+        const { path: filePath, offset = 0, limit = null } = params
         // Validate file path
         this.validateFilePath(filePath);
 
@@ -105,7 +106,7 @@ export class ReadFileTool extends ToolBase {
         };
     }
 
-    validateFilePath(filePath) {
+    validateFilePath(filePath: string) {
         // Basic validation to prevent directory traversal attacks
         if (!filePath || typeof filePath !== 'string') {
             throw new Error('Invalid file path');
@@ -129,10 +130,62 @@ export class ReadFileTool extends ToolBase {
             }
         }
 
-        return true;
+        // Check if path leads to binary file
+
+        return this.validateNotBinary(filePath);
     }
 
-    formatResult(result) {
+    /**
+     * Checks if a given file path leads to a binary file
+     * @param filePath - The file path to validate
+     * @returns True if the file is binary, false otherwise
+     */
+    isBinaryFile(filePath: string): boolean {
+        // Common binary file extensions (not covered by the MIME map)
+        const binaryExtensions = [
+            // Executables
+            '.exe', '.bin', '.appimage', '.deb', '.nsis', '.snap',
+            // Archives
+            '.zip', '.tar', '.gz', '.7z', '.rar', '.bz2', '.xz',
+            // Media files (additional to image/audio)
+            '.mp3', '.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv',
+            '.wav', '.flac', '.m4a', '.ogg',
+            // Disk images
+            '.iso', '.img', '.dmg',
+            // Other binaries
+            '.so', '.dll', '.dylib', '.o', '.obj', '.class',
+            '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+            // System files
+            '.dat', '.db', '.sqlite', '.mdb'
+        ];
+
+        const lowerPath = filePath.toLowerCase();
+
+        // Check against known binary extensions
+        return binaryExtensions.some(ext => lowerPath.endsWith(ext));
+    }
+
+    /**
+     * Checks if a file is supported (not binary and in allowed MIME types)
+     * @param filePath - The file path to validate
+     * @returns True if the file is supported, false otherwise
+     */
+    isSupportedFile(filePath: string): boolean {
+        return !this.isBinaryFile(filePath);
+    }
+
+    /**
+     * Validates a file path and throws an error if it's binary
+     * @param filePath - The file path to validate
+     * @throws Error if the file is binary
+     */
+    validateNotBinary(filePath: string): void {
+        if (this.isBinaryFile(filePath)) {
+            throw new Error(`Binary file detected and not supported: ${filePath}`);
+        }
+    }
+
+    formatResult(result: any) {
         return {
             success: true,
             //tool: this.name,
@@ -145,6 +198,6 @@ export class ReadFileTool extends ToolBase {
             was_truncated: result.was_truncated,
             file_size: result.file_size,
             timestamp: result.timestamp
-        };
+        } as any;
     }
 }

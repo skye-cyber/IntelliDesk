@@ -42,7 +42,8 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
                 'wc',
                 'which',
                 'df',
-                'print'
+                'print',
+                'cd',
             ],
             denylist: [
                 'gdb',
@@ -81,7 +82,7 @@ export const DEFAULT_AGENT_CONFIG: AgentConfig = {
             permission: 'always',
             allowlist: [],
             denylist: [],
-            max_output_bytes: 128000,
+            max_output_bytes: 1200,
             default_max_matches: 100,
             default_timeout: 60,
             exclude_patterns: [

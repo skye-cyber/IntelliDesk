@@ -127,6 +127,9 @@ export interface AgentType {
     require_confirmation_for_tool: (toolName: string) => AgentType;
     get_default_config: () => AgentConfig,
     config: AgentConfig;
+    get_tool_paths: () => string[]
+    get_mcp_servers: () => any[]
+    get_skill_paths: () => string[]
 }
 
 export const Agent: AgentType = {
@@ -280,5 +283,20 @@ export const Agent: AgentType = {
     get_default_config(): AgentConfig {
         return config_manager.default_config
     },
-    config: PREP_AGENT_CONFIG(config_manager.config)
+    config: PREP_AGENT_CONFIG(config_manager.config),
+    /**
+     * Get configuration for a specific tool
+     */
+    get_tool_paths(): string[] {
+        // Bypass for tool rename since it is an internal tool
+        return config_manager.config.tool_paths
+    },
+    get_mcp_servers(): any[] {
+        // Bypass for tool rename since it is an internal tool
+        return config_manager.config.mcp_servers
+    },
+    get_skill_paths(): string[] {
+        // Bypass for tool rename since it is an internal tool
+        return config_manager.config.skill_paths
+    },
 }

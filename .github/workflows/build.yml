@@ -19,7 +19,7 @@ jobs:
         runs-on: ${{ matrix.os }}
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
 
@@ -43,11 +43,13 @@ jobs:
 
             - name: Install dependencies
               run: npm install --no-audit --force
-            - name: Clean install (fixes Rollup native deps)
-              run: |
-                  rm -rf node_modules package-lock.json
-                  npm clean-install
-              shell: bash
+
+            - name: Install dmg-license
+              run: npm install @rollup/rollup-darwin-arm64 --save-optional
+
+            - name: Install missing Rollup native module (macOS ARM64)
+              if: runner.os == 'macOS' && runner.arch == 'ARM64'
+              run: npm install dmg-license --save-dev
 
             - name: Install native deps
               run: npx electron-builder install-app-deps

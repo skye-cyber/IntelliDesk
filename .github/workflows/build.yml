@@ -43,6 +43,11 @@ jobs:
 
             - name: Install dependencies
               run: npm install --no-audit --force
+            - name: Clean install (fixes Rollup native deps)
+              run: |
+                  rm -rf node_modules package-lock.json
+                  npm clean-install
+              shell: bash
 
             - name: Install native deps
               run: npx electron-builder install-app-deps

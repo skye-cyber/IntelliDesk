@@ -1,26 +1,23 @@
-import React from 'react';
-import { dot_interpreter } from '../../../renderer/js/diagraming/vizcharting';
-import { chart_interpret } from '../../../renderer/js/diagraming/jscharting';
-import { handleCodeCopy } from '../../../renderer/js/Utils/chatUtils';
-import { openInCanvas } from '../../../renderer/js/managers/Canvas/CanvasUtils';
-import { CanvasUtil } from '../../../renderer/js/managers/Canvas/CanvasUtils';
+import { dot_interpreter } from '../../../core/diagraming/vizcharting';
+import { chart_interpret } from '../../../core/diagraming/jscharting';
+import { canvasutil } from '../../../core/managers/Canvas/CanvasUtils';
 import { GenerateId } from '../ConversationRenderer/utils';
-import { html_preview } from '../../../renderer/js/managers/Canvas/html_render';
-import { exportCodeToFile } from '../../../renderer/js/Utils/exportCodeUtils';
-
-//StateManager.set('processing', false);
-
-const canvasutil = new CanvasUtil()
+import { html_preview } from '../../../core/managers/Canvas/html_render';
+import { exportCodeToFile } from '../../../core/Utils/exportCodeUtils';
+import { useRef, useState } from 'react';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 export const CodeBlockComponent = ({
     highlighted,
     valid_language,
-    copy_button_id = GenerateId('copy-button'),
     codeblock_id = GenerateId('code-block'),
     download_button_id = GenerateId('download'),
-    open_in_canvas_id = GenerateId('open-canvas'),
     render_button_id = GenerateId('render-button'),
 }) => {
+
+    const codeblockRef = useRef(null)
+    // const copyCodeRef = useRef(null)
+    const [copyText, setCopyText] = useState('copy')
 
     // Move these hooks outside of any conditions - call them unconditionally
     const handle_render = () => {
@@ -36,19 +33,37 @@ export const CodeBlockComponent = ({
     }
 
     if (canvasutil.isCanvasOn()) {
-        //increament code buffer
-        StateManager.set('codeBuffer', { lang: valid_language, code: `<code id="${valid_language}" data-value=${codeblock_id} id="${codeblock_id}" class="hljs ${valid_language} block whitespace-pre w-full rounded-md bg-none font-code transition-colors duration-500">${highlighted}</code>` })
+        if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
+        globalEventBus.emit('canvas:content:update', codeblockRef?.current?.innerHTML )
     }
-
+    async function handleCodeCopy() {
+        const textToCopy = codeblockRef.current?.innerText;
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            setCopyText('copied')
+            setTimeout(() => {
+                setCopyText('copy')
+            }, 2000);
+            const detail = {
+                head: "Text Copied ssuccessfully",
+                body: ""
+            }
+            globalEventBus.emit('copy:feedback', detail)
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
+    }
     return (
         <div className="w-full block bg-gray-200 dark:bg-zinc-800  rounded-md transition-colors duration-100">
-            <section id="code-actions" className="flex justify-between w-full bg-gray-200 rounded-t-md dark:bg-zinc-800 box-border transition-colors duration-700">
+            <section id="code-actions" className="flex justify-between w-full bg-gray-200 rounded-t-md dark:bg-[#101030] box-border transition-colors duration-700">
                 {/* Language */}
                 <p className="code-language p-1 justify-start rounded-md text-slate-950 dark:text-white rounded-lg font-normal text-sm cursor-pointer opacity-80 hover:opacity-50">
                     {valid_language}
                 </p>
                 <div className="flex justify-between items-center space-x-2">
-                    <button id={open_in_canvas_id} onClick={() => openInCanvas(codeblock_id)} className="flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700 focus:outline-none" aria-pressed="false" title="Open coding canvas">
+                    <button
+                        onClick={() => globalEventBus.emit('opencode:in:canvas', codeblockRef.current)}
+                        className="flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700 focus:outline-none" aria-pressed="false" title="Open coding canvas">
                         {/* simple plus icon (SVG) */}
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5" fill="currentColor" viewBox="0 0 640 640">
                             <path d="M392.8 65.2C375.8 60.3 358.1 70.2 353.2 87.2L225.2 535.2C220.3 552.2 230.2 569.9 247.2 574.8C264.2 579.7 281.9 569.8 286.8 552.8L414.8 104.8C419.7 87.8 409.8 70.1 392.8 65.2zM457.4 201.3C444.9 213.8 444.9 234.1 457.4 246.6L530.8 320L457.4 393.4C444.9 405.9 444.9 426.2 457.4 438.7C469.9 451.2 490.2 451.2 502.7 438.7L598.7 342.7C611.2 330.2 611.2 309.9 598.7 297.4L502.7 201.4C490.2 188.9 469.9 188.9 457.4 201.4zM182.7 201.3C170.2 188.8 149.9 188.8 137.4 201.3L41.4 297.3C28.9 309.8 28.9 330.1 41.4 342.6L137.4 438.6C149.9 451.1 170.2 451.1 182.7 438.6C195.2 426.1 195.2 405.8 182.7 393.3L109.3 320L182.6 246.6C195.1 234.1 195.1 213.8 182.6 201.3z" />
@@ -57,13 +72,13 @@ export const CodeBlockComponent = ({
                     </button>
 
                     {/* Copy button */}
-                    <button id={copy_button_id} onClick={() => handleCodeCopy(copy_button_id, codeblock_id)} className="copy-button flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700 focus:outline-none">
+                    <button onClick={() => handleCodeCopy()} className="copy-button flex items-center gap-0.5 p-1 hover:bg-zinc-400 rounded-md text-xs text-secondary-900 dark:text-white cursor-pointer transform transition-all duration-700 focus:outline-none">
                         <svg className="w-4 h-4 feather feather-copy mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
-                        <span id="BtText">copy</span>
+                        {copyText}
                     </button>
                     <button id={download_button_id}
                         onClick={() => exportCodeToFile(codeblock_id)}
@@ -88,7 +103,7 @@ export const CodeBlockComponent = ({
                 </div>
             </section>
             <div className='w-full'>
-                <code data-value={codeblock_id} id={codeblock_id} className={`hljs ${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border border-white shadow-inner dark:shadow-outer dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none overflow-x-auto overflow-x-auto`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
+                <code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} className={`hljs ${valid_language} h-full font-md leading-[1.5] tracking-wide p-4 scrollbar-code m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre text-[13px] dark:text-[#e1e1e1] transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto font-code`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
             </div>
         </div>
     )
@@ -103,6 +118,6 @@ export const SimpleCodeBlockComponent = ({
 }) => {
 
     return (
-        <code data-value={codeblock_id} id={codeblock_id} className={`bg-blue-40 dark:bg-primary-700 ${valid_language} h-full font-md leading-[1.5] p-1 scrollbar-custom m-0 border-none shadow-none block whitespace-pre-wrap font-code text-sm  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
+        <code data-value={codeblock_id} id={codeblock_id} className={`bg-blue-40 dark:bg-primary-700 ${valid_language} h-full font-md leading-[1.5] p-1 scrollbar-hide m-0 border-none shadow-none block whitespace-pre-wrap font-code text-[12px]  transition-colors duration-700 overflow-x-auto rounded-md rounded-t-none`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
     )
 }

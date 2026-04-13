@@ -15,7 +15,7 @@ This comprehensive test suite validates the advanced tool calling capabilities o
 ## Test Suite Structure
 
 ```
-src/renderer/js/tests/
+src/core/tests/
 ├── ToolCallingTestSuite.js    # Core test suite (5 test scenarios)
 ├── runToolTests.js           # Node.js test runner
 ├── testRunner.html           # Browser-based test interface
@@ -87,7 +87,7 @@ Tests graceful error recovery and user-friendly messages
 1. **Open the HTML test runner**:
    ```bash
    # From project root
-   open src/renderer/js/tests/testRunner.html
+   open src/core/tests/testRunner.html
    ```
 
 2. **Run tests**:
@@ -100,7 +100,7 @@ Tests graceful error recovery and user-friendly messages
 1. **Run the test suite**:
    ```bash
    # From project root
-   node src/renderer/js/tests/runToolTests.js
+   node src/core/tests/runToolTests.js
    ```
 
 2. **Expected output**:

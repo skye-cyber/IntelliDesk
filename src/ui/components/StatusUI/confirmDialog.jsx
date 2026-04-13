@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-//import { modalmanager } from '../../../renderer/js/StatusUIManager/Manager';
-import { staticPortalBridge } from '../../../renderer/js/PortalBridge';
+//import { modalmanager } from '../../../core/StatusUIManager/Manager';
+import { staticPortalBridge } from '../../../core/PortalBridge.ts';
 
 export const ConfirmationDialog = ({ title, message, dialog_id, portal_id, resolve }) => {
     const portalRef = useRef(null)
@@ -46,7 +46,7 @@ export const ConfirmationDialog = ({ title, message, dialog_id, portal_id, resol
     return (
         <div id={dialog_id}
             ref={portalRef}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
             <div ref={contentRef}
                 id='dialog-content'
                 className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 transform transition-all ease-in-out duration-300 scale-95 opacity-0">

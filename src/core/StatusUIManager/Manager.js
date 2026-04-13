@@ -1,5 +1,5 @@
-import { GenerateId } from "../../../react-app/components/ConversationRenderer/utils";
-import { staticPortalBridge } from "../PortalBridge";
+import { GenerateId } from "../../ui/components/ConversationRenderer/utils";
+import { staticPortalBridge } from "../PortalBridge.ts";
 
 export class ModalManager {
     constructor() {
@@ -231,7 +231,7 @@ export class ModalManager {
         const { size = "max-w-md", showClose = true } = options;
 
         const modalHtml = `
-        <div id="${modalId}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div id="${modalId}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
         <div class="bg-white rounded-2xl shadow-2xl w-full ${size} mx-4 transform transition-all duration-300 scale-95 opacity-0">
         <div class="p-6 border-b border-gray-200 flex justify-between items-center">
         <h3 class="text-xl font-bold text-gray-900">${this.escapeHtml(title)}</h3>

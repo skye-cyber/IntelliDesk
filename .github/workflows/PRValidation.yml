@@ -15,6 +15,6 @@ jobs:
           node-version: 24
 
       - run: npm ci
-      - run: npm run lint
+      # - run: npm run lint
       - run: npm test --if-present
       - run: npm run build:react

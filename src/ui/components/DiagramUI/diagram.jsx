@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { DiagramToPngExportSvg } from '../../../renderer/js/diagraming/utils';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
+import { useCallback, useEffect, useRef } from 'react';
+import { DiagramToPngExportSvg } from '../../../core/diagraming/utils';
+import { StateManager } from '../../../core/managers/StatesManager.ts';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 export const DiagramUi = ({ isOpen, onClose, content }) => {
     const view = useRef(null)
@@ -19,9 +20,6 @@ export const DiagramUi = ({ isOpen, onClose, content }) => {
             view.current.classList.add('opacity-0', 'hidden');
         }, 1000)
     })
-
-    StateManager.set('openDiagramView', openView)
-    StateManager.set('closeDiagramView', closeView)
 
     useEffect(() => {
         const handleEscape = (e) => {
@@ -62,6 +60,14 @@ export const DiagramUi = ({ isOpen, onClose, content }) => {
         ctx.fillText('Canvas is open', 220, 55);
     }
 
+    useEffect(() => {
+        const openPage = globalEventBus.on('diagram:page:open', openView)
+        const closePage = globalEventBus.on('diagram:page:close', closeView)
+        return () => {
+            openPage.unsubscribe()
+            closePage.unsubscribe()
+        }
+    })
     if (!isOpen) return null;
 
     return (
@@ -71,13 +77,13 @@ export const DiagramUi = ({ isOpen, onClose, content }) => {
             onClick={(e) => {
                 if (!viewContent.current.contains(e.target)) closeView()
             }}
-            className="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl transition-all duration-300 opacity-0 translate-x-full"
+            className="hidden fixed inset-0 z-50 flex items-center justify-center p-0 bg-slate-900/80 backdrop-blur-xl transition-all duration-300 opacity-0 translate-x-full"
         >
             <section
                 ref={viewContent}
                 data-portal-container='diagram_canvas'
                 id="diag-modal-content-container"
-                className="relative bg-white dark:bg-slate-800  rounded-2xl shadow-2xl border border-slate-600/30 w-full max-w-[98vw] h-[98vh] flex flex-col overflow-hidden"
+                className="relative bg-white dark:bg-slate-800  rounded-2xl shadow-2xl border border-slate-600/30 w-full h-full flex flex-col overflow-hidden"
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-secondary-200 dark:border-slate-700/50 bg-gray-50 dark:bg-slate-800">

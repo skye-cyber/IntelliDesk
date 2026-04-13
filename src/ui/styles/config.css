@@ -23,39 +23,50 @@
 /* global.css or within a Tailwind plugin */
 @layer utilities {
     h1, h2, h3, h4, h5, h6  {
-        margin: 0; /* Reset margin for consistency */
+        margin-bottom: 10px;
+        margin-top: 10px;
+        font-weight: 650;
     }
 
     h1 {
-        font-size: 2.2rem; /* 40px */
-        font-weight: 700;  /* bold */
+        font-size: 1.2rem;
     }
 
     h2 {
-        font-size: 1.8rem;   /* 32px */
-        font-weight: 600;  /* semi-bold */
+        font-size: 1.05rem;
     }
 
     h3 {
-        font-size: 1.55rem; /* 28px */
-        font-weight: 500;   /* medium */
+        font-size: 1.0rem;
     }
 
     h4 {
-        font-size: 1.3rem;  /* 24px */
-        font-weight: 400;   /* normal */
+        font-size: 0.8rem;
     }
 
     h5 {
-        font-size: 1.05rem; /* 20px */
-        font-weight: 300;   /* light */
+        font-size: 0.7rem;
     }
 
     h6 {
-        font-size: 0.8rem;    /* 16px */
-        font-weight: 200;   /* extra light */
+        font-size: 0.5rem;
     }
 }
+
+hr {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    color: inherit
+}
+
+.dark hr {
+    color: #6b7280 !important;
+}
+
+code {
+    font-size: 13px
+}
+
 .pulse {
     display: inline-block;
     transition: transform 0.3s ease-in-out;
@@ -86,6 +97,74 @@
 }
 
 
+/* Works in ALL modern browsers */
+.scrollbar-code {
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #c6c694 transparent;
+
+    /* Ensure scrolling works */
+    overflow: auto;
+}
+
+/* WebKit browsers (Chrome, Edge, Safari) */
+.scrollbar-code::-webkit-scrollbar {
+    width: 2px;           /* Custom width - Firefox's "thin" is ~8px */
+    height: 2px;
+}
+
+.scrollbar-code::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 2px 0;        /* Optional: spacing */
+}
+
+.scrollbar-code::-webkit-scrollbar-thumb {
+    background: #c6c694;
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+.scrollbar-code::-webkit-scrollbar-thumb:hover {
+    background: #d4d4a8;  /* Lighter on hover */
+}
+
+/* Optional: Make scrollbar invisible when not hovering */
+.scrollbar-code {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s;
+}
+
+.scrollbar-code:hover {
+    scrollbar-color: #c6c694 transparent;
+}
+.dark .scrollbar-code:hover {
+    scrollbar-color: #555500 transparent;
+}
+
+.scrollbar-code:hover::-webkit-scrollbar-thumb {
+    background: #c6c694;
+}
+
+.dark .scrollbar-code:hover::-webkit-scrollbar-thumb {
+    background: #555500;
+}
+.scrollbar-code::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+.scrollbar-auto {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s;
+}
+
+.scrollbar-auto:hover {
+    scrollbar-color: #c1c1c1 transparent;
+}
+.dark .scrollbar-auto:hover {
+    scrollbar-color: #4a4a6a transparent;
+}
+
 .scrollbar-custom{
     scrollbar-width: thin;
     scrollbar-color: #c1c1c1 transparent;
@@ -114,14 +193,18 @@
 /* Simulate a placeholder on the contenteditable div */
 #userInput:empty:before {
 content: attr(data-placeholder);
-color: #9CA3AF;
+color: #868b95;
+}
+
+.dark #userInput:empty:before {
+content: attr(data-placeholder);
+color: #ccd5e5;
 }
 /* Always ensure an extra empty row at the bottom */
 #userInput::after {
-content: "\A"; /* Inserts a newline */
+content: "\n"; /* Inserts a newline */
 display: block;
 visibility: hidden;
-height: 2.4em; /* Adjust this value to match the height of an empty row */
 }
 
 
@@ -630,4 +713,141 @@ background: linear-gradient(to bottom, #4b5563, #374151);
     background-clip: padding-box, border-box;
     background-origin: border-box;
     background-image: linear-gradient(to bottom right, hsl(0 0% 100% 0.8), hsl(0 0% 100% 0.8)), linear-gradient(135deg, rgba(255,0,255,170) 0%, rgba(0,0,255,85) 50%, rgba(0,255,255,170) 100%);
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-in-from-bottom-4 {
+    from {
+        transform: translateY(1rem);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-in {
+    animation-duration: 0.2s;
+    animation-fill-mode: both;
+}
+
+.fade-in {
+    animation-name: fade-in;
+}
+
+.slide-in-from-bottom-4 {
+    animation-name: slide-in-from-bottom-4;
+}
+
+.duration-200 {
+    animation-duration: 0.2s;
+}
+
+@keyframes shrink {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* Think section animations */
+@keyframes gradient-x {
+    0%, 100% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.animate-gradient-x {
+    animation: gradient-x 2s ease infinite;
+}
+
+.animate-blink {
+    animation: blink 1s step-end infinite;
+}
+
+.animate-typing {
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Smooth scrollbar for content */
+.thinking-content {
+    scrollbar-width: thin;
+    scrollbar-color: #4a5568 transparent;
+}
+
+.thinking-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.thinking-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thinking-content::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 10px;
+}
+
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slideDown {
+    animation: slideDown 0.2s ease-out forwards;
 }

@@ -1,20 +1,13 @@
-import { ConversationLoader } from './ConversationLoader.js'
-import { ClosePrefixed, staticPortalBridge } from '../../PortalBridge';
+import { conversationloader } from './ConversationLoader.ts'
+import { clearMessages, staticPortalBridge } from '../../PortalBridge.ts';
 import { modalmanager } from '../../StatusUIManager/Manager.js';
-import { StateManager } from '../StatesManager.js';
+import { globalEventBus } from '../../Globals/eventBus.ts';
 
-async function ChatsCheck() {
-    let files = await window.desk.api.readDir(window.desk.api.joinPath(window.desk.api.home_dir(), '.IntelliDesk/.store'));
-    (files.length > 0) ? StateManager.set('chatsExist', true) : StateManager.set('chatsExist', false)
-    files = null
-}
-ChatsCheck()
 
 export class ChatManager {
     constructor() {
         this.currentConversationId;
         this.storagePath = window.desk.api.joinPath(window.desk.api.home_dir(), '.IntelliDesk/.store');
-        this.conversationManager = new ConversationLoader(this.storagePath);
         this.activeItem
         //this.init()
 
@@ -26,13 +19,23 @@ export class ChatManager {
     }
 
     async sortFn(fl) {
-        const metadata = await window.desk.api.getmetadata(fl)
+        const metadata = window.desk.api.getmetadata(fl)
         const datetime = metadata?.updated_at ? metadata?.updated_at : metadata?.created_at
 
         if (!datetime) return -1
         const date = this.loadDate(datetime)
-        const datestr = date.toLocaleDateString().split('/').reverse().toString().replaceAll(',', '')
-        const intdate = Number(datestr)
+        const year = date.getFullYear().toString().slice(-2); // Get the last two digits of the year
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-based, so add 1
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        const formattedDateTime = `${year}${month}${day}${hours}${minutes}${seconds}`;
+
+        //const datestr = `${date.getFullYear()}${date.getMonth()}${date.getDate()}`
+        const intdate = Number(formattedDateTime)
+        // console.log(Number(formattedDateTime))
 
         return intdate ? intdate : -1
     }
@@ -50,15 +53,11 @@ export class ChatManager {
     }
 
     // Function to fetch conversation files and display their IDs
-    async fetchConversations(conversationsPanel) {
-        if (!conversationsPanel) return false;
+    async fetchConversations() {
         try {
-            let files = await window.desk.api.readDir(this.storagePath);
+            let files = await window.desk.api.readStore()
             if (files.length > 0) {
 
-                // Define the colors you want to cycle through//
-
-                // close
                 staticPortalBridge.closeComponent('chatItem', true)
 
                 // sort files for time-based display
@@ -70,8 +69,6 @@ export class ChatManager {
 
                 for (let [index, file] of files.entries()) {
                     if (window.desk.api.getExt(file) === '.json') {
-
-                        if (!window.desk.api.stat(window.desk.api.joinPath(this.storagePath, file))) continue;
 
                         const metadata = window.desk.api.getmetadata(file)
                         if (!metadata) {
@@ -94,7 +91,7 @@ export class ChatManager {
 
                         staticPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata, datestr: datestr }, 'chatItem')
 
-                        document.dispatchEvent(new CustomEvent('hide-loading'));
+                        globalEventBus.emit('panel:loader:hide')
 
                     } else {
                         console.log("No conversations saved!")
@@ -104,11 +101,11 @@ export class ChatManager {
                 return true
             }
             else {
-                document.dispatchEvent(new CustomEvent('hide-loading'));
+                globalEventBus.emit('panel:loader:hide')
             }
             return false
         } catch (err) {
-            document.dispatchEvent(new CustomEvent('hide-loading'));
+            globalEventBus.emit('panel:loader:hide')
             console.error('Error reading conversation files:', err);
             return false
         } finally {
@@ -203,22 +200,6 @@ export class ChatManager {
 
         const years = Math.floor(months / 12);
         return `${years}y`;
-    }
-
-    async checkAndCreateDirectory() {
-        if (this.storagePath) {
-            try {
-                // Check if the directory exists
-                const exists = await window.desk.api.mkdir(this.storagePath);
-                if (!exists) {
-                    console.log("Error creating directory", this.storagePath)
-                } else {
-                    //console.log('Directory exists');
-                }
-            } catch (error) {
-                console.error('Error checking or creating directory:', error);
-            }
-        }
     }
 
     updateActiveConversation(conversationId) {
@@ -366,7 +347,7 @@ export class ChatManager {
     // Function to render a conversation from a file
     // Function to render a conversation from a file
     async renderConversationFromFile(conversationId) {
-        ClosePrefixed()
+        clearMessages()
 
         // Show loading modal immediately without awaiting
         await this.showLoadingModal('Preparing conversation');
@@ -376,15 +357,13 @@ export class ChatManager {
 
         try {
 
-            let [conversationData, model] = await this.conversationManager.loadConversation(conversationId);
+            let conversationData = await window.desk.api.loadConversation(conversationId)
 
             if (conversationData) {
-                window.desk.api.setConversation(conversationData, conversationId);  // Set global
-                await this.conversationManager.renderConversation(conversationData, model);
+                await conversationloader.renderConversation(conversationData);
 
                 // Clear references
-                conversationData = null;
-                model = null;
+                conversationData = undefined;
             } else {
                 modalmanager.showMessage(`Conversation ${conversationId} not found.`, 'warning');
             }

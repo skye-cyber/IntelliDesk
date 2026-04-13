@@ -5,7 +5,7 @@
  */
 
 import { StateManager } from '../managers/StatesManager.js';
-import toolManager from '../managers/Conversation/Mistral/ToolManager.js';
+import toolManager from '../Tools/ToolManager.ts';
 
 /**
  * Mistral Client Simulator
@@ -141,9 +141,32 @@ export class MistralClientSimulator {
 
         // Store conversation history
         this.conversationHistory = messages || [];
-
+        const rtext = `Key Features Added:
+Dual Purpose: Opens canvas + toggles AI canvas access
+Visual Hierarchy: Gradient background with status indicators
+Interactive States:
+Hover effects with scale and shadow
+Animated toggle ring for AI status
+Pulsing dot indicator
+\`\`\`react
+<div className='w-full'>
+<code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id}\n className={\`hljs \${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono\n text-sm  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px]\n overflow-auto\`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
+</div>
+<div className='w-full'>
+<code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id}\n className={\`hljs \${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto\`} \ndangerouslySetInnerHTML={{ __html: highlighted }}></code>
+</div>
+<div className='w-full'>
+<code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} \nclassName={\`hljs \${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto\`} \ndangerouslySetInnerHTML={{ __html: highlighted }}></code>
+</div>
+<div className='w-full'>
+<code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} \nclassName={\`hljs \${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-custom m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre font-mono text-sm  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto\`} \ndangerouslySetInnerHTML={{ __html: highlighted }}></code>
+</div>
+\`\`\`
+Dual Purpose: Opens canvas + toggles AI canvas access
+Visual Hierarchy: Gradient background with status indicators
+`
         // Generate a realistic AI response
-        const responseText = this.generateAIResponse(messages);
+        const responseText = rtext// this.generateAIResponse(messages);
         const lastMessage = this.conversationHistory[this.conversationHistory.length - 1];
         const userMessageArr = lastMessage?.content || "";
 
@@ -281,7 +304,9 @@ export class MistralClientSimulator {
 
         // Analyze conversation context to decide
         const lastMessage = this.conversationHistory[this.conversationHistory.length - 1];
-        const userMessage = lastMessage?.content || "";
+        const content = lastMessage?.content;
+        let userMessage = typeof content === 'object' ? content.text : content
+
 
         // If this is the first iteration, likely need tools
         if (scenario.iteration === 0) {
@@ -289,7 +314,7 @@ export class MistralClientSimulator {
         }
 
         // If we've already made 2 tool calls, time for final response
-        if (scenario.toolCallsMade >= 2) {
+        if (scenario.toolCallsMade >= 1) {
             return false;
         }
 
@@ -301,7 +326,7 @@ export class MistralClientSimulator {
             lowerCaseMsg.includes('comprehensive') ||
             lowerCaseMsg.includes('detailed') ||
             lowerCaseMsg.includes('complete')) {
-            return scenario.toolCallsMade < 2; // Allow up to 2 tool calls
+            return scenario.toolCallsMade < 5; // Allow up to 2 tool calls
         }
 
         // Simple questions might only need one tool call
@@ -311,8 +336,8 @@ export class MistralClientSimulator {
             return scenario.toolCallsMade < 1; // Only one tool call
         }
 
-        // Default: allow one more tool call
-        return scenario.toolCallsMade < 1;
+        // Default: allow 20 more tool call
+        return scenario.toolCallsMade < 20;
     }
 
     /**
@@ -398,7 +423,7 @@ export class MistralClientSimulator {
             'file': "I can help with file operations. Would you like me to read, write, or analyze files?",
             'system': "I can analyze your system. Would you like me to check disk usage, memory, or other system information?",
             'calculate': "I can perform calculations. What would you like me to calculate?",
-            'search': "I can search for information. What are you looking for?"
+            'search': "I can search for information. What are you looking for?",
         };
 
         // Try to match keywords
@@ -540,7 +565,7 @@ export class MistralClientSimulator {
             const grepTool = tools.find(t => t.function.name.includes('grep'));
             if (grepTool) {
                 toolCalls.push(this.createToolCall(grepTool.function.name, {
-                    pattern: "test",
+                    pattern: "IntelliDesk",
                     path: "/home/skye/Documents/playground/README2.md"
                 }));
                 aiResponse = "Perfoming pattern grep...";

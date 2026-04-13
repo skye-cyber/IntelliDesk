@@ -7,7 +7,7 @@ export default defineConfig({
         react()
     ],
     base: './',
-    //root: resolve(__dirname, 'src/react-app'),
+    //root: resolve(__dirname, 'src/ui'),
     //publicDir: resolve(__dirname, 'src/assets'),
     server: {
         port: 40099,
@@ -17,7 +17,7 @@ export default defineConfig({
         emptyOutDir: true,
         rollupOptions: {
             input: resolve(__dirname, 'index.html'),
-            //input: resolve(__dirname, 'src/react-app/'),
+            //input: resolve(__dirname, 'src/ui/'),
             /*
              * output: {
                 // Ensure relative paths in build
@@ -30,19 +30,18 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@': resolve(__dirname, 'src/react-app/'),
-            '@components': resolve(__dirname, 'src/react-app/components'),
-            '@hooks': resolve(__dirname, 'src/react-app/hooks'),
-            '@utils': resolve(__dirname, 'src/react-app/utils'),
+            '@': resolve(__dirname, 'src/ui/'),
+            '@components': resolve(__dirname, 'src/ui/components'),
+            '@hooks': resolve(__dirname, 'src/ui/hooks'),
+            '@utils': resolve(__dirname, 'src/ui/utils'),
             '@assets': resolve(__dirname, 'src/assets'),
             '@common': resolve(__dirname, 'src/common'),
-            '@renderer': resolve(__dirname, 'src/renderer'),
+            '@core': resolve(__dirname, 'src/core'),
             '@main': resolve(__dirname, 'src/main'),
             '@icons': resolve(__dirname, 'src/icons'),
-            '@js': resolve(__dirname, 'src/renderer/js'),
-            '@math': resolve(__dirname, 'src/renderer/js/MathBase'),
-            '@css': resolve(__dirname, 'src/renderer/css'),
-            '@fonts': resolve(__dirname, 'src/renderer/fonts'),
+            '@math': resolve(__dirname, 'src/core/MathBase'),
+            '@styles': resolve(__dirname, 'src/ui/styles'),
+            '@fonts': resolve(__dirname, 'src/ui/fonts'),
             crypto: require.resolve('crypto-browserify'),
             process: require.resolve('process/browser'),
             fs: require.resolve('browserify-fs'),

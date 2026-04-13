@@ -1,4 +1,4 @@
-import { ChatUtil } from "../Conversation/util";
+import { ChatUtil } from "../Conversation/util.ts";
 import { modalmanager } from "../../StatusUIManager/Manager";
 
 export async function html_preview(selector) {

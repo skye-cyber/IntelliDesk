@@ -11,7 +11,7 @@ const renderer = new marked.Renderer();
 renderer.code = function(code) {
 
     // Handle case where `code` is an object
-    let valid_language = code.lang || 'plaintext';
+    let valid_language = code.lang || 'text';
     if(valid_language.lenth>15) valid_language = 'text'
 
     if (typeof code === "object" && code.text !== undefined) {

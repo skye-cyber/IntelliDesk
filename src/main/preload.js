@@ -1,437 +1,539 @@
-const { contextBridge, ipcRenderer, shell } = require('electron');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const { Buffer } = require('node:buffer');
-const { command } = require('./system.js')
-const { getformatDateTime } = require('./utils.js');
-const { agent } = require('./config.js')
-const { exec } = require('child_process');
-const { dbManager } = require('./DatabaseManager.js')
-const fsops = require('./fs_operations.js')
-
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const electron_1 = require("electron");
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const os_1 = __importDefault(require("os"));
+const child_process_1 = require("child_process");
+const buffer_1 = require("buffer");
+const filesystem_1 = require("./utils/filesystem");
+const datetime_1 = require("./utils/datetime");
+const ToolAgent_1 = require("./utils/ToolAgent");
+// import { dbManager } from './utils/db/DatabaseManager';
+const electron_2 = require("electron");
+const preload_type_1 = require("./preload.type");
+const SessionManager_1 = require("./utils/SessionManager");
+const shared_1 = require("./utils/shared");
+const Manager_1 = require("./utils/PromptManager/Manager");
+// Global variables
 let ConversationId = "";
-
+let profile = "";
+let ConversationHistory;
 window.global = window;
-
-contextBridge.exposeInMainWorld('global', window);
-
+electron_1.contextBridge.exposeInMainWorld('global', window);
 try {
-    const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json')
-    if (fs.statfsSync(_fpath)) {
-        const rprofile = fs.readFileSync(_fpath, 'utf-8')
-        var profile = rprofile ? JSON.parse(rprofile)?.data?.preference : ''
+    ;
+    if (fs_1.default.statfsSync(shared_1.USER_PREFERENCE_CONFIG_FILE)) {
+        const settings = fs_1.default.readFileSync(shared_1.USER_PREFERENCE_CONFIG_FILE, 'utf-8');
+        profile = (settings ? JSON.parse(settings).profile : '');
     }
-} catch (err) {
-    if (!profile) profile = ''
 }
-
-
-const conversation_root = path.join(os.homedir(), '.IntelliDesk/.store')
-
-let system_command = new command(profile).standard()
-
-let ConversationHistory =
-{
+catch (err) {
+    if (!profile)
+        profile = '';
+}
+const conversation_root = shared_1.STORE_DIR;
+let config = {
+    verbosity: "normal",
+    userProfile: profile,
+    capabilities: {
+        multimodal: false,
+        reasoning: false,
+        tools: true,
+        ocr: false
+    }
+};
+let DEFAULT_SYSTEM_PROMPT = Manager_1.SystemPrompt.generate(config);
+config = undefined;
+ConversationHistory = {
     metadata: {
-        model: 'multimodal',
-        type: 'normal',
+        model: preload_type_1.ModelType.multimodal,
+        type: preload_type_1.ConversationType.normal,
         name: '',
         id: ConversationId,
-        created_at: getformatDateTime(),
-        updated_at: getformatDateTime(),
+        sessionId: null,
+        created_at: (0, datetime_1.getformatDateTime)(),
+        updated_at: (0, datetime_1.getformatDateTime)(),
         highlight: ''
     },
     chats: []
-}
-
-
+};
 const api = {
     getDownloadsPath: () => {
-        const downloadsPath = path.join(os.homedir(), 'Downloads');
-        return downloadsPath;
+        return shared_1.DEFAULT_DOWNLOAD_PATH;
     },
     home_dir: () => {
-        return os.homedir();
+        return os_1.default.homedir();
     },
     mkdir: async (dir) => {
         try {
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir);
+            if (!fs_1.default.existsSync(dir)) {
+                fs_1.default.mkdirSync(dir);
             }
             return true;
-        } catch (err) {
+        }
+        catch (err) {
             console.log(err);
             return false;
         }
     },
     write: async (path, data) => {
         try {
-            // Create a deep clone to avoid mutating original
             let dataToSave = JSON.parse(JSON.stringify(data));
-
-            // Remove system instructions from clone only
             if (dataToSave.chats[0].role === 'system') {
                 dataToSave.chats.shift();
             }
-
-            //dataToSave = api.clean(dataToSave); // Do not clear doc/image data
             const fileData = JSON.stringify(dataToSave, null, 2);
-
-            fs.writeFileSync(path, fileData);
+            fs_1.default.writeFileSync(path, fileData);
             return ConversationHistory;
-        } catch (err) {
+        }
+        catch (err) {
             console.log(err);
             return ConversationHistory;
         }
     },
     read: async (fpath) => {
         try {
-            if (!fpath) return false
-            const rdata = fs.readFileSync(fpath, 'utf-8')
+            if (!fpath)
+                return false;
+            const rdata = fs_1.default.readFileSync(fpath, 'utf-8');
             let jdata = rdata ? JSON.parse(rdata) : '';
-
-            // Add compartibility feature to maintain conversations instegrity!
             if (jdata?.chats[0].role === "system") {
-                jdata.chats.shift()
+                jdata.chats.shift();
             }
-            return jdata
-        } catch (err) {
+            return jdata;
+        }
+        catch (err) {
             console.log(err);
         }
     },
     readDir: async (dir) => {
         try {
-            return fs.readdirSync(dir);
-        } catch (err) {
+            return fs_1.default.readdirSync(dir);
+        }
+        catch (err) {
             console.log(err);
             return false;
         }
     },
     stat: (filePath) => {
         try {
-            return fs.statSync(filePath);
-        } catch (err) {
+            return fs_1.default.statSync(filePath);
+        }
+        catch (err) {
             console.error(err);
-            return false
+            return false;
         }
     },
     getExt: (file) => {
-        return path.extname(file);
+        return path_1.default.extname(file);
     },
     getBasename: (_path, ext) => {
-        return path.basename(_path, ext);
+        return path_1.default.basename(_path, ext);
     },
     joinPath: (node, child) => {
-        return path.join(node, child);
+        return path_1.default.join(node, child);
     },
     RenameFile: (old_name, new_name, base_dir = conversation_root) => {
         try {
-            fs.renameSync(path.join(base_dir, `${old_name}.json`), path.join(base_dir, `${new_name}.json`))
-            return true
-        } catch (err) {
-            console.log(err)
-            return false
+            fs_1.default.renameSync(path_1.default.join(base_dir, `${old_name}.json`), path_1.default.join(base_dir, `${new_name}.json`));
+            return true;
+        }
+        catch (err) {
+            console.log(err);
+            return false;
         }
     },
     RenameConversation: async (id, name, base_dir = conversation_root) => {
+        console.log(name, id);
         try {
-            const fpath = path.join(base_dir, `${id}.json`)
-
-            let data = await api.read(fpath)
-            if (!data) return ConversationHistory
-
-            data.metadata.name = name
-
-            api.saveConversation(data, id)
-            return true
-        } catch (err) {
-            console.log(err)
-            return ConversationHistory
+            const fpath = path_1.default.join(base_dir, `${id}.json`);
+            let data = await api.read(fpath);
+            if (!data)
+                return ConversationHistory;
+            data.metadata.name = name;
+            ConversationHistory = data;
+            api.saveConversation();
+            return true;
         }
+        catch (err) {
+            console.log(err);
+            return ConversationHistory;
+        }
+    },
+    readStore: async () => {
+        const files = await api.readDir(shared_1.STORE_DIR);
+        if (!files)
+            return [];
+        return files;
+    },
+    validateStore: async () => {
+        const files = await api.readDir(shared_1.STORE_DIR);
+        if (!files)
+            return false;
+        return files.length > 0;
+    },
+    loadConversation: async (id) => {
+        const filepath = path_1.default.join(shared_1.STORE_DIR, `${id}.json`);
+        // Check if file exists
+        if (!api.stat(filepath))
+            return undefined;
+        const data = await api.read(filepath);
+        if (!data)
+            return undefined;
+        api.setConversation(data);
+        return ConversationHistory;
     },
     deleteChat: (id, base_dir = conversation_root) => {
         try {
-            const file = path.join(base_dir, `${id}.json`)
-            if (fs.statSync(file)) {
-                fs.rmSync(file)
-                // Move the item to the trash
-                //trash([file])
-                return true
-            } else {
-                console.log('Item not found')
-                return false
+            if (!id)
+                id = ConversationHistory.metadata.id;
+            const file = path_1.default.join(base_dir, `${id}.json`);
+            if (fs_1.default.statSync(file)) {
+                // Delete session and lock first
+                const sessionId = ConversationHistory.metadata.sessionId;
+                if (sessionId)
+                    SessionManager_1.SessionManager.delete(sessionId);
+                fs_1.default.rmSync(file);
+                return true;
             }
-        } catch (err) {
-            console.log(err);
+            else {
+                console.log('Item not found');
+                return false;
+            }
         }
+        catch (err) {
+            //console.log(err);
+            return false;
+        }
+    },
+    updateSystemPrompt: async (isMultimodal = false, isReasoning = false, hasToolCalls = false, hasOCR = false) => {
+        const userPreferences = await api.getUserSettings();
+        const config = {
+            verbosity: "normal",
+            userProfile: userPreferences ? userPreferences.profile : "",
+            capabilities: {
+                multimodal: isMultimodal,
+                reasoning: isReasoning,
+                tools: hasToolCalls,
+                ocr: hasOCR
+            }
+        };
+        const prompt = Manager_1.SystemPrompt.generate(config);
+        if (ConversationHistory.chats.length > 1) {
+            if (api.getRoleByIndex(0) !== preload_type_1.MessageRole.system)
+                return false;
+            if (Array.isArray(ConversationHistory.chats[0].content)) {
+                ConversationHistory.chats[0].content[0].text = prompt;
+            }
+            else {
+                ConversationHistory.chats[0].content = prompt;
+            }
+        }
+        console.log("Prompt", prompt);
+        return true;
     },
     addHistory: (item) => {
         try {
-            if (!typeof (item) === "object") return console.log("Invalid conversation item")
-
-            ConversationHistory.chats.push(item)
-
+            if (typeof item !== "object") {
+                console.log("Invalid conversation item");
+                return ConversationHistory;
+            }
+            ConversationHistory.chats.push(item);
+            // Create session here and Update sessionId to avoid session creation refresh that endup unused
+            if (!ConversationHistory.metadata.sessionId) {
+                ConversationHistory.metadata.sessionId = SessionManager_1.SessionManager.create(ConversationId).sessionId;
+            }
             if (!ConversationHistory.metadata.highlight) {
-                if (ConversationHistory.metadata.model === "multimodal") {
-                    if (item?.content.length > 0 && item?.content[0].text && typeof (item?.content[0].text) === "string") {
-                        const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replaceAll('`', '')
-                        ConversationHistory.metadata.highlight = highlight
+                if (ConversationHistory.metadata.model !== preload_type_1.ModelType.chat) {
+                    if (item && item?.content && item.content.length > 0) {
+                        if (typeof item?.content[0] == 'object' && item?.content[0].text && typeof (item?.content[0].text) === "string") {
+                            const highlight = item?.content[0].text.split(' ').slice(0, 8).join(' ').replace(/`/, '');
+                            ConversationHistory.metadata.highlight = highlight;
+                        }
                     }
-                } else {
+                }
+                else {
                     if (typeof (item?.content) === "string") {
-                        const highlight = item?.content?.split(' ').slice(0, 8).join(' ').replaceAll('`', '')
-                        ConversationHistory.metadata.highlight = highlight
+                        const highlight = item?.content?.split(' ').slice(0, 8).join(' ').replace(/`/, '');
+                        ConversationHistory.metadata.highlight = highlight;
                     }
                 }
             }
-            if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving!")
-
-            // Update update created_at
-            ConversationHistory.metadata.updated_at = getformatDateTime()
-            // Save to file
-            api.saveConversation(ConversationHistory)
-            return ConversationHistory
-        } catch (err) {
-            return ConversationHistory
+            if (ConversationHistory.metadata.type === "temporary") {
+                console.log("In temporary chat Not saving!");
+                return ConversationHistory;
+            }
+            ConversationHistory.metadata.updated_at = (0, datetime_1.getformatDateTime)();
+            api.saveConversation();
+            return ConversationHistory;
+        }
+        catch (err) {
+            return ConversationHistory;
         }
     },
     getHistory: (filter = false) => {
         const data = filter ? ConversationHistory.chats : ConversationHistory;
-
-        return data
+        return data;
     },
     popHistory: (role = null) => {
         try {
             if (!role) {
                 ConversationHistory.chats.pop();
-            } else if (ConversationHistory.chats?.slice(-1)[0]?.role === role) {
-                ConversationHistory.chats.pop();
-                //console.log("Done, resting!")
             }
-            // Update update created_at
-            ConversationHistory.metadata.updated_at = getformatDateTime()
-            return ConversationHistory
-        } catch (err) {
-            return ConversationHistory
+            else if (preload_type_1.MessageRole[ConversationHistory.chats?.slice(-1)[0]?.role] === role) {
+                console.log("B4pop:", ConversationHistory.chats.length);
+                ConversationHistory.chats.pop();
+                console.log("Pop:", ConversationHistory.chats.length);
+            }
+            ConversationHistory.metadata.updated_at = (0, datetime_1.getformatDateTime)();
+            return ConversationHistory;
+        }
+        catch (err) {
+            return ConversationHistory;
         }
     },
     getModel: () => {
-        return ConversationHistory.metadata.model
+        return ConversationHistory.metadata.model;
     },
     setModel: (model) => {
         try {
-            model = model?.toLocaleLowerCase()
-
-            if (!['chat', 'multimodal'].includes(model)) return
-
-            ConversationHistory.metadata.model = model
-
-            if (ConversationHistory.chats[0].role === 'system') {
-                ConversationHistory.chats[0] = (model === "multimodal")
-                    ? { role: "system", content: [{ type: "text", text: system_command }] }
-                    : { role: "system", content: system_command }
+            model = model?.toLocaleLowerCase();
+            if (!['chat', 'multimodal'].includes(model))
+                return;
+            ConversationHistory.metadata.model = preload_type_1.ModelType[model];
+            if (ConversationHistory.chats[0].role === preload_type_1.MessageRole.system) {
+                // all other model types except chat use array
+                ConversationHistory.chats[0] = (model !== preload_type_1.ModelType.chat)
+                    ? { role: preload_type_1.MessageRole.system, content: [{ type: "text", text: DEFAULT_SYSTEM_PROMPT }] }
+                    : { role: preload_type_1.MessageRole.system, content: DEFAULT_SYSTEM_PROMPT };
             }
-        } catch (error) {
-            console.log(error)
-            return ConversationHistory
+        }
+        catch (error) {
+            console.log(error);
         }
     },
     clean: (data) => {
-        // Removes documents from the conversation data
         try {
-            // Handle single conversation object instead of array
             const chat = data;
             const cleaned_chats = chat.chats
                 .map(item => {
-                    let content = item?.content;
-
-                    // Handle array-type content
-                    if (Array.isArray(content)) {
-                        content = content
-                            .map(part => {
-                                let text = part?.text || '';
-
-                                // Apply your slice rule
-                                if (text.slice(-1) === ']') {
-                                    text = text.substring(0, text.length - 22);
-                                }
-
-                                text = text.trim();
-                                return text ? { type: part?.type || 'text', text } : null;
-                            })
-                            .filter(Boolean);
-                    }
-
-                    // Handle string-type content
-                    else if (typeof content === 'string') {
-                        if (content.slice(-1) === ']') {
-                            content = content.substring(0, content.length - 22);
+                let content = item?.content;
+                if (Array.isArray(content)) {
+                    content = content
+                        .map(part => {
+                        let text = part?.text || '';
+                        if (text.slice(-1) === ']') {
+                            text = text.substring(0, text.length - 22);
                         }
-                        content = content.trim();
+                        text = text.trim();
+                        return text ? { type: part?.type || 'text', text } : null;
+                    })
+                        .filter((item) => item !== null);
+                }
+                else if (typeof content === 'string') {
+                    if (content.slice(-1) === ']') {
+                        content = content.substring(0, content.length - 22);
                     }
-
-                    // Invalid or empty content
-                    else {
-                        content = '';
-                    }
-
-                    // Skip empty entries
-                    const isEmpty =
-                        (Array.isArray(content) && content.length === 0) ||
-                        (typeof content === 'string' && !content);
-
-                    if (isEmpty) return null;
-
-                    return { role: item.role, content };
-                })
-                .filter(Boolean); // remove nulls
-
-            // If no valid chats, return null or handle as needed
-            if (!cleaned_chats.length) return null;
-
+                    content = content.trim();
+                }
+                else {
+                    content = '';
+                }
+                const isEmpty = (Array.isArray(content) && content.length === 0) || (typeof content === 'string' && !content);
+                if (isEmpty)
+                    return null;
+                return { role: item.role, content };
+            })
+                .filter(Boolean);
+            if (!cleaned_chats.length)
+                return null;
             return { ...chat, chats: cleaned_chats };
-        } catch (err) {
+        }
+        catch (err) {
             console.log(err);
-            // Return the original data or handle error appropriately
             return data;
         }
     },
     getmetadata: (file) => {
         try {
-            const fpath = path.join(conversation_root, file)
-            if (!api.stat(fpath)) return;
-            const rdata = fs.readFileSync(fpath, 'utf-8')
-            return rdata ? JSON.parse(rdata)?.metadata : ''
-        } catch (err) {
-            console.log(err, file)
+            if (!file)
+                return ConversationHistory.metadata;
+            const fpath = path_1.default.join(conversation_root, file);
+            if (!api.stat(fpath))
+                return;
+            const rdata = fs_1.default.readFileSync(fpath, 'utf-8');
+            return rdata ? JSON.parse(rdata)?.metadata : undefined;
+        }
+        catch (err) {
+            console.log(err, file);
+            return undefined;
+        }
+    },
+    getRoleByIndex: (index) => {
+        try {
+            if (index === -1)
+                return ConversationHistory.chats.slice(-1)[0].role;
+            return ConversationHistory.chats[index].role;
+        }
+        catch (err) {
+            return undefined;
         }
     },
     updateName: (name, save = true) => {
         try {
-            if (!name?.trim()) return ConversationHistory;
-            //console.log("Rename conversation to:", name)
-            ConversationHistory.metadata.name = name
-            if (save) api.saveConversation(ConversationHistory)
-            return ConversationHistory.metadata.name
-        } catch (err) {
-            return ConversationHistory.metadata.name
+            if (!name?.trim())
+                return ConversationHistory.metadata.name;
+            ConversationHistory.metadata.name = name;
+            if (save)
+                api.saveConversation();
+            return ConversationHistory.metadata.name;
+        }
+        catch (err) {
+            return ConversationHistory.metadata.name;
         }
     },
     updateContinueHistory: (item) => {
         try {
-            if (!item) return console.log('Conversation item is null')
-            //console.log(ConversationHistory.chats.slice(-1)[0])
-            if (ConversationHistory.chats.slice(-1)[0].role === "user") api.popHistory() // Remove user message
-
-            if (ConversationHistory.chats.slice(-1)[0].role === "assistant") {
-                const target_ai_response = JSON.parse(JSON.stringify(ConversationHistory))[0].chats.slice(-1)[0] // Clone content to avoid mutation
-                api.popHistory() // Remove the ai response
-
-                if (target_ai_response.content === "object" && Array.isArray(target_ai_response.content)) {
-                    const new_text = `${target_ai_response.content[0].text} ${item.content[0].text}`
-                    target_ai_response.content[0] = { type: "text", text: new_text }
-                } else {
-                    const new_text = `${target_ai_response.content} ${item.content}`
-                    target_ai_response.content = new_text
-                }
-                //console.log(JSON.stringify(target_ai_response))
-                if (target_ai_response) api.addHistory(target_ai_response)
+            if (!item) {
+                console.log('Conversation item is null');
+                return;
             }
-        } catch (error) {
-            console.error(error)
-            return false
+            if (ConversationHistory.chats.slice(-1)[0].role === "user")
+                api.popHistory();
+            if (ConversationHistory.chats.slice(-1)[0].role === "assistant") {
+                const target_ai_response = JSON.parse(JSON.stringify(ConversationHistory)).chats.slice(-1)[0];
+                api.popHistory();
+                if (typeof target_ai_response.content === "object" && Array.isArray(target_ai_response.content)) {
+                    const new_text = `${target_ai_response.content[0].text} ${item.content[0].text}`;
+                    target_ai_response.content[0] = { type: "text", text: new_text };
+                }
+                else {
+                    const new_text = `${target_ai_response.content} ${item.content}`;
+                    target_ai_response.content = new_text;
+                }
+                if (target_ai_response)
+                    api.addHistory(target_ai_response);
+            }
+        }
+        catch (error) {
+            console.error(error);
+            return false;
         }
     },
     clearAllImages: (history) => {
         try {
-            // Convert history to array and process each message
             return history.chats.map(item => {
-                // Extract text content only and filter out image content
                 const cleanedContent = item.content.filter(val => val.type === "text").map(textContent => ({
                     ...textContent,
-                    // Process text further
-                    text: textContent.text.trim() // Remove extra whitespace
+                    text: textContent.text.trim()
                 }));
-
-                // Return the cleaned item with only text content
                 return {
                     ...item,
                     content: cleanedContent
                 };
             });
-        } catch (err) {
-            return false
+        }
+        catch (err) {
+            return false;
         }
     },
     clearImages: (history) => {
         try {
-            // Clean all messages by removing non-text content
             const cleanedHistory = history.chats.map(item => {
                 const cleanedContent = item.content
                     .filter(val => val.type === "text")
                     .map(textContent => ({
-                        ...textContent,
-                        // Remove extra whitespace from text
-                        text: textContent.text.trim()
-                    }));
+                    ...textContent,
+                    text: textContent.text.trim()
+                }));
                 return {
                     ...item,
                     content: cleanedContent
                 };
             });
-
-            // Access the original last message before cleaning
             const lastMessage = history.chats[history.chats.length - 1];
-
-            // Messages have a property role that distinguishes user messages,
-            // and if the user message contains any image data
-            if (
-                lastMessage &&
-                lastMessage.role === "user" &&  // adjust property if your structure differs
-                lastMessage.content.some(val => ["image_url", "file_url"].includes(val.type))
-            ) {
-                // Replace the cleaned version of the last message with the original last message
-                cleanedHistory.chats[cleanedHistory.chats.length - 1] = lastMessage;
+            if (lastMessage &&
+                lastMessage.role === "user" &&
+                lastMessage.content.some(val => ["image_url", "file_url"].includes(val.type))) {
+                cleanedHistory[cleanedHistory.length - 1] = lastMessage;
             }
-
             return cleanedHistory;
-        } catch (err) {
-            return false
+        }
+        catch (err) {
+            return false;
         }
     },
-    CreateNew: (conversation, model) => {
-        if (!ConversationId) ConversationId = api.generateUUID()
-        ConversationHistory.chats = conversation
-        ConversationHistory.metadata =
-        {
-            model: model,
+    startNew: (model, temporary) => {
+        ConversationId = api.generateUUID();
+        ConversationHistory.metadata = {
+            model: preload_type_1.ModelType[model],
             id: ConversationId,
-            created_at: getformatDateTime(),
-            updated_at: getformatDateTime()
+            created_at: (0, datetime_1.getformatDateTime)(),
+            updated_at: (0, datetime_1.getformatDateTime)(),
+            sessionId: null,
+            type: temporary ? preload_type_1.ConversationType.temporary : preload_type_1.ConversationType.temporary,
+            name: ConversationHistory.metadata.name,
+            highlight: ConversationHistory.metadata.highlight
+        };
+        if (model)
+            ConversationHistory.metadata.model = preload_type_1.ModelType[model];
+        if (model !== preload_type_1.ModelType.chat) {
+            ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: [{ type: "text", text: DEFAULT_SYSTEM_PROMPT }] }];
         }
-        api.saveConversation(ConversationHistory)
+        else {
+            ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: DEFAULT_SYSTEM_PROMPT }];
+        }
+        // if (!temporary) api.saveConversation(); save shoul be done after conversation has some history to avoid blank files
+        return ConversationId;
     },
-    saveConversation: async (conversationData, conversationId = ConversationId) => {
-        const filePath = `${conversation_root}/${conversationId}.json`;
-        //console.log(JSON.stringify(conversationData))
-        try {
-            if (ConversationHistory.metadata.type === "temporary") return console.log("In temporary chat Not saving")
-            //console.log("Saving: " + conversationId + filePath)
-            // await api.write(filePath, conversationData);
-            return filePath
-        } catch (err) {
-            console.error('Error saving conversation:', err);
-            return filePath
+    saveConversation: async () => {
+        let conversationId = ConversationHistory.metadata.id;
+        if (!conversationId) {
+            console.log("No conversationid create new:", ConversationHistory);
+            conversationId = api.generateUUID();
         }
+        const filePath = `${conversation_root}/${conversationId}.json`;
+        try {
+            if (ConversationHistory.metadata.type === preload_type_1.ConversationType.temporary) {
+                console.log("In temporary chat Not saving");
+                return filePath;
+            }
+            // console.log(ConversationHistory.chats)
+            // Actually save the conversation data to file
+            if (ConversationHistory.chats.length > 1) {
+                await api.write(filePath, ConversationHistory);
+            }
+            // console.log(`Conversation saved: ${conversationId}`);
+            return filePath;
+        }
+        catch (err) {
+            console.error('Error saving conversation:', err);
+            return filePath;
+        }
+    },
+    upgradeToArrayModel: (data = null, save = true) => {
+        let histroy = data ? data : ConversationHistory;
+        histroy.chats.filter((chat) => {
+            if (!Array.isArray(chat.content)) {
+                chat.content = [{ type: 'text', text: chat.content }];
+            }
+        });
+        if (!data) {
+            ConversationHistory = histroy;
+        }
+        if (save) {
+            api.saveConversation();
+        }
+        return histroy;
     },
     generateUUID: () => {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-            return crypto.randomUUID(); // ✅ Modern secure UUID (v4)
+            return crypto.randomUUID();
         }
-
-        // 🧩 Fallback for older browsers or runtimes
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -445,27 +547,30 @@ const api = {
         ConversationId = id;
     },
     setConversation: (data, id) => {
-        //api.saveConversation(data, data[0].metadata.id)
-        if (data.chats[0]?.role !== 'system') data.chats.unshift({ role: 'system', content: system_command })
-        ConversationHistory = data;
-        ConversationId = id ? id : data.metadata.id;
+        try {
+            if (data.chats[0]?.role !== preload_type_1.MessageRole.system)
+                data.chats.unshift({ role: preload_type_1.MessageRole.system, content: DEFAULT_SYSTEM_PROMPT });
+            ConversationHistory = data;
+            ConversationId = id ? id : data.metadata.id;
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
     },
     send: (channel, data) => {
-        // List of valid channels
         const validChannels = ['dispatch-to-main-process', 'Notify'];
         if (validChannels.includes(channel)) {
-            ipcRenderer.send(channel, data);
+            electron_1.ipcRenderer.send(channel, data);
         }
     },
     receive: (channel, func) => {
         const validChannels = ['reply-from-main-process', 'from-main-process-ToVision', 'from-main-process-ToChat'];
         if (validChannels.includes(channel)) {
-            // Strip event as it includes `sender` and other properties
-            ipcRenderer.on(channel, (event, ...args) => func(...args));
+            electron_1.ipcRenderer.on(channel, (_, ...args) => func(...args));
         }
     },
     ThemeChangeDispatch: () => {
-        // Dispatch a custom event 'animationReady' on the element
         const event = new CustomEvent('ThemeChange');
         document.dispatchEvent(event);
     },
@@ -476,126 +581,104 @@ const api = {
         fetch(dataUrl)
             .then(res => res.blob())
             .then(blob => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const buffer = Buffer.from(reader.result);
-                    const outputPath = path.join(downloadsPath, 'IntelliDesk-output.jpg');
-
-                    fs.writeFile(outputPath, buffer, (err) => {
-                        if (err) {
-                            console.error('Error saving image:', err);
-                        } else {
-                            shell.openPath(outputPath);
-                        }
-                    });
-                };
-                reader.readAsArrayBuffer(blob);
-            })
-            .catch((error) => {
-                console.error('Error creating blob:', error);
-            });
-    },
-
-    cleanFile: async (file) => {
-        fs.readFileSync(file, (err, data) => {
-            if (err) throw err;
-            data = JSON.parse(data);
-            //for (let [i, res] of data.e)
-            data.chats.forEach(res => {
-                // console.log(data)
-                if (res.role === "user") {
-
-                    if (data.chats[data.chats.indexOf(res) + 1].role !== "assistant") {
-                        console.log("Pair: !index", data.chats.indexOf(res) + 1)
-                        data.chats.slice(data.chats.indexOf(res), data.chats.indexOf(res) + 1).values()
-                    } else if (data.chats[data.chats.indexOf(res) + 1].role === "assistant") {
-                        console.log("Pair: OK", data.chats.indexOf(res))
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const buffer = buffer_1.Buffer.from(reader.result);
+                const outputPath = path_1.default.join(downloadsPath, 'IntelliDesk-output.jpg');
+                fs_1.default.writeFile(outputPath, buffer, (err) => {
+                    if (err) {
+                        console.error('Error saving image:', err);
                     }
-                }
-            })
-            return true
+                    else {
+                        electron_2.shell.openPath(outputPath);
+                    }
+                });
+            };
+            reader.readAsArrayBuffer(blob);
+        })
+            .catch((error) => {
+            console.error('Error creating blob:', error);
         });
     },
+    cleanFile: async (file) => {
+        try {
+            const data = await fs_1.default.promises.readFile(file, 'utf-8');
+            const parsedData = JSON.parse(data);
+            parsedData.chats.forEach((res) => {
+                if (res.role === "user") {
+                    if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role !== "assistant") {
+                        // console.log("Pair: !index", parsedData.chats.indexOf(res) + 1);
+                        parsedData.chats.slice(parsedData.chats.indexOf(res), parsedData.chats.indexOf(res) + 1).values();
+                    }
+                    else if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role === "assistant") {
+                        console.log("Pair: OK", parsedData.chats.indexOf(res));
+                    }
+                }
+            });
+            return true;
+        }
+        catch (err) {
+            console.error(err);
+            return false; // or return undefined
+        }
+    },
     getDateTime: () => {
-        return getformatDateTime(true);
+        return (0, datetime_1.getformatDateTime)(true);
     },
-    savePreference: async (data) => {
+    saveUserSettings: async (data) => {
         try {
-            const skeleton = {
-                data: data
-            }
-            const prefFile = ".preference.json"
-            const prefPath = path.join(os.homedir(), '.IntelliDesk/.config');
-            try {
-                fs.mkdirSync(prefPath, { recursive: true });
-                //console.log(`Directory created: ${prefPath}`);
-            } catch (error) {
-                console.error(`Error creating directory: ${error.message}`);
-            }
-            const prefFpath = path.join(prefPath, prefFile);
-            fs.writeFileSync(prefFpath, JSON.stringify(skeleton));
-            return true
-        } catch (err) {
-            //console.log(err);
-            return false
+            fs_1.default.writeFileSync(shared_1.USER_PREFERENCE_CONFIG_FILE, JSON.stringify(data));
+            return true;
+        }
+        catch (err) {
+            return false;
         }
     },
-    deletePreference: async (data = null) => {
+    deleteUserSettings: async () => {
         try {
-            const prefPath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json');
-            fs.rmSync(prefPath, data);
-            return true
-        } catch (err) {
+            fs_1.default.rmSync(shared_1.USER_PREFERENCE_CONFIG_FILE);
+            return true;
+        }
+        catch (err) {
             console.log(err);
-            return false
+            return false;
         }
     },
-    getPreferences: async () => {
+    getUserSettings: async () => {
         try {
-            const _fpath = path.join(os.homedir(), '.IntelliDesk/.config/.preference.json')
-            if (fs.statfsSync(_fpath)) {
-                const prefData = fs.readFileSync(_fpath, 'utf-8')
-                //console.log(JSON.parse(prefData))
-                return JSON.parse(prefData)
+            if (fs_1.default.statfsSync(shared_1.USER_PREFERENCE_CONFIG_FILE)) {
+                const prefData = fs_1.default.readFileSync(shared_1.USER_PREFERENCE_CONFIG_FILE, 'utf-8');
+                return JSON.parse(prefData);
             }
-        } catch (err) {
-            //console.log(err)
+            return undefined;
+        }
+        catch (err) {
+            return undefined;
         }
     },
     saveRecording: async (blob) => {
         try {
             const randomFname = `hfaudio_${Math.random().toString(36).substring(1, 12)}`;
-            const savePath = path.join(os.homedir(), `.IntelliDesk/.cache/${randomFname}.wav`)
-            // Extract the directory path from the file path
-            const dirPath = path.dirname(savePath);
-
-            // Create the directory if it doesn't exist
-            if (!fs.existsSync(dirPath)) {
-                fs.mkdirSync(dirPath, { recursive: true });
-                console.log(`Directory '${dirPath}' created.`);
-            }
-            // Convert Blob to ArrayBuffer
+            const savePath = path_1.default.join(shared_1.CACHE_DIR, `${randomFname}.wav`);
             const arrayBuffer = await blob.arrayBuffer();
-
-            // Convert ArrayBuffer to Buffer
-            const buffer = Buffer.from(arrayBuffer);
-
-            // Write the Buffer to a file
-            fs.writeFileSync(savePath, buffer);
+            const buffer = buffer_1.Buffer.from(arrayBuffer);
+            fs_1.default.writeFileSync(savePath, buffer);
             console.log(`File saved at ${savePath}`);
-            return savePath
-        } catch (err) {
-            console.log(err)
+            return savePath;
+        }
+        catch (err) {
+            console.log(err);
+            return undefined;
         }
     },
     readFileData: async (filePath) => {
-        if (!fs.existsSync(filePath)) {
-            return false
+        if (!fs_1.default.existsSync(filePath)) {
+            return false;
         }
-        data = fs.readFileSync(filePath)
-        return data
+        const data = fs_1.default.readFileSync(filePath);
+        return data;
     },
-    saveImageBuffer: async (canvas, path, url = null) => {
+    saveImageBuffer: async (canvas, path, _ = null) => {
         try {
             return new Promise((resolve, reject) => {
                 canvas.toBlob(async (blob) => {
@@ -603,97 +686,67 @@ const api = {
                         reject(new Error('Canvas to Blob returned null'));
                         return;
                     }
-
                     try {
-                        // Convert the Blob to an ArrayBuffer
                         const arrayBuffer = await blob.arrayBuffer();
-                        // Create a Buffer from the ArrayBuffer
-                        const buffer = Buffer.from(arrayBuffer);
-
-                        // Invoke the IPC method to save the image
-                        const response = await ipcRenderer.invoke('save-dg-As-PNG', buffer, path);
-                        console.log(response)
+                        const buffer = buffer_1.Buffer.from(arrayBuffer);
+                        const response = await electron_1.ipcRenderer.invoke('save-dg-As-PNG', buffer, path);
                         resolve(response === true);
-                    } catch (err) {
+                    }
+                    catch (err) {
                         reject(err);
                     }
                 }, 'image/png');
-            })
-
-        } catch (err) {
-            console.log(err)
-            return 'Runtime error: Failed to save image'
+            });
+        }
+        catch (err) {
+            console.log(err);
+            return 'Runtime error: Failed to save image';
         }
     }
 };
-
 const api2 = {
-    // Key chain apis
-    saveKeyChain: async (keychain) => ipcRenderer.invoke('save-key-chain', keychain),
-    getKeyChain: async (account = 'mistral') => ipcRenderer.invoke('get-key-chain', account),
-    resetKeyChain: async (accounts) => ipcRenderer.invoke('reset-key-chain', accounts),
-
-    appVersion: async () => ipcRenderer.invoke('get-app-version',),
-    appIsDev: async () => ipcRenderer.invoke('get-dev-status',),
-
-    // Chat functionality
-    sendChatMessage: (message, model, options) => ipcRenderer.invoke('send-chat-message', { message, model, options }),
-
-    // File dialogs
-    showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
-    showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
-    attachFiles: () => ipcRenderer.invoke('attach-files'),
-
-    // Model management
-    getAvailableModels: () => ipcRenderer.invoke('get-available-models'),
-
-    // Settings
-    getSettings: () => ipcRenderer.invoke('get-settings'),
-    saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
-
-    // Theme
-    getTheme: () => ipcRenderer.invoke('get-theme'),
-    setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
-
-    // Voice recording
-    startRecording: () => ipcRenderer.invoke('start-recording'),
-    stopRecording: () => ipcRenderer.invoke('stop-recording'),
-
-    // Code/Canvas
-    saveCodeToFile: (code, filePath) => ipcRenderer.invoke('save-code-to-file', { code, filePath }),
-    loadCodeFromFile: (filePath) => ipcRenderer.invoke('load-code-from-file', { filePath }),
-
-    // Conversations
-    getConversations: () => ipcRenderer.invoke('get-conversations'),
-    saveConversation: (conversation) => ipcRenderer.invoke('save-conversation', conversation),
-    deleteConversation: (conversationId) => ipcRenderer.invoke('delete-conversation', conversationId),
-
-    // Event listeners for real-time updates
+    saveKeyChain: async (keychain) => electron_1.ipcRenderer.invoke('save-key-chain', keychain),
+    getKeyChain: async (account = 'mistral') => electron_1.ipcRenderer.invoke('get-key-chain', account),
+    resetKeyChain: async (accounts) => electron_1.ipcRenderer.invoke('reset-key-chain', accounts),
+    appVersion: async () => electron_1.ipcRenderer.invoke('get-app-version'),
+    appIsDev: async () => electron_1.ipcRenderer.invoke('get-dev-status'),
+    sendChatMessage: (message, model, options) => electron_1.ipcRenderer.invoke('send-chat-message', { message, model, options }),
+    showSaveDialog: (options) => electron_1.ipcRenderer.invoke('show-save-dialog', options),
+    showOpenDialog: (options) => electron_1.ipcRenderer.invoke('show-open-dialog', options),
+    attachFiles: () => electron_1.ipcRenderer.invoke('attach-files'),
+    getAvailableModels: () => electron_1.ipcRenderer.invoke('get-available-models'),
+    getSettings: () => electron_1.ipcRenderer.invoke('get-settings'),
+    saveSettings: (settings) => electron_1.ipcRenderer.invoke('save-settings', settings),
+    getTheme: () => electron_1.ipcRenderer.invoke('get-theme'),
+    setTheme: (theme) => electron_1.ipcRenderer.invoke('set-theme', theme),
+    startRecording: () => electron_1.ipcRenderer.invoke('start-recording'),
+    stopRecording: () => electron_1.ipcRenderer.invoke('stop-recording'),
+    saveCodeToFile: (code, filePath) => electron_1.ipcRenderer.invoke('save-code-to-file', { code, filePath }),
+    loadCodeFromFile: (filePath) => electron_1.ipcRenderer.invoke('load-code-from-file', { filePath }),
+    getConversations: () => electron_1.ipcRenderer.invoke('get-conversations'),
+    saveConversation: (conversation) => electron_1.ipcRenderer.invoke('save-conversation', conversation),
+    deleteConversation: (conversationId) => electron_1.ipcRenderer.invoke('delete-conversation', conversationId),
     onChatResponse: (callback) => {
-        ipcRenderer.on('chat-response', (event, response) => callback(response));
-        return () => ipcRenderer.removeAllListeners('chat-response');
+        electron_1.ipcRenderer.on('chat-response', (_, response) => callback(response));
+        return () => electron_1.ipcRenderer.removeAllListeners('chat-response');
     },
-
     onError: (callback) => {
-        ipcRenderer.on('chat-error', (event, error) => callback(error));
-        return () => ipcRenderer.removeAllListeners('chat-error');
+        electron_1.ipcRenderer.on('chat-error', (_, error) => callback(error));
+        return () => electron_1.ipcRenderer.removeAllListeners('chat-error');
     },
-
     onThemeChange: (callback) => {
-        ipcRenderer.on('theme-changed', (event, theme) => callback(theme));
-        return () => ipcRenderer.removeAllListeners('theme-changed');
+        electron_1.ipcRenderer.on('theme-changed', (_, theme) => callback(theme));
+        return () => electron_1.ipcRenderer.removeAllListeners('theme-changed');
     }
 };
-
+// {
+//     encoding: 'utf8',
+//     ...options
+// },
 const cmd = {
-    execute: (command, options = {}) => {
+    execute: (command, _ = {}) => {
         return new Promise((resolve) => {
-            exec(command, {
-                encoding: 'utf8',
-                ...options
-            }, (error, stdout, stderr) => {
-                // Always resolve, never reject, so caller can handle both cases
-                // console.log("CMD E:", error, "STDOUT:", stdout, "STDERR:", stderr)
+            (0, child_process_1.exec)(command, (error, stdout, stderr) => {
                 resolve({
                     success: !error,
                     error: error,
@@ -706,42 +759,34 @@ const cmd = {
         });
     }
 };
-
-contextBridge.exposeInMainWorld('desk', {
+electron_1.contextBridge.exposeInMainWorld('desk', {
     api,
     api2,
-    agent,
+    agent: ToolAgent_1.Agent,
     cmd,
-    fsops,
-    path,
-    fs,
-    dbManager
+    fsops: filesystem_1.fsOperations,
+    path: path_1.default,
+    fs: fs_1.default,
+    sessionmanager: SessionManager_1.SessionManager,
+    lockmanager: SessionManager_1.LockManager
+    // dbManager
 });
-
-document.addEventListener('DOMContentLoaded', function() {
-    //initialize conversation histories when is ready/loaded
-    ConversationHistory.chats = [{ role: "system", content: system_command }];
-    ConversationId = api.generateUUID()
-
-    ConversationHistory.metadata.id = ConversationId
-})
-
-document.addEventListener('NewConversation', function(e) {
-    //console.log("NewConversation Event Recieved")
-
-    const details = e.detail
-
-    if (details?.type?.toLocaleLowerCase() === "temporary") ConversationHistory.metadata.type = "temporary";
-
-    ConversationId = api.generateUUID()
-    ConversationHistory.chats = [{ role: "system", content: system_command }]
-    ConversationHistory.metadata.id = ConversationId
-})
-
-
+document.addEventListener('DOMContentLoaded', function () {
+    ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: DEFAULT_SYSTEM_PROMPT }];
+    ConversationId = api.generateUUID();
+    ConversationHistory.metadata.id = ConversationId;
+});
 document.addEventListener('keydown', (event) => {
-    if (event.ctrlKey && event.key === 'D' || event.ctrlKey && event.key === 'd') {
-        //event.preventDefault(); // Prevent any default action
-        ipcRenderer.invoke('show-documentation')
+    if ((event.ctrlKey && event.key === 'D') || (event.ctrlKey && event.key === 'd')) {
+        electron_1.ipcRenderer.invoke('show-documentation');
     }
 });
+window.addEventListener('onbeforeunload', () => {
+    console.log("onUnload: Clear session");
+    alert("Clear session");
+    const sessonId = ConversationHistory.metadata.sessionId;
+    if (!sessonId)
+        return;
+    SessionManager_1.SessionManager.clear(sessonId);
+});
+//# sourceMappingURL=preload.js.map

@@ -1,6 +1,10 @@
+import { globalEventBus } from "../Globals/eventBus.ts";
 import { changeFontSize, resetFontSize } from "./zoom";
 
 document.addEventListener("keydown", event => {
+
+    // globalEventBus.emit('key:down', event)
+
     // 1) if it’s F11, do nothing here and let the browser/Electron handle it
     if (event.key === "F11" || event.code === "F11") {
         return;
@@ -9,21 +13,21 @@ document.addEventListener("keydown", event => {
     // 2) now your other shortcuts, with proper grouping
     if ((event.ctrlKey && (event.key === "S" || event.key === "s"))) {
         event.preventDefault();
-        document.dispatchEvent(new CustomEvent('open-settings'));
+        globalEventBus.emit('setting:open')
 
     } else if (event.key === "Escape") {
         event.preventDefault();
-        document.dispatchEvent(new CustomEvent('close-settings'));
+        globalEventBus.emit('setting:close');
         if (!document.getElementById('previewModal')?.classList.contains('hidden')) {
-            document.dispatchEvent(new CustomEvent('close-preview'));
+            globalEventBus.emit('fileupload:preview:close')
         } else {
-            document.dispatchEvent(new CustomEvent('close-dropzone'));
+            globalEventBus.emit('dropzone:close')
         }
-        document.dispatchEvent(new CustomEvent("close-tool"))
+        globalEventBus.emit('tool:result:close')
 
     } else if ((event.ctrlKey && (event.key === "P" || event.key === "p"))) {
         event.preventDefault();
-        document.getElementById("togglePane")?.click();
+        globalEventBus.emit('panel:chats:toggle')
 
     } else if ((event.ctrlKey && (event.key === "N" || event.key === "n"))) {
         event.preventDefault();
@@ -35,7 +39,8 @@ document.addEventListener("keydown", event => {
 
     } else if ((event.altKey && (event.key === "A" || event.key === "a"))) {
         event.preventDefault();
-        document.getElementById("autoScroll")?.click();
+        globalEventBus.emit('scroll:bottom', false)
+        console.log('emit')
     } else if (event.ctrlKey && event.key.toLocaleLowerCase() === '=') {
         event.preventDefault();
         changeFontSize(0.1)

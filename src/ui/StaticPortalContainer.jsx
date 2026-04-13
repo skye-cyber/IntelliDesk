@@ -3,13 +3,14 @@ import { Diagram } from './components/DiagramUI/diagram';
 import ReactDOM from 'react-dom';
 import { UserMessage, AiMessage } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
-import { FileItem } from './components/DropZone/dropzone';
-import { UploadedFileIndicator } from './components/DropZone/uploads';
-import { LoadingAnimation } from './components/StatusUI/StatusUI';
+// import { FileItem } from './components/DropZone/dropzone';
+// import { UploadedFileIndicator } from './components/DropZone/uploads';
+import { LoadingAnimation } from './components/StatusUI/loader';
 import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
 import { ConfirmationDialog } from './components/StatusUI/confirmDialog';
 import { DateSplit } from './components/Chat/datesplit';
-import { Toast } from './components/StatusUI/ToastsUI';
+import { Toast } from './components/StatusUI/Toasts';
+import { ToolPermissionRequest } from './components/Tools/ToolPermRequest';
 
 const componentRegistry = {
     Diagram,
@@ -17,12 +18,13 @@ const componentRegistry = {
     AiMessage,
     LoadingAnimation,
     ConversationItem,
-    FileItem,
-    UploadedFileIndicator,
+//     FileItem,
+//     UploadedFileIndicator,
     ErrorModal,
     Toast,
     ConfirmationDialog,
-    DateSplit
+    DateSplit,
+    ToolPermissionRequest
 };
 
 export const StaticPortalContainer = () => {

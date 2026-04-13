@@ -10,3 +10,5 @@ node_modules/**
 build/**
 dist/**
 build
+**/*.map
+*.kate-swp

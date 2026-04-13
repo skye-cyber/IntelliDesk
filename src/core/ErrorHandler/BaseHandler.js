@@ -1,26 +1,26 @@
-import { HandleProcessingEventChanges } from "../Utils/chatUtils"
+/// <reference path="../../main/preload.type.ts" />
 import { handleDevErrors } from "./ErrorHandler"
-import errorHandler from "../../../react-app/components/ErrorHandler/ErrorHandler"
-import { StateManager } from "../managers/StatesManager"
+import errorHandler from "../../ui/components/ErrorHandler/ErrorHandler"
+import { StateManager } from "../managers/StatesManager.ts"
 import { appIsDev } from "../managers/Conversation/Mistral/shared"
-import { streamingPortalBridge } from "../PortalBridge"
-import { clientmanager } from "../managers/Conversation/Mistral/ClientManager"
+import { staticPortalBridge, streamingPortalBridge } from "../PortalBridge.ts"
+import { clientmanager } from "../managers/Conversation/Mistral/ClientManager.ts"
+import { globalEventBus } from "../Globals/eventBus.ts"
 
 
-export async function BaseErrorHandler(error, ai_ms_pid, callback) {
-    HandleProcessingEventChanges("hide")
-    window.desk.api.popHistory("user")
+export async function BaseErrorHandler(error, userMessagePID, assistantMessagePID, callback) {
+    globalEventBus.emit('executioncycle:end')
+
     const user_text = StateManager.get('userInputText')
 
-    streamingPortalBridge.closeStreamingPortal(StateManager.get('user_message_portal'))
-    streamingPortalBridge.closeStreamingPortal(ai_ms_pid)
-    // staticPortalBridge.closeComponent(StateManager.get('loader-element-id'))
+    streamingPortalBridge.closeStreamingPortal(assistantMessagePID)
+    staticPortalBridge.closeComponent(userMessagePID)
 
-    // Rotate keys if error is key error ie rate limit
-    if (error.statusCode && error.statusCode === 401) {
-        const rotation_okay = await clientmanager.rotate_keychain()
-
-        if (typeof rotation_okay !== 'string') return callback(user_text)
+    // Rotate keys if error is key error ie rate limit 429->ratelimit
+    if (error.statusCode && [401, 429].includes(error.statusCode)) {
+        const rotationSuccess = await clientmanager.rotate_keychain()
+        window.desk.api.popHistory("user")
+        if (typeof rotationSuccess) return callback(user_text)
 
         error = {
             name: 'KeyChainError',
@@ -36,17 +36,14 @@ export async function BaseErrorHandler(error, ai_ms_pid, callback) {
 
     const isDev = await appIsDev()
     if (isDev) {
-        handleDevErrors(error, StateManager.get('user_message_portal'), StateManager.get('ai_message_portal'), user_text)
+        handleDevErrors(error, userMessagePID, assistantMessagePID, user_text)
     } else {
         errorHandler.showError(
             {
                 title: error?.name,
                 message: error.message || error,
                 retryCallback: callback,
-                callbackArgs: {
-                    text: user_text,
-                    model_name: StateManager.get('currentModel')
-                }
+                callbackArgs: user_text
             })
     }
 }

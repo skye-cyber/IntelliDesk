@@ -45,9 +45,7 @@ export const CodeBlockRenderer = ({ htmlContent }) => {
                         codeblock_id={GenerateId('code-block')}
                         highlighted={highlighted}
                         valid_language={valid_language}
-                        copy_button_id={GenerateId('copy-button')}
                         download_button_id={GenerateId('download')}
-                        open_in_canvas_id={GenerateId('open-canvas')}
                         render_button_id={GenerateId('render-button')}
                     />
                 );

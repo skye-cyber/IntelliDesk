@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     darkMode: 'class', /*'[data-mode="dark"]'],*/
-    content: ['./src/renderer/index.html', './src/renderer/js/**/*.js', './src/components/**/*.js', './src/react-app/**/*.js*'],
+    content: ['index.html', './src/core/**/*.js', './src/ui/**/*.js', './src/ui/**/*.jsx', './src/ui/**/*.tsx'],
     //content: ['loading.html'],
     theme: {
         screens: {
@@ -21,10 +21,39 @@ module.exports = {
             handwriting: ['Dancing Script', 'Pacifico', 'Caveat', 'cursive'],
             serif: ['Source Serif Pro', 'Merriweather', 'Lora', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
             sans: ['Synonym', 'Inter', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-            elegant: ['Playfair Display', 'Cormorant Garamond', 'Georgia'],
+            // elegant: ['Playfair Display', 'Cormorant Garamond', 'Georgia'],
             condensed: ['Roboto Condensed', 'Oswald', 'Arial Narrow', 'sans-serif-condensed'],
-            code: ['JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Source Code Pro', 'Monaco', 'Consolas', 'monospace'],
-            blink:['system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'sans-serif']
+            blink: ['system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'sans-serif'],
+            // For elegant code display - prioritize ligatures and clarity
+            code: [
+                'JetBrains Mono',      // Best for ligatures, elegant curves
+                'Fira Code',           // Excellent ligature support, modern
+                'Cascadia Code',       // Microsoft's elegant monospace with cursive italics
+                'Source Code Pro',     // Adobe's refined, highly readable
+                'SF Mono',             // Apple's elegant system font
+                'Menlo',               // Classic, beautiful on macOS
+                'Monaco',              // Timeless, compact elegance
+                'Consolas',            // Windows standard, very clean
+                'monospace'
+            ],
+
+            // For elegant UI text around code
+            elegant: [
+                'Playfair Display',    // High-contrast serif, very elegant
+                'Cormorant Garamond',  // Refined, classical proportions
+                'Inter',               // Clean, modern, highly readable
+                'SF Pro Text',         // Apple's elegant sans-serif
+                'system-ui'
+            ],
+
+            // Alternative elegant monospace with character
+            codeElegant: [
+                'iA Writer Mono',      // Designed for clarity, minimal distractions
+                'Victor Mono',         // Includes cursive italics for elegance
+                'Operator Mono',       // Very expensive but beautiful cursive italics
+                'Input Mono',          // Highly customizable, elegant proportions
+                'monospace'
+            ]
         },
 
         extend: {
@@ -66,7 +95,7 @@ module.exports = {
                     900: '#0d0d27',
                     950: '#070716',
                 },
-                secondary:{
+                secondary: {
                     50: '#6d98fd',
                     100: '#618ae2',
                     200: '#5174be',
@@ -79,7 +108,7 @@ module.exports = {
                     900: '#0f1422',
                     950: '#06080d',
                 },
-                accent:{
+                accent: {
                     50: '#83b4fd',
                     100: '#78a5e8',
                     200: '#729cdc',

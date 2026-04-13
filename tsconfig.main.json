@@ -5,10 +5,14 @@
     "module": "commonjs",
     //"outDir": "./dist/main",
     "rootDir": "./src/main",
-    "lib": ["ES2020", "DOM"],
+    "lib": ["es2021", "DOM"],
     "types": ["node", "electron"],
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "declaration": true,
+    "noUnusedLocals": false,
+    "declarationDir": "./src/main/types"
   },
-  "include": ["src/main/**/*"]
+  "include": ["src/main/**/*"],
+  "exclude": ["src/main/types/**/*", "src/main/utils/db/**/*", "types.ts"]
 }

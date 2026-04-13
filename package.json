@@ -6,15 +6,14 @@
   "homepage": "src/assets/home.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "tailwind:build": "NODE_ENV=production npx tailwindcss -i ./src/ui/config.css -o ./src/ui/global.css --minify",
-    "tailwind:watch": "npx tailwindcss -i ./src/ui/config.css -o ./src/ui/global.css --watch",
+    "tailwind:build": "NODE_ENV=production npx tailwindcss -i ./src/ui/styles/config.css -o ./src/ui/styles/global.css --minify",
+    "tailwind:watch": "npx tailwindcss -i ./src/ui/styles/config.css -o ./src/ui/styles/global.css --watch",
     "preview": "vite preview",
     "dev": "concurrently \"npm:dev:*\"",
     "dev:react": "vite",
     "dev:electron": "electron .",
     "dev:types": "tsc --noEmit --watch",
     "dev:styles": "tailwindcss -i ./src/ui/styles/config.css -o ./src/ui/styles/global.css --watch",
-    "dev:core": "tsc -p tsconfig.core.json --watch",
     "dev:main": "tsc -p tsconfig.main.json --watch",
     "build": "npm run clean && npm run type-check && npm run build:all",
     "build:all": "npm-run-all build:main build:preload build:core build:react",
@@ -37,15 +36,20 @@
   "license": "GNU",
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
-    "baseline-browser-mapping": "^2.9.19",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "concurrently": "^9.2.1",
     "electron": "^34.1.1",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19"
   },
   "dependencies": {
+    "@eazevedociss/duckduckgo-search": "^1.0.9",
     "@fiahfy/icns": "^0.0.7",
     "@hpcc-js/wasm-graphviz": "^1.7.0",
     "@mistralai/mistralai": "^1.5.0",
+    "@reduxjs/toolkit": "^2.11.2",
     "@vitejs/plugin-react": "^5.1.0",
     "assert": "^2.1.0",
     "axios": "^1.13.4",
@@ -67,6 +71,7 @@
     "dompurify": "^3.2.5",
     "dotenv": "^16.4.7",
     "dotenv-expand": "^12.0.1",
+    "electron-is-dev": "^3.0.1",
     "engine-base": "^1.0.0",
     "events": "^3.3.0",
     "file-saver": "^2.0.5",
@@ -96,6 +101,7 @@
     "minimatch": "^10.0.1",
     "mistral": "^0.0.1",
     "mongodb": "^5.0.0",
+    "motion": "^12.38.0",
     "mysql2": "^3.0.0",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
@@ -103,6 +109,8 @@
     "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.6.0",
+    "react-redux": "^9.2.0",
     "read-file-relative": "^1.2.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
     "set-value": "^4.1.0",
@@ -237,7 +245,9 @@
         },
         {
           "target": "snap",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "category": "Utility",

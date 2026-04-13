@@ -1,4 +1,4 @@
-import { StateManager } from "../../../renderer/js/managers/StatesManager";
+import { globalEventBus } from "../../../core/Globals/eventBus.ts";
 
 export function GenerateId(prefix = '', postfix = '', length = 6) {
     // Generate a random alphanumeric string (letters + digits) for valid class/ID characters
@@ -30,12 +30,15 @@ export function CopyMessage(element, html = false) {
         element.innerHTML :
         element.textContent;
 
+    const detail = {
+        head: html ? "Clone successfull!" : "Text Copied ssuccessfully",
+        body: ""
+    }
+
     if (textToCopy.length >= 0) {
         try {
             navigator.clipboard.writeText(textToCopy);
-            html ?
-                StateManager.get('showCopyFeedback')("Clone successfull!") :
-                StateManager.get('showCopyFeedback')()
+            globalEventBus.emit('copy:feedback', detail)
         } catch (err) {
             console.error('Failed to copy: ', err);
         }

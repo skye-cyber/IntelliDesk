@@ -1,12 +1,9 @@
-import { Timer } from '../Timer/timer.js';
-// import { waitForNamespace } from '../Utils/namespace_utils.js';
-import { StateManager } from '../managers/StatesManager.js';
-import { HandleProcessingEventChanges } from '../Utils/chatUtils.js';
+/// <reference path="../../main/preload.type.ts" />
 
-let router
-import('@js/managers/router.js').then(({ Router }) => {
-    router = new Router()
-})
+import { Timer } from '../Timer/timer.js';
+import { StateManager } from '../managers/StatesManager.ts';
+import { globalEventBus } from '../Globals/eventBus.ts';
+
 
 export class RequestErrorHandler {
     constructor(options = {}) {
@@ -122,7 +119,10 @@ export class RequestErrorHandler {
         const closeModal = () => this.hideModal();
 
         [closeBtn, cancelBtn, overlay].forEach(element => {
-            element?.addEventListener('click', closeModal);
+            element?.addEventListener('click', () => {
+                closeModal()
+                this.retryCount = 0
+            });
         });
 
         retryBtn?.addEventListener('click', () => this.retryRequest());
@@ -142,20 +142,14 @@ export class RequestErrorHandler {
         this.currentError = error;
         this.errorContext = context;
 
-        StateManager.set('processing', false);
-
         // Track interruption time
         const timer = new Timer();
         timer.trackTime("interrupt");
 
-        // Update UI state
-
-        HandleProcessingEventChanges('hide');
-
         if (this.shouldShowError(error)) {
             this.displayErrorModal(error, context);
         } else {
-            this.handleSilentRetry(error, context);
+            this.handleSilentRetry();
         }
     }
 
@@ -167,9 +161,10 @@ export class RequestErrorHandler {
     }
 
     isNetworkError(error) {
-        return error?.message === "Failed to fetch" ||
-            error?.message === "network error" ||
-            error?.name === "TypeError";
+        return (error.name === 'ConnectionError') ||
+            (error?.message === "Failed to fetch") ||
+            (error?.message === "network error") ||
+            (error?.name === "TypeError");
     }
 
     isServerError(error) {
@@ -335,7 +330,6 @@ export class RequestErrorHandler {
     executeRetry() {
         // Clone the callbacks to avoid modification during iteration
         const callbacksToExecute = Array.from(this.retryCallbacks);
-
         // Clear callbacks BEFORE execution to prevent infinite loops
         this.retryCallbacks.clear();
 
@@ -359,7 +353,7 @@ export class RequestErrorHandler {
         //console.log('Retry event dispatched');
     }
 
-    handleSilentRetry(error, context) {
+    handleSilentRetry() {
         if (this.retryCount < this.defaultOptions.maxRetries) {
             setTimeout(() => {
                 this.retryCount++;
@@ -473,23 +467,14 @@ export function handleDevErrors(error, user_message_pid, ai_message_pid = null, 
         timestamp: Date.now()
     };
 
-    StateManager.set('retry-context', context)
+    StateManager.set('retryContext', context)
 
     // Remove loader
     //document.getElementById('loader-parent')?.parentElement?.remove();
 
-    const unsubscribe = requestErrorHandler.onRetry((error, context) => {
-        context = StateManager.get('retry-context')
-        //console.log("Retry callback executed with context:", context);
-
-        //if (ai_message_pid) window.streamingPortalBridge.closeStreamingPortal(ai_message_pid) //aiMessage.remove();
-
-        if (context.is_multimodal) {
-            router.routeToMistral(context.userContent, StateManager.get('currentModel'));
-        } else {
-            // Use the extracted lastMessage
-            router.requestRouter(context.lastMessage?.trim());
-        }
+    const unsubscribe = requestErrorHandler.onRetry((context) => {
+        context = StateManager.get('retryContext')
+        globalEventBus.emit('useraction:request:execution', (context.userContent))
     });
 
     requestErrorHandler.handleError(error, context);

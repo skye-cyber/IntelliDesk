@@ -1,110 +1,106 @@
-import React, { useState } from 'react';
-import { MainLayout } from '@components/Layout/MainLayout';
-import '@css/styles.css';
-import { Header } from '@components/Header/Header';
-import { ChatInterface } from '@components/Chat/ChatInterface';
-import { Sidebar } from '@components/Sidebar/Sidebar';
-import { Canvas } from '@components/Canvas/Canvas';
-import ErrorBoundary from '@components/ErrorBoundary/ErrorBoundary';
-import '@js/katex/katex.min.js';
-import '@js/katex/contrib/auto-render.min.js';
-import '@css/code-theme.css'
-import { Recording } from '@components/RecordingUI/Recording';
-import '@js/Timer/timer.js'
-import { DiagramUi } from '@components/DiagramUI/diagram.jsx'
-import { Settings } from '@components/Settings/Settings.jsx';
-import { StatusUI } from '@components/StatusUI/StatusUI.jsx';
-//import '@js/StatusUIManager/SuccessModal.js'
-import '@js/StatusUIManager/Manager.js'
-import { APIKeysManager } from './components/ApiManager/api';
-import { DropZone } from '@components/DropZone/dropzone.jsx'
-import { NotificationFlyer, Notifcation } from '@components/Notifications/Notification.jsx'
-import '@js/MathBase/MathNormalize.js';
-import '@js/MathBase/mathRenderer.js';
-import '@js/diagraming/vizcharting.js'
-import '@js/diagraming/jscharting.js'
-import '@js/Notification/notification';
-import '@js/ChatExport/export';
-import '@js/Utils/keyshortcuts';
+import { useEffect, useState } from 'react';
+import { MainLayout } from './components/Layout/MainLayout';
+import './styles/global.css';
+import { Header } from './components/Header/Header';
+import { ChatInterface } from './components/Chat/ChatInterface';
+import { Sidebar } from './components/Sidebar/Sidebar';
+import { Canvas } from './components/Canvas/Canvas';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
+import '../core/katex/katex.min.js';
+import '../core/katex/contrib/auto-render.min.js';
+import './styles/code-theme.css'
+import { Recording } from './components/RecordingUI/Recording';
+import '../core/Timer/timer.js'
+import { DiagramUi } from './components/DiagramUI/diagram.jsx'
+import { Settings } from './pages/Settings.jsx';
+import { StatusUI } from './components/StatusUI/StatusUI.jsx';
+import '../core/StatusUIManager/Manager.js'
+import { APIKeysManager } from './components/ApiManager/manager.tsx';
+import { DropZone } from './components/DropZone/DropZone.tsx'
+import { NotificationFlyer, Notifcation } from './components/Notifications/Notification.jsx'
+import '../core/MathBase/MathNormalize.js';
+import '../core/MathBase/mathRenderer.js';
+import '../core/diagraming/vizcharting.js'
+import '../core/diagraming/jscharting.js'
+import '../core/Notification/notification';
+import '../core/ChatExport/export';
+import '../core/Utils/keyshortcuts';
 import { StaticPortalContainer } from './StaticPortalContainer';
 import { StreamingPortalContainer } from './StreamingPortalContainer';
-import '../renderer/js/PortalBridge';
+import '../core/PortalBridge.ts';
 import './PortalTargetRegister';
+import ConfigEditor from './pages/ConfigEditor.jsx';
+import { CopyFeedback } from './components/StatusUI/copy.jsx';
+import { Provider } from 'react-redux';
+import { store } from './store/index.js';
+import { globalEventBus } from '../core/Globals/eventBus.ts';
 
 const App = () => {
-    //const { electron } = useElectron();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('mistral-small-latest');
+    const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
     const [isRecordingOn, setIsRecordingOn] = useState(false);
+    const [leftPanelOpen, setLeftPanelOpen] = useState(false)
 
-    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+    const toggleSidebar = () => setLeftPanelOpen(!leftPanelOpen);
     const toggleCanvas = () => setIsCanvasOpen(!isCanvasOpen);
     const toggleRecording = () => setIsRecordingOn(!isRecordingOn);
+    useEffect(() => {
+        const panelChangeListener = globalEventBus.on('panel:chats:change', (state) => setLeftPanelOpen(state))
+        return () => {
+            panelChangeListener.unsubscribe()
+        };
+    }, [leftPanelOpen, isCanvasOpen]);
 
     return (
         <ErrorBoundary>
-            <MainLayout>
-                <div data-portal-container="mainContainer" id="main-container"  className='flex flex-1 overflow-hidden max-w-full'>
+            <Provider store={store}>
+                <MainLayout>
                     <span className='data-portal-root fixed z-[99]'></span>
-                    <div className='flex flex-shrink'>
-                        <ErrorBoundary>
-                            <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
-                        </ErrorBoundary>
-                        <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
+                    <div
+                        data-portal-container="mainContainer"
+                        id="main-container"
+                        className="flex overflow-hidden max-w-full">
+                        <div className={`flex flex-shrink max-w-full ${isCanvasOpen ? 'w-[55vw]' : 'w-full'} transition-transform duration-500`}>
                             <ErrorBoundary>
-                                <Header
-                                    onToggleSidebar={toggleSidebar}
-                                    selectedModel={selectedModel}
-                                    onModelChange={setSelectedModel}
-                                />
+                                <Sidebar isOpen={leftPanelOpen} onToggle={toggleSidebar} isCanvasOn={isCanvasOpen} />
                             </ErrorBoundary>
-                            <ErrorBoundary>
-                                <ChatInterface
-                                    isCanvasOpen={isCanvasOpen}
-                                    onToggleCanvas={toggleCanvas}
-                                    onToggleRecording={toggleRecording} />
-                            </ErrorBoundary>
+                            <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
+                                <ErrorBoundary>
+                                    <Header onToggleSidebar={toggleSidebar} selectedModel={selectedModel} onModelChange={setSelectedModel}
+                                    />
+                                </ErrorBoundary>
+                                <ErrorBoundary>
+                                    <ChatInterface
+                                        isCanvasOpen={isCanvasOpen}
+                                        onToggleCanvas={toggleCanvas}
+                                        onToggleRecording={toggleRecording} />
+                                </ErrorBoundary>
+                            </div>
                         </div>
+                        <ErrorBoundary>
+                            <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
+                        </ErrorBoundary>
                     </div>
                     <ErrorBoundary>
-                        <Canvas isOpen={isCanvasOpen} onToggle={toggleCanvas} />
+                        <ConfigEditor />
+                        {/* Copy Feedback Modal*/}
+                        <CopyFeedback />
+                        <DiagramUi isOpen={true} onToggle={null} />
+                        <Settings isOpen={true} onToggle={null} />
+                        <StatusUI isOpen={true} onToggle={null} />
+                        <APIKeysManager isOpen={true} onToggle={null} />
+                        <DropZone isOpen={true} onToggle={null} />
+                        <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
+                        <NotificationFlyer isOpen={true} onToggle={null} />
+                        <Notifcation isOpen={true} onToggle={null} />
                     </ErrorBoundary>
-                </div>
+                </MainLayout>
+                {/* Portal containers for vanilla JS components */}
                 <ErrorBoundary>
-                    <DiagramUi isOpen={true} onToggle={null} />
+                    <StaticPortalContainer />
+                    <StreamingPortalContainer />
                 </ErrorBoundary>
-                <ErrorBoundary>
-                    <Settings isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                    <StatusUI isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                    <APIKeysManager isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                    <DropZone isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
-                </ErrorBoundary>
-
-                <ErrorBoundary>
-                    <NotificationFlyer isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-                <ErrorBoundary>
-                    <Notifcation isOpen={true} onToggle={null} />
-                </ErrorBoundary>
-            </MainLayout>
-            {/* Portal containers for vanilla JS components */}
-            <ErrorBoundary>
-                <StaticPortalContainer />
-            </ErrorBoundary>
-            <ErrorBoundary>
-                <StreamingPortalContainer />
-            </ErrorBoundary>
+            </Provider>
         </ErrorBoundary >
     );
 };

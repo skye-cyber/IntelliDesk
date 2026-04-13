@@ -3,15 +3,11 @@ import 'graphlib-dot';
 import { Graphviz } from "@hpcc-js/wasm-graphviz";
 import { waitForElement } from '../Utils/dom_utils';
 import { modalmanager } from '../StatusUIManager/Manager';
-import { staticPortalBridge } from '../PortalBridge';
-import { StateManager } from '../managers/StatesManager';
+import { staticPortalBridge } from '../PortalBridge.ts';
+import { globalEventBus } from '../Globals/eventBus.ts';
 
 
 export class DotInterPreter {
-    constructor() {
-
-    }
-
     fixUnclosedCodeBlocks(text) {
         const codeBlockPattern = /```(dot|json-draw)[ \t]*\r?\n([\s\S]*?)(```)?(?=\n|$)/gi;
         return text.replace(codeBlockPattern, (match, lang, body, closing) => {
@@ -145,7 +141,7 @@ export class DotInterPreter {
         })
         // open modal if render trigger===click
         if (trigger === 'click') {
-            StateManager.get('opendiagViewModal')();
+            globalEventBus.emit('diagram:page:open')
         }
 
         waitForElement('#diag-placeholder', (el) => el.classList.add('hidden'))

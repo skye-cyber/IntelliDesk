@@ -1,9 +1,18 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { HfInference } from "@huggingface/inference";
-import { RecordingAnimator } from '@js/animations/WaveForm.js'
-import errorHandler from '@components/ErrorHandler/ErrorHandler.jsx';
-import '@js/Utils/chatUtils.js'
-import { timer } from '../../../renderer/js/Timer/timer';
+import { useEffect, useState, useRef, useCallback } from 'react';
+// import { HfInference } from "../../../core/huggingface/inference";
+import { RecordingAnimator } from '../../../core/animations/WaveForm.js'
+import errorHandler from '../../components/ErrorHandler/ErrorHandler.jsx';
+import { timer } from '../../../core/Timer/timer';
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
+
+class Inference {
+    constructore(API_KEY) {
+        this.API_KEY = API_KEY
+    }
+    automaticSpeechRecognition({ }) {
+        return
+    }
+}
 
 export const Recording = ({ isOpen, onToggle }) => {
     const [isPaused, setIsPaused] = useState(false);
@@ -13,7 +22,7 @@ export const Recording = ({ isOpen, onToggle }) => {
     const [elapsedTime, setElapsedTime] = useState(null);
     const [currentAudioElement, setCurrentAudioElement] = useState(null);
     //const [LoaderEvent, setLoaderEvent] = useState(null);
-    const [hf_API_KEY, setHf_API_KEY] = useState(null);
+    const [API_KEY, setAPI_KEY] = useState(null);
     const [client, setClient] = useState(null);
     //const [mediaRecorder, setMediaRecorder] = useState(null);
     const [audioChunks, setAudioChunks] = useState([]);
@@ -235,11 +244,11 @@ export const Recording = ({ isOpen, onToggle }) => {
 
         fetchApiKey()
 
-        setClient(new HfInference(hf_API_KEY));
+        setClient(new Inference(API_KEY));
 
         openRecording()
 
-    }, [hf_API_KEY])
+    }, [API_KEY])
 
     const openRecording = useCallback(() => {
         showModal()
@@ -251,7 +260,7 @@ export const Recording = ({ isOpen, onToggle }) => {
 
     async function loadApiKey() {
         const key = '...'//await window.desk.api2.getKeys('huggingfacex');
-        setHf_API_KEY(key) //.huggingfaceKey); // Assign to global variable
+        setAPI_KEY(key) //.huggingfaceKey); // Assign to global variable
     }
     async function autoSpeech(data) {
         try {
@@ -416,12 +425,12 @@ export const Recording = ({ isOpen, onToggle }) => {
 
     const main = useCallback(async (fpath) => {
         try {
-            document.getElementById('suggestions') ? document.getElementById('suggestions').classList.add('hidden') : "";
+            globalEventBus.emit('suggestions:hide')
 
             //start Timerimer
             refs.current.Timer.trackTime("start");
 
-            window.HandleProcessingEventChanges('show')
+            globalEventBus.emit('executioncycle:start')
             // Add audio to user interface
             displayUserAudio(fpath)
             //Read data from file
@@ -433,7 +442,7 @@ export const Recording = ({ isOpen, onToggle }) => {
             // add ai reponse to the interface
             displayResponse(response)
 
-            window.HandleProcessingEventChanges('hide')
+            globalEventBus.emit('executioncycle:end')
             //stop Timerimer
             refs.current.Timer.trackTime("stop");
 
@@ -463,7 +472,7 @@ export const Recording = ({ isOpen, onToggle }) => {
             message: 'Processing recording...'
         }, refs.current.currentLoader);
 
-        window.HandleProcessingEventChanges('hide')
+        globalEventBus.emit('executioncycle:end')
 
         //interrupt Timer
         refs.current.Timer.trackTime("interrupt");

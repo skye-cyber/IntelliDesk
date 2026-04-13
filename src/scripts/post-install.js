@@ -2,10 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 const filePath = path.resolve(__dirname, '../../node_modules/underscore/package.json');
-console.log(filePath)
+
 try {
+    if(!fs.stat(filePath)) return
     let content = fs.readFileSync(filePath, 'utf8');
-    console.log(content)
     // fix: replace dependencies array with an empty object or correct JSON
     content = content.replace(/"dependencies"\s*:\s*\[[\s\S]*?\]/, '"dependencies": {}');
 

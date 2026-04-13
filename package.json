@@ -26,7 +26,6 @@
     "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
     "styles": "tailwindcss -i ./src/ui/styles/config.css -o ./src/ui/styles/global.css --minify",
-    "postinstall": "node src/scripts/post-install.js"
   },
   "keywords": [],
   "author": {

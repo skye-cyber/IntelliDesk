@@ -30,6 +30,11 @@ jobs:
               with:
                   node-version: "24.2.0"
 
+            - name: Set up Python 3.11
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: '3.11'
+
             - name: Install Linux tools
               if: runner.os == 'Linux'
               run: |
@@ -56,28 +61,6 @@ jobs:
                     npm run build:electron -- --win --publish never
                   fi
               shell: bash
-
-            # - name: Remove unwanted files
-            #   shell: bash
-            #   run: |
-            #       shopt -s nullglob
-            #       for file in dist/*; do
-            #         case "$file" in
-            #           *.blockmap|*.yml|builder-debug.yml) rm -f "$file" ;;
-            #         esac
-            #       done
-            #
-            # - name: Fix permissions safely
-            #   shell: bash
-            #   run: |
-            #       sudo chown -R $(id -u):$(id -g) dist
-            #       chmod -R u+rwX dist
-
-            # - name: Generate SHA256 checksums
-            #   shell: bash
-            #   run: |
-            #       cd dist
-            #       find . -maxdepth 1 -type f -exec sha256sum {} \; > SHA256SUMS.txt
 
             - name: Upload build artifacts
               uses: actions/upload-artifact@v4

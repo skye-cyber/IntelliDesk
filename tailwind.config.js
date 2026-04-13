@@ -186,21 +186,54 @@ module.exports = {
         },
 
         animation: {
-            'bounce': 'bounce 0.5s infinite',
+            bounce: 'bounce 0.5s infinite',
             'bounce-100': 'bounce 0.5s 100ms infinite',
             'bounce-200': 'bounce 0.5s 200ms infinite',
             'bounce-300': 'bounce 0.5s 300ms infinite',
             'bounce-400': 'bounce 0.5s 400ms infinite',
             'bounce-500': 'bounce 0.5s 500ms infinite',
             'bounce-600': 'bounce 0.5s 600ms infinite',
-            'heartpulse': 'heartpulse 1s infinite',
+            heartpulse: 'heartpulse 1s infinite',
             'heartpulse-slow': 'heartpulse-slow 1s infinite',
             'heartpulse-super': 'heartpulse-super 1.2s infinite',
             'spin-50': 'spin 0.5s linear infinite',
-            'spin': 'spin 1s linear infinite',
+            spin: 'spin 1s linear infinite',
             'reload-100': 'spin 1s linear infinite',
             'spin-200': 'spin 2s linear infinite',
-            'fadeIn': 'fadeIn 2s cubic-bezier(0.25, 1, 0.5, 1)'
+            fadeIn: 'fadeIn 2s cubic-bezier(0.25, 1, 0.5, 1)',
+            write: 'write 1.2s ease-in-out infinite',
+            'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+            // Quill
+            'quill-write': 'quillWrite 1s ease-in-out infinite',
+            'ink-drop': 'inkDrop 1.5s ease-out infinite',
+            'ink-drop-delayed': 'inkDrop 1.5s ease-out 0.5s infinite',
+
+            // Letters
+            'letter-bounce': 'letterBounce 0.6s ease-in-out infinite',
+
+            // Cursor
+            'cursor-blink': 'cursorBlink 1s step-end infinite',
+
+            // Brain
+            'spin-slow': 'spin 3s linear infinite',
+            'think-pulse': 'thinkPulse 1.2s ease-in-out infinite',
+
+            // Scribble
+            'scribble': 'scribble 1.5s ease-in-out infinite',
+
+            // Paper plane
+            'plane-fly': 'planeFly 2s ease-in-out infinite',
+            'dash': 'dash 0.5s linear infinite',
+            'fade-in-out': 'fadeInOut 1.5s ease-in-out infinite',
+
+            // Voice wave
+            'wave': 'wave 0.8s ease-in-out infinite',
+
+            // Orbits
+            'orbit-1': 'orbit 2s linear infinite',
+            'orbit-2': 'orbit 2s linear infinite 0.66s',
+            'orbit-3': 'orbit 2s linear infinite 1.33s',
+            'typing-dots': 'typingDots 1.4s ease-in-out infinite',
         },
 
         keyframes: {
@@ -241,11 +274,62 @@ module.exports = {
                 '0%': { transform: 'rotate(0deg)' },
                 '100%': { transform: 'rotate(360deg)' },
             },
+            write: {
+                '0%, 100%': { transform: 'rotate(-15deg) translateX(0)' },
+                '50%': { transform: 'rotate(5deg) translateX(2px)' },
+            },
+            quillWrite: {
+                '0%, 100%': { transform: 'rotate(-10deg) translateX(0)' },
+                '50%': { transform: 'rotate(5deg) translateX(2px)' },
+            },
+            inkDrop: {
+                '0%': { transform: 'translateY(0) scale(1)', opacity: 0.6 },
+                '100%': { transform: 'translateY(6px) scale(0)', opacity: 0 },
+            },
+            letterBounce: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-3px)' },
+            },
+            cursorBlink: {
+                '0%, 100%': { opacity: 1 },
+                '50%': { opacity: 0 },
+            },
+            thinkPulse: {
+                '0%, 100%': { opacity: 0.3, transform: 'scale(1)' },
+                '50%': { opacity: 1, transform: 'scale(1.5)' },
+            },
+            scribble: {
+                '0%': { strokeDashoffset: '100' },
+                '100%': { strokeDashoffset: '0' },
+            },
+            planeFly: {
+                '0%, 100%': { transform: 'translateX(0) rotate(0deg)' },
+                '50%': { transform: 'translateX(3px) rotate(5deg)' },
+            },
+            dash: {
+                '0%': { width: '0px', opacity: 0 },
+                '50%': { width: '16px', opacity: 0.5 },
+                '100%': { width: '0px', opacity: 0 },
+            },
+            fadeInOut: {
+                '0%, 100%': { opacity: 0.3 },
+                '50%': { opacity: 1 },
+            },
+            wave: {
+                '0%, 100%': { transform: 'scaleY(1)' },
+                '50%': { transform: 'scaleY(2)' },
+            },
+            orbit: {
+                '0%': { transform: 'rotate(0deg) translateX(8px) rotate(0deg)' },
+                '100%': { transform: 'rotate(360deg) translateX(8px) rotate(-360deg)' },
+            },
+            typingDots: {
+                '0%, 20%': { content: '"."' },
+                '40%': { content: '".."' },
+                '60%, 100%': { content: '"..."' },
+            },
         },
-        /*gradientColorStops: {
-          'gradient-primary': '#00b4d8',
-          'gradient-secondary': '#00ffcc',
-        },*/
+
     },
     plugins: [
         function({ addComponents }) {

@@ -11,7 +11,8 @@ import { StateManager } from '../../../core/managers/StatesManager.ts';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import { GlassThinkingSection } from './Reasoning';
 import { FileContainer } from './Files';
-
+import { globalEventBus } from '../../../core/Globals/eventBus.ts';
+import { ThinkingBrain } from '../Writing/AssistantAnimations.tsx';
 
 export const UserMessage = ({ message, files = [] }) => {
     const messageRef = useRef(null)
@@ -62,7 +63,9 @@ export const AiMessage = ({
     actualContent,
     isThinking = false,
     thinkContent = null,
-    children }) => {
+    animation = false,
+    children
+}) => {
     const [optionsOpen, setOptionsOpen] = useState(false)
     const messageRef = useRef(null)
     return (
@@ -78,7 +81,7 @@ export const AiMessage = ({
                         <div ref={messageRef} className="child-components">{children}</div>
                     }
                     {(actualContent || thinkContent) && (
-                        <ResponseWrapper actualContent={actualContent} isThinking={isThinking} thinkContent={thinkContent} />
+                        <ResponseWrapper actualContent={actualContent} isThinking={isThinking} thinkContent={thinkContent} animation={animation} />
                     )}
                     {/*Other componets*/}
                     <div className='mt-10'>
@@ -94,6 +97,7 @@ export const StreamingAiMessage = ({
     actualContent,
     isThinking = false,
     thinkContent = null,
+    animation = false
 }) => {
     const exportMenu = useRef(null)
     const messageRef = useRef(null)
@@ -112,7 +116,7 @@ export const StreamingAiMessage = ({
                     className="w-full lg:max-w-2xl xl:max-w-3xl relative mb-[2vh] py-2 px-4">
                     {/* Streaming response wrapper */}
                     <div ref={messageRef} className=''>
-                        <ResponseWrapper actualContent={actualContent} thinkContent={thinkContent} isThinking={isThinking} />
+                        <ResponseWrapper actualContent={actualContent} thinkContent={thinkContent} isThinking={isThinking} animation={animation} />
                     </div>
 
                     {/*Other componets*/}
@@ -131,11 +135,13 @@ export const ResponseWrapper = ({
     isThinking = false,
     thinkContent = null,
     message_id = GenerateId('ai-msg'),
-    thinkToolCalls = []
+    thinkToolCalls = [],
+    animation = false
 }) => {
 
     const [processedHtmlContent, setProcessedHtmlContent] = useState('')
     const [processedThinkContent, setProcessedThinkContent] = useState('')
+    const [brainAnimeActive, setBrainAnimeActive] = useState(animation)
 
     useEffect(() => {
         try {
@@ -155,6 +161,11 @@ export const ResponseWrapper = ({
 
     chatutil.renderMath(message_id)
 
+    useEffect(() => {
+        const switchOffThink = globalEventBus.once('executioncycle:end', () => setBrainAnimeActive(false))
+        return () => switchOffThink.unsubscribe()
+    })
+
     return (
         <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[15px]'>
             <div id="ai_response_think" className="w-full bg-none rounded-lg rounded-bl-none transition-colors duration-700">
@@ -164,6 +175,7 @@ export const ResponseWrapper = ({
 
             </div>
             <CodeBlockRenderer htmlContent={processedHtmlContent} />
+            <ThinkingBrain isWriting={brainAnimeActive} />
         </div>
     )
 }

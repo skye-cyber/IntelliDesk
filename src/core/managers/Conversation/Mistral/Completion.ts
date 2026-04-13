@@ -246,7 +246,7 @@ class CompletionBase {
             this.reset()
 
             this.streamingPortal = streamingPortalBridge.createStreamingPortal(
-                'AiMessage', 'chatArea', undefined, 'ai_message'
+                'AiMessage', 'chatArea', { animation: true }, 'ai_message'
             )
             if (this.ToolsEnabled || this.checkTools()) {
                 await this.ToolStreamSession()

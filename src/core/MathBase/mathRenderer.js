@@ -1,10 +1,7 @@
 import '@math/katex/katex.min.css';
-//import katex from 'katex';
 import renderMathInElement from '@math/katex/contrib/auto-render';
 
 // Function to ensure Katex renders dynamically injected content
-//let renderTimeout;
-
 const renderTimeouts = new Map();
 
 export const renderAll_aimessages = () => {

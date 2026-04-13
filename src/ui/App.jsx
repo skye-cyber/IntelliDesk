@@ -6,9 +6,6 @@ import { ChatInterface } from './components/Chat/ChatInterface';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { Canvas } from './components/Canvas/Canvas';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-import '../core/katex/katex.min.js';
-import '../core/katex/contrib/auto-render.min.js';
-import './styles/code-theme.css'
 import { Recording } from './components/RecordingUI/Recording';
 import '../core/Timer/timer.js'
 import { DiagramUi } from './components/DiagramUI/diagram.jsx'
@@ -18,6 +15,9 @@ import '../core/StatusUIManager/Manager.js'
 import { APIKeysManager } from './components/ApiManager/manager.tsx';
 import { DropZone } from './components/DropZone/DropZone.tsx'
 import { NotificationFlyer, Notifcation } from './components/Notifications/Notification.jsx'
+import '../core/MathBase/katex/katex.min.js';
+import '../core/MathBase/katex/contrib/auto-render.min.js';
+import './styles/code-theme.css'
 import '../core/MathBase/MathNormalize.js';
 import '../core/MathBase/mathRenderer.js';
 import '../core/diagraming/vizcharting.js'

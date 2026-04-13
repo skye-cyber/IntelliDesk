@@ -1,4 +1,4 @@
-import { waitForElement, waitForElementSimple } from "../core/Utils/dom_utils";
+import { waitForElement, waitForElementSimple } from "../core/Utils/dom_utils.js";
 import { staticPortalBridge, streamingPortalBridge } from "../core/PortalBridge.ts";
 
 waitForElement('#diag-modal-content', (el) => {

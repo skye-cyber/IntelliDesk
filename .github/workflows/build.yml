@@ -58,11 +58,11 @@ jobs:
             - name: Build Electron
               run: |
                   if [ "${{ runner.os }}" == "Linux" ]; then
-                    sudo npm run build:electron -- --linux --publish never
+                    sudo npm run package:electron -- --linux --publish never
                   elif [ "${{ runner.os }}" == "macOS" ]; then
-                    sudo npm run build:electron -- --mac --publish never
+                    sudo npm run package:electron -- --mac --publish never
                   elif [ "${{ runner.os }}" == "Windows" ]; then
-                    npm run build:electron -- --win --publish never
+                    npm run package:electron -- --win --publish never
                   fi
               shell: bash
 

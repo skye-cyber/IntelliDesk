@@ -41,13 +41,8 @@ jobs:
                   sudo apt-get install -y build-essential
                   sudo snap install snapcraft --classic
 
-            #- name: Install dependencies
-            #run: npm install --no-audit --force
-            - name: Clean install (fixes Rollup native deps)
-              run: |
-                  rm -rf node_modules package-lock.json
-                  npm clean-install
-              shell: bash
+            - name: Install dependencies
+              run: npm install --no-audit --force
 
             - name: Install missing Rollup native module (macOS ARM64)
               if: runner.os == 'macOS' && runner.arch == 'ARM64'

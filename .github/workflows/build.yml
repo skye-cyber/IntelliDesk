@@ -44,10 +44,12 @@ jobs:
             - name: Install dependencies
               run: npm install --no-audit --force
 
+            - name: Install dmg-license
+              run: npm install dmg-license --save-dev
+
             - name: Install missing Rollup native module (macOS ARM64)
               if: runner.os == 'macOS' && runner.arch == 'ARM64'
               run: npm install @rollup/rollup-darwin-arm64 --save-optional
-              run: npm install dmg-license --save-dev
 
             - name: Install native deps
               run: npx electron-builder install-app-deps

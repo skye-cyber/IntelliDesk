@@ -80,8 +80,8 @@ export const GlassThinkingSection = ({ htmlThinkContent, isThinking, thinkToolCa
     const contentRef = useRef(null);
 
     return (
-        <div className="mb-4">
-            <div className="relative backdrop-blur-sm bg-white/30 dark:bg-[#1c1c2a]/80 border border-blue-200/50 dark:border-[#393955] rounded-xl overflow-hidden shadow-lg">
+        <div className="mb-0.5">
+            <div className="relative backdrop-blur-sm bg-white dark:bg-[#1c1c2a]/80 border border-blue-200/50 dark:border-[#393955] rounded-xl overflow-hidden dark:shadow-lg">
 
                 {/* Animated gradient border when thinking */}
                 {isThinking && (
@@ -135,8 +135,8 @@ export const GlassThinkingSection = ({ htmlThinkContent, isThinking, thinkToolCa
                 <div
                     ref={contentRef}
                     className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden overflow-y-auto scrollbar-custom ${isOpen ? 'h-fit' : 'h-0'}`}>
-                    <div className="p-4 pt-2 border-t border-blue-100 dark:border-[#393955]">
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-gray-500 dark:text-gray-300">
+                    <div className="p-4 pt-1 border-t border-blue-100 dark:border-[#393955]">
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-[13.5px] text-gray-600 dark:text-gray-300 max-h-72">
                             <CodeBlockRenderer htmlContent={htmlThinkContent} />
                             {thinkToolCalls.map((toolCall, index) => <ToolCallDisplay key={index} toolCall={toolCall} />)}
                         </div>

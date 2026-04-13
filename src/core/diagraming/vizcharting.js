@@ -4,7 +4,7 @@ import { Graphviz } from "@hpcc-js/wasm-graphviz";
 import { waitForElement } from '../Utils/dom_utils';
 import { modalmanager } from '../StatusUIManager/Manager';
 import { staticPortalBridge } from '../PortalBridge.ts';
-import { StateManager } from '../managers/StatesManager.ts';
+import { globalEventBus } from '../Globals/eventBus.ts';
 
 
 export class DotInterPreter {
@@ -141,7 +141,7 @@ export class DotInterPreter {
         })
         // open modal if render trigger===click
         if (trigger === 'click') {
-            StateManager.get('opendiagViewModal')();
+            globalEventBus.emit('diagram:page:open')
         }
 
         waitForElement('#diag-placeholder', (el) => el.classList.add('hidden'))

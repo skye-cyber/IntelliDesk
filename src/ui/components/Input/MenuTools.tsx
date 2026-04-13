@@ -50,7 +50,7 @@ export const MenuTools = ({ onToggleRecording }) => {
             {/* Trigger Button */}
             <button
                 onClick={toggleToolMenu}
-                className="absolute -left-4 bottom-12 z-50 p-2 rounded-xl bg-indigo-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
+                className="absolute -left-12 bottom-12 z-[51] p-2 rounded-xl bg-indigo-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
                 aria-label="Tools menu"
                 title="Tools"
             >
@@ -92,7 +92,7 @@ export const MenuTools = ({ onToggleRecording }) => {
 
                         {/* Diagram Tool */}
                         <ToolMenuItem
-                            onClick={() => StateManager.get('openDiagramView')()}
+                            onClick={() => globalEventBus.emit('diagram:page:open')}
                             icon={
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <circle cx="5" cy="12" r="2" strokeWidth="2" />

@@ -73,7 +73,7 @@ export const Header = ({ onToggleSidebar, selectedModel, onModelChange }) => {
                     </section>
 
                     {/* Settings Button */}
-                    <section onClick={() => globalEventBus.emit('setting:open')} className="absolute right-0 z-5 hover:scale-[0.85] transition-transform duration-700">
+                    <section onClick={() => globalEventBus.emit('setting:open')} className="hidden absolute right-0 z-5 hover:scale-[0.85] transition-transform duration-700">
                         <button id="settings" title="Settings" className="mr-[3vw]">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-8 w-8 fill-current text-gray-800 dark:text-gray-200 transition-colors duration-200">
                                 <path d="M19.14 12.936c.06-.437.06-.874 0-1.31l2.007-1.55c.21-.16.27-.44.14-.67l-2.4-4.155c-.12-.21-.36-.29-.57-.21l-2.337 1.017c-.56-.43-1.17-.79-1.83-1.07l-.354-2.6c-.04-.26-.27-.46-.54-.46h-5c-.27 0-.51.2-.54.46l-.354 2.6c-.66.28-1.28.64-1.83 1.07L5.22 5.89c-.21-.08-.45 0-.57.21l-2.4 4.155c-.12.21-.07.51.14.67l2.007 1.55c-.06.437-.06.874 0 1.31l-2.007 1.55c-.21.16-.27.44-.14.67l2.4 4.155c.12.21.36.29.57.21l2.337-1.017c.56.43 1.17.79 1.83 1.07l.354 2.6c.04.26.27.46.54.46h5c.27 0 .51-.2.54-.46l.354-2.6c.66-.28 1.28-.64 1.83-1.07l2.337-1.017c.21-.08.45 0 .57.21l2.4 4.155c.12.21.07.51-.14.67l-2.007 1.55c.06.437.06.874 0 1.31zM12 16a4 4 0 110-8 4 4 0 010 8z" />

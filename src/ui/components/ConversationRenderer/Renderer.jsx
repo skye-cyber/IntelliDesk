@@ -62,7 +62,7 @@ export const AiMessage = ({
     actualContent,
     isThinking = false,
     thinkContent = null,
-    children}) => {
+    children }) => {
     const [optionsOpen, setOptionsOpen] = useState(false)
     const messageRef = useRef(null)
     return (
@@ -134,15 +134,20 @@ export const ResponseWrapper = ({
     thinkToolCalls = []
 }) => {
 
-    let processedHtmlContent
+    const [processedHtmlContent, setProcessedHtmlContent] = useState('')
+    const [processedThinkContent, setProcessedThinkContent] = useState('')
 
-    try {
-        // Normalize code
-        const NormalizedMessage = normalizeCodeBlocks(actualContent)
-        processedHtmlContent = markitdown(mathStandardize(NormalizedMessage))
-    } catch (err) {
-        //console.log(err)
-    }
+    useEffect(() => {
+        try {
+            // Actual Response Content
+            setProcessedHtmlContent(markitdown(mathStandardize(normalizeCodeBlocks(actualContent))))
+
+            //Think content
+            setProcessedThinkContent(markitdown(mathStandardize(normalizeCodeBlocks(thinkContent))))
+        } catch (err) {
+            //console.log(err)
+        }
+    }, [actualContent, thinkContent])
 
     StateManager.set("current_message_id", message_id)
 
@@ -154,7 +159,7 @@ export const ResponseWrapper = ({
         <div id={message_id} className='font-blink leading-loose tracking-wide text-gray-900 dark:text-white transition-colors duration-300 w-full text-[15px]'>
             <div id="ai_response_think" className="w-full bg-none rounded-lg rounded-bl-none transition-colors duration-700">
                 {thinkContent &&
-                    <GlassThinkingSection htmlThinkContent={thinkContent} isThinking={isThinking} thinkToolCalls={thinkToolCalls} />
+                    <GlassThinkingSection htmlThinkContent={processedThinkContent || thinkContent} isThinking={isThinking} thinkToolCalls={thinkToolCalls} />
                 }
 
             </div>

@@ -71,6 +71,8 @@ export type EventMap = {
     'thinkmode:disable': []
     'thinkmode:change': [on: boolean]
     'settings:change': []
+    'diagram:page:open': []
+    'diagram:page:close': []
 };
 
 

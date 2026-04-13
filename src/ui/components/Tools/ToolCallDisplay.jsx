@@ -231,9 +231,9 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle = null,
     }
     return (
         <ErrorBoundary>
-            <div className={`tool-call-item border border-blue-200/30 dark:border-blue-700/30 rounded-lg overflow-hidden transition-all duration-200 ${hasError ? 'bg-red-50/50 dark:bg-red-900/20' : 'bg-white/50 dark:bg-blue-900/10'}`}>
+            <div className={`tool-call-item my-1 border border-blue-200/30 dark:border-blue-700/30 rounded-lg overflow-hidden transition-all duration-200 ${hasError ? 'bg-red-50/50 dark:bg-red-900/20' : 'bg-white/50 dark:bg-blue-900/10'}`}>
                 {/* Tool Call Header */}
-                <div className="flex items-center justify-between p-3 cursor-pointer" onClick={() => onToggle ? onToggle() : setExpanded(!expanded)}>
+                <div className="flex items-center justify-between p-2 cursor-pointer" onClick={() => onToggle ? onToggle() : setExpanded(!expanded)}>
                     <div className="flex items-center space-x-3 flex-1 min-w-0">
                         <div className={`w-6 h-6 bg-gradient-to-br ${toolColor} rounded flex items-center justify-center shadow-sm`}>
                             <span className="text-white text-sm">{toolIcon}</span>

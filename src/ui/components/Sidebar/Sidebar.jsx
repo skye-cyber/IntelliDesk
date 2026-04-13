@@ -117,7 +117,7 @@ export const Sidebar = ({ isOpen, onToggle, isCanvasOn }) => {
         if (panelOpen && isCanvasOn) {
             setPanelClass('fixed z-[41] left-0 top-0 w-[250px] bg-opacity-100')
         } else if (panelOpen) {
-            setPanelClass('fixed z-[41] left-0 top-0 w-[250px] md:relative md:top-auto md:left-auto md:w-[25vw] lg:w-[20vw] md:block bg-opacity-100')
+            setPanelClass('fixed z-[41] left-0 top-0 w-[250px] lg:relative md:top-auto lg:left-auto lg:w-[25vw] xl:w-[20vw] sm:block bg-opacity-100')
         } else {
             setPanelClass(`w-[40px] ${isCanvasOn ? 'md:w-[5vw]' : 'lg:[4vw]'}`)
         }

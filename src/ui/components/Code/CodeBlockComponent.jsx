@@ -103,7 +103,7 @@ export const CodeBlockComponent = ({
                 </div>
             </section>
             <div className='w-full'>
-                <code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} className={`hljs ${valid_language} h-full font-md leading-[1.5] p-4 scrollbar-code m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre text-[13px]  transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto font-code`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
+                <code ref={codeblockRef} data-value={codeblock_id} id={codeblock_id} className={`hljs ${valid_language} h-full font-md leading-[1.5] tracking-wide p-4 scrollbar-code m-0 bg-gray-50 border borders-white dark:border-gray-400 shadow-outer dark:shadow-inner dark:shadow-balanced-sm block whitespace-pre text-[13px] dark:text-[#e1e1e1] transition-colors duration-700 rounded-md rounded-t-none overflow-x-auto overflow-x-auto max-h-[400px] overflow-auto font-code`} dangerouslySetInnerHTML={{ __html: highlighted }}></code>
             </div>
         </div>
     )

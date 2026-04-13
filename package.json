@@ -25,7 +25,7 @@
     "package:electron": "electron-builder",
     "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
-    "styles": "tailwindcss -i ./src/ui/styles/config.css -o ./src/ui/styles/global.css --minify",
+    "styles": "tailwindcss -i ./src/ui/styles/config.css -o ./src/ui/styles/global.css --minify"
   },
   "keywords": [],
   "author": {

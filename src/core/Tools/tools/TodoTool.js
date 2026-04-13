@@ -109,12 +109,16 @@ export class TodoTool extends ToolBase {
                 throw new Error('Each todo must have a string id');
             }
 
-            if (!todo.content || typeof todo.content !== 'string') {
-                throw new Error('Each todo must have a string content');
+            if (!todo.title || typeof todo.title !== 'string') {
+                throw new Error('Each todo must have a string title');
+            }
+
+            if (!todo.status || typeof todo.status !== 'string') {
+                throw new Error('Each todo must have a string status');
             }
 
             // Validate status
-            const validStatuses = ['pending', 'in_progress', 'completed', 'cancelled'];
+            const validStatuses = ['pending', 'active', 'failed', 'completed', 'cancelled'];
             if (todo.status && !validStatuses.includes(todo.status)) {
                 throw new Error(`Invalid status: ${todo.status}. Must be one of: ${validStatuses.join(', ')}`);
             }

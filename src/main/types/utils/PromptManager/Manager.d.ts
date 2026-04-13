@@ -17,6 +17,8 @@ export declare class SystemPrompt {
     private static userPersonalization;
     private static reasoningBlock;
     private static multimodalBlock;
+    private static skillSBlock;
+    private static mcpServerBlock;
     private static toolsBlock;
     private static outputFormatting;
 }

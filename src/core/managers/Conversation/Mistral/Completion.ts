@@ -87,7 +87,6 @@ class CompletionBase {
     private DEFAULT_TEXT_MODEL: string
     private DEFAULT_REASONING_MODEL: string
     public REASONING_ON: boolean
-    private REASONING_CHANGE_LISTENER: EventSubscription
 
     constructor(ErrorCallback: CallableFunction | undefined = undefined) {
         this.modelName = StateManager.get('currentModel') as string
@@ -163,6 +162,7 @@ class CompletionBase {
         }
         if (this.REASONING_ON) {
             this.modelName = this.DEFAULT_REASONING_MODEL
+            window.desk.api.updateModel('reasoning')
             const chats = window.desk.api.getHistory() as any
             if (chats.length > 1 && !Array.isArray(chats.slice(1))) {
                 window.desk.api.upgradeToArrayModel(null, false)

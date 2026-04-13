@@ -75,7 +75,8 @@ exports.DEFAULT_AGENT_CONFIG = {
                 'wc',
                 'which',
                 'df',
-                'print'
+                'print',
+                'cd',
             ],
             denylist: [
                 'gdb',
@@ -114,7 +115,7 @@ exports.DEFAULT_AGENT_CONFIG = {
             permission: 'always',
             allowlist: [],
             denylist: [],
-            max_output_bytes: 128000,
+            max_output_bytes: 1200,
             default_max_matches: 100,
             default_timeout: 60,
             exclude_patterns: [

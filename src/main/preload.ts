@@ -372,6 +372,13 @@ const api: ApiType = {
             return undefined
         }
     },
+    updateModel: (modeltype: string|ModelType): ConversationMetadata | undefined=>{
+        if(modeltype && ModelType[modeltype as ModelType]){
+            ConversationHistory.metadata.model = modeltype as ModelType
+            return ConversationHistory.metadata
+        }
+        return undefined
+    },
     getRoleByIndex: (index: number): MessageRole | undefined => {
         try {
             if (index === -1) return ConversationHistory.chats.slice(-1)[0].role

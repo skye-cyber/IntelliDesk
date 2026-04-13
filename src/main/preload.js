@@ -373,6 +373,13 @@ const api = {
             return undefined;
         }
     },
+    updateModel: (modeltype) => {
+        if (modeltype && preload_type_1.ModelType[modeltype]) {
+            ConversationHistory.metadata.model = modeltype;
+            return ConversationHistory.metadata;
+        }
+        return undefined;
+    },
     getRoleByIndex: (index) => {
         try {
             if (index === -1)

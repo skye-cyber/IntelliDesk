@@ -49,6 +49,9 @@ export interface AgentType {
     require_confirmation_for_tool: (toolName: string) => AgentType;
     get_default_config: () => AgentConfig;
     config: AgentConfig;
+    get_tool_paths: () => string[];
+    get_mcp_servers: () => any[];
+    get_skill_paths: () => string[];
 }
 export declare const Agent: AgentType;
 //# sourceMappingURL=ToolAgent.d.ts.map

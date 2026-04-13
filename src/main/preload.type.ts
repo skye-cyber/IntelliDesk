@@ -137,6 +137,7 @@ export interface ApiType {
     setModel: (model: string) => void;
     clean: (data: Conversation) => Conversation | null;
     getmetadata: (file?: string | undefined | null) => ConversationMetadata | undefined;
+    updateModel: (modeltype: string|ModelType) => ConversationMetadata | undefined;
     getRoleByIndex: (index: number) => MessageRole | undefined;
     updateName: (name: string, save?: boolean) => string | undefined;
     updateContinueHistory: (item: ChatMessage) => void | false;

@@ -4,6 +4,7 @@ import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '../Input/InputSection.tsx';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
+import TodoManager from '../Todo/TodoManager.tsx';
 
 export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording }) => {
     const chatAreaRef = useRef(null);
@@ -57,11 +58,11 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                         id='message-container'
                         className='fixed top-2 right-2 z-[99] space-y-3 max-w-sm w-full'>
                     </div>
-
                 </div>
                 {/* confirm dialog */}
                 <div data-portal-container='ConfirmdialogContainer' id='confirm-dialog-container'></div>
             </section>
+            <TodoManager />
         </>
     );
 };

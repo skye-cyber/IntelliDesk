@@ -73,6 +73,7 @@ export type EventMap = {
     'settings:change': []
     'diagram:page:open': []
     'diagram:page:close': []
+    'tasks:menu:toggle': []
 };
 
 

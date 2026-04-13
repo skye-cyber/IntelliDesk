@@ -836,18 +836,6 @@ background: linear-gradient(to bottom, #4b5563, #374151);
     border-radius: 10px;
 }
 
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 .animate-slideDown {
     animation: slideDown 0.2s ease-out forwards;
 }

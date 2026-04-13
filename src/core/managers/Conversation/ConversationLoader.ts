@@ -96,7 +96,7 @@ export class ConversationLoader {
         try {
             const model = conversationData.metadata?.model || 'chat';
             // ['vision', 'multimodal', 'reasoning', 'ocr']
-            const isMultimodal = model.toLowerCase() !== 'chat'
+            const isArrayedModel = model.toLowerCase() !== 'chat'
 
             if (conversationData.chats?.length > 0) {
                 chatutil.hideSuggestions();
@@ -106,9 +106,13 @@ export class ConversationLoader {
             this.portal = null;
 
             // Ensure correct model is selected
-            if (!modelManager.usesArrayStructure(StateManager.get('currentModel') as string)) {
-                modelManager.changeModel('pixtral-large-latest');
-            } else if (modelManager.usesArrayStructure(StateManager.get('currentModel') as string)) {
+            if (!modelManager.usesArrayStructure(StateManager.get('currentModel') as string) && isArrayedModel) {
+                if (model === 'reasoning') {
+                    modelManager.changeModel('magistral-small-latest');
+                } else {
+                    modelManager.changeModel('mistral-small-latest');
+                }
+            } else if (modelManager.usesArrayStructure(StateManager.get('currentModel') as string) && !isArrayedModel) {
                 modelManager.changeModel('mistral-large-latest');
             }
 
@@ -119,7 +123,7 @@ export class ConversationLoader {
                 const role = message.role;
 
                 if (role === "user") {
-                    await this.renderUserMessage(message.content, isMultimodal);
+                    await this.renderUserMessage(message.content, isArrayedModel);
                     this.portal = null; // Reset portal after user message
 
                 } else if (role === "assistant") {
@@ -144,11 +148,11 @@ export class ConversationLoader {
     /**
      * Render user message - handles both string and array content
      */
-    async renderUserMessage(content: any, isMultimodal: boolean) {
+    async renderUserMessage(content: any, isArrayedModel: boolean) {
         let userText = '';
         let files: any[] = [];
 
-        if (isMultimodal && Array.isArray(content)) {
+        if (isArrayedModel && Array.isArray(content)) {
             // Extract text and files from array
             const textItem = content.find(item => item?.type === 'text');
             userText = textItem?.text || '';

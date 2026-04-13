@@ -256,6 +256,21 @@ exports.Agent = {
     get_default_config() {
         return exports.config_manager.default_config;
     },
-    config: (0, shared_1.PREP_AGENT_CONFIG)(exports.config_manager.config)
+    config: (0, shared_1.PREP_AGENT_CONFIG)(exports.config_manager.config),
+    /**
+     * Get configuration for a specific tool
+     */
+    get_tool_paths() {
+        // Bypass for tool rename since it is an internal tool
+        return exports.config_manager.config.tool_paths;
+    },
+    get_mcp_servers() {
+        // Bypass for tool rename since it is an internal tool
+        return exports.config_manager.config.mcp_servers;
+    },
+    get_skill_paths() {
+        // Bypass for tool rename since it is an internal tool
+        return exports.config_manager.config.skill_paths;
+    },
 };
 //# sourceMappingURL=ToolAgent.js.map

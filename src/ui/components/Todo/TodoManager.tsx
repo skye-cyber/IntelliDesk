@@ -9,7 +9,7 @@ export type TodoStatus = 'in_progress' | 'pending' | 'completed' | 'cancelled' |
 export type TodoPriority = 'high' | 'medium' | 'low'
 
 export interface Todo {
-    id: string;
+    id: string|number;
     title: string;
     status: TodoStatus;
     priority:TodoPriority

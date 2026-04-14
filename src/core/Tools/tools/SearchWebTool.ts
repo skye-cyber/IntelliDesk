@@ -2,7 +2,7 @@
  * Search Web Tool - Search the web for current information
  */
 import { ToolBase } from '../ToolBase';
-import * as duckDuckGoSearch from '@eazevedociss/duckduckgo-search';
+import SearchApi from '../ToolProviders/DuckDuckGo'
 
 interface Result {
     title: string
@@ -57,7 +57,7 @@ export class SearchWebTool extends ToolBase {
 
         // Apply limits
         const maxResults = Math.min(max_results, this.config.max_results || 10);
-        const timeout = this.config.timeout || 10000;
+        const timeout = 30000;
 
         try {
             // Use real DuckDuckGo search with timeout
@@ -113,14 +113,15 @@ export class SearchWebTool extends ToolBase {
 
         // Use the text search API which returns an async iterator
         // @ts-ignore - The package's type definitions may be incomplete
-        for await (const result of duckDuckGoSearch.text(query)) {
+        for await (const result of SearchApi.text(query)) {
+            console.log(result)
             if (searchResults.length >= maxResults) break;
 
             // Transform the result to match your expected format
             searchResults.push({
                 title: result.title || 'No title',
-                url: result.url || '#',
-                snippet: this.truncateSnippet(result.body || result.description || 'No description available'),
+                url: result.href || '#',
+                snippet: this.truncateSnippet(result.body || result.body || 'No description available'),
                 source: 'duckduckgo'
             });
         }

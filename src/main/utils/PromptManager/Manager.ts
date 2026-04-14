@@ -96,7 +96,6 @@ export class SystemPrompt {
         - \`priority\`: One of: "high", "medium", "low"
 
         ## When to Use This Tool
-
         **Use proactively for:**
         - Complex multi-step tasks (3+ distinct steps)
         - Non-trivial tasks requiring careful planning
@@ -113,7 +112,6 @@ export class SystemPrompt {
         - Tasks that provide no organizational benefit
 
         ## Task Management Best Practices
-
         1. **Status Management:**
         - Only ONE task should be \`in_progress\` at a time
         - Mark tasks \`in_progress\` BEFORE starting work on them
@@ -134,12 +132,9 @@ export class SystemPrompt {
         - Remove irrelevant tasks entirely (don't just mark cancelled)
 
         ## Examples
-
         **Example 1: Reading todos**
         \`\`\`json
-        {
-            "action": "read"
-        }
+        {"action": "read"}
         \`\`\`
 
         **Example 2: Initial task creation (user requests multiple features)**
@@ -147,30 +142,10 @@ export class SystemPrompt {
         {
             "action": "write",
             "todos": [
-                {
-                    "id": "1",
-                    "content": "Add dark mode toggle to settings",
-                    "status": "pending",
-                    "priority": "high"
-                },
-                {
-                    "id": "2",
-                    "content": "Implement theme context/state management",
-                    "status": "pending",
-                    "priority": "high"
-                },
-                {
-                    "id": "3",
-                    "content": "Update components for theme switching",
-                    "status": "pending",
-                    "priority": "medium"
-                },
-                {
-                    "id": "4",
-                    "content": "Run tests and verify build",
-                    "status": "pending",
-                    "priority": "medium"
-                }
+                { "id": "1", "title": "Add dark mode toggle to settings", "status": "pending", "priority": "high"},
+                { "id": "2", "title": "Implement theme context/state management", "status": "pending", "priority": "high"},
+                { "id": "3", "title": "Update components for theme switching", "status": "pending", "priority": "medium"},
+                { "id": "4", "title": "Run tests and verify build", "status": "pending", "priority": "medium"}
             ]
         }
         \`\`\`
@@ -180,30 +155,10 @@ export class SystemPrompt {
         {
             "action": "write",
             "todos": [
-                {
-                    "id": "1",
-                    "content": "Add dark mode toggle to settings",
-                    "status": "in_progress",
-                    "priority": "high"
-                },
-                {
-                    "id": "2",
-                    "content": "Implement theme context/state management",
-                    "status": "pending",
-                    "priority": "high"
-                },
-                {
-                    "id": "3",
-                    "content": "Update components for theme switching",
-                    "status": "pending",
-                    "priority": "medium"
-                },
-                {
-                    "id": "4",
-                    "content": "Run tests and verify build",
-                    "status": "pending",
-                    "priority": "medium"
-                }
+                { "id": "1", "title": "Add dark mode toggle to settings", "status": "in_progress", "priority": "high"},
+                { "id": "2", "title": "Implement theme context/state management", "status": "pending", "priority": "high"},
+                { "id": "3", "title": "Update components for theme switching", "status": "pending", "priority": "medium"},
+                { "id": "4", "title": "Run tests and verify build", "status": "pending", "priority": "medium"}
             ]
         }
         \`\`\`
@@ -213,30 +168,14 @@ export class SystemPrompt {
         {
             "action": "write",
             "todos": [
-                {
-                    "id": "1",
-                    "content": "Deploy to production",
-                    "status": "in_progress",
-                    "priority": "high"
-                },
-                {
-                    "id": "2",
-                    "content": "BLOCKER: Fix failing deployment pipeline",
-                    "status": "pending",
-                    "priority": "high"
-                },
-                {
-                    "id": "3",
-                    "content": "Update documentation",
-                    "status": "pending",
-                    "priority": "low"
-                }
+                { "id": "1", "title": "Deploy to production", "status": "in_progress", "priority": "high"},
+                { "id": "2", "title": "BLOCKER: Fix failing deployment pipeline", "status": "pending", "priority": "high"},
+                { "id": "3", "title": "Update documentation", "status": "pending", "priority": "low"}
             ]
         }
         \`\`\`
 
         ## Common Scenarios
-
         **Multi-file refactoring:** Create todos for each file that needs updating
         **Performance optimization:** List specific bottlenecks as individual tasks
         **Bug fixing:** Track reproduction, diagnosis, fix, and verification as separate tasks

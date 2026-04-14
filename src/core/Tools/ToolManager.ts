@@ -6,14 +6,14 @@ import { ToolBase } from './ToolBase';
 import { BashTool } from './tools/BashTool';
 import { GrepTool } from './tools/GrepTool';
 // import { GetWeatherTool } from './tools/GetWeatherTool'
-// import { TodoTool } from './tools/TodoTool';
+import { TodoTool } from './tools/TodoTool';
 import { WriteFileTool } from './tools/WriteFileTool';
 import { ReadFileTool } from './tools/ReadFileTool';
 import { SearchReplaceTool } from './tools/SearchReplaceTool';
-import { SearchWebTool } from './tools/SearchWebTool';
+// import { SearchWebTool } from './tools/SearchWebTool';
 import { CalculateTool } from './tools/CalculateTool';
 import { FileSystemTool } from './tools/FileSystemTool';
-import { DatabaseQueryTool } from './tools/DatabaseQueryTool';
+// import { DatabaseQueryTool } from './tools/DatabaseQueryTool';
 import { NameConversationTool } from './tools/NameConversationTool';
 //import { SendMessageTool } from './tools/SendMessageTool';
 import type { AgentType, ToolConfig } from "../../main/utils/ToolAgent";
@@ -50,7 +50,7 @@ export class ToolManager {
         this.registerTool('bash', new BashTool() as any);
         this.registerTool('grep', new GrepTool() as any);
         this.registerTool('search_replace', new SearchReplaceTool() as any);
-        //this.registerTool('todo', new TodoTool());
+        this.registerTool('todo', new TodoTool() as any);
         this.registerTool('write_file', new WriteFileTool() as any);
         this.registerTool('read_file', new ReadFileTool() as any);
         // this.registerTool('search_web', new SearchWebTool() as any);

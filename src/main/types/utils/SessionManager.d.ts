@@ -1,3 +1,11 @@
+export type TodoStatus = 'in_progress' | 'pending' | 'completed' | 'cancelled' | 'failed';
+export type TodoPriority = 'high' | 'medium' | 'low';
+export interface Todo {
+    id: string | number;
+    title: string;
+    status: TodoStatus;
+    priority: TodoPriority;
+}
 export interface ToolConfigEnabled {
     permission: 'always' | 'ask';
     allowlist?: string[];
@@ -40,6 +48,7 @@ export interface Session {
         last_turn_total_tokens: number;
         session_cost: number;
     };
+    sessionTodo: Todo[] | null;
 }
 export interface SessionLock {
     session_id: string;
@@ -65,6 +74,8 @@ export interface SessionManagerType {
     update_permission: (session_id: string, permission: 'ask' | 'always', toolName: string) => Session;
     read: (session_id: string) => Session | null;
     validate: (session_id: string) => boolean;
+    read_todo: (sessionId: string) => Todo[] | undefined;
+    update_todo: (sessionId: string, todo: Todo[]) => Session | undefined;
 }
 interface SessionInfor {
     session: Session;

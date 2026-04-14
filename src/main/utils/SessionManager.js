@@ -157,7 +157,8 @@ exports.SessionManager = {
             disabled_tools: disabled,
             autoapprove_action: 'allow',
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            sessionTodo: null
         };
         // Disable autolock for now
         // const lock = LockManager.create(session_id)
@@ -245,6 +246,25 @@ exports.SessionManager = {
             exports.SessionManager.delete(session_id);
         }
         return true;
+    },
+    update_todo: (sessionId, todo) => {
+        if (!sessionId)
+            return undefined;
+        const session = exports.SessionManager.read(sessionId);
+        if (!session)
+            return undefined;
+        session.sessionTodo = todo;
+        // Save
+        write_file(path.join(session_root, `${sessionId}.json`), session);
+        return session;
+    },
+    read_todo: (sessionId) => {
+        if (!sessionId)
+            return undefined;
+        const session = exports.SessionManager.read(sessionId);
+        if (!session)
+            return undefined;
+        return session.sessionTodo;
     }
 };
 //# sourceMappingURL=SessionManager.js.map

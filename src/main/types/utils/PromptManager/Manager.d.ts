@@ -19,6 +19,7 @@ export declare class SystemPrompt {
     private static multimodalBlock;
     private static skillSBlock;
     private static mcpServerBlock;
+    private static todoBlock;
     private static toolsBlock;
     private static outputFormatting;
 }

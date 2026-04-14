@@ -9,10 +9,10 @@ export type TodoStatus = 'in_progress' | 'pending' | 'completed' | 'cancelled' |
 export type TodoPriority = 'high' | 'medium' | 'low'
 
 export interface Todo {
-    id: string|number;
+    id: string | number;
     title: string;
     status: TodoStatus;
-    priority:TodoPriority
+    priority: TodoPriority
 }
 
 export function updateTodos(currentTodos: Todo[], payload: Todo[] | Partial<Todo> & { id: string }): Todo[] {
@@ -62,23 +62,6 @@ interface TodoManagerProps {
     maxHeight?: string;
 }
 
-const sampleTodos: Todo[] = [
-    { id: '1', title: 'Design system migration', status: 'in_progress', priority: 'high' },
-    { id: '2', title: 'User research synthesis', status: 'pending', priority: 'medium' },
-    { id: '3', title: 'Performance optimization', status: 'completed', priority: 'medium' },
-    { id: '4', title: 'Documentation review', status: 'cancelled', priority: 'high' },
-    { id: '5', title: 'Fix login bug', status: 'failed', priority: 'high' },
-    { id: '6', title: 'Write unit tests', status: 'in_progress', priority: 'low' },
-];
-
-setTimeout(()=>{
-    StateManager.set('todoList', sampleTodos)
-}, 7000)
-
-setTimeout(()=>{
-    StateManager.set('todoList', [])
-}, 10000)
-
 const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
     initialTodos = [],
     className = '',
@@ -86,6 +69,18 @@ const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
 }, ref) => {
     const [todos, setTodos] = React.useState<Todo[]>(initialTodos);
     const [isActive, setActive] = React.useState<boolean>(false)
+
+    React.useEffect(() => {
+        if (todos.length === 0) {
+            const sessionId: string | null | undefined = window.desk.api.getmetadata()?.sessionId
+            if (sessionId) {
+                const todoList = window.desk.sessionmanager.read_todo(sessionId)
+                if (todoList && todoList.length > 0) {
+                    setTodos(todoList)
+                }
+            }
+        }
+    })
 
     React.useImperativeHandle(ref, () => ({
         updateFullList: (newTodos) => setTodos(prev => updateTodos(prev, newTodos)),

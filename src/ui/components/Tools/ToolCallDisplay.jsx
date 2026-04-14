@@ -276,7 +276,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle = null,
                 {(isExpanded || expanded || showDetails) && (
                     <div className="px-3 pb-3">
                         {/* Parameters */}
-                        {toolCall?.result?.params || toolCall.arguments && (
+                        {(toolCall?.result?.params || toolCall.arguments) && (
                             <div className="mb-3">
                                 <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 flex items-center">
                                     <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,7 +286,7 @@ export const ToolCallDisplay = ({ toolCall, isExpanded = false, onToggle = null,
                                     Parameters
                                 </h5>
                                 <div className="bg-gray-50/80 dark:bg-blue-900/20 rounded border border-gray-200/50 dark:border-blue-700/30 p-2">
-                                    <pre className="text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-20 font-mono whitespace-pre-wrap overflow-yauto scrollbar-custom">
+                                    <pre className="text-xs text-gray-700 dark:text-gray-50 overflow-x-auto max-h-20 font-mono whitespace-pre-wrap overflow-yauto scrollbar-custom">
                                         {formatParams((toolCall.result?.params || toolCall.arguments)?.slice(0, 500))}
                                     </pre>
                                 </div>

@@ -4,6 +4,17 @@ import * as os from 'os';
 import { Agent, ToolConfig } from './ToolAgent';
 import { STORE_DIR } from './shared';
 
+export type TodoStatus = 'in_progress' | 'pending' | 'completed' | 'cancelled' | 'failed';
+
+export type TodoPriority = 'high' | 'medium' | 'low'
+
+export interface Todo {
+    id: string | number;
+    title: string;
+    status: TodoStatus;
+    priority: TodoPriority
+}
+
 export interface ToolConfigEnabled {
     permission: 'always' | 'ask';
     allowlist?: string[];
@@ -48,6 +59,7 @@ export interface Session {
         last_turn_total_tokens: number
         session_cost: number
     },
+    sessionTodo: Todo[] | null
 }
 
 export interface SessionLock {
@@ -79,6 +91,8 @@ export interface SessionManagerType {
     update_permission: (session_id: string, permission: 'ask' | 'always', toolName: string) => Session
     read: (session_id: string) => Session | null // Read session content
     validate: (session_id: string) => boolean //check if session is valid
+    read_todo: (sessionId: string) => Todo[] | undefined
+    update_todo: (sessionId: string, todo: Todo[]) => Session | undefined
 }
 
 interface SessionInfor {
@@ -200,7 +214,8 @@ export const SessionManager: SessionManagerType = {
             disabled_tools: disabled,
             autoapprove_action: 'allow',
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            sessionTodo: null
         }
         // Disable autolock for now
         // const lock = LockManager.create(session_id)
@@ -277,9 +292,24 @@ export const SessionManager: SessionManagerType = {
         }
     },
     clear: (session_id: string): boolean => {
-        if(!SessionManager.validate(session_id)){
+        if (!SessionManager.validate(session_id)) {
             SessionManager.delete(session_id)
         }
         return true
+    },
+    update_todo: (sessionId: string, todo: Todo[]): Session | undefined => {
+        if (!sessionId) return undefined
+        const session = SessionManager.read(sessionId)
+        if (!session) return undefined
+        session.sessionTodo = todo
+        // Save
+        write_file(path.join(session_root, `${sessionId}.json`), session)
+        return session
+    },
+    read_todo: (sessionId: string): Todo[] | undefined => {
+        if (!sessionId) return undefined
+        const session = SessionManager.read(sessionId)
+        if (!session) return undefined
+        return session.sessionTodo as Todo[]
     }
 }

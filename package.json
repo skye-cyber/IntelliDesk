@@ -47,6 +47,8 @@
     "@eazevedociss/duckduckgo-search": "^1.0.9",
     "@fiahfy/icns": "^0.0.7",
     "@hpcc-js/wasm-graphviz": "^1.7.0",
+    "@lenml/llama2-tokenizer": "^1.1.4",
+    "@lenml/llama2-tokenizer-vocab-llama2": "^1.1.1",
     "@mistralai/mistralai": "^1.5.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@vitejs/plugin-react": "^5.1.0",

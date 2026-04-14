@@ -2,7 +2,7 @@
  * Todo Tool - Manage a simple task list with persistence
  */
 import { ToolBase } from '../ToolBase';
-import { StateManager } from '../../../StatesManager.ts';
+import { StateManager } from '../../managers/StatesManager';
 
 
 export class TodoTool extends ToolBase {
@@ -65,8 +65,7 @@ export class TodoTool extends ToolBase {
     }
 
     async _execute({ action, todos = null }, context) {
-        const stateKey = this.config.state_key || 'todos';
-        let currentTodos = StateManager.get(stateKey) || [];
+        let currentTodos = StateManager.get('todoList') || [];
 
         switch (action) {
             case 'read':
@@ -85,7 +84,7 @@ export class TodoTool extends ToolBase {
                 this.validateTodos(todos);
 
                 // Store the new todos
-                StateManager.set(stateKey, todos);
+                StateManager.set('todoList', todos);
 
                 return {
                     action: 'write',
@@ -118,7 +117,7 @@ export class TodoTool extends ToolBase {
             }
 
             // Validate status
-            const validStatuses = ['pending', 'active', 'failed', 'completed', 'cancelled'];
+            const validStatuses = ['pending', 'in_progress', 'failed', 'completed', 'cancelled'];
             if (todo.status && !validStatuses.includes(todo.status)) {
                 throw new Error(`Invalid status: ${todo.status}. Must be one of: ${validStatuses.join(', ')}`);
             }

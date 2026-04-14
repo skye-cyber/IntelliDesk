@@ -36,7 +36,7 @@ export const InputSection = ({ onToggleRecording }) => {
         const userSubmit = globalEventBus.on('useraction:submit:incycle', (text) => {
             setIncycle(false)
             // StateManager.set('processing', false);
-            handleSend(text)
+            handleSend()
         })
         return () => {
             startCycle.unsubscribe()

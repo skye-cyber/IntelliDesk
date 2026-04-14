@@ -8,6 +8,17 @@ interface ToolExecution {
     result: any
     timestamp: string
 }
+
+export type TodoStatus = 'in_progress' | 'pending' | 'completed' | 'cancelled' | 'failed';
+export type TodoPriority = 'high' | 'medium' | 'low'
+
+export interface Todo {
+    id: string;
+    title: string;
+    status: TodoStatus;
+    priority:TodoPriority
+}
+
 export interface PreferenceData {
     profile?: string;
     autoscroll?: boolean
@@ -35,6 +46,7 @@ interface AppState {
     userInputText: string
     sidebarOpen: string
     userSettings: PreferenceData
+    todoList: Todo[]
 }
 
 type Listener<T> = (value: T | undefined, oldValue?: T) => void;

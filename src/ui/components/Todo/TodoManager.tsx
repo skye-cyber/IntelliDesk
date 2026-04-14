@@ -1,14 +1,18 @@
 import React from 'react';
 import { FiCircle, FiClock, FiCheckCircle, FiXCircle, FiAlertCircle, FiChevronsRight } from 'react-icons/fi';
 import { globalEventBus } from '../../../core/Globals/eventBus';
+import { StateManager } from '../../../core/managers/StatesManager';
 
 
-export type TodoStatus = 'active' | 'pending' | 'completed' | 'cancelled' | 'failed';
+export type TodoStatus = 'in_progress' | 'pending' | 'completed' | 'cancelled' | 'failed';
+
+export type TodoPriority = 'high' | 'medium' | 'low'
 
 export interface Todo {
     id: string;
     title: string;
     status: TodoStatus;
+    priority:TodoPriority
 }
 
 export function updateTodos(currentTodos: Todo[], payload: Todo[] | Partial<Todo> & { id: string }): Todo[] {
@@ -23,7 +27,7 @@ export function updateTodos(currentTodos: Todo[], payload: Todo[] | Partial<Todo
 
 
 const statusConfig: Record<TodoStatus, { icon: React.ElementType; colorLight: string; colorDark: string }> = {
-    active: { icon: FiCircle, colorLight: '#38bdf8', colorDark: '#7dd3fc' },      // cyber-400/300
+    in_progress: { icon: FiCircle, colorLight: '#38bdf8', colorDark: '#7dd3fc' },      // cyber-400/300
     pending: { icon: FiClock, colorLight: '#f97316', colorDark: '#fb923c' },      // orange-500/400
     completed: { icon: FiCheckCircle, colorLight: '#22c55e', colorDark: '#4ade80' }, // green-500/400
     cancelled: { icon: FiXCircle, colorLight: '#9ca3af', colorDark: '#6b7280' },   // gray-400/500
@@ -33,7 +37,7 @@ const statusConfig: Record<TodoStatus, { icon: React.ElementType; colorLight: st
 const TodoItem: React.FC<{ todo: Todo }> = ({ todo }) => {
     const { icon: Icon, colorLight, colorDark } = statusConfig[todo.status];
     const titleMap = {
-        active: 'Running',
+        in_progress: 'Running',
         pending: 'Pending',
         cancelled: 'Cancelled',
         completed: 'Completed',
@@ -41,7 +45,7 @@ const TodoItem: React.FC<{ todo: Todo }> = ({ todo }) => {
     }
     return (
         <div className="flex items-center gap-2 py-1.5 px-1 border-b border-gray-100 dark:border-white/5 last:border-0" title={titleMap[todo.status]}>
-            <Icon style={{ color: colorLight }} className={`${(todo.status === 'active') ? 'animate-heartpulse' : ''} w-4 h-4 shrink-0 dark:[&>path]:stroke-current`} />
+            <Icon style={{ color: colorLight }} className={`${(todo.status === 'in_progress') ? 'animate-heartpulse' : ''} w-4 h-4 shrink-0 dark:[&>path]:stroke-current`} />
             <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{todo.title}</span>
         </div>
     );
@@ -59,16 +63,24 @@ interface TodoManagerProps {
 }
 
 const sampleTodos: Todo[] = [
-    { id: '1', title: 'Design system migration', status: 'active' },
-    { id: '2', title: 'User research synthesis', status: 'pending' },
-    { id: '3', title: 'Performance optimization', status: 'completed' },
-    { id: '4', title: 'Documentation review', status: 'cancelled' },
-    { id: '5', title: 'Fix login bug', status: 'failed' },
-    { id: '6', title: 'Write unit tests', status: 'active' },
+    { id: '1', title: 'Design system migration', status: 'in_progress', priority: 'high' },
+    { id: '2', title: 'User research synthesis', status: 'pending', priority: 'medium' },
+    { id: '3', title: 'Performance optimization', status: 'completed', priority: 'medium' },
+    { id: '4', title: 'Documentation review', status: 'cancelled', priority: 'high' },
+    { id: '5', title: 'Fix login bug', status: 'failed', priority: 'high' },
+    { id: '6', title: 'Write unit tests', status: 'in_progress', priority: 'low' },
 ];
 
+setTimeout(()=>{
+    StateManager.set('todoList', sampleTodos)
+}, 7000)
+
+setTimeout(()=>{
+    StateManager.set('todoList', [])
+}, 10000)
+
 const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
-    initialTodos = sampleTodos,
+    initialTodos = [],
     className = '',
     maxHeight = '320px',
 }, ref) => {
@@ -85,6 +97,10 @@ const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
         return () => activateTaskMenu.unsubscribe()
     })
 
+    React.useEffect(() => {
+        StateManager.subscribe('todoList', (newTodo: any) => setTodos(newTodo))
+    })
+
     if (!isActive) return
 
     return (
@@ -98,7 +114,7 @@ const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
                     </div>
                 ) :
                     <div className='text-sm text-gray-400 dark:text-white italic px-1 py-2'>
-                        No active tasks
+                        No in_progress tasks
                     </div>
                 }
             </section>

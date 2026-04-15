@@ -6,6 +6,20 @@
 ## Suggested tools/commands
 1. `filewarp`
 
+## Installation
+
+### Using pip
+
+```shell
+pip install filewarp
+```
+
+### Install from GitHub
+
+```shell
+pip install git+https://github.com/skye-cyber/FileWarp.git
+```
+
 # filewarp Usage
 A Python file **conversion**, **manipulation**, and **analysis** toolkit.
 This is a Linux command-line interface (CLI) utility that converts documents from one format to another, analyzes files, manipulates files, and more.

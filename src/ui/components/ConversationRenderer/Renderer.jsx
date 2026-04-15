@@ -13,26 +13,51 @@ import { GlassThinkingSection } from './Reasoning';
 import { FileContainer } from './Files';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 import { ThinkingBrain } from '../Writing/AssistantAnimations.tsx';
+import { CodeDetector } from '../Code/CodeDetector.tsx';
+import { cleanInput } from '../Input/utils/cleanInput.ts';
 
 export const UserMessage = ({ message, files = [] }) => {
     const messageRef = useRef(null)
-    const userContent = markitdown(message);
+    /* Do not interpret if already interpreted -- compartibility for older
+     * chats that we being save as fenced codeblocks
+    */
+    const userContent = markitdown(message.includes('```') ? message : cleanInput(CodeDetector.autoFormatCodeBlocks(message)));
     const selector_class = GenerateId('user-ms')
     const [optionsOpen, setOptionsOpen] = useState(false)
     const [expanded, setEpanded] = useState(false)
     const [expandable, setExpandable] = useState(false)
     const [dimensions, setDimensions] = useState([])
 
-    useEffect(() => {
-        if (!messageRef.current) return
-
+    const updateDimensions = () => {
         const computedStyle = getComputedStyle(messageRef.current)
         setExpandable(!expanded && parseInt(computedStyle.height) >= parseInt(computedStyle.maxHeight))
         setDimensions([parseInt(computedStyle.width)], parseInt(computedStyle.height))
+    }
 
+    useEffect(() => {
+        if (!messageRef.current) return
+        updateDimensions
     }, [messageRef.current, expanded])
 
     chatutil.renderMath(`.${selector_class}`, 0)
+
+    useEffect(() => {
+        if (!messageRef.current) return
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.contentRect.width !== undefined) {
+                    updateDimensions()
+                }
+            }
+        })
+
+        resizeObserver.observe(messageRef.current)
+
+        return () => {
+            resizeObserver.disconnect()
+        }
+    }, [updateDimensions])
 
     return (
         <>
@@ -42,11 +67,11 @@ export const UserMessage = ({ message, files = [] }) => {
                         ref={messageRef}
                         onMouseEnter={() => setOptionsOpen(true)}
                         onMouseLeave={() => setOptionsOpen(false)}
-                        className={`${selector_class} relative bg-blue-100/70 dark:bg-primary-700 text-black dark:text-white rounded-lg rounded-br-none h-fit ${expanded ? 'max-h-fit' : 'max-h-64'} overflow-y-auto scrollbar-code p-2 md:p-3 shadow-none w-fit max-w-full sm:max-w-[60%] xl:max-w-[60%]`}>
+                        className={`${selector_class} relative bg-blue-200 dark:bg-accent-700 text-black dark:text-white rounded-lg rounded-br-none h-fit ${expanded ? 'max-h-fit' : 'max-h-64'} overflow-y-auto scrollbar-code p-2 md:p-3 shadow-none w-fit max-w-full sm:max-w-[75%]`}>
                         <SimpleUserCodeRenderer htmlContent={userContent} />
                     </div>
                     {expandable && (
-                        <div onClick={() => setEpanded(!expanded)} className={`absolute bottom-[0.5px] right-0 h-36 bg-gradient-to-t from-gray-100/80 dark:from-[#14143e] to-transparent pointer-events-click ${expanded ? '' : 'cursor-row-resize'} max-w-full sm:max-w-[60%] xl:max-w-[60%] rounded-bl-lg`} style={{ width: dimensions[0] }} />
+                        <div onClick={() => setEpanded(!expanded)} className={`absolute bottom-[0.5px] right-0 h-36 bg-gradient-to-t from-gray-100/80 dark:from-accent-700 to-transparent pointer-events-click ${expanded ? '' : 'cursor-row-resize'} sm:max-w-[75%] rounded-bl-lg`} style={{ width: dimensions[0] }} />
                     )}
                 </div>
 
@@ -75,7 +100,7 @@ export const AiMessage = ({
                     id="ai_response"
                     onMouseEnter={() => setOptionsOpen(true)}
                     onMouseLeave={() => setOptionsOpen(false)}
-                    className="w-full lg:max-w-2xl xl:max-w-3xl relative mb-[2vh] py-2 px-4">
+                    className="w-full md:max-w-lg sd:max-w-xl lg:max-w-2xl relative mb-[2vh] py-2 px-4">
                     {/* This is where child components will appear eg too- responses */}
                     {children &&
                         <div ref={messageRef} className="child-components">{children}</div>

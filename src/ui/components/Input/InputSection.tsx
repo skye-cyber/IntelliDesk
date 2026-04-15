@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import { StateManager } from '../../../core/managers/StatesManager.ts';
-import { CodeDetector } from '../Code/CodeDetector';
 import { globalEventBus, sigint } from '../../../core/Globals/eventBus.ts';
 import { modalmanager } from '../../../core/StatusUIManager/Manager.js';
 import '../../../core/managers/Conversation/Mistral/Completion.ts';
@@ -86,9 +85,9 @@ export const InputSection = ({ onToggleRecording }) => {
         const userInput = (textareaRef.current as HTMLBaseElement)
 
         // Auto-format the text with code blocks before sending
-        const formattedMessage = cleanInput(CodeDetector.autoFormatCodeBlocks(userInputValue))
+        const cleanedMessage = cleanInput(userInputValue)
 
-        if (!formattedMessage.trim()) return
+        if (!cleanedMessage.trim()) return
 
         userInput.innerHTML = "";
         // userInput.style.height = Math.min(userInput.scrollHeight, 0.28 * window.innerHeight) + 'px';
@@ -96,9 +95,9 @@ export const InputSection = ({ onToggleRecording }) => {
 
         // Adjust input field height
         userInput.style.height = 'auto';
-        if (!formattedMessage) return modalmanager.showMessage("No text provided", "error")
-        globalEventBus.emit('useraction:request:execution', formattedMessage)
-        // router.requestRouter(formattedMessage, document.getElementById('chatArea'));
+        if (!cleanedMessage) return modalmanager.showMessage("No text provided", "error")
+        globalEventBus.emit('useraction:request:execution', cleanedMessage)
+        // router.requestRouter(cleanedMessage, document.getElementById('chatArea'));
         adjustElementHeight(userInput)
 
     }, [])

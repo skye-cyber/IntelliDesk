@@ -1,10 +1,32 @@
 import { Llama2Tokenizer } from "@lenml/llama2-tokenizer";
 import { load_vocab } from "@lenml/llama2-tokenizer-vocab-llama2";
 
+enum MODEL_VERSIONS {
+    v1 = 'v1',
+    v2 = 'v2',
+    v3 = 'v3',
+    v3_tekken = 'v3-tekken'
+}
+
+interface Pricing {
+    input: number
+    output: number
+}
+
+type MODEL_TYPE_PRICING = Record<MODEL_VERSIONS, Pricing>
+
+// Pricing estimates (as of 2024)
+const pricing: MODEL_TYPE_PRICING = {
+    v1: { input: 0.25, output: 0.75 },    // per million tokens
+    v2: { input: 0.25, output: 0.75 },
+    v3: { input: 0.25, output: 0.75 },
+    'v3-tekken': { input: 0.15, output: 0.45 }
+};
+
 // Initialize tokenizer for Mistral models
 class MistralTokenCounter {
     private tokenizer: Llama2Tokenizer;
-    private modelVersion: 'v1' | 'v2' | 'v3' | 'v3-tekken';
+    private modelVersion: MODEL_VERSIONS
 
     constructor(model: string = 'mistral') {
         this.tokenizer = new Llama2Tokenizer();
@@ -13,13 +35,13 @@ class MistralTokenCounter {
 
         // Determine tokenizer version based on model
         if (model.includes('nemo') || model.includes('ministral')) {
-            this.modelVersion = 'v3-tekken';
+            this.modelVersion = MODEL_VERSIONS.v3_tekken;
         } else if (model.includes('large') || model.includes('open-mistral-7b')) {
-            this.modelVersion = 'v3';
+            this.modelVersion = MODEL_VERSIONS.v3;
         } else if (model.includes('mixtral-8x22b')) {
-            this.modelVersion = 'v3';
+            this.modelVersion = MODEL_VERSIONS.v3;
         } else {
-            this.modelVersion = 'v1';
+            this.modelVersion = MODEL_VERSIONS.v1;
         }
     }
 
@@ -36,7 +58,7 @@ class MistralTokenCounter {
      * Count tokens for a chat conversation
      * Accounts for control tokens like [INST], [/INST]
      */
-    countChatTokens(messages: Array<{role: 'user' | 'assistant' | 'system', content: string}>): number {
+    countChatTokens(messages: Array<{ role: 'user' | 'assistant' | 'system', content: string }>): number {
         let totalTokens = 0;
 
         for (const message of messages) {
@@ -77,7 +99,7 @@ class MistralTokenCounter {
      * Get complete token count for a Mistral API request
      */
     countRequestTokens(request: {
-        messages: Array<{role: string, content: string}>;
+        messages: Array<{ role: string, content: string }>;
         tools?: any[];
         model?: string;
     }): {
@@ -89,13 +111,6 @@ class MistralTokenCounter {
         const messageTokens = this.countChatTokens(request.messages as any);
         const toolTokens = request.tools ? this.countToolTokens(request.tools) : 0;
         const totalTokens = messageTokens + toolTokens;
-
-        // Pricing estimates (as of 2024)
-        const pricing = {
-            'v1': { input: 0.25, output: 0.75 },    // per million tokens
-            'v3': { input: 0.25, output: 0.75 },
-            'v3-tekken': { input: 0.15, output: 0.45 }
-        };
 
         const modelPricing = pricing[this.modelVersion] || pricing.v3;
         const estimatedCost = (totalTokens / 1_000_000) * modelPricing.input;

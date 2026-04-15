@@ -285,9 +285,7 @@ const api = {
                 ConversationHistory.chats.pop();
             }
             else if (preload_type_1.MessageRole[ConversationHistory.chats?.slice(-1)[0]?.role] === role) {
-                console.log("B4pop:", ConversationHistory.chats.length);
                 ConversationHistory.chats.pop();
-                console.log("Pop:", ConversationHistory.chats.length);
             }
             ConversationHistory.metadata.updated_at = (0, datetime_1.getformatDateTime)();
             return ConversationHistory;

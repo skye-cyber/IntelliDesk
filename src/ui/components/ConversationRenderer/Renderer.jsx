@@ -80,7 +80,7 @@ export const AiMessage = ({
                     {children &&
                         <div ref={messageRef} className="child-components">{children}</div>
                     }
-                    {(actualContent || thinkContent) && (
+                    {(actualContent || thinkContent || animation) && (
                         <ResponseWrapper actualContent={actualContent} isThinking={isThinking} thinkContent={thinkContent} animation={animation} />
                     )}
                     {/*Other componets*/}

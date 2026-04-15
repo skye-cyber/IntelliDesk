@@ -7,7 +7,7 @@ export const FileContainer = ({ setOpen, files }) => {
 
     return (
         <div id={file_container_id} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)} className="relative flex justify-end -mt-2">
-            {files.length > 1 & (
+            {files.length > 2 & (
                 <div className="absolute top-0 right-0 z-10 font-semibold font-handwriting dark:bg-indigo-300 dark:border-[0.13rem] dark:size-6 flex items-center justify-center dark:border-accent-400 dark:rounded-full text-gray-800 dark:text-gray-950 cursor-pointer"
                     /*title={`${files.length-1} more files`}*/
                     aria-label={`${files.length} Uploaded files`}>+{files.length - 1}</div>

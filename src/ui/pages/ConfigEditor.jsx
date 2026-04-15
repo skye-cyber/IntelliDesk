@@ -20,6 +20,7 @@ import {
 import { FieldGroup } from '../components/Config/ToolEditor/Fields';
 import { PermissionBadge, TopLevelIcon, SaveIndicator, ToolIcon } from '../components/Config/ToolEditor/Helpers';
 import { globalEventBus } from '../../core/Globals/eventBus.ts';
+import { usePrompt } from '../hooks/usePrompt.tsx';
 
 const ConfigEditor = () => {
     const [config, setConfig] = useState(window.desk.agent.config || {});
@@ -32,6 +33,7 @@ const ConfigEditor = () => {
     const EditorWrapper = useRef(null)
     const Editor = useRef(null)
     const [indicatorMessage, setIndicatorMessage] = useState(null)
+    const { prompt, PromptComponent } = usePrompt();
 
     // Initialize with first tool
     useEffect(() => {
@@ -133,8 +135,19 @@ const ConfigEditor = () => {
         }, 3000);
     };
 
-    const handleAddTool = () => {
-        const toolName = prompt('Enter tool name (lowercase, no spaces):');
+    const handleAddTool = async () => {
+        const toolName = null;
+        await prompt(
+            'Enter tool name (lowercase, no spaces):',
+            {
+                title: 'Enter tool name (lowercase, no spaces):',
+                defaultValue: '',
+                validator: (value) => {
+                    toolName = value
+                    return value;
+                }
+            }
+        );
         if (!toolName) return;
 
         setConfig(prev => ({
@@ -153,11 +166,33 @@ const ConfigEditor = () => {
         showSaveIndicator('New Tool Added');
     };
 
-    const handleAddField = (toolName) => {
-        const fieldName = prompt('Enter field name:');
+    const handleAddField = async (toolName) => {
+        const fieldName = null;
+        await prompt(
+            `${toolName} Enter field name:`,
+            {
+                title: 'Enter field name:',
+                defaultValue: '',
+                validator: (value) => {
+                    newItem = value
+                    return value;
+                }
+            }
+        );
         if (!fieldName) return;
 
-        const fieldType = prompt('Field type (text/number/boolean/array):', 'text');
+        const fieldType = null
+        await prompt(
+            'Field type (text/number/boolean/array):',
+            {
+                title: 'Field type (text/number/boolean/array):',
+                defaultValue: '',
+                validator: (value) => {
+                    fieldType = value
+                    return value;
+                }
+            }
+        );
         let defaultValue;
 
         switch (fieldType) {
@@ -326,8 +361,19 @@ const ConfigEditor = () => {
             ).join(' ');
         };
 
-        const handleAddItem = () => {
-            const newItem = prompt('Enter new item:');
+        const handleAddItem = async () => {
+            let newItem = null
+            await prompt(
+                "Enter item name:",
+                {
+                    title: "Enter item name:",
+                    defaultValue: '',
+                    validator: (value) => {
+                        newItem = value
+                        return value;
+                    }
+                }
+            );
             if (newItem !== null) {
                 setConfig(prev => ({
                     ...prev,
@@ -433,7 +479,7 @@ const ConfigEditor = () => {
 
                 <div className="flex justify-end pt-1 border-t border-gray-200 dark:border-gray-700">
                     <button
-                        onClick={() => showSaveIndicator(null)}
+                        onClick={SaveConfig}
                         className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
                     >
                         <Save size={18} />
@@ -498,7 +544,7 @@ const ConfigEditor = () => {
         { id: 'enabled_tools', name: 'Enabled Tools' },
         { id: 'disabled_tools', name: 'Disabled Tools' }
     ];
-    const disabledConfig = ['tool_paths', 'mcp_servers', 'skill_paths']
+    const disabledConfig = ['tool_paths', 'mcp_servers']
 
     const OpenEditor = useCallback(() => {
         if (!EditorWrapper.current) return
@@ -544,7 +590,7 @@ const ConfigEditor = () => {
                     {/* Main Editor */}
                     <div className="flex flex-col md:flex-row gap-0 gap-y-0">
                         {/* Sidebar */}
-                        <div className="overflow-y-auto max-h-[90vh] lg:w-72 flex-shrink-0 scrollbar-auto scroll-smooth">
+                        <div className="overflow-y-auto max-h-[90vh] absolute w-[40%] sm:relativ md:w-[30%] lg:w-72 flex-shrink-0 scrollbar-auto scroll-smooth">
                             <div className="bg-white dark:bg-primary-900 rounded-xl shadow-lg p-5">
                                 <div className="sticky z-10 top-0 left-0 right-0 w-full bg-white dark:bg-primary-900 p-2 flex items-center gap-3 mb-5">
                                     <Settings className="text-indigo-500 dark:text-indigo-400" />
@@ -599,7 +645,7 @@ const ConfigEditor = () => {
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <ToolIcon toolName={toolName}/>
+                                                    <ToolIcon toolName={toolName} />
                                                     <span>{toolName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
                                                 </div>
                                                 <PermissionBadge permission={config.tools[toolName].permission} />
@@ -653,7 +699,7 @@ const ConfigEditor = () => {
                                 </div>
 
                                 {/* Content Area */}
-                                <div className="h-[70vh] p-6 dark:bg-primary-900">
+                                <div className="h-[72vh] p-6 dark:bg-primary-900">
                                     {viewMode === 'json' ? (
                                         renderJSONView()
                                     ) : (
@@ -694,7 +740,7 @@ const ConfigEditor = () => {
                         </div>
                     </div>
                 </div>
-
+                <PromptComponent />
                 {/* Save Indicator */}
                 <SaveIndicator show={saveIndicator} message={indicatorMessage} />
             </div>

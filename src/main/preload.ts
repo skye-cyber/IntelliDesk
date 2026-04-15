@@ -289,9 +289,7 @@ const api: ApiType = {
             if (!role) {
                 ConversationHistory.chats.pop();
             } else if (MessageRole[ConversationHistory.chats?.slice(-1)[0]?.role] === role as MessageRole) {
-                console.log("B4pop:", ConversationHistory.chats.length)
                 ConversationHistory.chats.pop();
-                console.log("Pop:", ConversationHistory.chats.length)
             }
             ConversationHistory.metadata.updated_at = getformatDateTime();
             return ConversationHistory;

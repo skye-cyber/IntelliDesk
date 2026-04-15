@@ -19,12 +19,11 @@ import { ContentChunk } from "@mistralai/mistralai/models/components/contentchun
 import { fileInputProcessor } from "./InputProcessor.js";
 import { MessageRole } from "./types.ts";
 import { modelManager } from "../ModelManager.ts";
-import { EventSubscription } from "../../../Globals/types.ts";
+// import { EventSubscription } from "../../../Globals/types.ts";
 
 let SIGINT = false
 
 /*TODO:
- * Try reasoning_content as reasoning field intead of thinking
  * Try adding devstral-small-latest to models
 */
 // set event handlers

@@ -12,7 +12,7 @@ export const BlinkingCursor: React.FC<{ isWriting: boolean }> = ({ isWriting }) 
     );
 };
 
-export const ThinkingBrain: React.FC<{ isWriting: boolean }> = ({ isWriting }) => {
+export const ThinkingBrain: React.FC<{ isWriting: boolean }> = ({ isWriting=false }) => {
     if (!isWriting) return null;
     return (
         <div className="inline-flex items-center gap-2">

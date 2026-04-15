@@ -398,13 +398,6 @@ app.on('ready', async () => {
     });
 });
 
-// app.on('window-all-closed', (event) => {
-//     event.preventDefault();// ✅ don’t quit app when all windows closed
-//     //if (process.platform !== 'darwin') {
-//     //  app.quit(); // Quit when all windows are closed, except on macOS
-//     //}
-// });
-
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

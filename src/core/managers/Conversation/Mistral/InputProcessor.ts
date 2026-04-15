@@ -185,7 +185,7 @@ class FileInputProcessor {
      * @returns {processResult} Formatted content array for API
      */
     process(text: string): processResult {
-        const files: File[] = StateManager.get('uploaded_files') || [];
+        const files: File[] = StateManager.get('uploaded_files')  || [];
         let userContent: userContent[] = [];
 
         // Always include text content

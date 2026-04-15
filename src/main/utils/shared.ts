@@ -11,13 +11,14 @@ export const SESSIONS_DIR = path.join(BASE_DIR, 'sessions')
 export const AGENT_CONFIG_FILE = path.join(CONFIG_DIR, 'agent_config.json')
 export const USER_PREFERENCE_CONFIG_FILE = path.join(CONFIG_DIR, 'user_preference.json')
 export const DEFAULT_DOWNLOAD_PATH = path.join(os.homedir(), 'Downloads')
+export const DEFAULT_SKILLS_PATH = path.join(BASE_DIR, 'skills')
 
 export const DEFAULT_AGENT_CONFIG: AgentConfig = {
     tool_paths: [],
     mcp_servers: [],
     enabled_tools: [],
     disabled_tools: [],
-    skill_paths: [],
+    skill_paths: [DEFAULT_SKILLS_PATH],
     tools: {
         bash: {
             permission: 'ask',

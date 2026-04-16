@@ -49,6 +49,7 @@ export type EventMap = {
     'model:selector:show': []
     'model:selector:hide': []
     'conversation:new': [temporary?: boolean]
+    'conversation:open': []
     'suggestions:show': []
     'suggestions:hide': []
     'keychain:manager:show': []

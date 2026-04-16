@@ -3,7 +3,7 @@ import { LoadingSpinner } from './LoadingIndicator';
 import indellidesk from '@assets/intellidesk.png';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
-export const MessageList = ({ conversationsRef, searchON, panelOpen }) => {
+export const ChatsList = ({ conversationsRef, searchON, panelOpen }) => {
     const [isLoading, setLoading] = useState(true)
     const [hasStore, setStore] = useState(false)
 

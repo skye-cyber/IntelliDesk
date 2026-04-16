@@ -4,7 +4,7 @@ import indellidesk from '@assets/intellidesk.png';
 import { ChatOptions } from '../../components/Chat/ChatOptions.jsx';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { clearMessages } from '../../../core/PortalBridge.ts';
-import { MessageList } from '../Chat/MessageList';
+import { ChatsList } from '../Chat/ChatsList';
 import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { PanelLeftClose } from 'lucide-react';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
@@ -305,7 +305,7 @@ export const Sidebar = ({ isOpen, onToggle, isCanvasOn }) => {
                     </h2>
                 </div>
                 {/* Conversations List */}
-                <MessageList conversationsRef={conversationsRef} searchON={searchON} panelOpen={panelOpen} />
+                <ChatsList conversationsRef={conversationsRef} searchON={searchON} panelOpen={panelOpen} />
                 {/* Footer */}
                 <div className="absolute bottom-0 left-0 right-0 py-2 px-4 bg-gradient-to-t from-white/80 to-transparent dark:from-gray-900/80 backdrop-blur-md border-t border-gray-200/50 dark:border-gray-700/50">
                     <div className="flex items-center justify-between text-xs">

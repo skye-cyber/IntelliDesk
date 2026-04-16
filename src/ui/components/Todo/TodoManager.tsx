@@ -70,17 +70,21 @@ const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
     const [todos, setTodos] = React.useState<Todo[]>(initialTodos);
     const [isActive, setActive] = React.useState<boolean>(false)
 
-    React.useEffect(() => {
-        if (todos.length === 0) {
-            const sessionId: string | null | undefined = window.desk.api.getmetadata()?.sessionId
-            if (sessionId) {
-                const todoList = window.desk.sessionmanager.read_todo(sessionId)
-                if (todoList && todoList.length > 0) {
-                    setTodos(todoList)
-                }
+    const loadTodo = () => {
+        const sessionId: string | null | undefined = window.desk.api.getmetadata()?.sessionId
+        if (sessionId) {
+            const todoList = window.desk.sessionmanager.read_todo(sessionId)
+            if (todoList && todoList.length > 0) {
+                setTodos(todoList)
             }
         }
-    })
+    }
+
+    React.useEffect(() => {
+        if (todos.length === 0) {
+            loadTodo()
+        }
+    }, [loadTodo])
 
     React.useImperativeHandle(ref, () => ({
         updateFullList: (newTodos) => setTodos(prev => updateTodos(prev, newTodos)),
@@ -94,6 +98,8 @@ const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
 
     React.useEffect(() => {
         StateManager.subscribe('todoList', (newTodo: any) => setTodos(newTodo))
+        const loadTodoListener = globalEventBus.on('conversation:open', loadTodo)
+        return () => loadTodoListener.unsubscribe()
     })
 
     if (!isActive) return
@@ -108,12 +114,12 @@ const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
                         ))}
                     </div>
                 ) :
-                    <div className='text-sm text-gray-400 dark:text-white italic px-1 py-2'>
-                        No in_progress tasks
+                    <div className='text-sm text-gray-600 dark:text-white italic px-1 py-2'>
+                        No tasks for this chat
                     </div>
                 }
             </section>
-            <p className="hidden lg:flex lg:justify-center text-xs text-gray-400 dark:text-white/30 mt-2 text-center">
+            <p className="hidden lg:justify-center text-xs text-gray-400 dark:text-white/30 mt-2 text-center">
                 • 🔵 Active, 🟠 Pending, ✅ Completed, ⚫ Cancelled, 🔴 Failed
             </p>
         </div>

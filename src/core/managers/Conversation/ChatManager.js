@@ -374,6 +374,7 @@ export class ChatManager {
             // Always hide the loading modal
             await this.hideLoadingModal();
             window.gc = true
+            globalEventBus.emit('conversation:open')
         }
     }
 }

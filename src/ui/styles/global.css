@@ -3112,10 +3112,6 @@ video {
   background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));
 }
 
-.bg-blue-100\/70 {
-  background-color: rgb(219 234 254 / 0.7);
-}
-
 .bg-blue-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(191 219 254 / var(--tw-bg-opacity, 1));
@@ -3524,33 +3520,6 @@ video {
 
 .bg-yellow-500\/10 {
   background-color: rgb(234 179 8 / 0.1);
-}
-
-.bg-\[bg-primary-800\/90\] {
-  background-color: bg-primary-800/90;
-}
-
-.bg-primary-800\/90 {
-  background-color: rgb(17 17 54 / 0.9);
-}
-
-.bg-blend-800\/90 {
-  background-color: rgb(28 31 65 / 0.9);
-}
-
-.bg-secondary-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(97 138 226 / var(--tw-bg-opacity, 1));
-}
-
-.bg-accent-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(120 165 232 / var(--tw-bg-opacity, 1));
-}
-
-.bg-blend-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(100 109 232 / var(--tw-bg-opacity, 1));
 }
 
 .bg-opacity-100 {
@@ -5716,6 +5685,14 @@ code {
 
 .scrollbar-default::-webkit-scrollbar {
   all: unset;
+}
+
+.ai_response
+ol,
+ul,
+menu {
+  list-style: auto;
+  margin-left: 22px;
 }
 
 /* Simulate a placeholder on the contenteditable div */
@@ -8009,6 +7986,11 @@ code {
   background-color: rgb(58 80 112 / var(--tw-bg-opacity, 1));
 }
 
+.dark\:bg-accent-700:is(.dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(42 58 81 / var(--tw-bg-opacity, 1));
+}
+
 .dark\:bg-accent-900:is(.dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(20 29 40 / var(--tw-bg-opacity, 1));
@@ -8415,11 +8397,6 @@ code {
   background-color: rgb(9 9 11 / var(--tw-bg-opacity, 1));
 }
 
-.dark\:bg-accent-700:is(.dark *) {
-  --tw-bg-opacity: 1;
-  background-color: rgb(42 58 81 / var(--tw-bg-opacity, 1));
-}
-
 .dark\:bg-opacity-95:is(.dark *) {
   --tw-bg-opacity: 0.95;
 }
@@ -8431,12 +8408,6 @@ code {
 .dark\:from-\[\#002f42\]:is(.dark *) {
   --tw-gradient-from: #002f42 var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(0 47 66 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.dark\:from-\[\#14143e\]:is(.dark *) {
-  --tw-gradient-from: #14143e var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(20 20 62 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -8455,6 +8426,12 @@ code {
 .dark\:from-\[\#a800fc\]:is(.dark *) {
   --tw-gradient-from: #a800fc var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(168 0 252 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.dark\:from-accent-700:is(.dark *) {
+  --tw-gradient-from: #2a3a51 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(42 58 81 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -8647,12 +8624,6 @@ code {
 .dark\:from-yellow-900\/20:is(.dark *) {
   --tw-gradient-from: rgb(113 63 18 / 0.2) var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(113 63 18 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.dark\:from-accent-700:is(.dark *) {
-  --tw-gradient-from: #2a3a51 var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(42 58 81 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -9695,24 +9666,12 @@ code {
     width: 70vw;
   }
 
-  .sm\:max-w-\[60\%\] {
-    max-width: 60%;
-  }
-
-  .sm\:max-w-\[70\%\] {
-    max-width: 70%;
+  .sm\:max-w-\[75\%\] {
+    max-width: 75%;
   }
 
   .sm\:max-w-\[81vw\] {
     max-width: 81vw;
-  }
-
-  .sm\:max-w-\[80\%\] {
-    max-width: 80%;
-  }
-
-  .sm\:max-w-\[75\%\] {
-    max-width: 75%;
   }
 
   .sm\:flex-row {
@@ -9788,12 +9747,12 @@ code {
     max-width: 70vw;
   }
 
-  .md\:max-w-md {
-    max-width: 28rem;
-  }
-
   .md\:max-w-lg {
     max-width: 32rem;
+  }
+
+  .md\:max-w-md {
+    max-width: 28rem;
   }
 
   .md\:grid-cols-2 {
@@ -9898,10 +9857,6 @@ code {
 
   .lg\:max-w-lg {
     max-width: 32rem;
-  }
-
-  .lg\:max-w-xl {
-    max-width: 36rem;
   }
 
   .lg\:items-center {

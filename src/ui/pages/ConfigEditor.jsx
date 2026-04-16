@@ -136,7 +136,7 @@ const ConfigEditor = () => {
     };
 
     const handleAddTool = async () => {
-        const toolName = null;
+        let toolName = null;
         await prompt(
             'Enter tool name (lowercase, no spaces):',
             {
@@ -181,7 +181,7 @@ const ConfigEditor = () => {
         );
         if (!fieldName) return;
 
-        const fieldType = null
+        let fieldType = null
         await prompt(
             'Field type (text/number/boolean/array):',
             {

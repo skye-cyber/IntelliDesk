@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiCircle, FiClock, FiCheckCircle, FiXCircle, FiAlertCircle, FiChevronsRight } from 'react-icons/fi';
+import { FiCircle, FiClock, FiCheckCircle, FiXCircle, FiAlertCircle } from 'react-icons/fi';
 import { globalEventBus } from '../../../core/Globals/eventBus';
 import { StateManager } from '../../../core/managers/StatesManager';
 

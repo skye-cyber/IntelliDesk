@@ -1,5 +1,5 @@
-import { ChatUtil } from "../Conversation/util.ts";
 import { modalmanager } from "../../StatusUIManager/Manager";
+import { globalEventBus } from "../../Globals/eventBus.ts";
 
 export async function html_preview(selector) {
     try {
@@ -14,7 +14,7 @@ export async function html_preview(selector) {
         waitForElement('#preview-view', (el) => {
             //const renderId = `html_render-${Math.random().toString(30).substring(3, 9)}`;
             el.innerHTML
-            if (!new CanvasUtil().isCanvasOpen()) new ChatUtil().open_canvas()
+            if (!new CanvasUtil().isCanvasOpen()) globalEventBus.emit('canvas:toggle')
         })
 
     } catch (err) {

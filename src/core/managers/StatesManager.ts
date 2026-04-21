@@ -47,6 +47,7 @@ interface AppState {
     sidebarOpen: string
     userSettings: PreferenceData
     todoList: Todo[]
+   // conversationId: string
 }
 
 type Listener<T> = (value: T | undefined, oldValue?: T) => void;

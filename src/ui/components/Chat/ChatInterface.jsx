@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { UsageSuggestions } from '../Usage/Suggestions.js';
-import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { InputSection } from '../Input/InputSection.tsx';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
@@ -18,12 +17,20 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
     }, [panelOpen]);
 
 
+    const handleScrollButtonDisplay = () => {
+        const isScrollable = chatArea.scrollHeight > chatArea.clientHeight;
+        const isAtBottom = chatArea.scrollTop + chatArea.clientHeight >= chatArea.scrollHeight;
+        globalEventBus.emit('scroll:set:open', (isScrollable && !isAtBottom))
+    }
+
     useEffect(() => {
         // Attach scroll event listener to chatArea
-        window.addEventListener("resize", chatutil.updateScrollButtonVisibility);
+        window.addEventListener("resize", handleScrollButtonDisplay);
+        const onScrollEvent = globalEventBus.on('scroll:display:update', handleScrollButtonDisplay)
 
         return () => {
-            window.removeEventListener('resize', chatutil.updateScrollButtonVisibility)
+            window.removeEventListener('resize', handleScrollButtonDisplay)
+            onScrollEvent.unsubscribe()
         }
     }, [])
 
@@ -38,8 +45,8 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                         id="chatArea"
                         data-portal-container='chatArea'
                         ref={chatAreaRef}
-                        onScroll={chatutil.updateScrollButtonVisibility}
-                        onInput={chatutil.updateScrollButtonVisibility}
+                        onScroll={handleScrollButtonDisplay}
+                        onInput={handleScrollButtonDisplay}
                         onDragOver={() => globalEventBus.emit('dropzone:open')}
                         className={`w-full h-full relative  p-2 md:px-4 pb-20 rounded-lg overflow-y-auto overflow-x-hidden scrollbar-custom space-y-4 transition-colors duration-700 ease-in-out border-1 border-blend-50 dark:border-blend-700 max-auto`}
                     >
@@ -47,8 +54,7 @@ export const ChatInterface = ({ isCanvasOpen, onToggleCanvas, onToggleRecording 
                     </section>
                     <ErrorBoundary>
                         <InputSection
-                            isCanvasOpen={isCanvasOpen}
-                            onToggleCanvas={onToggleCanvas}
+                            chatAreaRef={chatAreaRef}
                             onToggleRecording={onToggleRecording}
                         />
                     </ErrorBoundary>

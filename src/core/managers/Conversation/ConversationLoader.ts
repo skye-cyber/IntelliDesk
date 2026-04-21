@@ -5,6 +5,7 @@ import { clearMessages } from "../../PortalBridge.ts";
 import { modelManager } from "./ModelManager.ts";
 import { streamingPortalBridge } from "../../PortalBridge.ts";
 import { StateManager } from "../StatesManager.ts";
+import { globalEventBus } from "../../Globals/eventBus.ts";
 
 export class ConversationLoader {
     private chatArea: any
@@ -99,7 +100,7 @@ export class ConversationLoader {
             const isArrayedModel = model.toLowerCase() !== 'chat'
 
             if (conversationData.chats?.length > 0) {
-                chatutil.hideSuggestions();
+                globalEventBus.emit('suggestions:hide')
             }
 
             clearMessages();
@@ -142,6 +143,10 @@ export class ConversationLoader {
         } catch (err) {
             console.error('Failed to render conversation:', err);
             modalmanager.showMessage('Failed to load conversation', 'error');
+        } finally {
+            setTimeout(() => {
+                globalEventBus.emit('scroll:display:update')
+            }, 200)
         }
     }
 

@@ -25,7 +25,7 @@ document.addEventListener("keydown", event => {
         }
         globalEventBus.emit('tool:result:close')
 
-    } else if ((event.ctrlKey && (event.key === "P" || event.key === "p"))) {
+    } else if ((event.ctrlKey && (event.key === "P" || event.key === "p")) && !event.shiftKey && !event.altKey) {
         event.preventDefault();
         globalEventBus.emit('panel:chats:toggle')
 

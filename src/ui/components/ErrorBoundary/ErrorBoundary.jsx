@@ -1,5 +1,5 @@
 import React from 'react';
-import { appIsDev } from '../../../core/managers/Conversation/Mistral/shared';
+import { appIsDev } from '../../../core/shared';
 import { modalmanager } from '../../../core/StatusUIManager/Manager';
 
 class ErrorBoundary extends React.Component {

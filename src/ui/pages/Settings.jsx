@@ -168,9 +168,9 @@ export const Settings = ({ isOpen, onToggle }) => {
 
         try {
             await saveSettingsAPI(newSettings); // Pass explicit settings
-            modalmanager.showMessage('Your preferences have been saved successfully!');
+            modalmanager.showMessage('Your settings have been saved successfully!');
         } catch (error) {
-            modalmanager.showMessage('Failed to save preferences', 'error');
+            modalmanager.showMessage('Failed to save settings', 'error');
         }
     }, [settings, saveSettingsAPI]);
 
@@ -261,7 +261,7 @@ export const Settings = ({ isOpen, onToggle }) => {
     }, [settings, saveSettingsAPI]);
 
     const handleResetSettings = useCallback(async () => {
-        const confirmed = await modalmanager.confirm("This action cannot be undone", "Reset all preferences?");
+        const confirmed = await modalmanager.confirm("This action cannot be undone", "Reset settings?");
         if (!confirmed) return;
 
         try {
@@ -407,7 +407,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                     <div className="mb-8">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                             <FiUser className="w-5 h-5 mr-2 text-emerald-500 dark:text-emerald-400" />
-                            Your Preferences
+                            Your Profile/Prompt
                         </h3>
 
                         <div className="space-y-4">
@@ -424,7 +424,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                         ref={profileInputRef}
                                         id="pref-input"
                                         className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition scrollbar-custom placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                                        placeholder="How would you like me to assist you? Share your preferences, communication style, or specific needs..."
+                                        placeholder="Share your prompt, communication style, or specific needs..."
                                         rows="3"
                                         onChange={(e) => handleSettingChange('profile', e.target.value)}
                                     />
@@ -443,7 +443,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 </div>
                             </div>
 
-                            {/* Current Preference Display */}
+                            {/* Current profile Display */}
                             <ErrorBoundary>
                                 <div
                                     ref={profileSectionRef}
@@ -451,7 +451,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                     className={`${!profile ? 'hidden' : ''} bg-emerald-50/50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-200/50 dark:border-emerald-700/50`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <h4 className="font-medium text-emerald-900 dark:text-emerald-100">Current Preference</h4>
+                                        <h4 className="font-medium text-emerald-900 dark:text-emerald-100">Current Prompt/Profile</h4>
                                         <div className="flex space-x-2">
                                             <button
                                                 onClick={handleEditProfile}

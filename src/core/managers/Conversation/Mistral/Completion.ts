@@ -1,4 +1,4 @@
-import { appIsDev } from "./shared"; // provides shared objects and imports for mistral models
+import { appIsDev } from "../../../shared.ts"; // provides shared objects and imports for mistral models
 import { canvasutil } from "../../Canvas/CanvasUtils.js";
 import { chatutil } from "../util.ts";
 import { clientmanager } from "./ClientManager.ts";
@@ -156,7 +156,7 @@ class CompletionBase {
             // modelManager.changeModel(this.DEFAULT_ARRAYED_MODEL)
             this.modelName = this.DEFAULT_ARRAYED_MODEL
             // TODO: just use the model, do not change in ui
-            // TODO: lock model selection in ui for auto selection
+            // TODO: Experimental feature to lock model selection in ui for auto selection
             // Can unlock manual selector by enabling experimentl features
         }
         if (this.REASONING_ON) {
@@ -174,7 +174,7 @@ class CompletionBase {
         if (!this.validateClientManager()) return
         this.processInput(input)
 
-        // start execution cycle -> trigger user ui update
+        // start execution cycle -> trigger ui update
         globalEventBus.emit('executioncycle:start')
         return this.StartSession()
     }
@@ -204,7 +204,7 @@ class CompletionBase {
             globalEventBus.once('keychain:error', (error: string) => message = error)
 
             if (!clientmanager.client || !clientmanager.client?.chat) {
-                message = message ? message : "Mistral init error"
+                message = message ? message : "Mistral SDK init error"
             }
             if (!clientmanager.validateChain()) {
                 message = message ? message : 'KeyChain Error'
@@ -295,13 +295,14 @@ class CompletionBase {
                     tools: this.availableTools as Array<Tool>,
                     toolChoice: 'auto',
                     parallelToolCalls: false,
+                    // temperature: 0.5
                 });
 
                 await this.stream(stream)
 
                 // Check if tool_calls were requested and dispatch/execute them
                 if (this.TOOL_CALLS && this.TOOL_CALLS.length > 0) {
-                    console.log(`[Tool Session] Iteration ${this.TOOLCALL_ITERATIONS}: Processing ${this.TOOL_CALLS.length} tool calls`);
+                    //console.log(`[Tool Session] Iteration ${this.TOOLCALL_ITERATIONS}: Processing ${this.TOOL_CALLS.length} tool calls`);
 
                     // Process all tool calls in this iteration
                     const toolResults = await toolExecutor.processToolCalls(
@@ -343,7 +344,7 @@ class CompletionBase {
                 } else {
                     // No tool calls, this is the final response
                     HAS_FINAL_RESPONSE = true;
-                    console.log(`[Tool Session] Final response received in iteration ${this.TOOLCALL_ITERATIONS}`);
+                    //console.log(`[Tool Session] Final response received in iteration ${this.TOOLCALL_ITERATIONS}`);
                     SIGINT = true
                     break
                 }
@@ -528,10 +529,15 @@ class CompletionBase {
      */
     private continueStream() {
         // In first run set <continue> tag as chunk to avoid breaking due to stray chunks that may be part of it. rawDelta cannot be anything except for items in the tag
+        console.log("Continue stream...", window.desk.api.getRoleByIndex(-1))
         if (this.first_run) {
             this.rawDelta = "<continued>"
-            // Remove user message from interface
-            streamingPortalBridge.closeStreamingPortal(StateManager.get('user_message_portal'))
+            // Remove user message from interface && pop from histroy
+            if (this.userMessagePID && window.desk.api.getRoleByIndex(-1) === MessageRole.user) {
+                streamingPortalBridge.closeStreamingPortal(this.userMessagePID)
+                window.desk.api.popHistory('user')
+            }
+
             this.first_run = false
         }
         this.continued = true
@@ -540,6 +546,7 @@ class CompletionBase {
 
         // close newly created portal and reuse the previous
         if (target_message_portal) {
+            console.log("Continue stream-close new portal")
             this.streamingPortal.close()
             this.streamingPortal = target_message_portal
         }
@@ -557,7 +564,8 @@ class CompletionBase {
                             pattern: "<continued>",
                             repl: "\n"
 
-                        }, {
+                        },
+                        {
                             pattern: "</continued>",
                             repl: ""
                         }
@@ -588,7 +596,7 @@ class CompletionBase {
     }
     async updateHistory() {
         if (this.continued) {
-            StateManager.set('user_message_portal', null);
+            // StateManager.set('user_message_portal', null);
 
             const historyItem: any = {
                 role: MessageRole.assistant

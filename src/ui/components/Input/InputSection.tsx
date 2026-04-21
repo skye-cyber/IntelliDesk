@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { chatutil } from '../../../core/managers/Conversation/util.ts';
 import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { globalEventBus, sigint } from '../../../core/Globals/eventBus.ts';
 import { modalmanager } from '../../../core/StatusUIManager/Manager.js';
@@ -9,7 +8,7 @@ import { cleanInput } from './utils/cleanInput.ts';
 import { MenuTools } from './MenuTools.tsx';
 
 
-export const InputSection = ({ onToggleRecording }) => {
+export const InputSection = ({ onToggleRecording, chatAreaRef }) => {
     // State management for the toggle
     const [inputValue, setInputValue] = useState('');
     const textareaRef = useRef(null);
@@ -196,8 +195,32 @@ export const InputSection = ({ onToggleRecording }) => {
         handleSend()
     }
 
+    const scrollToBottom = (element: Element = chatAreaRef?.current as Element, checkAutoScroll = true, timeout: number = 500) => {
+        console.log("scroll", element)
+
+        // If autoscroll is off check is on exit early
+        if (checkAutoScroll && !StateManager.get('userSettings')?.autoscroll) return
+
+        globalEventBus.emit('scroll:display:update')
+        // Use requestAnimationFrame for smoother animations
+        const scroll = () => {
+            element.scrollTo({
+                top: element.scrollHeight,
+                behavior: 'smooth'
+            });
+        };
+
+        // For streaming responses, use immediate scroll without delay when possible
+        if (timeout === 0) {
+            requestAnimationFrame(scroll);
+        } else {
+            setTimeout(() => {
+                requestAnimationFrame(scroll);
+            }, timeout);
+        }
+    }
+
     useEffect(() => {
-        chatutil.scrollToBottom(document.getElementById('chatArea'), false);
         const thinkToggle = globalEventBus.on('thinkmode:change', (on) => setThinkON(on))
         return () => thinkToggle.unsubscribe()
     }, []);
@@ -209,7 +232,7 @@ export const InputSection = ({ onToggleRecording }) => {
             <section
                 id="userInputContainer"
                 data-portal-container="userInputContainer"
-                className={`relative w-full sm:w-[50vw] xl:w-auto xl:min-w-[34vw] xl:max-w-[48vw] transition-all duration-500 rounded-2xl border ${inputFocus
+                className={`relative w-full sm:w-[70vw] md:w-[50vw] xl:w-auto xl:min-w-[34vw] xl:max-w-[48vw] transition-all duration-500 rounded-2xl border ${inputFocus
                     ? 'border-indigo-400 ring-2 ring-indigo-300/50 shadow-lg'
                     : 'border-indigo-300 dark:border-indigo-700'
                     } bg-gray-50 dark:bg-gray-900`}
@@ -242,11 +265,10 @@ export const InputSection = ({ onToggleRecording }) => {
                         onInput={(e) => {
                             const target = e.target as HTMLBaseElement;
                             adjustElementHeight(target);
-
                             // Fix: Reset scroll position to prevent content clipping
                             target.scrollTop = 0;
                         }}
-                        data-placeholder="Message IntelliDesk..."
+                        data-placeholder="Message ..."
                         className="flex-1 h-auto max-h-[22vh] overflow-y-auto outline-none bg-transparent dark:text-white rounded-2xl py-3 px-2 scrollbar-custom scroll-smooth text-base leading-relaxed"
                         style={{
                             whiteSpace: 'pre-wrap',
@@ -293,9 +315,9 @@ export const InputSection = ({ onToggleRecording }) => {
                         >
                             {incycle ? (
                                 <div className="animation-heartpulse-slow flex items-center justify-center gap-1">
-                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse delay-150"></span>
-                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse delay-300"></span>
+                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-heartpulse"></span>
+                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-heartpulse delay-150"></span>
+                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-heartpulse delay-300"></span>
                                 </div>
                             ) : (
                                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -309,25 +331,30 @@ export const InputSection = ({ onToggleRecording }) => {
             <MenuTools onToggleRecording={onToggleRecording} />
 
             {/* Scroll to bottom button */}
-            <ScrollToBottomButton />
+            <ScrollToBottomButton onScroll={scrollToBottom} />
         </div >
     );
 };
 
 
-const ScrollToBottomButton = ({ }) => {
+const ScrollToBottomButton = ({ onScroll }) => {
     const scrollRef = useRef(null)
-
-    const onClickScroll = (check = false) => {
-        chatutil.scrollToBottom(document.getElementById('chatArea'), check)
-    }
+    const [open, setOpen] = useState(false)
 
     useEffect(() => {
         const scroller = globalEventBus.on('scroll:bottom', (check = false) => {
-            onClickScroll(check)
+            onScroll(undefined, check)
             return () => scroller.unsubscribe()
         })
     })
+
+    useEffect(() => {
+        const toggleEvent = globalEventBus.on('scroll:set:open', (state) => setOpen(state))
+        return () => toggleEvent.unsubscribe()
+    })
+
+    if (!open) return
+
     return (
         <button
             ref={scrollRef}
@@ -335,7 +362,7 @@ const ScrollToBottomButton = ({ }) => {
             className="absolute fixed right-1/3 bottom-24 cursor-pointer rounded-full bg-gray-200 border border-gray-400 dark:border-primary-500 dark:bg-[#14003d] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
             aria-label="scroll to bottom"
             onClick={() => {
-                chatutil.updateScrollButtonVisibility()
+                globalEventBus.emit('scroll:display:update')
                 globalEventBus.emit('scroll:bottom', false)
             }}
         >

@@ -1,3 +1,4 @@
+/// <reference path="../../../../main/preload.type.ts" />
 import { Mistral } from '@mistralai/mistralai';
 import { globalEventBus } from '../../../Globals/eventBus';
 
@@ -76,39 +77,70 @@ export class ClientManager {
         }
         return true
     }
-    /**
-     * Moves to the next key in the key chain
-     * @param {Number} steps
-     */
     async rotate_keychain(steps = 1): Promise<boolean | void> {
         if (!this.validateChain()) return
 
-        const current_key = this.key
-        this.CurrentKeyIndex += steps
+            // Store original state for rollback if needed
+            const originalKeychain = {...this.keychain!}
+            const originalIndex = this.CurrentKeyIndex
+            const originalLength = this.keychainLength
 
-        if (this.CurrentKeyIndex > this.keychainLength) {
-            this.CurrentKeyIndex = 0
-        }
-        this.key = this.keychain?.keys[this.CurrentKeyIndex]?.value as string
+            this.CurrentKeyIndex = (this.CurrentKeyIndex + steps) % this.keychainLength
+            if (this.CurrentKeyIndex < 0) {
+                this.CurrentKeyIndex += this.keychainLength
+            }
 
-        let keys: keys = []
+            // Create new keys array to avoid mutating original
+            const keys = this.keychain!.keys.map(api => {
+                const newStatus = api.value === this.key ? 'disabled' :
+                api.value === this.keychain!.keys[this.CurrentKeyIndex].value ? 'active' :
+                api.status
+                return { ...api, status: newStatus }
+            })
 
-        this.keychain?.keys.map(api => {
-            if (api.value == current_key) api.status = 'disabled'
-            if (api.value == this.key) api.status = 'active'
-            keys.push(api)
-        })
+            this.keychain!.keys = keys
+            this.key = this.keychain!.keys[this.CurrentKeyIndex].value
 
-        if (keys.length > 0 && this.keychain) this.keychain.keys = keys
+            const saveSuccess = await this.save_chain()
+            if (!saveSuccess) {
+                console.warn('Failed to save keychain, reverting')
+                this.keychain = originalKeychain
+                this.CurrentKeyIndex = originalIndex
+                this.keychainLength = originalLength
+                this.key = this.keychain.keys[this.CurrentKeyIndex].value
+                return false
+            }
 
-        console.log(this.keychain)
+            // Verify the key still exists after reload
+            const newKeychain = await loadApiKeyChain()
+            if (!newKeychain || !newKeychain.keys.length) {
+                globalEventBus.emit('keychain:error', 'Failed to reload keychain')
+                this.keychain = originalKeychain
+                this.CurrentKeyIndex = originalIndex
+                this.keychainLength = originalLength
+                this.key = this.keychain.keys[this.CurrentKeyIndex].value
+                return false
+            }
 
-        //Saved chain state
-        this.save_chain()
-        this.keychain = await loadApiKeyChain()
+            // Check if our key still exists
+            const keyExists = newKeychain.keys.some(k => k.value === this.key)
+            if (!keyExists) {
+                // Find the first active key, or fallback to first key
+                const nextKey = newKeychain.keys.find(k => k.status === 'active')
+                || newKeychain.keys[0]
+                if (!nextKey) {
+                    globalEventBus.emit('keychain:error', 'No usable keys available')
+                    return false
+                }
 
-        this.client = this.create_client()
-        return true
+                this.key = nextKey.value
+                this.CurrentKeyIndex = newKeychain.keys.indexOf(nextKey)
+            }
+
+            this.keychain = newKeychain
+            this.keychainLength = this.keychain.keys.length
+            this.client = this.create_client()
+            return true
     }
     async save_chain() {
         const result = await window.desk.api2.saveKeyChain(JSON.stringify(this.keychain));
@@ -126,9 +158,3 @@ export class ClientManager {
 }
 
 export let clientmanager = new ClientManager()
-
-
-/*
-uKcW35ywfRZVzWgT6Btih7kIolIKCnEQ
-uKcW35ywfRZVzWgT6Btih7kIolIKCnEQ
- * */

@@ -4,28 +4,26 @@ export const FileContainer = ({ setOpen, files }) => {
     if (!files || !Array.isArray(files) || files.length === 0) {
         return null;
     }
-
     return (
         <div id={file_container_id} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)} className="relative flex justify-end -mt-2">
-            {files.length > 2 & (
+            {(files?.length >= 2) ? (
                 <div className="absolute top-0 right-0 z-10 font-semibold font-handwriting dark:bg-indigo-300 dark:border-[0.13rem] dark:size-6 flex items-center justify-center dark:border-accent-400 dark:rounded-full text-gray-800 dark:text-gray-950 cursor-pointer"
-                    /*title={`${files.length-1} more files`}*/
                     aria-label={`${files.length} Uploaded files`}>+{files.length - 1}</div>
-            )}
+            ) : ''}
 
             <article className="flex flex-row md:flex-row w-fit p-1 rounded-lg">
                 {files.slice(0, 1).map((file, index) => {
                     // Handle different file object structures
-                    const url = file?.imageUrl?.url || file?.documentUrl;
+                    const url = file?.url || file?.imageUrl?.url || file?.documentUrl;
                     const name = file?.name || 'File';
-                    const type = file?.type || ((file?.isImage || file?.imageUrl) ? 'image_url' : 'document_url');
+                    const type = file?.type || (file?.imageUrl) ? 'image_url' : 'document_url';
                     if (!url) {
                         console.warn('File missing URL:', file);
                         return null;
                     }
 
                     if (type === 'image_url' || file?.imageUrl) {
-                        const mimetype = file?.imageUrl.url.split(';')[0]?.replace('data:', '');
+                        const mimetype = url.split(';')[0]?.replace('data:', '');
 
                         return (
                             <div key={`image-${index}`} className="inline-flex items-center bg-gray-200 dark:bg-gray-100 p-1 rounded-md m-1">

@@ -590,7 +590,7 @@ const ConfigEditor = () => {
                     {/* Main Editor */}
                     <div className="flex flex-col md:flex-row gap-0 gap-y-0">
                         {/* Sidebar */}
-                        <div className="overflow-y-auto max-h-[90vh] absolute w-[40%] sm:relativ md:w-[30%] lg:w-72 flex-shrink-0 scrollbar-auto scroll-smooth">
+                        <div className="overflow-y-auto max-h-[90vh] absolute w-[40%] sm:relative    md:w-[30%] lg:w-72 flex-shrink-0 scrollbar-auto scroll-smooth">
                             <div className="bg-white dark:bg-primary-900 rounded-xl shadow-lg p-5">
                                 <div className="sticky z-10 top-0 left-0 right-0 w-full bg-white dark:bg-primary-900 p-2 flex items-center gap-3 mb-5">
                                     <Settings className="text-indigo-500 dark:text-indigo-400" />

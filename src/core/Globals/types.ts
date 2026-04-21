@@ -40,6 +40,8 @@ export type EventMap = {
     'key:up': [event: KeyboardEvent]
     'key:press': [event: KeyboardEvent]
     'scroll:bottom': [check: boolean]
+    'scroll:set:open': [state: boolean]
+    'scroll:display:update': []
     'fileupload:preview:open': []
     'fileupload:preview:close': []
     'dropzone:open': []
@@ -75,6 +77,7 @@ export type EventMap = {
     'diagram:page:open': []
     'diagram:page:close': []
     'tasks:menu:toggle': []
+    'chatitem:activate': [state: boolean]
 };
 
 

@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { ChatManager } from '../../../core/managers/Conversation/ChatManager';
 import indellidesk from '@assets/intellidesk.png';
-import { ChatOptions } from '../../components/Chat/ChatOptions.jsx';
+import { ChatContextMenu } from '../Chat/ContextMenu.jsx';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { clearMessages } from '../../../core/PortalBridge.ts';
 import { ChatsList } from '../Chat/ChatsList';
@@ -329,7 +329,7 @@ export const Sidebar = ({ isOpen, onToggle, isCanvasOn }) => {
                 </div>
 
                 <ErrorBoundary>
-                    <ChatOptions isOpen={true} onToggle={null} />
+                    <ChatContextMenu isOpen={true} onToggle={null} />
                 </ErrorBoundary>
             </div>
         </>

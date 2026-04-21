@@ -2,7 +2,7 @@
 import { handleDevErrors } from "./ErrorHandler"
 import errorHandler from "../../ui/components/ErrorHandler/ErrorHandler"
 import { StateManager } from "../managers/StatesManager.ts"
-import { appIsDev } from "../managers/Conversation/Mistral/shared"
+import { appIsDev } from "../shared.ts"
 import { staticPortalBridge, streamingPortalBridge } from "../PortalBridge.ts"
 import { clientmanager } from "../managers/Conversation/Mistral/ClientManager.ts"
 import { globalEventBus } from "../Globals/eventBus.ts"

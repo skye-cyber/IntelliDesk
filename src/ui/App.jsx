@@ -90,7 +90,7 @@ const App = () => {
                         <StatusUI isOpen={true} onToggle={null} />
                         <APIKeysManager isOpen={true} onToggle={null} />
                         <DropZone isOpen={true} onToggle={null} />
-                        <Recording isOpen={isRecordingOn} onToggle={toggleRecording} />
+                        {/*<Recording isOpen={isRecordingOn} onToggle={toggleRecording} />*/}
                         <NotificationFlyer isOpen={true} onToggle={null} />
                         <Notifcation isOpen={true} onToggle={null} />
                     </ErrorBoundary>

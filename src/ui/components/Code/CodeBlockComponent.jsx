@@ -33,7 +33,7 @@ export const CodeBlockComponent = ({
     }
 
     if (canvasutil.isCanvasOn()) {
-        if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) chatutil.open_canvas();
+        if (!canvasutil.isCanvasOn() && !canvasutil.isCanvasOpen()) globalEventBus.emit('canvas:toggle');
         globalEventBus.emit('canvas:content:update', codeblockRef?.current?.innerHTML )
     }
     async function handleCodeCopy() {

@@ -1,24 +1,4 @@
-import React, { useCallback } from 'react';
-import { ChatUtil } from '../../../renderer/js/managers/Conversation/util';
-import { StartNewConversation } from '../Sidebar/Sidebar';
-import { StateManager } from '../../../renderer/js/managers/StatesManager';
-
-const chatutil = new ChatUtil()
-
 export const ModelItem = ({ model, isSelected, onSelect }) => {
-
-    const onModelSelect = useCallback(() => {
-        const selected_model = chatutil.get_multimodal_models().includes(StateManager.get('currentModel'))
-            ? 'multimodal'
-            : 'chat'
-
-        const is_current_multimodal = window.desk.api.getModel()
-
-        if (selected_model !== is_current_multimodal) {
-            StartNewConversation(selected_model)
-        }
-        document.dispatchEvent(new CustomEvent('hide-model-selector'))
-    })
     return (
         <div
             role="menuitem"
@@ -28,7 +8,6 @@ export const ModelItem = ({ model, isSelected, onSelect }) => {
             data-value={model.value}
             onClick={() => {
                 onSelect(model.value);
-                onModelSelect();
             }
             }
         >

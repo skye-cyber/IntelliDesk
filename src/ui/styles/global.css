@@ -1725,6 +1725,14 @@ video {
   min-width: fit-content;
 }
 
+.min-w-\[\] {
+  min-width: ;
+}
+
+.min-w-\[40\%\] {
+  min-width: 40%;
+}
+
 .max-w-12 {
   max-width: 3rem;
 }

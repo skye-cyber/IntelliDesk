@@ -16,7 +16,7 @@ export interface Todo {
     id: string;
     title: string;
     status: TodoStatus;
-    priority:TodoPriority
+    priority: TodoPriority
 }
 
 export interface PreferenceData {
@@ -26,6 +26,11 @@ export interface PreferenceData {
     language?: string
     experimentalFeatures?: boolean
     modelVerbosity?: "normal" | "medium" | "high"
+}
+// ChatItem Active state lock
+interface chatLock {
+    id: string
+    locked: boolean
 }
 
 // Define your state shape
@@ -47,7 +52,7 @@ interface AppState {
     sidebarOpen: string
     userSettings: PreferenceData
     todoList: Todo[]
-   // conversationId: string
+    chatLock: chatLock
 }
 
 type Listener<T> = (value: T | undefined, oldValue?: T) => void;

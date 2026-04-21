@@ -6,6 +6,16 @@ interface copyDtetail {
     body: string
 }
 
+interface renameOptions {
+    closeContext: () => {}
+    id: string
+}
+
+interface chatUpdate {
+    name: string
+    id: string
+}
+
 export type EventMap = {
     'sigint': [timestamp: number];
     'execution:abort': [reason: string];
@@ -78,6 +88,8 @@ export type EventMap = {
     'diagram:page:close': []
     'tasks:menu:toggle': []
     'chatitem:activate': [state: boolean]
+    'chatitem:name:update': [chatUpdate]
+    'rename:dialog:open': [renameOptions]
 };
 
 

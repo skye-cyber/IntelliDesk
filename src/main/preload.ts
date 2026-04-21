@@ -162,7 +162,6 @@ const api: ApiType = {
         }
     },
     RenameConversation: async (id: string, name: string, base_dir: string = conversation_root): Promise<Conversation | boolean> => {
-        console.log(name, id)
         try {
             const fpath = path.join(base_dir, `${id}.json`);
             let data = await api.read(fpath);

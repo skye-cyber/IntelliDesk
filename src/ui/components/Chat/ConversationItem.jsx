@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { chatmanager } from '../../../core/managers/Conversation/ChatManager';
 import { DateSplit } from './datesplit';
 import { globalEventBus } from '../../../core/Globals/eventBus';
@@ -7,125 +7,67 @@ import { ChatContextMenu } from './ContextMenu';
 export const ConversationItem = ({ metadata, datestr, portal_id }) => {
     const [isActive, setIsActive] = useState(false)
     const [contextMenuOpen, setContextMenuOpen] = useState(false)
+    const chatItemRef = useRef(null);
 
     useEffect(() => {
         setIsActive(window.desk.api.getmetadata().id === metadata.id)
     }, [])
 
-    const onContextMenu = useCallback((event, id) => {
-        // Prevent the default context menu
-        event.preventDefault();
-        chatmanager.currentConversationId = id //|| window.desk.api.getmetadata().id;
-        chatmanager.currentPosition = { x: event.clientX, y: event.clientY };
-
-        // First render the tooltip
-        const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
-        const chatOptions = document.getElementById('chatOptions');
-
-        // Sometimes pulse naimate overflows to the chat options - Remove it
-        chatOptionsOverlay.classList.remove('animate-heartpulse-slow')
-
-        chatOptionsOverlay.dataset.id = id
-        chatOptionsOverlay.dataset.portalid = portal_id
-
-        // Show tooltip with animation
-        chatOptionsOverlay.classList.remove('hidden');
-        chatOptions.classList.remove('animate-exit');
-        chatOptions.classList.add('animate-enter');
-
-        // Use requestAnimationFrame to ensure DOM is updated before measuring
-        requestAnimationFrame(() => {
-            // Now the element should have its final dimensions
-            const rect = chatOptions.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            // Calculate position with offset from cursor
-            const offset = 10;
-            let posX = event.clientX + offset;
-            let posY = event.clientY + offset;
-
-            // Adjust horizontally
-            if (posX + rect.width > viewportWidth) {
-                posX = event.clientX - rect.width - offset;
-            }
-
-            // Adjust vertically
-            if (posY + rect.height > viewportHeight) {
-                posY = event.clientY - rect.height - offset;
-            }
-
-            // Ensure we don't go off-screen
-            posX = Math.max(5, Math.min(posX, viewportWidth - rect.width - 5));
-            posY = Math.max(5, Math.min(posY, viewportHeight - rect.height - 5));
-
-            const optionsHeight = chatOptions.offsetHeight; // better performance than getComputedStyle for height
-            if (posY + optionsHeight > viewportHeight) {
-                posY = posY - optionsHeight;
-            }
-
-            chatOptions.style.left = `${posX}px`;
-            chatOptions.style.top = `${posY}px`;
-        });
-    });
-
-    const handleItemClick = useCallback((item) => {
-        // Remove animation from previous item as the active item is changing
-        if (chatmanager.activeItem) {
-            chatmanager.activeItem.classList.remove('animate-heartpulse-slow');
-            chatmanager.activeItem.querySelector('#active-dot').classList.add('hidden');
-            document.getElementById('conversations').querySelector('#active-dot').classList.add('hidden')
-        }
-
-        chatmanager.renderConversationFromFile(metadata.id)
-        chatmanager.activeItem = item
-        // activate_item(item?.dataset?.id)
-    });
-
-    const deactivate_item = (data_id = window.activeConversationId) => {
-        const item = document.querySelector(`[data-id^='${data_id}']`)
-
-        item.classList.remove('animate-heartpulse-slow');
-        item.querySelector('#active-dot')?.classList.add('hidden');
-    }
-
-    const activate_item = (data_id) => {
-        const item = document.querySelector(`[data-id='${data_id}']`)
-
-        item?.classList?.add('animate-heartpulse-slow');
-        item?.querySelector('#active-dot')?.classList?.remove('hidden');
-        window.activeConversationId = item?.dataset?.id
-    }
-    window.activate_item = activate_item
-
     useEffect(() => {
         if (!isActive) return
         const activationEvent = globalEventBus.on('chatitem:activate', (state) => setIsActive(state))
+
+
         return () => activationEvent.unsubscribe()
     })
 
+    useEffect(() => {
+        // This event shall be recieved by all chat items so owner of lock will act
+        const chatItemLock = globalEventBus.on('chatItemLock:unlock', (id) => {
+            // If this item is not the target, hide its menu
+            if (metadata.id !== id) {
+                // Hide self context menu
+                setContextMenuOpen(false)
+            }
+        })
 
+        // Update name on rename
+        const nameUpdate = globalEventBus.on('chatitem:name:update', ({ id, name }) => {
+            if (id === metadata.id) {
+                metadata.name = name
+            }
+        })
+        return () => {
+            chatItemLock.unsubscribe()
+            nameUpdate.unsubscribe()
+        }
+    })
 
     return (
-        <>
-
+        <section
+            ref={chatItemRef}
+            data-name={metadata?.name || metadata?.id}
+            data-id={metadata?.id}
+            data-highlight={metadata?.highlight}
+            data-portal-id={metadata?.portal_id}
+            className='relative'
+            id='chat-item'>
             {datestr ?
                 <DateSplit displaystr={datestr} />
                 : ''
             }
             <div
-                id='chat-item'
-                data-name={metadata?.name || metadata?.id}
-                data-id={metadata?.id}
-                data-highlight={metadata?.highlight}
-                data-portal-id={metadata?.portal_id}
                 className={`conversation-item group mb-1.5 ${isActive ? 'animate-heartpulse-slow' : ''}`}
-                onContextMenu={() => setContextMenuOpen(true)}
-                onClick={(event) => {
+                onContextMenu={() => {
+                    globalEventBus.emit('chatItemLock:unlock', (metadata.id))
+                    setContextMenuOpen(true)
+                }}
+                onClick={() => {
                     setIsActive(true)
                     // Deactivate previous active item
                     globalEventBus.emit('chatitem:activate', false)
-                    handleItemClick(event.currentTarget)
+                    // Load conversation
+                    chatmanager.renderConversationFromFile(metadata.id)
                 }
                 }
             >
@@ -149,7 +91,7 @@ export const ConversationItem = ({ metadata, datestr, portal_id }) => {
                     </div>
                 </div>
             </div>
-            <ChatContextMenu isOpen={contextMenuOpen} />
-        </>
+            <ChatContextMenu isOpen={contextMenuOpen} onClose={() => setContextMenuOpen(false)} id={metadata.id} />
+        </section >
     )
 }

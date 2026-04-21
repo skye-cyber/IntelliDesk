@@ -202,71 +202,6 @@ export class ChatManager {
         return `${years}y`;
     }
 
-    updateActiveConversation(conversationId) {
-        this.currentConversationId = conversationId;
-        //this.showConversationOptions();
-    }
-
-    showConversationOptions(event) {
-        try {
-            // First render the tooltip
-            const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
-            const chatOptions = document.getElementById('chatOptions');
-
-            // Store conversation ID and position
-            this.currentConversationId = this.conversationId;
-            this.currentPosition = { x: event.clientX, y: event.clientY };
-
-            // Position the tooltip near cursor
-            const rect = chatOptions.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            // Adjust position to keep within viewport
-            let posX = event.clientX;
-            let posY = event.clientY;
-
-            if (posX + rect.width > viewportWidth) {
-                posX = viewportWidth - rect.width - 10;
-            }
-
-            if (posY + rect.height > viewportHeight) {
-                posY = viewportHeight - rect.height - 10;
-            }
-            // Show tooltip with animation
-            chatOptionsOverlay.classList.remove('hidden');
-            chatOptions.classList.remove('animate-exit');
-            chatOptions.classList.add('animate-enter');
-
-            chatOptionsOverlay.dataset.id = id
-            chatOptionsOverlay.dataset.portalid = portal_id
-
-            return { posX: posX, posY: posY };
-        } catch (err) {
-            console.error('Error showing conversation options:', err);
-            return false;
-        }
-    }
-
-    hideConversationOptions() {
-        try {
-            const chatOptionsOverlay = document.getElementById('chatOptions-overlay');
-            const chatOptions = document.getElementById('chatOptions');
-
-            chatOptions.classList.remove('animate-enter');
-            chatOptions.classList.add('animate-exit');
-
-            setTimeout(() => {
-                chatOptionsOverlay.classList.add('hidden');
-            }, 200);
-
-            return true;
-        } catch (err) {
-            console.error('Error hiding conversation options:', err);
-            return false;
-        }
-    }
-
     async showLoadingModal(message = null) {
 
         const loadingModal = document.getElementById('loadingModal');
@@ -292,56 +227,6 @@ export class ChatManager {
                 loadingModal.classList.add('hidden');
             }, 0)
         }, 300)
-    }
-
-    async RenameConversation(name, id = null) {
-        await this.showLoadingModal(`Renaming ${this.currentConversationId} ...`);
-        if (!this.currentConversationId || (id && this.currentConversationId != id)) this.currentConversationId = id
-
-        try {
-            const conversationItem = document.querySelector(`[data-id="${this.currentConversationId}"]`);
-            if (conversationItem && name !== '') {
-
-                const rename = window.desk.api.RenameConversation(this.currentConversationId, name, this.storagePath);
-                if (rename) {
-                    conversationItem.dataset.name = name;
-                    conversationItem.querySelector('#chat-name').textContent = name
-                }
-            }
-            this.hideConversationOptions();
-            this.fetchConversations();
-            await this.hideLoadingModal()
-        } catch (err) {
-            this.hideConversationOptions()
-            console.log("Failed to rename file", err);
-            await this.hideLoadingModal()
-        }
-    }
-
-    async DeleteConversation(id = null) {
-        try {
-            this.showLoadingModal(`Deleting ${this.currentConversationId}`);
-            if (!this.currentConversationId || (id && this.currentConversationId != id)) this.currentConversationId = id
-
-            const _delete = window.desk.api.deleteChat(this.currentConversationId, this.storagePath);
-            if (_delete) {
-                await this.hideLoadingModal();
-                this.hideConversationOptions();
-                //console.log(`Deleted ${this.currentConversationId}`);
-            } else {
-                this.hideConversationOptions();
-            }
-            // Hide options and refresh
-            this.hideConversationOptions();
-            await this.hideLoadingModal()
-            this.fetchConversations();
-            return _delete
-        } catch (err) {
-            this.hideConversationOptions()
-            console.log("Failed to rename file", err);
-            await this.hideLoadingModal()
-            return false
-        }
     }
 
     // Function to render a conversation from a file

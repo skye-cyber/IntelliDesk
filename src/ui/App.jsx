@@ -6,7 +6,7 @@ import { ChatInterface } from './components/Chat/ChatInterface';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { Canvas } from './components/Canvas/Canvas';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-import { Recording } from './components/RecordingUI/Recording';
+// import { Recording } from './components/RecordingUI/Recording';
 import '../core/Timer/timer.js'
 import { DiagramUi } from './components/DiagramUI/diagram.jsx'
 import { Settings } from './pages/Settings.jsx';
@@ -23,7 +23,6 @@ import '../core/MathBase/mathRenderer.js';
 import '../core/diagraming/vizcharting.js'
 import '../core/diagraming/jscharting.js'
 import '../core/Notification/notification';
-import '../core/ChatExport/export';
 import '../core/Utils/keyshortcuts';
 import { StaticPortalContainer } from './StaticPortalContainer';
 import { StreamingPortalContainer } from './StreamingPortalContainer';
@@ -34,6 +33,7 @@ import { CopyFeedback } from './components/StatusUI/copy.jsx';
 import { Provider } from 'react-redux';
 import { store } from './store/index.js';
 import { globalEventBus } from '../core/Globals/eventBus.ts';
+import { LoadingDisplay } from './components/StatusUI/loader.jsx';
 
 const App = () => {
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
@@ -93,6 +93,7 @@ const App = () => {
                         {/*<Recording isOpen={isRecordingOn} onToggle={toggleRecording} />*/}
                         <NotificationFlyer isOpen={true} onToggle={null} />
                         <Notifcation isOpen={true} onToggle={null} />
+                        <LoadingDisplay />
                     </ErrorBoundary>
                 </MainLayout>
                 {/* Portal containers for vanilla JS components */}

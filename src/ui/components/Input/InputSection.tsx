@@ -196,8 +196,6 @@ export const InputSection = ({ onToggleRecording, chatAreaRef }) => {
     }
 
     const scrollToBottom = (element: Element = chatAreaRef?.current as Element, checkAutoScroll = true, timeout: number = 500) => {
-        console.log("scroll", element)
-
         // If autoscroll is off check is on exit early
         if (checkAutoScroll && !StateManager.get('userSettings')?.autoscroll) return
 

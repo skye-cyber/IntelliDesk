@@ -68,6 +68,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                 setTheme(savedSettings.theme);
                 updateCanvasTheme();
                 StateManager.set('userSettings', savedSettings)
+                StateManager.set('isDarkTheme', savedSettings.theme === 'dark')
             } catch (error) {
                 modalmanager.showMessage(`Failed to load settings: ${error}`, 'error');
             }
@@ -129,7 +130,10 @@ export const Settings = ({ isOpen, onToggle }) => {
     }, [CloseSettings]);
 
     const handleSettingChange = useCallback((key, value) => {
-        if (key === "theme") setTheme(value);
+        if (key === "theme") {
+            setTheme(value);
+            StateManager.set('isDarkTheme', value === 'dark')
+        }
 
         setSettings(prev => {
             const newSettings = { ...prev, [key]: value };
@@ -393,7 +397,7 @@ export const Settings = ({ isOpen, onToggle }) => {
                                 <select
                                     value={settings.modelVerbosity}
                                     onChange={(e) => handleSettingChange('modelVerbosity', e.target.value)}
-                                    className="ml-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                    className="ml-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                                 >
                                     <option value="normal">Normal</option>
                                     <option value="medium">Medium</option>

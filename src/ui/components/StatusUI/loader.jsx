@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
+import { globalEventBus } from '../../../core/Globals/eventBus';
 
 export const LoadingAnimation = ({ }) => {
     const loaderUUID = `loader_${Math.random().toString(30).substring(3, 9)}`;
@@ -26,3 +28,36 @@ export const LoadingAnimation = ({ }) => {
         </ErrorBoundary>
     )
 }
+
+export const LoadingDisplay = () => {
+    const [message, setMessage] = useState('Processing, please wait')
+    const [isOpen, setIsOpen] = useState(false)
+
+    useEffect(() => {
+        const showLoader = globalEventBus.on('status:loading:show', (message) => {
+            if (message) setMessage(message)
+            setIsOpen(true)
+            console.log(isOpen)
+        })
+        const hideLoader = globalEventBus.on('status:loading:hide', () => {
+            setMessage('Processing, please wait')
+            setIsOpen(false)
+        })
+        return () => {
+            showLoader.unsubscribe()
+            hideLoader.unsubscribe()
+        }
+    })
+
+    if (!isOpen) return
+
+    return (
+        <div id="loadingModal" className="fixed z-70 inset-0 flex items-center justify-center bg-black bg-opacity-50 ">
+            <div id="modalMainBox" className="bg-white min-h-32 p-6 rounded-lg shadow-lg flex gap-1 items-center  transition-all duration-700">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p id="loadingMSG" className="mt-3 text-gray-700">{message.length > 25 ? `${message?.slice(0, 25)} ...` : message}</p>
+            </div>
+        </div>
+    )
+}
+

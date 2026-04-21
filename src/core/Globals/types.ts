@@ -90,6 +90,8 @@ export type EventMap = {
     'chatitem:activate': [state: boolean]
     'chatitem:name:update': [chatUpdate]
     'rename:dialog:open': [renameOptions]
+    'status:loading:show': [message: string | null]
+    'status:loading:hide': []
 };
 
 

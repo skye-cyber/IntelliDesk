@@ -19,7 +19,13 @@ export interface Todo {
     priority: TodoPriority
 }
 
+enum ThemeType {
+    dark = 'dark',
+    light = 'light'
+}
+
 export interface PreferenceData {
+    theme: ThemeType,
     profile?: string;
     autoscroll?: boolean
     animations?: boolean
@@ -53,6 +59,7 @@ interface AppState {
     userSettings: PreferenceData
     todoList: Todo[]
     chatLock: chatLock
+    isDarkTheme: boolean
 }
 
 type Listener<T> = (value: T | undefined, oldValue?: T) => void;

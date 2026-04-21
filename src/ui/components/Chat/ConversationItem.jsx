@@ -1,13 +1,21 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { chatmanager } from '../../../core/managers/Conversation/ChatManager';
 import { DateSplit } from './datesplit';
+import { globalEventBus } from '../../../core/Globals/eventBus';
+import { ChatContextMenu } from './ContextMenu';
 
 export const ConversationItem = ({ metadata, datestr, portal_id }) => {
+    const [isActive, setIsActive] = useState(false)
+    const [contextMenuOpen, setContextMenuOpen] = useState(false)
+
+    useEffect(() => {
+        setIsActive(window.desk.api.getmetadata().id === metadata.id)
+    }, [])
 
     const onContextMenu = useCallback((event, id) => {
         // Prevent the default context menu
         event.preventDefault();
-        chatmanager.currentConversationId = id;
+        chatmanager.currentConversationId = id //|| window.desk.api.getmetadata().id;
         chatmanager.currentPosition = { x: event.clientX, y: event.clientY };
 
         // First render the tooltip
@@ -71,7 +79,7 @@ export const ConversationItem = ({ metadata, datestr, portal_id }) => {
 
         chatmanager.renderConversationFromFile(metadata.id)
         chatmanager.activeItem = item
-        activate_item(item?.dataset?.id)
+        // activate_item(item?.dataset?.id)
     });
 
     const deactivate_item = (data_id = window.activeConversationId) => {
@@ -91,12 +99,9 @@ export const ConversationItem = ({ metadata, datestr, portal_id }) => {
     window.activate_item = activate_item
 
     useEffect(() => {
-        if (window.activeConversationId) {
-            activate_item(window.activeConversationId)
-        }
-
-        document.addEventListener('NewConversationOpened', deactivate_item)
-        return () => document.removeEventListener('NewConversationOpened', deactivate_item);
+        if (!isActive) return
+        const activationEvent = globalEventBus.on('chatitem:activate', (state) => setIsActive(state))
+        return () => activationEvent.unsubscribe()
     })
 
 
@@ -114,22 +119,22 @@ export const ConversationItem = ({ metadata, datestr, portal_id }) => {
                 data-id={metadata?.id}
                 data-highlight={metadata?.highlight}
                 data-portal-id={metadata?.portal_id}
-                className='conversation-item group mb-1.5'
-                onContextMenu={(event) => onContextMenu(event, metadata?.id)}
-                onClick={(event) => handleItemClick(event.currentTarget)}
+                className={`conversation-item group mb-1.5 ${isActive ? 'animate-heartpulse-slow' : ''}`}
+                onContextMenu={() => setContextMenuOpen(true)}
+                onClick={(event) => {
+                    setIsActive(true)
+                    // Deactivate previous active item
+                    globalEventBus.emit('chatitem:activate', false)
+                    handleItemClick(event.currentTarget)
+                }
+                }
             >
-                {/*Full name popup display*/}
-                {/*
-                metadata.name || metadata.id ?
-                    <span className='hidden group:hover:flex fixed z-[99] left-0 bg-primary-950 rounded-lg px-1 py-0.5 w-full whitespace-pre truncate font-brand tracking-tight leading-[16px] text-white text-xs'>{metadata.name || metadata.id}</span>
-                    : ''
-            */}
                 <div className="flex items-center space-x-0.5 p-1 md:p-2 2xl:p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 cursor-pointer transition-all duration-200">
                     <div className="relative flex-shrink-0">
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-md">
                             <span className="text-white font-semibold text-sm">GN</span>
                         </div>
-                        <div id="active-dot" className="hidden absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
+                        <div id="active-dot" className={`absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full ${isActive ? '' : 'hidden'}`}></div>
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -144,6 +149,7 @@ export const ConversationItem = ({ metadata, datestr, portal_id }) => {
                     </div>
                 </div>
             </div>
+            <ChatContextMenu isOpen={contextMenuOpen} />
         </>
     )
 }

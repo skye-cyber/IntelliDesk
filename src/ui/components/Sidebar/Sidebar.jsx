@@ -1,8 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { ChatManager } from '../../../core/managers/Conversation/ChatManager';
 import indellidesk from '@assets/intellidesk.png';
-import { ChatContextMenu } from '../Chat/ContextMenu.jsx';
-import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import { clearMessages } from '../../../core/PortalBridge.ts';
 import { ChatsList } from '../Chat/ChatsList';
 import { StateManager } from '../../../core/managers/StatesManager.ts';
@@ -327,10 +325,6 @@ export const Sidebar = ({ isOpen, onToggle, isCanvasOn }) => {
                         </button>
                     </div>
                 </div>
-
-                <ErrorBoundary>
-                    <ChatContextMenu isOpen={true} onToggle={null} />
-                </ErrorBoundary>
             </div>
         </>
     );

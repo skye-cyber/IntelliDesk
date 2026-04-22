@@ -11,7 +11,7 @@ export class ChatManager {
         this.activeItem
         //this.init()
 
-        this.splitstr
+        this.prevDatestr
     }
 
     _get_conversation_id() {
@@ -79,17 +79,16 @@ export class ChatManager {
                             metadata.highlight = ""
                         }
                         // Date split
-                        let datestr = this.dateStrDisplay(metadata.updated_at)
-                        //console.log(datestr?.split('/')[1], this.splitstr?.split('/')[1])
-                        if (datestr && datestr !== this.splitstr) {
-                            //staticPortalBridge.showComponentInTarget('DateSplit', 'conversations', { displaystr: datestr }, 'chatItem')
-                        }else{
-                            datestr = null
+                        let datesepartor = this.dateStrDisplay(metadata.updated_at)
+                        console.log(datesepartor, this.prevDatestr)
+
+                        if (datesepartor && datesepartor === this.prevDatestr) {
+                            datesepartor = null
                         }
 
-                        this.splitstr = datestr
+                        staticPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata, datestr: datesepartor }, 'chatItem')
 
-                        staticPortalBridge.showComponentInTarget('ConversationItem', 'conversations', { metadata: metadata, datestr: datestr }, 'chatItem')
+                        if (datesepartor) this.prevDatestr = datesepartor
 
                         globalEventBus.emit('panel:loader:hide')
 

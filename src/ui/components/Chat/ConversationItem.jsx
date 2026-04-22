@@ -1,10 +1,10 @@
-import { useEffect, useCallback, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { chatmanager } from '../../../core/managers/Conversation/ChatManager';
-import { DateSplit } from './datesplit';
+import { DateSeperator } from './Seperator';
 import { globalEventBus } from '../../../core/Globals/eventBus';
 import { ChatContextMenu } from './ContextMenu';
 
-export const ConversationItem = ({ metadata, datestr, portal_id }) => {
+export const ConversationItem = ({ metadata, datestr }) => {
     const [isActive, setIsActive] = useState(false)
     const [contextMenuOpen, setContextMenuOpen] = useState(false)
     const chatItemRef = useRef(null);
@@ -53,7 +53,7 @@ export const ConversationItem = ({ metadata, datestr, portal_id }) => {
             className='relative'
             id='chat-item'>
             {datestr ?
-                <DateSplit displaystr={datestr} />
+                <DateSeperator displaystr={datestr} />
                 : ''
             }
             <div

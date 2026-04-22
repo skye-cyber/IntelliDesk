@@ -245,7 +245,7 @@ class CompletionBase {
             this.reset()
 
             this.streamingPortal = streamingPortalBridge.createStreamingPortal(
-                'AiMessage', 'chatArea', { animation: true }, 'ai_message'
+                'BaseAiResponse', 'chatArea', { animation: true }, 'ai_message'
             )
             if (this.ToolsEnabled || this.checkTools()) {
                 await this.ToolStreamSession()
@@ -330,6 +330,15 @@ class CompletionBase {
                             toolCallId: call.toolCallId
                         }
                         window.desk.api.addHistory(tool_result);
+                        // TODO: Wrap tool and ai responses/think to one section by joining multiple turns to one turn eg multiple think sections become one with all toolCalls. Broken by user/actualResponse
+                        // if (this.isThinking || this.thinkContent && !this.actualResponse) {
+                        //     //Append to think section
+                        //     this.streamingPortal.update({
+                        //         actualContent: this.actualResponse,
+                        //         isThinking: this.isThinking,
+                        //         thinkContent: this.thinkContent,
+                        //     });
+                        // } else { }
                         streamingPortalBridge.appendComponentAsChild(this.streamingPortal.id, 'ToolCallDisplay', {
                             toolCall: call
                         })
@@ -435,7 +444,6 @@ class CompletionBase {
             if (this.actualResponse.includes('<continued>') || this.actualResponse.includes('<continued')) {
                 this.continueStream()
             } else {
-                // console.log(thinkContent)
                 this.streamingPortal.update({
                     actualContent: this.actualResponse,
                     isThinking: this.isThinking,

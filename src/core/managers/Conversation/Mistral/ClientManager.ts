@@ -80,27 +80,38 @@ export class ClientManager {
     async rotate_keychain(steps = 1): Promise<boolean | void> {
         if (!this.validateChain()) return
 
-            // Store original state for rollback if needed
-            const originalKeychain = {...this.keychain!}
-            const originalIndex = this.CurrentKeyIndex
-            const originalLength = this.keychainLength
+        // Deep clone--Store original state for rollback if needed
+        const originalKeychain = structuredClone(this.keychain); //{ ...this.keychain! }
+        const originalIndex = this.CurrentKeyIndex
+        const originalLength = this.keychainLength
+        const originalKey = this.key
 
-            this.CurrentKeyIndex = (this.CurrentKeyIndex + steps) % this.keychainLength
-            if (this.CurrentKeyIndex < 0) {
-                this.CurrentKeyIndex += this.keychainLength
+        this.CurrentKeyIndex = (this.CurrentKeyIndex + steps) % this.keychainLength
+        if (this.CurrentKeyIndex < 0) {
+            this.CurrentKeyIndex += this.keychainLength
+        }
+
+        const newActiveKeyValue = this.keychain!.keys[this.CurrentKeyIndex].value;
+
+        // Create new keys array to avoid mutating original
+        // BUG FIX #1: Don't mark rotated keys as 'disabled' — that causes them to be filtered out on reload. Use 'inactive' so keys remain in the pool.
+        const keys = this.keychain!.keys.map(api => {
+            if (api.value === newActiveKeyValue) {
+                return { ...api, status: 'active' };
             }
+            // Only deactivate the previously active key, preserve other statuses
+            if (api.status === 'active') {
+                return { ...api, status: 'inactive' };
+            }
+            return api;
+        }) as keys;
 
-            // Create new keys array to avoid mutating original
-            const keys = this.keychain!.keys.map(api => {
-                const newStatus = api.value === this.key ? 'disabled' :
-                api.value === this.keychain!.keys[this.CurrentKeyIndex].value ? 'active' :
-                api.status
-                return { ...api, status: newStatus }
-            })
+        console.log("Keys:", keys, "Length:", this.keychainLength)
 
-            this.keychain!.keys = keys
-            this.key = this.keychain!.keys[this.CurrentKeyIndex].value
+        this.keychain!.keys = keys
+        this.key = newActiveKeyValue
 
+        if (this.keychainLength === this.keychain?.keys.length) {
             const saveSuccess = await this.save_chain()
             if (!saveSuccess) {
                 console.warn('Failed to save keychain, reverting')
@@ -110,37 +121,42 @@ export class ClientManager {
                 this.key = this.keychain.keys[this.CurrentKeyIndex].value
                 return false
             }
+        }
 
-            // Verify the key still exists after reload
-            const newKeychain = await loadApiKeyChain()
-            if (!newKeychain || !newKeychain.keys.length) {
-                globalEventBus.emit('keychain:error', 'Failed to reload keychain')
-                this.keychain = originalKeychain
-                this.CurrentKeyIndex = originalIndex
-                this.keychainLength = originalLength
-                this.key = this.keychain.keys[this.CurrentKeyIndex].value
-                return false
-            }
+        // Verify the key still exists after reload
+        const newKeychain = await loadApiKeyChain()
+        if (!newKeychain || !newKeychain.keys.length) {
+            globalEventBus.emit('keychain:error', 'Failed to reload keychain')
+            this.keychain = originalKeychain
+            this.CurrentKeyIndex = originalIndex
+            this.keychainLength = originalLength
+            if (this.keychain) this.key = this.keychain?.keys[this.CurrentKeyIndex].value
+            return false
+        }
 
-            // Check if our key still exists
-            const keyExists = newKeychain.keys.some(k => k.value === this.key)
-            if (!keyExists) {
-                // Find the first active key, or fallback to first key
-                const nextKey = newKeychain.keys.find(k => k.status === 'active')
+        // Check if our key still exists
+        const keyExists = newKeychain.keys.some((k: KEY) => k.value === this.key)
+        if (!keyExists) {
+            // Find the first active key, or fallback to first key
+            const nextKey = newKeychain.keys.find((k: KEY) => k.status === 'active')
                 || newKeychain.keys[0]
-                if (!nextKey) {
-                    globalEventBus.emit('keychain:error', 'No usable keys available')
-                    return false
-                }
-
-                this.key = nextKey.value
-                this.CurrentKeyIndex = newKeychain.keys.indexOf(nextKey)
+            if (!nextKey || !nextKey.value) {
+                globalEventBus.emit('keychain:error', 'No usable keys available')
+                this.keychain = originalKeychain;
+                this.CurrentKeyIndex = originalIndex;
+                this.keychainLength = originalLength;
+                this.key = originalKey;
+                return false;
             }
 
-            this.keychain = newKeychain
-            this.keychainLength = this.keychain.keys.length
-            this.client = this.create_client()
-            return true
+            this.key = nextKey.value
+            this.CurrentKeyIndex = newKeychain.keys.indexOf(nextKey)
+        }
+
+        this.keychain = newKeychain
+        this.keychainLength = this.keychain.keys.length
+        this.client = this.create_client()
+        return true
     }
     async save_chain() {
         const result = await window.desk.api2.saveKeyChain(JSON.stringify(this.keychain));

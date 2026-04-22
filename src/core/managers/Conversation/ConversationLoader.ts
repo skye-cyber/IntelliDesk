@@ -187,7 +187,7 @@ export class ConversationLoader {
         let message_portal = this.portal;
         if (!message_portal) {
             message_portal = streamingPortalBridge.createStreamingPortal(
-                'AiMessage',
+                'BaseAiResponse',
                 'chatArea',
                 undefined,
                 'ai_message'
@@ -254,7 +254,7 @@ export class ConversationLoader {
         let message_portal = this.portal;
         if (!message_portal) {
             message_portal = streamingPortalBridge.createStreamingPortal(
-                'AiMessage',
+                'BaseAiResponse',
                 'chatArea',
                 undefined,
                 'ai_message'

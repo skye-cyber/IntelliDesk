@@ -80,7 +80,6 @@ export class ChatManager {
                         }
                         // Date split
                         let datesepartor = this.dateStrDisplay(metadata.updated_at)
-                        console.log(datesepartor, this.prevDatestr)
 
                         if (datesepartor && datesepartor === this.prevDatestr) {
                             datesepartor = null

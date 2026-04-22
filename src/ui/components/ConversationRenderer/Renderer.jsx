@@ -16,12 +16,11 @@ import { ThinkingBrain } from '../Writing/AssistantAnimations.tsx';
 import { CodeDetector } from '../Code/CodeDetector.tsx';
 import { cleanInput } from '../Input/utils/cleanInput.ts';
 import { Copy, FileDown, Image, Printer } from 'lucide-react';
-import { useTheme } from '../Themes/useThemeHeadless.jsx';
 
 export const UserMessage = ({ message, files = [] }) => {
     const messageRef = useRef(null)
     /* Do not interpret if already interpreted -- compartibility for older
-     * chats that we being save as fenced codeblocks
+     * chats that were being saved with fenced codeblocks
     */
     const userContent = markitdown(message.includes('```') ? message : cleanInput(CodeDetector.autoFormatCodeBlocks(message)));
     const selector_class = GenerateId('user-ms')
@@ -86,7 +85,7 @@ export const UserMessage = ({ message, files = [] }) => {
     )
 }
 
-export const AiMessage = ({
+export const BaseAiResponse = ({
     actualContent,
     isThinking = false,
     thinkContent = null,
@@ -112,7 +111,7 @@ export const AiMessage = ({
                     )}
                     {/*Other componets*/}
                     <div className='mt-10'>
-                        <AiMessageOptions messageref={messageRef} isOpen={optionsOpen} setOpen={setOptionsOpen} />
+                        <AssistantMessageOptions messageref={messageRef} isOpen={optionsOpen} setOpen={setOptionsOpen} />
                     </div>
                 </section>
             </div>
@@ -120,7 +119,7 @@ export const AiMessage = ({
     )
 }
 
-export const StreamingAiMessage = ({
+export const StreamingAiResponse = ({
     actualContent,
     isThinking = false,
     thinkContent = null,
@@ -148,7 +147,7 @@ export const StreamingAiMessage = ({
 
                     {/*Other componets*/}
                     <div className='mt-10'>
-                        <AiMessageOptions onMenuToggle={onExportMenuToggle} isOpen={optionsOpen} setOpen={setOptionsOpen} messageref={messageRef} />
+                        <AssistantMessageOptionsMessageOptions onMenuToggle={onExportMenuToggle} isOpen={optionsOpen} setOpen={setOptionsOpen} messageref={messageRef} />
                         <ExportMenu menuref={exportMenu} messageref={messageRef} />
                     </div>
                 </section>
@@ -208,7 +207,7 @@ export const ResponseWrapper = ({
 }
 
 
-export const AiMessageOptions = ({ messageref, isOpen, setOpen }) => {
+export const AssistantMessageOptions = ({ messageref, isOpen, setOpen }) => {
     const [copied, setCopied] = useState(false);
     const [pinned, setPinned] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);

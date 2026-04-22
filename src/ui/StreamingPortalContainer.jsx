@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Diagram } from './components/DiagramUI/diagram';
-import { UserMessage, AiMessage, ResponseWrapper, StreamingAiMessage } from './components/ConversationRenderer/Renderer';
+import { UserMessage, BaseAiResponse, ResponseWrapper, StreamingAiResponse } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
 // import { FileItem } from './components/DropZone/dropzone';
 import { LoadingAnimation } from './components/StatusUI/loader';
@@ -12,7 +12,7 @@ import ToolCallDisplay from './components/Tools/ToolCallDisplay';
 const streamingComponentRegistry = {
     Diagram,
     UserMessage,
-    AiMessage,
+    BaseAiResponse,
     LoadingAnimation,
     ConversationItem,
     //     FileItem,
@@ -20,7 +20,7 @@ const streamingComponentRegistry = {
     ToolErrorHandler,
     ToolCallDisplay,
     ResponseWrapper,
-    StreamingAiMessage
+    StreamingAiResponse
 };
 
 export const StreamingPortalContainer = () => {

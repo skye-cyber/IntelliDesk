@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Diagram } from './components/DiagramUI/diagram';
 import ReactDOM from 'react-dom';
-import { UserMessage, AiMessage } from './components/ConversationRenderer/Renderer';
+import { UserMessage, BaseAiResponse } from './components/ConversationRenderer/Renderer';
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { LoadingAnimation } from './components/StatusUI/loader';
 import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
@@ -12,7 +12,7 @@ import { ToolPermissionRequest } from './components/Tools/ToolPermRequest';
 const componentRegistry = {
     Diagram,
     UserMessage,
-    AiMessage,
+    BaseAiResponse,
     LoadingAnimation,
     ConversationItem,
     ErrorModal,

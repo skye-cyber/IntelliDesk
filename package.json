@@ -138,7 +138,7 @@
     "src/main/**/*",
     "public/**/*",
     "!node_modules/",
-    "!eproj"
+    "!true"
   ],
   "build": {
     "appId": "com.intellidesk.app",

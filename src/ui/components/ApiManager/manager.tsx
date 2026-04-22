@@ -3,7 +3,6 @@ import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { modalmanager } from '../../../core/StatusUIManager/Manager';
 import { ApiNotSetWarning } from './warning';
 import { RequestApiKeyConfig } from './Request';
-import { ApiKeyModal } from './ApiKeyModal';
 import { KeyChainManagementModal } from './KeyChainManagementModal';
 import { globalEventBus } from '../../../core/Globals/eventBus';
 
@@ -192,20 +191,6 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
 
     return (
         <section>
-            {/* Main API Key Modal
-            <ApiKeyModal
-                isOpen={isApiQueryModalOpen}
-                onClose={closeApiQueryModal}
-                newKeyRef={newKeyRef as any}
-                onNewKey={onNewKey}
-                onToggleVisibility={(id) => {
-                    const input = document.getElementById(id) as HTMLInputElement;
-                    if (input) input.type = input.type === 'password' ? 'text' : 'password';
-                }}
-            />
-            */}
-
-
             {/* Warning and Suggestion Modals */}
             <ApiNotSetWarning
                 onOpen={showApiQueryModal}
@@ -223,7 +208,7 @@ export const APIKeysManager = ({ isOpen, onToggle }: APIKeysManagerProps) => {
                 onKeyDelete={onKeyDelete}
                 onKeyDisable={onKeyDisable}
                 onReset={resetKeys}
-                onSave={saveKeyChain}
+                onSave={saveKeyChain as any }
                 maskFn={maskKey}
                 onToggleVisibility={(id) => {
                     const input = document.getElementById(id) as HTMLInputElement;

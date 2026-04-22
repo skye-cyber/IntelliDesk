@@ -106,7 +106,7 @@ const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
 
     return (
         <div className='hidden md:block fixed left-10 bottom-4'>
-            <section className="rounded-xl border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-2 shadow-sm w-fit max-h-42 overflow-y-auto scrollbar-custom">
+            <section className="rounded-xl border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-2 shadow-sm w-fit max-h-42 max-w-72 overflow-y-auto scrollbar-custom">
                 {(todos.length !== 0) ? (
                     <div className={`w-fit max-w-full ${className}`} style={{ maxHeight, overflowY: 'auto' }}>
                         {todos.map(todo => (
@@ -119,9 +119,6 @@ const TodoManager = React.forwardRef<TodoManagerHandle, TodoManagerProps>(({
                     </div>
                 }
             </section>
-            <p className="hidden lg:justify-center text-xs text-gray-400 dark:text-white/30 mt-2 text-center">
-                • 🔵 Active, 🟠 Pending, ✅ Completed, ⚫ Cancelled, 🔴 Failed
-            </p>
         </div>
     );
 });

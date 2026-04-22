@@ -1,3 +1,4 @@
+/// <reference path="../../../main/preload.type.ts" />
 /**
  * File Operations Tool - Perform comprehensive file operations
  */
@@ -9,7 +10,7 @@ const fsops = window.desk.fsops
 
 export class FileSystemTool extends ToolBase {
     constructor() {
-        super('filesystem', 'Perform file operations (read, write, list, stats, delete, copy, move, exists, read_dir, rmdir)');
+        super('filesystem', 'Perform file operations (read, write, list, stats, delete, copy, move, exists, read_dir, rmdir, mkdir)');
     }
 
     defineSchema() {
@@ -17,13 +18,13 @@ export class FileSystemTool extends ToolBase {
             type: "function",
             function: {
                 name: "filesystem",
-                description: "Perform file system operations (read, write, list, stats, delete, copy, move, exists, read_dir, rmdir)",
+                description: "Perform file system operations (read, write, list, stats, delete, copy, move, exists, read_dir, rmdir, mkdir)",
                 parameters: {
                     type: "object",
                     properties: {
                         operation: {
                             type: "string",
-                            enum: ["read", "write", "list", "delete", "copy", "move", "stats", 'exists', 'read_dir', 'rmdir'],
+                            enum: ["read", "write", "list", "delete", "copy", "move", "stats", 'exists', 'read_dir', 'rmdir', 'mkdir'],
                             description: "Filesystem operation to perform"
                         },
                         path: {
@@ -81,7 +82,9 @@ export class FileSystemTool extends ToolBase {
             case 'read_dir':
                 return this.readDir(filePath, recursive)
             case 'rmdir':
-                return this
+                return this.rmdir(filePath, recursive)
+            case 'mkdir':
+                return this.mkdir(filePath, recursive)
             default:
                 throw new Error(`Unsupported operation: ${operation}`);
         }
@@ -147,7 +150,7 @@ export class FileSystemTool extends ToolBase {
     }
 
     async readDir(filePath, recursive) {
-        const result = await fs.rmdirSync(filePath, recursive)
+        const result = fs.rmdirSync(filePath, recursive)
         if (result.success) return {
             ...result,
             operation: "read_dir"
@@ -160,6 +163,22 @@ export class FileSystemTool extends ToolBase {
         if (result.success) return {
             ...result,
             operation: "read_dir"
+        }
+        throw new Error(result.error)
+    }
+    async rmdir(filePath, recursive) {
+        const result = await fsops.rmdir(filePath, recursive)
+        if (result.success) return {
+            ...result,
+            operation: "rmdir"
+        }
+        throw new Error(result.error)
+    }
+    async mkdir(filePath, recursive) {
+        const result = fsops.mkdir(filePath, recursive)
+        if (result.success) return {
+            ...result,
+            operation: "mkdir"
         }
         throw new Error(result.error)
     }

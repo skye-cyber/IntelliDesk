@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { fsOperations } from './utils/filesystem';
 import { ExecException } from 'child_process';
 import { AgentType } from './utils/ToolAgent';
 import { SessionManagerType, LockManagerType } from './utils/SessionManager';
@@ -211,7 +212,7 @@ declare global {
             api2: Api2Type;
             agent: AgentType;
             cmd: CmdType;
-            fsops: any;
+            fsops: typeof fsOperations;
             path: typeof path;
             fs: typeof fs;
             sessionmanager: SessionManagerType

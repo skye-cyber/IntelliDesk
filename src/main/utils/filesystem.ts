@@ -1,6 +1,7 @@
 import { dialog } from "electron";
 import { OpenDialogOptions } from "electron/utility";
 import fsSync from "fs";
+import { rm } from "node:fs/promises";
 import fs from "fs/promises";
 import path from "node:path";
 import type {
@@ -268,22 +269,24 @@ export const fsOperations = {
      */
     async rmdir(dirPath: string, recursive: boolean = true): Promise<rmdirError | rmdirSuccess> {
         try {
+            // TODO: Correctly handle recursive instead of hardcoding
             if (!dirPath || typeof dirPath !== 'string') {
                 return { success: false, code: 400, error: 'Invalid directory path', path: dirPath };
             }
-
             const absolutePath = path.resolve(dirPath);
-            const existsCheck = await this.exists(dirPath);
+            const existsCheck = await this.exists(absolutePath);
             const existed = (isFileExistsStats(existsCheck) && existsCheck.exists);
 
-            if (!existed) {
-                await fs.mkdir(absolutePath, { recursive });
+            if (existed) {
+                await rm(absolutePath, { recursive: true });
             }
 
+            const existsCheck2 = await this.exists(absolutePath)
+            const deleted = (isFileExistsStats(existsCheck2) && existsCheck2.exists);
             return {
                 success: true,
                 path: absolutePath,
-                deleted: !existed,
+                deleted:  deleted,
             };
         } catch (error) {
             return {

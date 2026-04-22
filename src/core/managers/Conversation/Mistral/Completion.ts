@@ -716,6 +716,7 @@ class CompletionBase {
                 window.desk.api.deleteChat(window.desk.api.getmetadata()?.id)
             }
         }
+        console.log("Handling error", error)
         await BaseErrorHandler(error, this.userMessagePID, this.streamingPortal?.id, this.ErrorCallback || this.StartSession)
     }
 }

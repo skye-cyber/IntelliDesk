@@ -6,7 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.fsOperations = void 0;
 const electron_1 = require("electron");
 const fs_1 = __importDefault(require("fs"));
-const promises_1 = __importDefault(require("fs/promises"));
+const promises_1 = require("node:fs/promises");
+const promises_2 = __importDefault(require("fs/promises"));
 const node_path_1 = __importDefault(require("node:path"));
 // Type guard functions
 function isWriteFileSuccess(obj) {
@@ -28,7 +29,7 @@ exports.fsOperations = {
                 return { success: false, code: 404, error: 'Invalid file path', path: filePath };
             }
             const absolutePath = node_path_1.default.resolve(filePath);
-            const data = await promises_1.default.readFile(absolutePath, { encoding: encoding });
+            const data = await promises_2.default.readFile(absolutePath, { encoding: encoding });
             return {
                 success: true,
                 data,
@@ -60,9 +61,9 @@ exports.fsOperations = {
             const absolutePath = node_path_1.default.resolve(filePath);
             // Create directory if it doesn't exist
             const dir = node_path_1.default.dirname(absolutePath);
-            await promises_1.default.mkdir(dir, { recursive: true });
-            await promises_1.default.writeFile(absolutePath, content, { encoding: encoding });
-            const stats = await promises_1.default.stat(absolutePath);
+            await promises_2.default.mkdir(dir, { recursive: true });
+            await promises_2.default.writeFile(absolutePath, content, { encoding: encoding });
+            const stats = await promises_2.default.stat(absolutePath);
             const existsCheck = await this.exists(filePath);
             return {
                 success: true,
@@ -89,8 +90,8 @@ exports.fsOperations = {
                 return { success: false, code: 404, error: 'Invalid file path', path: filePath };
             }
             const absolutePath = node_path_1.default.resolve(filePath);
-            await promises_1.default.appendFile(absolutePath, content, { encoding: encoding });
-            const stats = await promises_1.default.stat(absolutePath);
+            await promises_2.default.appendFile(absolutePath, content, { encoding: encoding });
+            const stats = await promises_2.default.stat(absolutePath);
             return {
                 success: true,
                 path: absolutePath,
@@ -117,7 +118,7 @@ exports.fsOperations = {
             }
             const absolutePath = node_path_1.default.resolve(filePath);
             try {
-                const stats = await promises_1.default.stat(absolutePath);
+                const stats = await promises_2.default.stat(absolutePath);
                 return {
                     success: true,
                     exists: true,
@@ -158,10 +159,10 @@ exports.fsOperations = {
                 return { success: false, code: 400, error: 'Invalid directory path', path: dirPath };
             }
             const absolutePath = node_path_1.default.resolve(dirPath);
-            const items = await promises_1.default.readdir(absolutePath, { withFileTypes: true });
+            const items = await promises_2.default.readdir(absolutePath, { withFileTypes: true });
             const files = await Promise.all(items.map(async (item) => {
                 const itemPath = node_path_1.default.join(absolutePath, item.name);
-                const stats = await promises_1.default.stat(itemPath);
+                const stats = await promises_2.default.stat(itemPath);
                 const fileInfo = {
                     name: item.name,
                     path: itemPath,
@@ -210,7 +211,7 @@ exports.fsOperations = {
             const existsCheck = await this.exists(dirPath);
             const existed = (isFileExistsStats(existsCheck) && existsCheck.exists);
             if (!existed) {
-                await promises_1.default.rmdir(absolutePath);
+                await promises_2.default.rmdir(absolutePath);
             }
             return {
                 success: true,
@@ -235,16 +236,19 @@ exports.fsOperations = {
             if (!dirPath || typeof dirPath !== 'string') {
                 return { success: false, code: 400, error: 'Invalid directory path', path: dirPath };
             }
+            console.log(recursive);
             const absolutePath = node_path_1.default.resolve(dirPath);
-            const existsCheck = await this.exists(dirPath);
+            const existsCheck = await this.exists(absolutePath);
             const existed = (isFileExistsStats(existsCheck) && existsCheck.exists);
-            if (!existed) {
-                await promises_1.default.mkdir(absolutePath, { recursive });
+            if (existed) {
+                await (0, promises_1.rm)(absolutePath, { recursive: true });
             }
+            const existsCheck2 = await this.exists(absolutePath);
+            const deleted = (isFileExistsStats(existsCheck2) && existsCheck2.exists);
             return {
                 success: true,
                 path: absolutePath,
-                deleted: !existed,
+                deleted: deleted,
             };
         }
         catch (error) {
@@ -284,11 +288,11 @@ exports.fsOperations = {
             const isDirectory = existsCheck.isDirectory || false;
             if (isDirectory) {
                 if (recursive) {
-                    await promises_1.default.rm(absolutePath, { recursive: true, force: true });
+                    await promises_2.default.rm(absolutePath, { recursive: true, force: true });
                 }
                 else {
                     // Check if directory is empty
-                    const items = await promises_1.default.readdir(absolutePath);
+                    const items = await promises_2.default.readdir(absolutePath);
                     if (items.length > 0) {
                         return {
                             success: false,
@@ -298,11 +302,11 @@ exports.fsOperations = {
                             type: 'directory'
                         };
                     }
-                    await promises_1.default.rmdir(absolutePath);
+                    await promises_2.default.rmdir(absolutePath);
                 }
             }
             else {
-                await promises_1.default.unlink(absolutePath);
+                await promises_2.default.unlink(absolutePath);
             }
             return {
                 success: true,
@@ -378,7 +382,7 @@ exports.fsOperations = {
                 await this._copyDirectory(sourcePath, realDest, overwrite);
             }
             else {
-                await promises_1.default.copyFile(sourcePath, destPath);
+                await promises_2.default.copyFile(sourcePath, destPath);
             }
             return {
                 success: true,
@@ -425,8 +429,8 @@ exports.fsOperations = {
      * Helper: Copy directory recursively
      */
     async _copyDirectory(sourceDir, destDir, overwrite) {
-        await promises_1.default.mkdir(destDir, { recursive: true });
-        const items = await promises_1.default.readdir(sourceDir, { withFileTypes: true });
+        await promises_2.default.mkdir(destDir, { recursive: true });
+        const items = await promises_2.default.readdir(sourceDir, { withFileTypes: true });
         for (const item of items) {
             const sourcePath = node_path_1.default.join(sourceDir, item.name);
             const destPath = node_path_1.default.join(destDir, item.name);
@@ -434,7 +438,7 @@ exports.fsOperations = {
                 await this._copyDirectory(sourcePath, destPath, overwrite);
             }
             else {
-                await promises_1.default.copyFile(sourcePath, destPath);
+                await promises_2.default.copyFile(sourcePath, destPath);
             }
         }
     },
@@ -491,7 +495,7 @@ exports.fsOperations = {
                     code: 409
                 };
             }
-            await promises_1.default.rename(sourcePath, destPath);
+            await promises_2.default.rename(sourcePath, destPath);
             return {
                 success: true,
                 source: sourcePath,

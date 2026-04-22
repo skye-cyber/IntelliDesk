@@ -360,12 +360,6 @@ electron_1.app.on('ready', async () => {
         mainWindow.show();
     });
 });
-// app.on('window-all-closed', (event) => {
-//     event.preventDefault();// ✅ don’t quit app when all windows closed
-//     //if (process.platform !== 'darwin') {
-//     //  app.quit(); // Quit when all windows are closed, except on macOS
-//     //}
-// });
 electron_1.app.on('activate', () => {
     if (electron_1.BrowserWindow.getAllWindows().length === 0) {
         createWindow(); // Recreate a window if none are open on macOS

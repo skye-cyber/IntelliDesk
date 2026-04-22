@@ -8,6 +8,7 @@ export declare const SESSIONS_DIR: string;
 export declare const AGENT_CONFIG_FILE: string;
 export declare const USER_PREFERENCE_CONFIG_FILE: string;
 export declare const DEFAULT_DOWNLOAD_PATH: string;
+export declare const DEFAULT_SKILLS_PATH: string;
 export declare const DEFAULT_AGENT_CONFIG: AgentConfig;
 export interface Tool {
     permission: 'allow' | 'ask' | 'never';

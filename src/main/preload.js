@@ -148,7 +148,6 @@ const api = {
         }
     },
     RenameConversation: async (id, name, base_dir = conversation_root) => {
-        console.log(name, id);
         try {
             const fpath = path_1.default.join(base_dir, `${id}.json`);
             let data = await api.read(fpath);

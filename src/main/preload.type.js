@@ -22,4 +22,9 @@ var MessageRole;
     MessageRole["assistant"] = "assistant";
     MessageRole["tool"] = "tool";
 })(MessageRole || (exports.MessageRole = MessageRole = {}));
+var ThemeType;
+(function (ThemeType) {
+    ThemeType["dark"] = "dark";
+    ThemeType["light"] = "light";
+})(ThemeType || (ThemeType = {}));
 //# sourceMappingURL=preload.type.js.map

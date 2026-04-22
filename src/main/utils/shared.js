@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PREPED_DEFAULT_AGENT_CONFIG = exports.PREP_AGENT_CONFIG = exports.DEFAULT_AGENT_CONFIG = exports.DEFAULT_DOWNLOAD_PATH = exports.USER_PREFERENCE_CONFIG_FILE = exports.AGENT_CONFIG_FILE = exports.SESSIONS_DIR = exports.LOCKS_DIR = exports.CACHE_DIR = exports.CONFIG_DIR = exports.STORE_DIR = exports.BASE_DIR = void 0;
+exports.PREPED_DEFAULT_AGENT_CONFIG = exports.PREP_AGENT_CONFIG = exports.DEFAULT_AGENT_CONFIG = exports.DEFAULT_SKILLS_PATH = exports.DEFAULT_DOWNLOAD_PATH = exports.USER_PREFERENCE_CONFIG_FILE = exports.AGENT_CONFIG_FILE = exports.SESSIONS_DIR = exports.LOCKS_DIR = exports.CACHE_DIR = exports.CONFIG_DIR = exports.STORE_DIR = exports.BASE_DIR = void 0;
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 exports.BASE_DIR = path.join(os.homedir(), '.IntelliDesk');
@@ -45,12 +45,13 @@ exports.SESSIONS_DIR = path.join(exports.BASE_DIR, 'sessions');
 exports.AGENT_CONFIG_FILE = path.join(exports.CONFIG_DIR, 'agent_config.json');
 exports.USER_PREFERENCE_CONFIG_FILE = path.join(exports.CONFIG_DIR, 'user_preference.json');
 exports.DEFAULT_DOWNLOAD_PATH = path.join(os.homedir(), 'Downloads');
+exports.DEFAULT_SKILLS_PATH = path.join(exports.BASE_DIR, 'skills');
 exports.DEFAULT_AGENT_CONFIG = {
     tool_paths: [],
     mcp_servers: [],
     enabled_tools: [],
     disabled_tools: [],
-    skill_paths: [],
+    skill_paths: [exports.DEFAULT_SKILLS_PATH],
     tools: {
         bash: {
             permission: 'ask',

@@ -56,7 +56,7 @@ export class FileSystemTool extends ToolBase {
         };
     }
 
-    async _execute({ operation, path: filePath, content, destination, recursive = false, overwrite = false }, context) {
+    async _execute({ operation, path: filePath, content, destination, recursive = true, overwrite = false }, context) {
         // Validate file path
         this.validateFilePath(filePath);
 
@@ -95,7 +95,7 @@ export class FileSystemTool extends ToolBase {
             throw new Error(`File not found: ${filePath}`);
         }
 
-        const stats = fsops.stat(fullPath).stats //fs.statSync(filePath);
+        const stats = fsops.stat(filePath).stats //fs.statSync(filePath);
         const maxFileSize = this.config.max_file_size || 1024 * 1024; // 1MB default
         if (stats.size > maxFileSize) {
             throw new Error(`File size ${stats.size} bytes exceeds maximum allowed ${maxFileSize} bytes`);
@@ -168,6 +168,7 @@ export class FileSystemTool extends ToolBase {
     }
     async rmdir(filePath, recursive) {
         const result = await fsops.rmdir(filePath, recursive)
+        console.log(result)
         if (result.success) return {
             ...result,
             operation: "rmdir"

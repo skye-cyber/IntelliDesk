@@ -226,7 +226,8 @@ class SystemPrompt {
         - Prefer dedicated tools over generic shell commands for file/search/edit operations.
         - For multi‑step tasks, break down and execute sequentially.
         - Prefer the dendicated read_file and write_file to filesystem
-        - Filsystem tool provides extended functionalities beyond read and write`;
+        - Filsystem tool provides extended functionalities beyond read and write
+        - Do not use reaf_file or filesystem to directly read binary files eg PDF, DOCX etc. Instead check whether the skill director(y/ies) if any has any related skill.`;
     }
     static outputFormatting() {
         return `# Output Formatting

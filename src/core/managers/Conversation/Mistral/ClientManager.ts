@@ -13,18 +13,6 @@ interface KeyChainType {
     keys: keys
 }
 
-export async function loadApiKeyChain() {
-    try {
-        const chain = await window.desk.api2.getKeyChain('mistral');
-        const MISTRAL_API_KEY_CHAIN = JSON.parse(chain)
-        // Return only the keys that are usable ie not disabled
-        const usable_chain = { keys: MISTRAL_API_KEY_CHAIN.keys.filter(key => key.status != 'disabled') }
-        return usable_chain
-    } catch (err) {
-        return undefined
-    }
-}
-
 /**
  * Handles:
  * - Mistral client creation and update
@@ -45,7 +33,7 @@ export class ClientManager {
     }
     async init() {
         if (!this.keychain) {
-            const chain = await loadApiKeyChain()
+            const chain = await this.loadApiKeyChain()
             if (!this.keychain && chain && chain?.keys.length > 0) {
                 this.keychain = chain
             } else {
@@ -111,20 +99,18 @@ export class ClientManager {
         this.keychain!.keys = keys
         this.key = newActiveKeyValue
 
-        if (this.keychainLength === this.keychain?.keys.length) {
-            const saveSuccess = await this.save_chain()
-            if (!saveSuccess) {
-                console.warn('Failed to save keychain, reverting')
-                this.keychain = originalKeychain
-                this.CurrentKeyIndex = originalIndex
-                this.keychainLength = originalLength
-                this.key = this.keychain.keys[this.CurrentKeyIndex].value
-                return false
-            }
+        const saveSuccess = await this.save_chain()
+        if (!saveSuccess) {
+            console.warn('Failed to save keychain, reverting')
+            this.keychain = originalKeychain
+            this.CurrentKeyIndex = originalIndex
+            this.keychainLength = originalLength
+            this.key = this.keychain?.keys[this.CurrentKeyIndex].value || this.key
+            return false
         }
 
         // Verify the key still exists after reload
-        const newKeychain = await loadApiKeyChain()
+        const newKeychain = await this.loadApiKeyChain()
         if (!newKeychain || !newKeychain.keys.length) {
             globalEventBus.emit('keychain:error', 'Failed to reload keychain')
             this.keychain = originalKeychain
@@ -154,12 +140,27 @@ export class ClientManager {
         }
 
         this.keychain = newKeychain
-        this.keychainLength = this.keychain.keys.length
+        this.keychainLength = this.keychain?.keys.length || this.keychainLength
         this.client = this.create_client()
         return true
     }
+    async loadApiKeyChain(filter: boolean = true) {
+        try {
+            const chain = await window.desk.api2.getKeyChain('mistral');
+            const MISTRAL_API_KEY_CHAIN = JSON.parse(chain)
+            // Return only the keys that are usable ie not disabled
+            return filter ? { keys: MISTRAL_API_KEY_CHAIN.keys.filter((key: KEY) => key.status != 'disabled') } : MISTRAL_API_KEY_CHAIN
+        } catch (err) {
+            return undefined
+        }
+    }
     async save_chain() {
-        const result = await window.desk.api2.saveKeyChain(JSON.stringify(this.keychain));
+        const oldKeychain = await this.loadApiKeyChain(false)
+        const newKeychain = {
+            ...this.keychain,
+            ...oldKeychain // Updates status
+        }
+        const result = await window.desk.api2.saveKeyChain(JSON.stringify(newKeychain));
         if (result.success) return true
         return false
     }

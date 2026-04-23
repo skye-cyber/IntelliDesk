@@ -30,7 +30,7 @@ export const ChatContextMenu = ({ isOpen, onClose, id }) => {
     return (
         <div
             className="absolute bottom-2 right-24 size-fit z-40"
-        //onMouseLeave={onClose}
+            onMouseLeave={onClose}
         >
             {/* Conversation Options Tooltip */}
             <div

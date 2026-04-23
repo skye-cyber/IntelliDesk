@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { StateManager } from "../../../core/managers/StatesManager.ts"
 import { globalEventBus } from "../../../core/Globals/eventBus"
 
 export const MenuTools = ({ onToggleRecording }) => {

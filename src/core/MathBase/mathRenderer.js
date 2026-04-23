@@ -4,7 +4,7 @@ import renderMathInElement from '@math/katex/contrib/auto-render';
 // Function to ensure Katex renders dynamically injected content
 const renderTimeouts = new Map();
 
-export const renderAll_aimessages = () => {
+export const fullMathRender = () => {
     setTimeout(() => {
         const targets = document.querySelectorAll('#ai_response')
         targets.forEach(res => {
@@ -17,7 +17,7 @@ export function debounceRenderKaTeX(containerSelector, delay = 1000, noDelay = f
 
     if (!containerSelector && !is_element) {
         //console.log("containerSelector missing")
-        return renderAll_aimessages()
+        return fullMathRender()
     }
     let element = is_element ? containerSelector : document.querySelector(containerSelector);
 

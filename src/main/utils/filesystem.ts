@@ -278,7 +278,7 @@ export const fsOperations = {
             const existed = (isFileExistsStats(existsCheck) && existsCheck.exists);
 
             if (existed) {
-                await rm(absolutePath, { recursive: true });
+                await rm(absolutePath, { recursive: recursive });
             }
 
             const existsCheck2 = await this.exists(absolutePath)

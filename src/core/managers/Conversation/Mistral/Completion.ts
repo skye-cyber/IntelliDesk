@@ -5,7 +5,7 @@ import { clientmanager } from "./ClientManager.ts";
 import { StateManager } from '../../StatesManager.ts';
 import errorHandler from "../../../../ui/components/ErrorHandler/ErrorHandler";
 import { leftalinemath } from "../../../MathBase/mathRenderer";
-import { renderAll_aimessages } from "../../../MathBase/mathRenderer";
+import { fullMathRender } from "../../../MathBase/mathRenderer";
 import { staticPortalBridge, StreamController, streamingPortalBridge } from "../../../PortalBridge.ts";
 import { BaseErrorHandler } from "../../../ErrorHandler/BaseHandler.js";
 import toolExecutor from "../../../Tools/ToolCallHandler.ts";
@@ -100,12 +100,19 @@ class CompletionBase {
         this.reset()
     }
 
+    /**
+    * Since Tool and assistant response ie (assistant, tool) are none breaking response\
+    * **Reason**:\
+    * -> We are using `streamingPortal.update(...)`` for the ai response streaming portal and not append
+    * - Don't reset actualResponse, that would result in clearing interface since actualResponse becomes ''
+    * - Don't reset thinkContent for the same Reason
+    */
     simpleReset() {
         this.rawDelta = ''
         this.output = '';
         this.fullResponse = ''
-        this.thinkContent = ''
-        this.actualResponse = ''
+        // this.thinkContent = ''
+        // this.actualResponse = ''
         this.isThinking = false
         this.hasfinishedThinking = false
         this.first_run = true;
@@ -286,7 +293,7 @@ class CompletionBase {
 
                 if (SIGINT || this.TOOL_SIGINT) break
 
-                // To avoid dirty reads
+                /** To avoid dirty reads*/
                 this.simpleReset()
                 const stream = await this.clientmanager.client.chat.stream({
                     model: this.modelName,
@@ -442,6 +449,12 @@ class CompletionBase {
             }
 
             if (this.actualResponse.includes('<continued>') || this.actualResponse.includes('<continued')) {
+                // For now no continue for thinking models to avoid think being seperated from actual response
+                if (this.isThinking || this.modelName === this.DEFAULT_REASONING_MODEL || this.REASONING_ON) {
+                    this.actualResponse = this.actualResponse
+                        .replace('<continued>', '')
+                        .replace('</continued>', '')
+                }
                 this.continueStream()
             } else {
                 this.streamingPortal.update({
@@ -459,7 +472,7 @@ class CompletionBase {
             // Render mathjax immediately
             chatutil.renderMath(`${message_id}`, 'all', 2000 as any)
         }
-        this.updateHistory()
+        await this.updateHistory()
     }
     private streamArray(deltaContent: ContentChunk[]) {
         // Process each content chunk in the array
@@ -591,8 +604,9 @@ class CompletionBase {
 
         // Correctly render math using katex if any
         chatutil.renderMath()
-        renderAll_aimessages()
-        setTimeout(() => { leftalinemath() }, 1000)
+        fullMathRender()
+        // Already done by css so ignore
+        // setTimeout(() => { leftalinemath() }, 1000)
 
         // Reset send button appearance
         globalEventBus.emit('executioncycle:end')
@@ -704,6 +718,10 @@ class CompletionBase {
         }
     }
     private async handleError(error: Error): Promise<void> {
+        // Before reset check for partial response/think and add to history
+        if (this.actualResponse || this.thinkContent) {
+            await this.updateHistory()
+        }
         this.reset()
         globalEventBus.emit('executioncycle:end')
         // Mark all files as unUsed if we are in multiomodal chat and last message is not from assistant, meaning files have not been uploaded/used

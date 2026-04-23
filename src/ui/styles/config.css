@@ -834,3 +834,8 @@ background: linear-gradient(to bottom, #4b5563, #374151);
 .animate-draw {
     animation: draw 1.5s ease-out infinite alternate;
 }
+
+/*Left Align Math*/
+.katex-display .kate-html {
+    text-align: left;
+}

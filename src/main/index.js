@@ -81,7 +81,7 @@ function setupIPC() {
     // IPC handler to save keyschains
     electron_1.ipcMain.handle('save-key-chain', async (_, chain) => {
         await keytar_1.default.setPassword(SERVICE_NAME, 'mistral', chain);
-        return { success: true };
+        return { success: true, chain };
     });
     // IPC handler to retrieve keyschains
     electron_1.ipcMain.handle('get-key-chain', async (_, service = 'mistral') => {

@@ -162,9 +162,21 @@ export interface ApiType {
     readFileData: (filePath: string) => Promise<Buffer | false>;
     saveImageBuffer: (canvas: HTMLCanvasElement, path: string, url?: string | null) => Promise<boolean | string>;
 }
+interface KEY {
+    value: string;
+    status: 'active' | 'enabled' | 'disabled';
+}
+type keys = Array<KEY>;
+export interface KeyChainType {
+    keys: keys;
+}
+export interface saveChainResponse {
+    success: boolean;
+    keys?: keys;
+}
 export interface Api2Type {
-    saveKeyChain: (keychain: any) => Promise<any>;
-    getKeyChain: (account?: string) => Promise<any>;
+    saveKeyChain: (keychain: string) => Promise<saveChainResponse>;
+    getKeyChain: (account?: string) => Promise<string>;
     resetKeyChain: (accounts: any) => Promise<any>;
     appVersion: () => Promise<string>;
     appIsDev: () => Promise<boolean>;

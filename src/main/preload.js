@@ -200,7 +200,6 @@ const api = {
                 return true;
             }
             else {
-                console.log('Item not found');
                 return false;
             }
         }
@@ -232,13 +231,12 @@ const api = {
                 ConversationHistory.chats[0].content = prompt;
             }
         }
-        console.log("Prompt", prompt);
         return true;
     },
     addHistory: (item) => {
         try {
             if (typeof item !== "object") {
-                console.log("Invalid conversation item");
+                // console.log("Invalid conversation item");
                 return ConversationHistory;
             }
             ConversationHistory.chats.push(item);
@@ -263,7 +261,7 @@ const api = {
                 }
             }
             if (ConversationHistory.metadata.type === "temporary") {
-                console.log("In temporary chat Not saving!");
+                // console.log("In temporary chat Not saving!");
                 return ConversationHistory;
             }
             ConversationHistory.metadata.updated_at = (0, datetime_1.getformatDateTime)();
@@ -403,7 +401,7 @@ const api = {
     updateContinueHistory: (item) => {
         try {
             if (!item) {
-                console.log('Conversation item is null');
+                // console.log('Conversation item is null');
                 return;
             }
             if (ConversationHistory.chats.slice(-1)[0].role === "user")
@@ -492,18 +490,19 @@ const api = {
             ConversationHistory.chats = [{ role: preload_type_1.MessageRole.system, content: DEFAULT_SYSTEM_PROMPT }];
         }
         // if (!temporary) api.saveConversation(); save shoul be done after conversation has some history to avoid blank files
+        console.log(ConversationHistory);
         return ConversationId;
     },
     saveConversation: async () => {
         let conversationId = ConversationHistory.metadata.id;
         if (!conversationId) {
-            console.log("No conversationid create new:", ConversationHistory);
+            // console.log("No conversationid create new:", ConversationHistory)
             conversationId = api.generateUUID();
         }
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
             if (ConversationHistory.metadata.type === preload_type_1.ConversationType.temporary) {
-                console.log("In temporary chat Not saving");
+                // console.log("In temporary chat Not saving");
                 return filePath;
             }
             // console.log(ConversationHistory.chats)
@@ -615,7 +614,7 @@ const api = {
                         parsedData.chats.slice(parsedData.chats.indexOf(res), parsedData.chats.indexOf(res) + 1).values();
                     }
                     else if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role === "assistant") {
-                        console.log("Pair: OK", parsedData.chats.indexOf(res));
+                        // console.log("Pair: OK", parsedData.chats.indexOf(res));
                     }
                 }
             });

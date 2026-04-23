@@ -233,15 +233,15 @@ exports.fsOperations = {
      */
     async rmdir(dirPath, recursive = true) {
         try {
+            // TODO: Correctly handle recursive instead of hardcoding
             if (!dirPath || typeof dirPath !== 'string') {
                 return { success: false, code: 400, error: 'Invalid directory path', path: dirPath };
             }
-            console.log(recursive);
             const absolutePath = node_path_1.default.resolve(dirPath);
             const existsCheck = await this.exists(absolutePath);
             const existed = (isFileExistsStats(existsCheck) && existsCheck.exists);
             if (existed) {
-                await (0, promises_1.rm)(absolutePath, { recursive: true });
+                await (0, promises_1.rm)(absolutePath, { recursive: recursive });
             }
             const existsCheck2 = await this.exists(absolutePath);
             const deleted = (isFileExistsStats(existsCheck2) && existsCheck2.exists);

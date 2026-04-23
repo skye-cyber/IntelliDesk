@@ -114,7 +114,7 @@ export class ClientManager {
         }
 
         // Verify the key still exists after reload
-        const newKeychain = await this.loadApiKeyChain()
+        const newKeychain: KeyChainType = await this.loadApiKeyChain() as KeyChainType
         if (!newKeychain || !newKeychain.keys.length) {
             globalEventBus.emit('keychain:error', 'Failed to reload keychain')
             this.keychain = originalKeychain
@@ -153,18 +153,27 @@ export class ClientManager {
             const chain = await window.desk.api2.getKeyChain('mistral');
             const MISTRAL_API_KEY_CHAIN = JSON.parse(chain)
             // Return only the keys that are usable ie not disabled
-            const usable_chain = filter ? { keys: MISTRAL_API_KEY_CHAIN.keys.filter((key: KEY) => key.status != 'disabled') } : MISTRAL_API_KEY_CHAIN
+            const usable_chain: KeyChainType = filter ? { keys: MISTRAL_API_KEY_CHAIN.keys.filter((key: KEY) => key.status != KeyStatus.disabled) } : MISTRAL_API_KEY_CHAIN
             // if all keys are disabled enable them
             if (usable_chain?.keys || usable_chain?.keys.length === 0) {
-                this.enableChain(MISTRAL_API_KEY_CHAIN)
+                await this.enableChain(MISTRAL_API_KEY_CHAIN)
             }
         } catch (err) {
             return undefined
         }
     }
     async enableChain(chain: KeyChainType) {
-        const updatedChain = { keys: chain.keys.map((key: KEY) => key.status = KeyStatus.enabled) }
-        const result = await window.desk.api2.saveKeyChain(JSON.stringify(updatedChain));
+        const updatedChain: KeyChainType = {
+            keys: chain.keys.map((key: KEY) => {
+                key.status = KeyStatus.active
+                return key
+            })
+        }
+        const result = {success: true}// await window.desk.api2.saveKeyChain(JSON.stringify(updatedChain));
+        this.keychain = updatedChain
+        // Use first key
+        this.key = updatedChain.keys[0].value
+
         return (result.success) ? true : false
     }
     async save_chain() {

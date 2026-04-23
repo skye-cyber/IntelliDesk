@@ -484,6 +484,7 @@ const api: ApiType = {
             ConversationHistory.chats = [{ role: MessageRole.system, content: DEFAULT_SYSTEM_PROMPT }];
         }
         // if (!temporary) api.saveConversation(); save shoul be done after conversation has some history to avoid blank files
+        console.log(ConversationHistory)
         return ConversationId
     },
     saveConversation: async (): Promise<string> => {

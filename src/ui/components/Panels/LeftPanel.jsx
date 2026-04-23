@@ -84,9 +84,7 @@ export const LeftPanel = ({ isOpen, onToggle, isCanvasOn }) => {
         const panelToggle = globalEventBus.on('panel:chats:toggle', () => setPanelOpen(!panelOpen))
         const newSession = globalEventBus.on('conversation:new', (temporary = false) => {
             const currentModel = StateManager.get('currentModel')
-            const model = modelManager.usesArrayStructure(currentModel)
-                ? 'multimodal'
-                : 'chat'
+            const model = modelManager.getModelCategory(currentModel) //modelManager.usesArrayStructure(currentModel) ? 'multimodal' : 'chat'
             clearMessages()
             window.desk.api.startNew(model, temporary)
         })

@@ -25,6 +25,7 @@ import {
     MessageRole,
     ModelType,
     ConversationType,
+    saveChainResponse,
     // ChatContent
 } from './preload.type';
 import { SessionManager as sessionmanager, LockManager as lockmanager } from './utils/SessionManager';
@@ -691,8 +692,8 @@ const api: ApiType = {
 };
 
 const api2: Api2Type = {
-    saveKeyChain: async (keychain: any): Promise<any> => ipcRenderer.invoke('save-key-chain', keychain),
-    getKeyChain: async (account: string = 'mistral'): Promise<any> => ipcRenderer.invoke('get-key-chain', account),
+    saveKeyChain: async (keychain: string): Promise<saveChainResponse> => ipcRenderer.invoke('save-key-chain', keychain),
+    getKeyChain: async (account: string = 'mistral'): Promise<string> => ipcRenderer.invoke('get-key-chain', account),
     resetKeyChain: async (accounts: any): Promise<any> => ipcRenderer.invoke('reset-key-chain', accounts),
     appVersion: async (): Promise<string> => ipcRenderer.invoke('get-app-version'),
     appIsDev: async (): Promise<boolean> => ipcRenderer.invoke('get-dev-status'),

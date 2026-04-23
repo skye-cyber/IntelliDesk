@@ -2,9 +2,15 @@
 import { Mistral } from '@mistralai/mistralai';
 import { globalEventBus } from '../../../Globals/eventBus';
 
+enum KeyStatus {
+    active = 'active',
+    enabled = 'enabled',
+    disabled = 'disabled'
+}
+
 interface KEY {
     value: string
-    status: 'active' | 'enabled' | 'disabled'
+    status: KeyStatus
 }
 
 type keys = Array<KEY>
@@ -85,16 +91,14 @@ export class ClientManager {
         // BUG FIX #1: Don't mark rotated keys as 'disabled' — that causes them to be filtered out on reload. Use 'inactive' so keys remain in the pool.
         const keys = this.keychain!.keys.map(api => {
             if (api.value === newActiveKeyValue) {
-                return { ...api, status: 'active' };
+                return { ...api, status: KeyStatus.active };
             }
             // Only deactivate the previously active key, preserve other statuses
-            if (api.status === 'active') {
-                return { ...api, status: 'inactive' };
+            if (api.status === KeyStatus.active) {
+                return { ...api, status: KeyStatus.disabled };
             }
             return api;
         }) as keys;
-
-        console.log("Keys:", keys, "Length:", this.keychainLength)
 
         this.keychain!.keys = keys
         this.key = newActiveKeyValue
@@ -124,7 +128,7 @@ export class ClientManager {
         const keyExists = newKeychain.keys.some((k: KEY) => k.value === this.key)
         if (!keyExists) {
             // Find the first active key, or fallback to first key
-            const nextKey = newKeychain.keys.find((k: KEY) => k.status === 'active')
+            const nextKey = newKeychain.keys.find((k: KEY) => k.status === KeyStatus.active)
                 || newKeychain.keys[0]
             if (!nextKey || !nextKey.value) {
                 globalEventBus.emit('keychain:error', 'No usable keys available')
@@ -144,15 +148,24 @@ export class ClientManager {
         this.client = this.create_client()
         return true
     }
-    async loadApiKeyChain(filter: boolean = true) {
+    async loadApiKeyChain(filter: boolean = true): Promise<KeyChainType | undefined> {
         try {
             const chain = await window.desk.api2.getKeyChain('mistral');
             const MISTRAL_API_KEY_CHAIN = JSON.parse(chain)
             // Return only the keys that are usable ie not disabled
-            return filter ? { keys: MISTRAL_API_KEY_CHAIN.keys.filter((key: KEY) => key.status != 'disabled') } : MISTRAL_API_KEY_CHAIN
+            const usable_chain = filter ? { keys: MISTRAL_API_KEY_CHAIN.keys.filter((key: KEY) => key.status != 'disabled') } : MISTRAL_API_KEY_CHAIN
+            // if all keys are disabled enable them
+            if (usable_chain?.keys || usable_chain?.keys.length === 0) {
+                this.enableChain(MISTRAL_API_KEY_CHAIN)
+            }
         } catch (err) {
             return undefined
         }
+    }
+    async enableChain(chain: KeyChainType) {
+        const updatedChain = { keys: chain.keys.map((key: KEY) => key.status = KeyStatus.enabled) }
+        const result = await window.desk.api2.saveKeyChain(JSON.stringify(updatedChain));
+        return (result.success) ? true : false
     }
     async save_chain() {
         const oldKeychain = await this.loadApiKeyChain(false)

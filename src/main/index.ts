@@ -95,7 +95,7 @@ function setupIPC() {
     // IPC handler to save keyschains
     ipcMain.handle('save-key-chain', async (_, chain) => {
         await keytar.setPassword(SERVICE_NAME, 'mistral', chain);
-        return { success: true };
+        return { success: true, chain };
     });
 
     // IPC handler to retrieve keyschains

@@ -37,7 +37,6 @@ export const LoadingDisplay = () => {
         const showLoader = globalEventBus.on('status:loading:show', (message) => {
             if (message) setMessage(message)
             setIsOpen(true)
-            console.log(isOpen)
         })
         const hideLoader = globalEventBus.on('status:loading:hide', () => {
             setMessage('Processing, please wait')

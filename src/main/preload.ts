@@ -206,7 +206,6 @@ const api: ApiType = {
                 fs.rmSync(file);
                 return true;
             } else {
-                console.log('Item not found');
                 return false;
             }
         } catch (err) {
@@ -235,13 +234,12 @@ const api: ApiType = {
                 ConversationHistory.chats[0].content = prompt
             }
         }
-        console.log("Prompt", prompt)
         return true
     },
     addHistory: (item: ChatMessage): Conversation => {
         try {
             if (typeof item !== "object") {
-                console.log("Invalid conversation item");
+                // console.log("Invalid conversation item");
                 return ConversationHistory;
             }
 
@@ -268,7 +266,7 @@ const api: ApiType = {
                 }
             }
             if (ConversationHistory.metadata.type === "temporary") {
-                console.log("In temporary chat Not saving!");
+                // console.log("In temporary chat Not saving!");
                 return ConversationHistory;
             }
 
@@ -397,7 +395,7 @@ const api: ApiType = {
     updateContinueHistory: (item: ChatMessage): void | false => {
         try {
             if (!item) {
-                console.log('Conversation item is null');
+                // console.log('Conversation item is null');
                 return;
             }
 
@@ -490,13 +488,13 @@ const api: ApiType = {
     saveConversation: async (): Promise<string> => {
         let conversationId = ConversationHistory.metadata.id
         if (!conversationId) {
-            console.log("No conversationid create new:", ConversationHistory)
+            // console.log("No conversationid create new:", ConversationHistory)
             conversationId = api.generateUUID()
         }
         const filePath = `${conversation_root}/${conversationId}.json`;
         try {
             if (ConversationHistory.metadata.type === ConversationType.temporary) {
-                console.log("In temporary chat Not saving");
+                // console.log("In temporary chat Not saving");
                 return filePath;
             }
             // console.log(ConversationHistory.chats)
@@ -603,7 +601,7 @@ const api: ApiType = {
                         // console.log("Pair: !index", parsedData.chats.indexOf(res) + 1);
                         parsedData.chats.slice(parsedData.chats.indexOf(res), parsedData.chats.indexOf(res) + 1).values();
                     } else if (parsedData.chats[parsedData.chats.indexOf(res) + 1].role === "assistant") {
-                        console.log("Pair: OK", parsedData.chats.indexOf(res));
+                        // console.log("Pair: OK", parsedData.chats.indexOf(res));
                     }
                 }
             });

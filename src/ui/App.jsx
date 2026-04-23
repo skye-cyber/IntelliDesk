@@ -3,7 +3,7 @@ import { MainLayout } from './components/Layout/MainLayout';
 import './styles/global.css';
 import { Header } from './components/Header/Header';
 import { ChatInterface } from './components/Chat/ChatInterface';
-import { Sidebar } from './components/Sidebar/Sidebar';
+import { LeftPanel } from './components/Panels/LeftPanel.jsx';
 import { Canvas } from './components/Canvas/Canvas';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 // import { Recording } from './components/RecordingUI/Recording';
@@ -62,7 +62,7 @@ const App = () => {
                         className="flex overflow-hidden max-w-full">
                         <div className={`flex flex-shrink max-w-full ${isCanvasOpen ? 'w-[55vw]' : 'w-full'} transition-transform duration-500`}>
                             <ErrorBoundary>
-                                <Sidebar isOpen={leftPanelOpen} onToggle={toggleSidebar} isCanvasOn={isCanvasOpen} />
+                                <LeftPanel isOpen={leftPanelOpen} onToggle={toggleSidebar} isCanvasOn={isCanvasOpen} />
                             </ErrorBoundary>
                             <div id="main-container-center" className='block h-[90vh] w-[calc(100vw-40px)] md:w-[96vw]'>
                                 <ErrorBoundary>

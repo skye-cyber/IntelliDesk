@@ -22,7 +22,7 @@ StateManager.set("sidebarOpen", false)
 
 const Manager = new ChatManager();
 
-export const Sidebar = ({ isOpen, onToggle, isCanvasOn }) => {
+export const LeftPanel = ({ isOpen, onToggle, isCanvasOn }) => {
     const refs = useRef({
         isOpen: null,
         conversations: []

@@ -31,7 +31,7 @@ document.addEventListener("keydown", event => {
 
     } else if ((event.ctrlKey && (event.key === "N" || event.key === "n"))) {
         event.preventDefault();
-        //NewConversation(event);
+        globalEventBus.emit('conversation:new')
 
     } else if ((event.ctrlKey && (event.key === "F" || event.key === "f"))) {
         event.preventDefault();

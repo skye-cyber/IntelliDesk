@@ -99,12 +99,12 @@ export class ModalManager {
         const loadingModal = document.getElementById('loadingModal')
         const modalMainBox = document.getElementById('modalMainBox')
         const msg = document.getElementById('loadingMSG')
-        modalMainBox.classList.remove('animate-enter')
-        modalMainBox.classList.add('animate-exit')
+        modalMainBox?.classList.remove('animate-enter')
+        modalMainBox?.classList.add('animate-exit')
         setTimeout(() => {
-            loadingModal.classList.add('hidden')
+            loadingModal?.classList.add('hidden')
         }, 500)
-        msg.textContent = 'Processing, please wait...'
+        msg?.textContent = 'Processing, please wait...'
     }
 
     /**

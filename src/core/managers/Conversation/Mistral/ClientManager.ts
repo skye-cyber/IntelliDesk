@@ -43,6 +43,7 @@ export class ClientManager {
             if (!this.keychain && chain && chain?.keys.length > 0) {
                 this.keychain = chain
             } else {
+                console.log("..")
                 return globalEventBus.emit('keychain:error', 'Not usable keys found')
             }
         }
@@ -152,24 +153,30 @@ export class ClientManager {
         try {
             const chain = await window.desk.api2.getKeyChain('mistral');
             const MISTRAL_API_KEY_CHAIN = JSON.parse(chain)
+
             // Return only the keys that are usable ie not disabled
-            const usable_chain: KeyChainType = filter ? { keys: MISTRAL_API_KEY_CHAIN.keys.filter((key: KEY) => key.status != KeyStatus.disabled) } : MISTRAL_API_KEY_CHAIN
+            const usable_chain: KeyChainType = filter ?
+            { keys: MISTRAL_API_KEY_CHAIN.keys.filter((key: KEY) => key.status != KeyStatus.disabled) } : MISTRAL_API_KEY_CHAIN
+
             // if all keys are disabled enable them
-            if (usable_chain?.keys || usable_chain?.keys.length === 0) {
+            if (!usable_chain?.keys || usable_chain?.keys.length === 0) {
                 await this.enableChain(MISTRAL_API_KEY_CHAIN)
+                return this.keychain
             }
+            return usable_chain
         } catch (err) {
+            console.log(err)
             return undefined
         }
     }
     async enableChain(chain: KeyChainType) {
         const updatedChain: KeyChainType = {
             keys: chain.keys.map((key: KEY) => {
-                key.status = KeyStatus.active
+                key.status = KeyStatus.enabled
                 return key
             })
         }
-        const result = {success: true}// await window.desk.api2.saveKeyChain(JSON.stringify(updatedChain));
+        const result = await window.desk.api2.saveKeyChain(JSON.stringify(updatedChain));
         this.keychain = updatedChain
         // Use first key
         this.key = updatedChain.keys[0].value

@@ -357,7 +357,7 @@ const ScrollToBottomButton = ({ onScroll }) => {
         <button
             ref={scrollRef}
             id="scroll-bottom"
-            className="absolute fixed right-1/3 bottom-24 cursor-pointer rounded-full bg-gray-200 border border-gray-400 dark:border-primary-500 dark:bg-[#14003d] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 z-[99] group"
+            className="absolute -z-[10] right-1/4 bottom-24 cursor-pointer rounded-full bg-gray-200 border border-gray-400 dark:border-primary-500 dark:bg-[#14003d] shadow w-8 h-8 flex items-center justify-center transition-colors duration-1000 group"
             aria-label="scroll to bottom"
             onClick={() => {
                 globalEventBus.emit('scroll:display:update')

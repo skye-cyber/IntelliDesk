@@ -111,8 +111,8 @@ class CompletionBase {
         this.rawDelta = ''
         this.output = '';
         this.fullResponse = ''
-        // this.thinkContent = ''
-        // this.actualResponse = ''
+        this.thinkContent = ''
+        this.actualResponse = ''
         this.isThinking = false
         this.hasfinishedThinking = false
         this.first_run = true;

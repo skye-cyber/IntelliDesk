@@ -12,14 +12,6 @@ export const StatusUI = ({ isOpen, onToggle }) => {
 
     return (
         <section>
-            <div id="loadingModal" className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-41">
-                <div id="modalMainBox" className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center animate-exit transition-all duration-1000">
-                    {/* Spinner Animation */}
-                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p id="loadingMSG" className="mt-3 text-gray-700">Processing, please wait...</p>
-                </div>
-            </div>
-
             {/* General Success Modal */}
             <div id="success-modal-GN" className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden z-[60]">
                 <div id="successBoxBody-GN" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-sm text-center animate-exit transition-all duration-1000">

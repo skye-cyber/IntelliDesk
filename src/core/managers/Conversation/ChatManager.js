@@ -233,7 +233,8 @@ export class ChatManager {
         clearMessages()
 
         // Show loading modal immediately without awaiting
-        await this.showLoadingModal('Preparing conversation');
+        globalEventBus.emit('status:loading:show')
+        // await this.showLoadingModal('Preparing conversation');
 
         // Use requestAnimationFrame to ensure the modal has a chance to render
         await new Promise(resolve => requestAnimationFrame(resolve));
@@ -258,6 +259,9 @@ export class ChatManager {
             await this.hideLoadingModal();
             window.gc = true
             globalEventBus.emit('conversation:open')
+            setTimeout(() => {
+                globalEventBus.emit('status:loading:hide')
+            }, 500)
         }
     }
 }

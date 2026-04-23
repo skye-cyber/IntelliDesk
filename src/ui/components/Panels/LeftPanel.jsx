@@ -87,6 +87,7 @@ export const LeftPanel = ({ isOpen, onToggle, isCanvasOn }) => {
             const model = modelManager.getModelCategory(currentModel) //modelManager.usesArrayStructure(currentModel) ? 'multimodal' : 'chat'
             clearMessages()
             window.desk.api.startNew(model, temporary)
+            globalEventBus.emit('suggestions:show')
         })
 
         return () => {

@@ -52,7 +52,7 @@ export class ClientManager {
         this.keychainLength = this.keychain?.keys?.length || 0
         this.CurrentKeyIndex = 0
         this.key = this.keychain.keys[this.CurrentKeyIndex].value
-        this.client = this.create_client() as any
+        this.client = this.create_client() as Mistral
     }
     validateChain(): boolean {
         let message: string | undefined = undefined
@@ -145,7 +145,7 @@ export class ClientManager {
 
         this.keychain = newKeychain
         this.keychainLength = this.keychain?.keys.length || this.keychainLength
-        this.client = this.create_client()
+        this.client = this.create_client() as Mistral
         return true
     }
     async loadApiKeyChain(filter: boolean = true): Promise<KeyChainType | undefined> {
@@ -177,13 +177,8 @@ export class ClientManager {
         if (result.success) return true
         return false
     }
-    /**
-     * Create mistral client
-     * @param {API_KEY} key
-     * @returns {Object} Mistral
-     */
-    create_client(key = null) {
-        return new Mistral({ apiKey: key ? key : this.key });
+    create_client(): Mistral {
+        return new Mistral({ apiKey: this.key });
     }
 }
 

@@ -94,7 +94,7 @@ export function HTML2Jpg(element: HTMLBaseElement, options: HTML2JPGOptionsType)
                 })
                 .catch((error) => {
                     console.error('Error creating image:', error);
-                }).finally(() => modalmanager.hideLoader())
+                })
         } finally {
             globalEventBus.emit('status:loading:hide')
         }

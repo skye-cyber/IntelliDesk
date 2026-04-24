@@ -10,7 +10,6 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import '../core/Timer/timer.js'
 import { DiagramUi } from './components/DiagramUI/diagram.jsx'
 import { Settings } from './pages/Settings.jsx';
-import { StatusUI } from './components/StatusUI/StatusUI.jsx';
 import '../core/StatusUIManager/Manager.js'
 import { APIKeysManager } from './components/ApiManager/manager.tsx';
 import { DropZone } from './components/DropZone/DropZone.tsx'
@@ -34,6 +33,7 @@ import { Provider } from 'react-redux';
 import { store } from './store/index.js';
 import { globalEventBus } from '../core/Globals/eventBus.ts';
 import { LoadingDisplay } from './components/StatusUI/loader.jsx';
+import { ConfirmDialog } from './components/Dialog/confirm.jsx';
 
 const App = () => {
     const [isCanvasOpen, setIsCanvasOpen] = useState(false);
@@ -87,13 +87,13 @@ const App = () => {
                         <CopyFeedback />
                         <DiagramUi isOpen={true} onToggle={null} />
                         <Settings isOpen={true} onToggle={null} />
-                        <StatusUI isOpen={true} onToggle={null} />
                         <APIKeysManager isOpen={true} onToggle={null} />
                         <DropZone isOpen={true} onToggle={null} />
                         {/*<Recording isOpen={isRecordingOn} onToggle={toggleRecording} />*/}
                         <NotificationFlyer isOpen={true} onToggle={null} />
                         <Notifcation isOpen={true} onToggle={null} />
                         <LoadingDisplay />
+                        <ConfirmDialog />
                     </ErrorBoundary>
                 </MainLayout>
                 {/* Portal containers for vanilla JS components */}

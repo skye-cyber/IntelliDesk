@@ -5,7 +5,6 @@ import { UserMessage, BaseAiResponse } from './components/ConversationRenderer/R
 import { ConversationItem } from './components/Chat/ConversationItem';
 import { LoadingAnimation } from './components/StatusUI/loader';
 import { ErrorModal } from './components/ErrorHandler/ErrorHandler';
-import { ConfirmationDialog } from './components/StatusUI/confirmDialog';
 import { Toast } from './components/StatusUI/Toasts';
 import { ToolPermissionRequest } from './components/Tools/ToolPermRequest';
 
@@ -17,7 +16,6 @@ const componentRegistry = {
     ConversationItem,
     ErrorModal,
     Toast,
-    ConfirmationDialog,
     ToolPermissionRequest
 };
 

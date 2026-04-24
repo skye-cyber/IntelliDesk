@@ -203,7 +203,14 @@ export const Settings = ({ isOpen, onToggle }) => {
         const profileContent = profileContentRef.current;
         const profileSection = profileSectionRef.current;
 
-        const confirmed = await modalmanager.confirm("This action cannot be undone", "Delete profile?");
+        const confirmed = await new Promise((resolve) => {
+            globalEventBus.emit('dialog:confirm:show', {
+                onConfirm: resolve,
+                title: "Delete profile?",
+                message: "This action cannot be undone"
+            })
+        });
+
         if (!confirmed) return;
 
         try {
@@ -265,7 +272,14 @@ export const Settings = ({ isOpen, onToggle }) => {
     }, [settings, saveSettingsAPI]);
 
     const handleResetSettings = useCallback(async () => {
-        const confirmed = await modalmanager.confirm("This action cannot be undone", "Reset settings?");
+        const confirmed = await new Promise((resolve) => {
+            globalEventBus.emit('dialog:confirm:show', {
+                onConfirm: resolve,
+                title: "Reset settings?",
+                message: "This action cannot be undone"
+            })
+        });
+
         if (!confirmed) return;
 
         try {

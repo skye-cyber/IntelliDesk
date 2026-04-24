@@ -7,7 +7,15 @@ const Manager = new ChatManager()
 
 export const ChatContextMenu = ({ isOpen, onClose, id }) => {
     const confirmDeletion = useCallback(async () => {
-        const confirmed = await modalmanager.confirm("Are you sure you want to delete this item?", "Confirm Deletion")
+        const confirmed = await new Promise((resolve) => {
+            globalEventBus.emit('dialog:confirm:show', {
+                onConfirm: resolve,
+                title: "Confirm Deletion",
+                message: "Are you sure you want to delete this item?"
+            })
+            return true
+        });
+
         if (confirmed) {
             try {
                 const deleted = window.desk.api.deleteChat(id);

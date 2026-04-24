@@ -200,41 +200,12 @@ export class ChatManager {
         return `${years}y`;
     }
 
-    async showLoadingModal(message = null) {
-
-        const loadingModal = document.getElementById('loadingModal');
-        const modalMainBox = document.getElementById('modalMainBox');
-
-        if (message) {
-            const msgBox = document.getElementById('loadingMSG');
-            msgBox.textContent = message;
-        }
-        loadingModal.classList.remove('hidden');
-        modalMainBox.classList.remove('animate-exit');
-        modalMainBox.classList.add('animate-enter')
-
-    }
-
-    async hideLoadingModal() {
-        const loadingModal = document.getElementById('loadingModal');
-        const modalMainBox = document.getElementById('modalMainBox');
-        setTimeout(() => {
-            modalMainBox.classList.remove('animate-enter')
-            modalMainBox.classList.add('animate-exit');
-            setTimeout(() => {
-                loadingModal.classList.add('hidden');
-            }, 0)
-        }, 300)
-    }
-
-    // Function to render a conversation from a file
     // Function to render a conversation from a file
     async renderConversationFromFile(conversationId) {
         clearMessages()
 
         // Show loading modal immediately without awaiting
         globalEventBus.emit('status:loading:show')
-        // await this.showLoadingModal('Preparing conversation');
 
         // Use requestAnimationFrame to ensure the modal has a chance to render
         await new Promise(resolve => requestAnimationFrame(resolve));
@@ -256,7 +227,6 @@ export class ChatManager {
             modalmanager.showMessage('Failed to load conversation', 'error');
         } finally {
             // Always hide the loading modal
-            await this.hideLoadingModal();
             window.gc = true
             globalEventBus.emit('conversation:open')
             setTimeout(() => {

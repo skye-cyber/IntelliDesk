@@ -9,10 +9,6 @@ const chartCache = new Map();
 
 
 export class InterPreter {
-    constructor() {
-        //
-    }
-
     /**
      * createChart — render (or return cached) JSC chart
      *

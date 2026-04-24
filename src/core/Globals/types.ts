@@ -16,6 +16,15 @@ interface chatUpdate {
     id: string
 }
 
+type onConfirmType = () => {} | CallableFunction
+
+interface ToastArgs {
+    type: string
+    message: string
+    duration: number | null,
+    autoDismiss: boolean
+}
+
 export type EventMap = {
     'sigint': [timestamp: number];
     'execution:abort': [reason: string];
@@ -92,6 +101,10 @@ export type EventMap = {
     'rename:dialog:open': [renameOptions]
     'status:loading:show': [message: string | null]
     'status:loading:hide': []
+    'dialog:confirm:show': [{ onConfirm: onConfirmType, title: string, message: string }]
+    'dialog:confirm:hide': []
+    'toast:message:show': [ToastArgs]
+    'toast:message:hide': []
 };
 
 

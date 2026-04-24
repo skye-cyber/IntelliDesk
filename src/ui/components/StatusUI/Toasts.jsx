@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { GenerateId } from '../ConversationRenderer/utils';
 import { modalmanager } from '../../../core/StatusUIManager/Manager';
 import { staticPortalBridge } from '../../../core/PortalBridge.ts';
+// import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 const typeConfig = {
     success: {
@@ -89,6 +90,13 @@ export const Toast = ({ type, message, messageId, duration = null, autoDismiss =
             modalmanager.dismissMessage(messageId)
         }
     })
+
+    // useEffect(() => {
+    //     const open = globalEventBus.on('toast:message:show', ({ type, message, duration, autoDismiss }) => {
+    //         //
+    //     })
+    //     const close = globalEventBus.on('toast:message:hide')
+    // })
 
     return (
         <div

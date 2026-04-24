@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 //import { modalmanager } from '../../../core/StatusUIManager/Manager';
 import { staticPortalBridge } from '../../../core/PortalBridge.ts';
 
@@ -34,8 +34,6 @@ export const ConfirmationDialog = ({ title, message, dialog_id, portal_id, resol
                     resolve(confirmed)
                 }, 500);
             }
-        } else {
-            //modalmanager.hideConfirmDialog(dialog_id, confirmed, resolve)
         }
     })
 

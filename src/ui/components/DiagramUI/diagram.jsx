@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { DiagramToPngExportSvg } from '../../../core/diagraming/utils';
-import { StateManager } from '../../../core/managers/StatesManager.ts';
 import { globalEventBus } from '../../../core/Globals/eventBus.ts';
 
 export const DiagramUi = ({ isOpen, onClose, content }) => {
@@ -234,21 +232,102 @@ export const DiagramUi = ({ isOpen, onClose, content }) => {
 
 export const Diagram = ({ name = 'diagram', exportId, dgId, description, content = null }) => {
     const el = document.getElementById('diag-modal-content')
+    const svgElement = useRef(null);
+    const [isLoading, setLoading] = (false)
+
     if (el) {
         el.classList.remove('justify-center', 'items-center')
         el.classList.add('flex-cols', 'flex-wrap')
     }
+
+    const exportToImage = useCallback(async () => {
+        setLoading(true)
+        try {
+            const svg = svgElement.current?.querySelector('svg')
+            if (!svg) return alert("No diagram found to export.");
+
+            const svgData = new XMLSerializer().serializeToString(svg);
+
+            // Create image from SVG data
+            const img = new Image();
+            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+
+            img.crossOrigin = "anonymous";
+
+            const result = await processImage(img, url);
+            // Show success modal on success
+            if (result === true) {
+                modalmanager.showMessage(`Export successful: name=${outputFileName}`, 'success');
+
+            } else {
+                modalmanager.showMessage('Error saving image', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            modalmanager.showMessage(err, 'error');
+        } finally {
+            setLoading(false)
+        }
+    }, [isLoading])
+
+    async function processImage(img, url) {
+        // Create a canvas
+        const canvas = document.createElement("canvas");
+        const scale = 2; // 🔁 Adjust for resolution multiplier
+
+        return new Promise((resolve, reject) => {
+            img.onload = async function() {
+                try {
+                    // Create canvas and context
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Set canvas size to scaled image size
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+
+                    // Scale drawing
+                    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+                    ctx.drawImage(img, 0, 0);
+
+                    // Get downloads path (assuming window.desk.api API is available)
+                    const downloadsPath = window.desk.api.joinPath(
+                        window.desk.api.getDownloadsPath(),
+                        outputFileName
+                    );
+
+                    // Save image buffer (await inside onload is fine here)
+                    const result = await window.desk.api.saveImageBuffer(canvas, downloadsPath, url);
+
+                    // Resolve the Promise with the result
+                    resolve(result);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+
+            img.onerror = () => reject(new Error('Failed to load image'));
+
+            img.src = url;
+        });
+    }
+
     return (
         <section className='dg p-0.5 sm:p-1 border border-blue-400 rounded-md bg-white dark:bg-primary-700 transition-all duration-700'>
             <div className='flex justify-between'>
                 <p data-name={name} id={name} className='bg-gray-200 dark:bg-blend-600 rounded-md p-0 my-1.5 w-fit font-mono text-blue-500 dark:text-blue-400 transition-all duration-1000 font-sans'><span className='gap-3 font-semibold text-slate-800 dark:text-slate-200'>Name: </span><span className='font-brand'>{name}</span></p>
                 <button
-                    onClick={() => DiagramToPngExportSvg(`${exportId}-${name}-${dgId}`)}
-                    data-value={`${exportId}-${name}-${dgId}`}
-                    className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 dark:from-cyan-600 dark:to-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
+                    onClick={exportToImage}
+                    className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed ${isLoading ? 'cursor-not-allowed bg-[#9ca3af]' : 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 dark:from-cyan-600 dark:to-blue-700'}`}
                     aria-label={`Export ${name} diagram`}
                 >
-                    Export
+                    {isLoading ? (
+                        <div class="flex items-center justify-center space-x-2">
+                            <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin-50"></div>
+                            <span class="text-current">Exporting</span>
+                        </div>) :
+                        Export}
                 </button>
             </div>
             {description ?
@@ -256,7 +335,7 @@ export const Diagram = ({ name = 'diagram', exportId, dgId, description, content
                 : ''}
             <div id={`${exportId}-${name?.replace(' ', '-')}-${dgId}`} className='h-fit max-h-full w-fit max-w-[250px] sm:max-w-[81vw] md:max-w-[65vw] lg:md:max-w-[71vw] xl:md:max-w-[76vw] overflow-x-auto scrollbar-custom scroll-smooth rounded-lg bg-gray-50 dark:bg-primary-800 transition-all duration-1000'>
                 {content ?
-                    <div dangerouslySetInnerHTML={{ __html: content }}>
+                    <div ref={svgElement} dangerouslySetInnerHTML={{ __html: content }}>
                     </div>
                     :
                     ''

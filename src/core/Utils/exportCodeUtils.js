@@ -1,7 +1,8 @@
+import { globalEventBus } from "../Globals/eventBus";
 import { modalmanager } from "../StatusUIManager/Manager";
 
 export const exportCodeToFile = (codeblockId) => {
-    modalmanager.startLoader("Preparing code to file")
+    globalEventBus.emit('status:loading:show', "Preparing code to file")
     try {
         // Get the code block element
         const codeBlock = document.getElementById(codeblockId);
@@ -117,7 +118,7 @@ export const exportCodeToFile = (codeblockId) => {
         console.log(e)
     }
     finally {
-        modalmanager.hideLoader()
+        globalEventBus.emit('status:loading:hide')
 
     }
 };

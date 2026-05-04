@@ -20,7 +20,6 @@ import keytar from 'keytar'
 
 const SERVICE_NAME: string = 'com.intellidesk.app'
 
-// const isDev = !app.isPackaged;
 let isQuiting: Boolean = false
 // let PythonBackendRunning: Boolean = false
 
@@ -299,7 +298,7 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
-        icon: iconPath, // Path to your icon file
+        icon: iconPath,
         show: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // Use the preload script
@@ -308,6 +307,7 @@ function createWindow() {
             sandbox: false, // Disable sandboxing
         }
     });
+
     if (isDev) {
         mainWindow.loadURL('http://localhost:40099/')
         // Open DevTools in development
@@ -339,7 +339,7 @@ function createWindow() {
 // Set the app user model ID
 app.setAppUserModelId('com.intellidesk.app');
 
-app.on('ready', async () => {
+app.on('ready', async () =>     {
     try {
         await prepDirectories(); // if it's an async function
     } catch (err) {

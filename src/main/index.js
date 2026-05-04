@@ -22,7 +22,6 @@ const fs_1 = __importDefault(require("fs"));
 // import isDev from 'electron-is-dev';
 const keytar_1 = __importDefault(require("keytar"));
 const SERVICE_NAME = 'com.intellidesk.app';
-// const isDev = !app.isPackaged;
 let isQuiting = false;
 // let PythonBackendRunning: Boolean = false
 // Global reference to main window (required to prevent garbage collection)
@@ -141,6 +140,8 @@ function show_documentation() {
     const _docWindow = new electron_1.BrowserWindow({
         width: 800,
         height: 600,
+        minWidth: 800,
+        minHeight: 400,
         webPreferences: {
             preload: path_1.default.join(__dirname, 'preload.js'),
             nodeIntegration: false,
@@ -155,97 +156,98 @@ function show_documentation() {
  * Set up application menu
  */
 function setupMenu() {
-    const template = [
-        {
-            label: 'File',
-            submenu: [
-                { label: 'New', accelerator: 'CmdOrCtrl+N', click: () => console.log('New File') },
-                { label: 'Open', accelerator: 'CmdOrCtrl+O', click: () => console.log('Open File') },
-                { type: 'separator' },
-                { label: 'Exit', accelerator: 'CmdOrCtrl+Q', click: () => electron_1.app.quit() }
-            ]
-        },
-        {
-            label: 'Edit',
-            submenu: [
-                { label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
-                { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
-                { type: 'separator' },
-                { label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut' },
-                { label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy' },
-                { label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' },
-                { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll' }
-            ]
-        },
-        {
-            label: 'View',
-            submenu: [
-                {
-                    label: 'Reload', role: "reload", accelerator: 'CmdOrCtrl+R', click: (_, focusedWindow) => {
-                        if (focusedWindow && 'reload' in focusedWindow) {
-                            const view = focusedWindow.getFocusedWebContentsView?.();
-                            view?.webContents?.reload();
-                        }
-                    }
-                },
-                {
-                    label: 'Toggle Developer Tools',
-                    accelerator: 'F12',
-                    role: 'toggleDevTools',
-                    click: (_, focusedWindow) => {
-                        // Type guard for BaseWindow multi-view support
-                        if (focusedWindow && 'getWebContentsView' in focusedWindow) {
-                            const view = focusedWindow.getFocusedWebContentsView?.();
-                            view?.webContents?.toggleDevTools();
-                        }
-                        else if ('webContents' in focusedWindow) {
-                            focusedWindow.webContents.toggleDevTools();
-                        }
-                    },
-                },
-                { type: 'separator' },
-                { role: 'resetZoom' },
-                { role: 'zoomIn' },
-                { role: 'zoomOut' },
-                { type: 'separator' },
-                { role: 'togglefullscreen', accelerator: 'F11' }
-            ]
-        },
-        {
-            label: 'Window',
-            submenu: [
-                { label: 'Minimize', accelerator: 'CmdOrCtrl+M', role: 'minimize' },
-                { label: 'Close', accelerator: 'CmdOrCtrl+W', role: 'close' },
-                {
-                    label: 'Toggle Full Screen',
-                    role: 'togglefullscreen', // built-in behavior
-                    accelerator: 'F11' // explicit on all platforms
-                }
-            ]
-        },
-        {
-            label: 'Help',
-            submenu: [
-                { label: 'Learn More', click: () => require('electron').shell.openExternal('https://electronjs.org') },
-                {
-                    label: 'Documentation',
-                    click: () => {
-                        const docWindow = new electron_1.BrowserWindow({
-                            width: 800,
-                            height: 600,
-                            webPreferences: {
-                                preload: path_1.default.join(__dirname, 'preload.js'),
-                                nodeIntegration: false,
-                                contextIsolation: true
-                            }
-                        });
-                        docWindow.loadFile(path_1.default.join(__dirname, '../assets/documentation.html'));
-                    }
-                }
-            ]
-        }
-    ];
-    const menu = electron_1.Menu.buildFromTemplate(template);
+    // const template: Electron.MenuItemConstructorOptions[] = [
+    //     {
+    //         label: 'File',
+    //         submenu: [
+    //             { label: 'New', accelerator: 'CmdOrCtrl+N', click: () => console.log('New File') },
+    //             { label: 'Open', accelerator: 'CmdOrCtrl+O', click: () => console.log('Open File') },
+    //             { type: 'separator' },
+    //             { label: 'Exit', accelerator: 'CmdOrCtrl+Q', click: () => app.quit() }
+    //         ]
+    //     },
+    //     {
+    //         label: 'Edit',
+    //         submenu: [
+    //             { label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
+    //             { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
+    //             { type: 'separator' },
+    //             { label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut' },
+    //             { label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy' },
+    //             { label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste' },
+    //             { label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll' }
+    //         ]
+    //     },
+    //     {
+    //         label: 'View',
+    //         submenu: [
+    //             {
+    //                 label: 'Reload', role: "reload", accelerator: 'CmdOrCtrl+R', click: (_, focusedWindow) => {
+    //                     if (focusedWindow && 'reload' in focusedWindow) {
+    //                         const view = (focusedWindow as any).getFocusedWebContentsView?.();
+    //                         view?.webContents?.reload()
+    //                     }
+    //                 }
+    //
+    //             },
+    //             {
+    //                 label: 'Toggle Developer Tools',
+    //                 accelerator: 'F12',
+    //                 role: 'toggleDevTools',
+    //                 click: (_, focusedWindow) => {
+    //                     // Type guard for BaseWindow multi-view support
+    //                     if (focusedWindow && 'getWebContentsView' in focusedWindow) {
+    //                         const view = (focusedWindow as any).getFocusedWebContentsView?.();
+    //                         view?.webContents?.toggleDevTools();
+    //                     } else if ('webContents' in (focusedWindow as any)) {
+    //                         (focusedWindow as any).webContents.toggleDevTools();
+    //                     }
+    //                 },
+    //             },
+    //             { type: 'separator' },
+    //             { role: 'resetZoom' },
+    //             { role: 'zoomIn' },
+    //             { role: 'zoomOut' },
+    //             { type: 'separator' },
+    //             { role: 'togglefullscreen', accelerator: 'F11' }
+    //         ]
+    //     },
+    //     {
+    //         label: 'Window',
+    //         submenu: [
+    //             { label: 'Minimize', accelerator: 'CmdOrCtrl+M', role: 'minimize' },
+    //             { label: 'Close', accelerator: 'CmdOrCtrl+W', role: 'close' },
+    //             {
+    //                 label: 'Toggle Full Screen',
+    //                 role: 'togglefullscreen',       // built-in behavior
+    //                 accelerator: 'F11'              // explicit on all platforms
+    //             }
+    //         ]
+    //     },
+    //
+    //     {
+    //         label: 'Help',
+    //         submenu: [
+    //             { label: 'Learn More', click: () => require('electron').shell.openExternal('https://electronjs.org') },
+    //             {
+    //                 label: 'Documentation',
+    //                 click: () => {
+    //                     const docWindow = new BrowserWindow({
+    //                         width: 800,
+    //                         height: 600,
+    //                         webPreferences: {
+    //                             preload: path.join(__dirname, 'preload.js'),
+    //                             nodeIntegration: false,
+    //                             contextIsolation: true
+    //                         }
+    //                     });
+    //                     docWindow.loadFile(path.join(__dirname, '../assets/documentation.html'));
+    //                 }
+    //             }
+    //         ]
+    //     }
+    // ];
+    const menu = electron_1.Menu.buildFromTemplate([]);
     electron_1.Menu.setApplicationMenu(menu);
 }
 // Function to create the loading and main windows
@@ -270,7 +272,9 @@ function createWindow() {
     mainWindow = new electron_1.BrowserWindow({
         width: 800,
         height: 600,
-        icon: iconPath, // Path to your icon file
+        minWidth: 800,
+        minHeight: 600,
+        icon: iconPath,
         show: false,
         webPreferences: {
             preload: path_1.default.join(__dirname, 'preload.js'), // Use the preload script
@@ -304,6 +308,29 @@ function createWindow() {
     // Return the main window for reference
     return mainWindow;
 }
+const setShortcuts = () => {
+    // F12 — Toggle DevTools
+    electron_1.globalShortcut.register('F12', () => {
+        const win = electron_1.BrowserWindow.getFocusedWindow();
+        if (win) {
+            win.webContents.toggleDevTools();
+        }
+    });
+    // Ctrl+R / Cmd+R — Reload
+    electron_1.globalShortcut.register('CommandOrControl+R', () => {
+        const win = electron_1.BrowserWindow.getFocusedWindow();
+        if (win) {
+            win.webContents.reload();
+        }
+    });
+    // Ctrl+Shift+R / Cmd+Shift+R — Force reload
+    electron_1.globalShortcut.register('CommandOrControl+Shift+R', () => {
+        const win = electron_1.BrowserWindow.getFocusedWindow();
+        if (win) {
+            win.webContents.reloadIgnoringCache();
+        }
+    });
+};
 // Set the app user model ID
 electron_1.app.setAppUserModelId('com.intellidesk.app');
 electron_1.app.on('ready', async () => {
@@ -316,6 +343,7 @@ electron_1.app.on('ready', async () => {
     setupIPC();
     // Create and set the menu
     setupMenu();
+    setShortcuts();
     // Create the main window
     const mainWindow = createWindow();
     // Create the tray icon

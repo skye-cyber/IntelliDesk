@@ -164,6 +164,8 @@ function show_documentation() {
     const _docWindow: BrowserWindow = new BrowserWindow({
         width: 800,
         height: 600,
+        minWidth: 800,
+        minHeight: 400,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
@@ -279,6 +281,8 @@ function createWindow() {
     const loadingWindow = new BrowserWindow({
         width: 400,
         height: 300,
+        minWidth: 400,
+        minHeight: 400,
         frame: false,
         alwaysOnTop: false,
         webPreferences: {
